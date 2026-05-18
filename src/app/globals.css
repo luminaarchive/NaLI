@@ -142,20 +142,71 @@ body {
 }
 
 /* --- Ambient background blobs (CSS-only, GPU-composited) --- */
+
+/* Base blob: scoped will-change for GPU compositing */
 .ambient-blob {
-  will-change: transform;
-  animation-name: ambient-drift;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  animation-fill-mode: both;
+  will-change: transform, opacity;
 }
 
-@keyframes ambient-drift {
-  0% { transform: translate(0, 0) scale(1); }
-  25% { transform: translate(60px, 40px) scale(1.08); }
-  50% { transform: translate(20px, -30px) scale(0.95); }
-  75% { transform: translate(-40px, 50px) scale(1.05); }
-  100% { transform: translate(0, 0) scale(1); }
+/* Slow drift: large orbit, gentle breathing — bottom bloom */
+.ambient-drift-slow {
+  animation: ambient-drift-slow 24s ease-in-out infinite both;
+}
+@keyframes ambient-drift-slow {
+  0%   { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.50; }
+  20%  { transform: translate(100px, -60px) scale(1.18) rotate(2deg); opacity: 0.70; }
+  40%  { transform: translate(40px, -120px) scale(0.92) rotate(-1deg); opacity: 0.40; }
+  60%  { transform: translate(-80px, -40px) scale(1.22) rotate(3deg); opacity: 0.65; }
+  80%  { transform: translate(-30px, 80px) scale(0.88) rotate(-2deg); opacity: 0.35; }
+  100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.50; }
+}
+
+/* Medium drift: diagonal movement — right violet blob */
+.ambient-drift-medium {
+  animation: ambient-drift-medium 18s ease-in-out infinite both;
+}
+@keyframes ambient-drift-medium {
+  0%   { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.40; }
+  25%  { transform: translate(-120px, 80px) scale(1.25) rotate(-3deg); opacity: 0.70; }
+  50%  { transform: translate(-60px, 160px) scale(0.85) rotate(2deg); opacity: 0.30; }
+  75%  { transform: translate(80px, 60px) scale(1.15) rotate(-1deg); opacity: 0.60; }
+  100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.40; }
+}
+
+/* Fast drift: vertical rise/fall — left cyan blob */
+.ambient-drift-fast {
+  animation: ambient-drift-fast 14s ease-in-out infinite both;
+}
+@keyframes ambient-drift-fast {
+  0%   { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.35; }
+  20%  { transform: translate(60px, -140px) scale(1.20) rotate(2deg); opacity: 0.65; }
+  40%  { transform: translate(140px, -60px) scale(0.90) rotate(-3deg); opacity: 0.35; }
+  60%  { transform: translate(80px, 100px) scale(1.15) rotate(1deg); opacity: 0.75; }
+  80%  { transform: translate(-40px, 50px) scale(0.88) rotate(-2deg); opacity: 0.30; }
+  100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.35; }
+}
+
+/* Bloom breathe: center bloom slowly expands/contracts behind command box */
+.ambient-bloom {
+  animation: ambient-bloom 12s ease-in-out infinite both;
+}
+@keyframes ambient-bloom {
+  0%   { transform: translate(-50%, 0) scale(1); opacity: 0.45; }
+  33%  { transform: translate(-50%, -20px) scale(1.20); opacity: 0.70; }
+  66%  { transform: translate(-50%, 15px) scale(0.90); opacity: 0.35; }
+  100% { transform: translate(-50%, 0) scale(1); opacity: 0.45; }
+}
+
+/* Morph: soft shape-shifting glow — top accent */
+.ambient-morph {
+  animation: ambient-morph 20s ease-in-out infinite both;
+}
+@keyframes ambient-morph {
+  0%   { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.30; }
+  25%  { transform: translate(-60px, 100px) scale(1.15) rotate(4deg); opacity: 0.55; }
+  50%  { transform: translate(40px, 40px) scale(0.90) rotate(-2deg); opacity: 0.25; }
+  75%  { transform: translate(80px, -60px) scale(1.10) rotate(3deg); opacity: 0.50; }
+  100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.30; }
 }
 
 /* --- Reduced motion --- */
