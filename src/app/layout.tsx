@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   applicationName: "NaLI",
   title: {
-    default: "NaLI - Wildlife Field Intelligence for Indonesia",
+    default: "NaLI - Evidence-Based Reports and Field Intelligence",
     template: "%s | NaLI",
   },
   description: siteDescription,
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   },
   category: "conservation technology",
   openGraph: {
-    title: "NaLI - Wildlife Field Intelligence for Indonesia",
+    title: "NaLI - Evidence-Based Reports and Field Intelligence",
     description: siteDescription,
     url: siteUrl,
     siteName: "NaLI",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "NaLI - Wildlife Field Intelligence for Indonesia",
+    title: "NaLI - Evidence-Based Reports and Field Intelligence",
     description: siteDescription,
     images: ["/icon.svg"],
   },
