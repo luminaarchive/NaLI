@@ -10,12 +10,12 @@ export default function BottomNav() {
   const { t } = useTranslation();
 
   return (
-    <nav className="fixed bottom-0 z-50 w-full border-t border-stone-200 bg-stone-50/95 backdrop-blur">
+    <nav className="fixed bottom-0 z-50 w-full border-t border-white/[0.06] bg-[#09090b]/95 backdrop-blur-xl">
       <div className="flex h-16 items-center justify-around">
         <Link
           href="/dashboard"
-          className={`flex h-full w-full flex-col items-center justify-center ${
-            pathname === "/dashboard" ? "text-forest-900" : "text-forest-500 hover:text-forest-800"
+          className={`flex h-full w-full flex-col items-center justify-center transition-colors ${
+            pathname === "/dashboard" ? "text-white" : "text-white/35 hover:text-white/60"
           }`}
         >
           <Home size={24} />
@@ -24,8 +24,8 @@ export default function BottomNav() {
 
         <Link
           href="/observe"
-          className={`flex h-full w-full flex-col items-center justify-center ${
-            pathname === "/observe" ? "text-forest-900" : "text-forest-500 hover:text-forest-800"
+          className={`flex h-full w-full flex-col items-center justify-center transition-colors ${
+            pathname === "/observe" ? "text-white" : "text-white/35 hover:text-white/60"
           }`}
         >
           <Camera size={24} />
@@ -34,8 +34,8 @@ export default function BottomNav() {
 
         <Link
           href="/monitoring"
-          className={`flex h-full w-full flex-col items-center justify-center ${
-            pathname === "/monitoring" ? "text-forest-900" : "text-forest-500 hover:text-forest-800"
+          className={`flex h-full w-full flex-col items-center justify-center transition-colors ${
+            pathname === "/monitoring" ? "text-white" : "text-white/35 hover:text-white/60"
           }`}
         >
           <Activity size={24} />

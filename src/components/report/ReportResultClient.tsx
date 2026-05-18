@@ -210,11 +210,11 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
 
   if (!report && isLoadingPersisted) {
     return (
-      <div className="min-h-screen bg-[#F7F3EA] text-[#111814]">
+      <div className="min-h-screen bg-[#09090b] text-white">
         <main className="mx-auto max-w-[720px] px-4 py-16 sm:px-6">
-          <section className="rounded-lg border border-[#DDD5C7] bg-white p-6 ">
-            <h1 className="text-2xl font-semibold">Membuka laporan...</h1>
-            <p className="mt-3 leading-7 text-[#5F6B62]">NaLI sedang memeriksa akses laporan tersimpan.</p>
+          <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-xl">
+            <h1 className="text-2xl font-semibold">Opening report...</h1>
+            <p className="mt-3 leading-7 text-white/50">NaLI is checking access to the saved report.</p>
           </section>
         </main>
       </div>
@@ -223,21 +223,21 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
 
   if (!report) {
     return (
-      <div className="min-h-screen bg-[#F7F3EA] text-[#111814]">
+      <div className="min-h-screen bg-[#09090b] text-white">
         <main className="mx-auto max-w-[720px] px-4 py-16 sm:px-6">
-          <section className="rounded-lg border border-[#DDD5C7] bg-white p-6 ">
-            <AlertTriangle className="h-8 w-8 text-rare-red" aria-hidden="true" />
-            <h1 className="mt-4 text-2xl font-semibold">Hasil tidak ditemukan</h1>
-            <p className="mt-3 leading-7 text-[#5F6B62]">
-              Hasil MVP saat ini disimpan di browser setelah form dikirim. Buat laporan baru jika kamu membuka halaman
-              ini dari perangkat atau tab lain.
+          <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-xl">
+            <AlertTriangle className="h-8 w-8 text-amber-400/70" aria-hidden="true" />
+            <h1 className="mt-4 text-2xl font-semibold">Result not found</h1>
+            <p className="mt-3 leading-7 text-white/50">
+              Results are currently stored in the browser after form submission. Create a new report if you opened
+              this page from another device or tab.
             </p>
             <Link
-              className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-forest-900 px-4 text-sm font-semibold text-stone-50 transition hover:bg-forest-800"
+              className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#09090b] transition hover:bg-white/90"
               href="/create-report"
             >
               <RotateCcw className="h-4 w-4" aria-hidden="true" />
-              Buat Laporan Baru
+              Create New Report
             </Link>
           </section>
         </main>
@@ -248,29 +248,29 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
   const isGuide = report.mode === "start_from_zero";
 
   return (
-    <div className="min-h-screen bg-[#F7F3EA] text-[#111814]">
-      <header className="border-b border-[#DDD5C7] bg-white">
+    <div className="min-h-screen bg-[#09090b] text-white">
+      <header className="border-b border-white/[0.06] bg-[#09090b]/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1160px] flex-col gap-5 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div>
-            <Link className="inline-flex items-center gap-2 text-sm font-semibold text-[#5F6B62] hover:text-[#111814]" href="/create-report">
+            <Link className="inline-flex items-center gap-2 text-sm font-medium text-white/40 transition-colors hover:text-white" href="/create-report">
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              Buat lagi
+              Create another
             </Link>
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge tone={report.is_mock ? "amber" : "green"}>{report.status}</Badge>
-              <Badge tone="paper">{isGuide ? "Start From Zero" : "Draft From Materials"}</Badge>
+              <Badge tone="glass">{isGuide ? "Start From Zero" : "Draft From Materials"}</Badge>
             </div>
-            <h1 className="mt-3 max-w-3xl text-3xl font-semibold tracking-[0] sm:text-4xl">{report.title}</h1>
-            <p className="mt-2 text-sm leading-6 text-[#5F6B62]">{isGuide ? report.label : report.draft_label}</p>
+            <h1 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">{report.title}</h1>
+            <p className="mt-2 text-sm leading-6 text-white/50">{isGuide ? report.label : report.draft_label}</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="secondary" onClick={copyMarkdown}>
+            <Button type="button" variant="glass" onClick={copyMarkdown}>
               <Clipboard className="h-4 w-4" aria-hidden="true" />
-              Salin Markdown
+              Copy Markdown
             </Button>
-            <Button type="button" onClick={downloadMarkdown}>
+            <Button type="button" variant="primary" onClick={downloadMarkdown}>
               <Download className="h-4 w-4" aria-hidden="true" />
-              Unduh Markdown
+              Download Markdown
             </Button>
           </div>
         </div>
@@ -281,29 +281,29 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
 
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           <SidebarCard title="Status">
-            <p className="text-sm font-semibold">{report.status}</p>
-            <p className="mt-2 text-sm leading-6 text-[#5F6B62]">Pemrosesan: {report.model_used}</p>
-            <p className="mt-2 text-sm leading-6 text-[#5F6B62]">Dibuat: {report.created_at}</p>
+            <p className="text-sm font-semibold text-white">{report.status}</p>
+            <p className="mt-2 text-sm leading-6 text-white/40">Processing: {report.model_used}</p>
+            <p className="mt-2 text-sm leading-6 text-white/40">Created: {report.created_at}</p>
           </SidebarCard>
 
           <SidebarCard title={isGuide ? "Checklist" : "Evidence"}>
-            <p className="text-3xl font-semibold">
+            <p className="text-3xl font-semibold text-white">
               {isGuide ? report.evidence_checklist.length : report.evidence_table.length}
             </p>
-            <p className="mt-1 text-sm leading-6 text-[#5F6B62]">
-              {isGuide ? "item bukti untuk dikumpulkan" : "bahan pengguna tercatat"}
+            <p className="mt-1 text-sm leading-6 text-white/40">
+              {isGuide ? "evidence items to collect" : "user materials recorded"}
             </p>
           </SidebarCard>
 
           {!isGuide ? (
             <SidebarCard title="Source Verification">
-              <p className="text-sm leading-6 text-[#5F6B62]">{report.source_verification_status}</p>
+              <p className="text-sm leading-6 text-white/40">{report.source_verification_status}</p>
             </SidebarCard>
           ) : null}
 
           {status !== "idle" ? (
-            <p className="rounded-lg border border-[#D4E0D1] bg-[#E8EFE4] p-3 text-sm text-[#111814]">
-              {status === "copied" ? "Markdown tersalin." : "Markdown diunduh."}
+            <p className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm text-emerald-300">
+              {status === "copied" ? "Markdown copied." : "Markdown downloaded."}
             </p>
           ) : null}
         </aside>
@@ -357,7 +357,7 @@ function Notice({ notice }: { notice: string | null }) {
   }
 
   return (
-    <div className="flex gap-3 rounded-lg border border-[#D8B98B] bg-[#FFF7E8] p-4 text-sm leading-6 text-[#111814]">
+    <div className="flex gap-3 rounded-xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm leading-6 text-amber-200">
       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
       <p>{notice}</p>
     </div>
@@ -366,9 +366,9 @@ function Notice({ notice }: { notice: string | null }) {
 
 function ReportSection({ children, title }: { children: string; title: string }) {
   return (
-    <section className="rounded-lg border border-[#DDD5C7] bg-white p-5 ">
-      <h2 className="text-xl font-semibold">{title}</h2>
-      <p className="mt-3 text-sm leading-7 text-[#5F6B62]">{children}</p>
+    <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm">
+      <h2 className="text-xl font-semibold text-white">{title}</h2>
+      <p className="mt-3 text-sm leading-7 text-white/50">{children}</p>
     </section>
   );
 }
@@ -387,13 +387,13 @@ function ListSection({
   const Icon = icon === "check" ? CheckCircle2 : FileText;
 
   return (
-    <section className="rounded-lg border border-[#DDD5C7] bg-white p-5 ">
-      <h2 className="text-xl font-semibold">{title}</h2>
-      {note ? <p className="mt-2 text-sm leading-6 text-[#5F6B62]">{note}</p> : null}
-      <ul className="mt-4 space-y-3 text-sm leading-6 text-[#5F6B62]">
+    <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm">
+      <h2 className="text-xl font-semibold text-white">{title}</h2>
+      {note ? <p className="mt-2 text-sm leading-6 text-white/40">{note}</p> : null}
+      <ul className="mt-4 space-y-3 text-sm leading-6 text-white/50">
         {items.map((item) => (
           <li className="flex gap-2" key={item}>
-            <Icon className="mt-0.5 h-4 w-4 shrink-0 text-olive-700" aria-hidden="true" />
+            <Icon className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400/50" aria-hidden="true" />
             <span>{item}</span>
           </li>
         ))}
@@ -404,26 +404,26 @@ function ListSection({
 
 function EvidenceTable({ report }: { report: DraftReport }) {
   return (
-    <section className="rounded-lg border border-[#DDD5C7] bg-white p-5 ">
-      <h2 className="text-xl font-semibold">Evidence Table</h2>
+    <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm">
+      <h2 className="text-xl font-semibold text-white">Evidence Table</h2>
       <div className="mt-4 hidden overflow-x-auto md:block">
         <table className="min-w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b border-[#DDD5C7]">
-              <th className="px-3 py-2 font-semibold text-[#5F6B62]">ID</th>
-              <th className="px-3 py-2 font-semibold text-[#5F6B62]">Tipe</th>
-              <th className="px-3 py-2 font-semibold text-[#5F6B62]">Ringkasan</th>
-              <th className="px-3 py-2 font-semibold text-[#5F6B62]">Status</th>
+            <tr className="border-b border-white/[0.06]">
+              <th className="px-3 py-2 font-semibold text-white/40">ID</th>
+              <th className="px-3 py-2 font-semibold text-white/40">Type</th>
+              <th className="px-3 py-2 font-semibold text-white/40">Summary</th>
+              <th className="px-3 py-2 font-semibold text-white/40">Status</th>
             </tr>
           </thead>
           <tbody>
             {report.evidence_table.map((row) => (
-              <tr className="border-b border-[#DDD5C7] align-top" key={row.id}>
-                <td className="px-3 py-3 font-mono text-xs">{row.id}</td>
-                <td className="px-3 py-3">{row.material_type}</td>
-                <td className="px-3 py-3">{row.summary}</td>
+              <tr className="border-b border-white/[0.04] align-top" key={row.id}>
+                <td className="px-3 py-3 font-mono text-xs text-white/60">{row.id}</td>
+                <td className="px-3 py-3 text-white/60">{row.material_type}</td>
+                <td className="px-3 py-3 text-white/50">{row.summary}</td>
                 <td className="px-3 py-3">
-                  <Badge tone="paper">{row.verification_status}</Badge>
+                  <Badge tone="glass">{row.verification_status}</Badge>
                 </td>
               </tr>
             ))}
@@ -432,13 +432,13 @@ function EvidenceTable({ report }: { report: DraftReport }) {
       </div>
       <div className="mt-4 space-y-3 md:hidden">
         {report.evidence_table.map((row) => (
-          <div className="rounded-lg border border-[#DDD5C7] bg-[#FCFAF4] p-4" key={row.id}>
+          <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4" key={row.id}>
             <div className="flex items-center justify-between gap-3">
-              <span className="font-mono text-xs font-semibold">{row.id}</span>
-              <Badge tone="green">{row.material_type}</Badge>
+              <span className="font-mono text-xs font-semibold text-white/60">{row.id}</span>
+              <Badge tone="cyan">{row.material_type}</Badge>
             </div>
-            <p className="mt-3 text-sm leading-6 text-[#5F6B62]">{row.summary}</p>
-            <p className="mt-3 text-xs leading-5 text-[#5F6B62]">{row.verification_status}</p>
+            <p className="mt-3 text-sm leading-6 text-white/50">{row.summary}</p>
+            <p className="mt-3 text-xs leading-5 text-white/35">{row.verification_status}</p>
           </div>
         ))}
       </div>
@@ -448,24 +448,20 @@ function EvidenceTable({ report }: { report: DraftReport }) {
 
 function Disclaimer({ children, tone }: { children: string; tone: "draft" | "guide" }) {
   return (
-    <section
-      className={`rounded-lg border p-5 ${
-        tone === "draft" ? "border-[#D8B98B] bg-[#FFF7E8]" : "border-[#D8B98B] bg-[#FFF7E8]"
-      }`}
-    >
-      <h2 className="flex items-center gap-2 text-xl font-semibold">
-        <ShieldCheck className="h-5 w-5 text-olive-700" aria-hidden="true" />
+    <section className="rounded-2xl border border-amber-400/20 bg-amber-400/10 p-5">
+      <h2 className="flex items-center gap-2 text-xl font-semibold text-amber-200">
+        <ShieldCheck className="h-5 w-5 text-amber-400/60" aria-hidden="true" />
         Disclaimer
       </h2>
-      <p className="mt-3 text-sm leading-7 text-[#111814]">{children}</p>
+      <p className="mt-3 text-sm leading-7 text-amber-100/70">{children}</p>
     </section>
   );
 }
 
 function SidebarCard({ children, title }: { children: ReactNode; title: string }) {
   return (
-    <section className="rounded-lg border border-[#DDD5C7] bg-white p-4 ">
-      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#5F6B62]">{title}</p>
+    <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 backdrop-blur-sm">
+      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/30">{title}</p>
       <div className="mt-3">{children}</div>
     </section>
   );

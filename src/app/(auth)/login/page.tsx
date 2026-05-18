@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Leaf, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n/useTranslation";
@@ -34,32 +34,34 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="text-forest-950 min-h-screen bg-stone-100 px-4 py-8 sm:px-6">
+    <main className="min-h-screen bg-[#09090b] px-4 py-8 text-white sm:px-6">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center justify-center">
-        <section className="grid w-full overflow-hidden rounded-md border border-stone-300 bg-stone-50 shadow-[0_22px_70px_rgba(19,32,24,0.12)] lg:grid-cols-[0.92fr_1.08fr]">
-          <div className="bg-forest-950 border-b border-stone-300 p-6 text-stone-50 sm:p-8 lg:border-r lg:border-b-0">
+        <section className="grid w-full overflow-hidden rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/40 lg:grid-cols-[0.92fr_1.08fr]">
+          {/* Left panel */}
+          <div className="border-b border-white/[0.06] bg-white/[0.03] p-6 backdrop-blur-xl sm:p-8 lg:border-r lg:border-b-0">
             <Link className="mb-8 inline-flex items-center gap-3" href="/">
-              <span className="text-forest-950 flex h-10 w-10 items-center justify-center rounded-sm bg-stone-50">
-                <Leaf className="h-5 w-5" />
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-white/[0.02] text-sm font-bold text-white">
+                N
               </span>
               <span>
-                <span className="block text-base font-semibold">NaLI</span>
-                <span className="text-xs text-stone-300">Nature Life Intelligence</span>
+                <span className="block text-base font-semibold text-white">NaLI</span>
+                <span className="text-xs text-white/40">Evidence-based Intelligence</span>
               </span>
             </Link>
             <div className="mb-6">
               <LanguageSwitcher />
             </div>
-            <p className="font-label-caps text-[11px] tracking-[0.08em] text-olive-300 uppercase">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/30">
               {t("auth.workspace")}
             </p>
-            <h1 className="font-display-lg mt-3 w-full max-w-[28rem] text-3xl leading-tight sm:text-4xl">
+            <h1 className="mt-3 w-full max-w-[28rem] text-3xl font-semibold leading-tight sm:text-4xl">
               {t("auth.signInTitle")}
             </h1>
-            <p className="mt-4 w-full max-w-[28rem] text-sm leading-6 text-stone-200">{t("auth.signInContext")}</p>
+            <p className="mt-4 w-full max-w-[28rem] text-sm leading-6 text-white/50">{t("auth.signInContext")}</p>
           </div>
 
-          <div className="p-5 sm:p-8 lg:p-10">
+          {/* Right panel - form */}
+          <div className="bg-[#09090b] p-5 sm:p-8 lg:p-10">
             <form className="mx-auto w-full max-w-[460px] space-y-5" onSubmit={handleLogin}>
               <Field label={t("auth.email")}>
                 <input
@@ -86,7 +88,7 @@ export default function LoginPage() {
                   />
                   <button
                     aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
-                    className="text-forest-600 hover:text-forest-950 absolute top-1/2 right-4 -translate-y-1/2"
+                    className="absolute top-1/2 right-4 -translate-y-1/2 text-white/40 hover:text-white"
                     onClick={() => setShowPassword((value) => !value)}
                     type="button"
                   >
@@ -96,13 +98,13 @@ export default function LoginPage() {
               </Field>
 
               {error ? (
-                <div className="border-rare-red/40 bg-rare-red/10 text-rare-red rounded-sm border p-3 text-sm">
+                <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-300">
                   {error}
                 </div>
               ) : null}
 
               <button
-                className="bg-forest-900 hover:bg-forest-800 flex min-h-12 w-full items-center justify-center gap-3 rounded-sm px-5 text-sm font-semibold text-stone-50 transition disabled:cursor-not-allowed disabled:opacity-70"
+                className="flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-white px-5 text-sm font-semibold text-[#09090b] transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-70"
                 disabled={loading}
                 type="submit"
               >
@@ -111,9 +113,9 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <p className="text-forest-700 mt-6 text-center text-sm">
+            <p className="mt-6 text-center text-sm text-white/40">
               {t("auth.newToNali")}{" "}
-              <Link className="text-forest-950 font-semibold underline-offset-4 hover:underline" href="/register">
+              <Link className="font-semibold text-white underline-offset-4 hover:underline" href="/register">
                 {t("common.createAccount")}
               </Link>
             </p>
@@ -127,7 +129,7 @@ export default function LoginPage() {
 function Field({ children, label }: { children: React.ReactNode; label: string }) {
   return (
     <label className="block w-full">
-      <span className="font-label-caps text-forest-700 mb-2 block text-[11px] tracking-[0.08em] uppercase">
+      <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.08em] text-white/30">
         {label}
       </span>
       {children}

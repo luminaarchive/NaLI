@@ -181,7 +181,7 @@ export function CreateReportForm() {
 
   return (
     <form className="safe-bottom" onSubmit={handleSubmit}>
-      <section className="rounded-lg border border-[#DDD5C7] bg-white p-3 shadow-[0_18px_70px_rgba(17,24,20,0.07)] sm:p-4">
+      <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-3 shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-4">
         <div>
           <div className="grid grid-cols-2 gap-2 sm:gap-3">
             <ModeButton
@@ -201,7 +201,7 @@ export function CreateReportForm() {
           </div>
 
           <label className="mt-3 block">
-            <span className="mb-1 block text-sm font-semibold text-[#111814]">
+            <span className="mb-1 block text-sm font-semibold text-white/80">
               {isDraft ? "Bahan utama" : "Topik atau tugas awal"}
             </span>
             <textarea
@@ -216,21 +216,21 @@ export function CreateReportForm() {
             />
           </label>
 
-          <label className="mt-3 flex gap-3 rounded-lg border border-[#DDD5C7] bg-[#FCFAF4] p-2 sm:p-3">
+          <label className="mt-3 flex gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2 sm:p-3">
             <input
               checked={form.integrityConsent}
-              className="mt-1 h-4 w-4 accent-[#173D2B]"
+              className="mt-1 h-4 w-4 accent-indigo-500"
               type="checkbox"
               onChange={(event) => updateField("integrityConsent", event.target.checked)}
             />
-            <span className="text-sm leading-6 text-[#5F6B62]">
+            <span className="text-sm leading-6 text-white/50">
               Saya paham output NaLI adalah draft/panduan berbasis bahan, bukan karya final.
             </span>
           </label>
 
           <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-end">
             <label className="block">
-              <span className="sr-only text-xs font-semibold uppercase tracking-[0.08em] text-[#5F6B62] sm:not-sr-only sm:mb-2 sm:block">
+              <span className="sr-only text-xs font-semibold uppercase tracking-[0.08em] text-white/40 sm:not-sr-only sm:mb-2 sm:block">
                 Template
               </span>
               <select
@@ -239,7 +239,7 @@ export function CreateReportForm() {
                 onChange={(event) => updateField("reportTemplate", event.target.value)}
               >
                 {reportTemplates.map((template) => (
-                  <option key={template} value={template}>
+                  <option key={template} value={template} className="bg-[#18181b] text-white">
                     {template}
                   </option>
                 ))}
@@ -247,7 +247,7 @@ export function CreateReportForm() {
             </label>
 
             <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#173D2B] px-5 text-sm font-semibold text-stone-50 transition hover:bg-[#102b1e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-900 disabled:pointer-events-none disabled:opacity-60 sm:min-h-12"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#09090b] transition-all hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:pointer-events-none disabled:opacity-60 sm:min-h-12"
               disabled={isSubmitting}
               type="submit"
             >
@@ -263,19 +263,19 @@ export function CreateReportForm() {
             </button>
           </div>
 
-          <p className="mt-3 text-sm text-[#5F6B62]">
+          <p className="mt-3 text-sm text-white/40">
             {isDraft ? `${materialCount} bahan terisi.` : "Panduan awal, bukan draft final."} Evidence table,
             uncertainty note, dan human review tetap disertakan.
           </p>
 
-          <details className="group mt-4 rounded-lg border border-[#DDD5C7] bg-[#FCFAF4]">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-[#111814]">
+          <details className="group mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02]">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-white/80">
               Tambahkan detail opsional
-              <ChevronDown className="h-4 w-4 transition group-open:rotate-180" aria-hidden="true" />
+              <ChevronDown className="h-4 w-4 text-white/40 transition group-open:rotate-180" aria-hidden="true" />
             </summary>
-            <div className="grid gap-4 border-t border-[#DDD5C7] p-4 lg:grid-cols-2">
+            <div className="grid gap-4 border-t border-white/[0.06] p-4 lg:grid-cols-2">
               <label className="block">
-                <span className="text-sm font-semibold text-[#111814]">Judul laporan</span>
+                <span className="text-sm font-semibold text-white/80">Judul laporan</span>
                 <input
                   className="field-input mt-2"
                   placeholder="Boleh kosong, NaLI akan membuat judul aman"
@@ -285,14 +285,14 @@ export function CreateReportForm() {
               </label>
 
               <label className="block">
-                <span className="text-sm font-semibold text-[#111814]">Peran pengguna</span>
+                <span className="text-sm font-semibold text-white/80">Peran pengguna</span>
                 <select
                   className="field-input mt-2"
                   value={form.userRole}
                   onChange={(event) => updateField("userRole", event.target.value)}
                 >
                   {userRoles.map((role) => (
-                    <option key={role} value={role}>
+                    <option key={role} value={role} className="bg-[#18181b] text-white">
                       {role}
                     </option>
                   ))}
@@ -300,8 +300,8 @@ export function CreateReportForm() {
               </label>
 
               <label className="block lg:col-span-2">
-                <span className="flex items-center gap-2 text-sm font-semibold text-[#111814]">
-                  <LinkIcon className="h-4 w-4 text-[#6F8057]" aria-hidden="true" />
+                <span className="flex items-center gap-2 text-sm font-semibold text-white/80">
+                  <LinkIcon className="h-4 w-4 text-indigo-400/60" aria-hidden="true" />
                   URL sumber
                 </span>
                 <textarea
@@ -313,8 +313,8 @@ export function CreateReportForm() {
               </label>
 
               <label className="block">
-                <span className="flex items-center gap-2 text-sm font-semibold text-[#111814]">
-                  <MapPin className="h-4 w-4 text-[#6F8057]" aria-hidden="true" />
+                <span className="flex items-center gap-2 text-sm font-semibold text-white/80">
+                  <MapPin className="h-4 w-4 text-indigo-400/60" aria-hidden="true" />
                   Lokasi opsional
                 </span>
                 <input
@@ -326,8 +326,8 @@ export function CreateReportForm() {
               </label>
 
               <label className="block">
-                <span className="flex items-center gap-2 text-sm font-semibold text-[#111814]">
-                  <Paperclip className="h-4 w-4 text-[#6F8057]" aria-hidden="true" />
+                <span className="flex items-center gap-2 text-sm font-semibold text-white/80">
+                  <Paperclip className="h-4 w-4 text-indigo-400/60" aria-hidden="true" />
                   Keterangan file/lampiran
                 </span>
                 <input
@@ -343,16 +343,16 @@ export function CreateReportForm() {
       </section>
 
       {error || notice ? (
-        <section className="mt-4 rounded-lg border border-[#DDD5C7] bg-white p-4 shadow-sm">
+        <section className="mt-4 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 shadow-lg backdrop-blur-xl">
           {error ? (
-            <div className="flex gap-3 rounded-lg border border-rare-red/40 bg-rare-red/10 p-3 text-sm leading-6 text-rare-red">
+            <div className="flex gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm leading-6 text-red-300">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
               <p>{error}</p>
             </div>
           ) : null}
 
           {notice ? (
-            <div className="flex gap-3 rounded-lg border border-[#D4E0D1] bg-[#E8EFE4] p-3 text-sm leading-6 text-[#173D2B]">
+            <div className="flex gap-3 rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm leading-6 text-emerald-300">
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
               <p>{notice}</p>
             </div>
@@ -379,19 +379,19 @@ function ModeButton({
   return (
     <button
       className={cn(
-        "rounded-lg border p-2 text-left transition sm:p-4",
+        "rounded-xl border p-2 text-left transition-all duration-200 sm:p-4",
         active
-          ? "border-[#173D2B] bg-[#E8EFE4] text-[#173D2B]"
-          : "border-[#DDD5C7] bg-[#FCFAF4] text-[#5F6B62] hover:bg-[#E8EFE4]",
+          ? "border-white/[0.15] bg-white/[0.08] text-white"
+          : "border-white/[0.06] bg-white/[0.02] text-white/50 hover:bg-white/[0.05]",
       )}
       type="button"
       onClick={onClick}
     >
       <span className="flex items-center gap-2 text-sm font-semibold">
-        <Icon className="h-4 w-4 text-[#6F8057]" aria-hidden="true" />
+        <Icon className="h-4 w-4 text-indigo-400/60" aria-hidden="true" />
         {label}
       </span>
-      <span className="mt-2 hidden text-xs leading-5 text-stone-400 sm:block">{description}</span>
+      <span className="mt-2 hidden text-xs leading-5 text-white/30 sm:block">{description}</span>
     </button>
   );
 }

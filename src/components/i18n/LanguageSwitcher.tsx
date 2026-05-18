@@ -11,7 +11,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
   return (
     <button
       aria-label={`${t("common.language")}: ${language === "en" ? t("common.english") : t("common.indonesian")}`}
-      className={`text-forest-900 inline-flex min-h-10 items-center gap-2 rounded-sm border border-stone-300 bg-stone-50 px-3 text-xs font-semibold tracking-[0.08em] uppercase transition hover:bg-stone-100 ${
+      className={`inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 text-xs font-semibold tracking-[0.08em] uppercase text-white/60 transition hover:bg-white/[0.08] hover:text-white ${
         compact ? "px-2" : ""
       }`}
       onClick={() => setLanguage(nextLanguage)}

@@ -13,44 +13,51 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { ButtonLink } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { SiteFooter, SiteNav } from "@/components/ui/SiteNav";
+import { SiteFooter } from "@/components/ui/SiteNav";
+import { FieldIntelligenceShell } from "@/components/ui/FieldIntelligenceShell";
 
 const capabilities = [
   {
     icon: Database,
     title: "Observation Memory",
-    text: "Riwayat observasi, bahan, status review, dan perubahan catatan untuk kerja lapangan yang dapat diaudit.",
+    text: "Observation history, materials, review status, and auditable field work change logs.",
+    accent: "from-indigo-500/20",
   },
   {
     icon: Fingerprint,
     title: "Evidence Hash",
-    text: "Digital integrity marker untuk menandai integritas berkas, bukan bukti hukum atau validasi akademik.",
+    text: "Digital integrity markers for file integrity — not legal proof or academic validation.",
+    accent: "from-violet-500/20",
   },
   {
     icon: ClipboardCheck,
     title: "Review Queue",
-    text: "Alur pemeriksaan manusia sebelum catatan menjadi record profesional yang layak dipakai tim.",
+    text: "Human review workflow before notes become professional records for team use.",
+    accent: "from-cyan-500/15",
   },
   {
     icon: FileCheck2,
     title: "Darwin Core Export",
-    text: "Rencana export data biodiversitas dengan pengamanan koordinat sensitif dan status review jelas.",
+    text: "Biodiversity data export with coordinate obfuscation and clear review status.",
+    accent: "from-emerald-500/15",
   },
   {
     icon: Layers3,
     title: "Threat Layer",
-    text: "Lapisan ancaman yang baru masuk akal setelah integrasi data dan tata kelola sumber tersedia.",
+    text: "Threat layers that only become meaningful after data integration and source governance.",
+    accent: "from-amber-500/15",
   },
   {
     icon: Route,
     title: "Patrol Planner",
-    text: "Perencanaan rute observasi berbasis prioritas, bukti, dan batas keselamatan lapangan.",
+    text: "Observation route planning based on priorities, evidence, and field safety boundaries.",
+    accent: "from-rose-500/15",
   },
   {
     icon: Archive,
     title: "Living Species Vault",
-    text: "Ruang pengetahuan spesies dengan evidence trail, review, dan pembaruan terkontrol.",
+    text: "Species knowledge space with evidence trails, reviews, and controlled updates.",
+    accent: "from-blue-500/15",
   },
 ];
 
@@ -58,53 +65,63 @@ const workflow = ["Field input", "Digital integrity marker", "Review queue", "Re
 
 export default function FieldIntelligencePage() {
   return (
-    <div className="min-h-screen bg-[#F7F3EA] text-[#111814]">
-      <SiteNav />
-      <main>
-        <section className="border-b border-[#DDD5C7] bg-[#F7F3EA] px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1160px]">
-            <Badge tone="paper">Professional Mode</Badge>
-            <h1 className="mt-5 max-w-[760px] text-4xl font-semibold tracking-[0] sm:text-5xl">
+    <FieldIntelligenceShell>
+      <main className="relative z-10">
+        {/* Hero */}
+        <section className="px-4 pt-28 pb-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[800px] text-center">
+            <Badge tone="glass">Professional Mode</Badge>
+            <h1 className="mt-5 text-4xl font-bold tracking-tight text-white sm:text-5xl">
               NaLI Field Intelligence
             </h1>
-            <p className="mt-5 max-w-[720px] text-lg leading-8 text-[#5F6B62]">
-              Sistem intelijen lapangan untuk observasi, konservasi, strukturisasi data, dan decision support berbasis
-              bukti.
+            <p className="mx-auto mt-5 max-w-[600px] text-base leading-7 text-white/50 sm:text-lg">
+              Field intelligence for observations, conservation, data structuring, and evidence-based
+              decision support.
             </p>
-            <div className="mt-6 inline-flex rounded-full border border-[#D8B98B] bg-[#FFF7E8] px-4 py-2 text-sm font-semibold text-[#8A4F2D]">
-              Dibangun bertahap. MVP publik saat ini fokus pada Learn & Report.
+            <div className="mt-6">
+              <Badge tone="amber" className="px-4 py-2 text-sm">
+                Built incrementally. Public MVP focuses on Learn & Report.
+              </Badge>
             </div>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href="/learn-report">Lihat Learn & Report</ButtonLink>
-              <ButtonLink href="/create-report" variant="secondary">
-                Mulai Susun Laporan
+            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+              <ButtonLink href="/learn-report">
+                See Learn & Report
+              </ButtonLink>
+              <ButtonLink href="/create-report" variant="glass">
+                Start Building a Report
               </ButtonLink>
             </div>
           </div>
         </section>
 
-        <section className="px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mx-auto grid max-w-[1160px] gap-8 lg:grid-cols-[0.72fr_1.28fr]">
+        {/* Professional workflow preview */}
+        <section className="border-t border-white/[0.06] px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-[1000px] gap-10 lg:grid-cols-[0.7fr_1.3fr]">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#6F8057]">
-                Preview alur profesional
+              <p className="text-xs font-medium tracking-widest text-white/30 uppercase">
+                Professional workflow preview
               </p>
-              <h2 className="mt-3 text-3xl font-semibold">Serius, tetapi belum diklaim aktif penuh.</h2>
-              <p className="mt-4 text-sm leading-7 text-[#5F6B62]">
-                Halaman ini menjelaskan arah Professional Layer. NaLI tidak menampilkan peta, alert, atau record
-                terverifikasi seolah sistem operasional sudah berjalan.
+              <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
+                Serious, but not claimed as fully operational.
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-white/40">
+                This page describes the Professional Layer direction. NaLI does not show maps,
+                alerts, or verified records as if an operational system is already running.
               </p>
             </div>
             <div className="grid gap-3">
               {workflow.map((step, index) => (
-                <div className="flex gap-4 rounded-lg border border-[#DDD5C7] bg-white p-4" key={step}>
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E8EFE4] text-sm font-semibold text-[#173D2B]">
+                <div
+                  className="flex gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 backdrop-blur-sm"
+                  key={step}
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-sm font-semibold text-white/60">
                     {index + 1}
                   </span>
                   <div>
-                    <p className="font-semibold">{step}</p>
-                    <p className="mt-1 text-sm leading-6 text-[#5F6B62]">
-                      Konsep alur. Belum menjadi fitur operasional penuh di MVP publik.
+                    <p className="font-semibold text-white">{step}</p>
+                    <p className="mt-1 text-sm leading-6 text-white/40">
+                      Concept workflow. Not a fully operational feature in the public MVP.
                     </p>
                   </div>
                 </div>
@@ -113,66 +130,99 @@ export default function FieldIntelligencePage() {
           </div>
         </section>
 
-        <section className="border-y border-[#DDD5C7] bg-[#FCFAF4] px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1160px]">
-            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        {/* Capabilities */}
+        <section className="border-t border-white/[0.06] px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1000px]">
+            <div className="flex flex-col gap-3 text-center md:flex-row md:items-end md:justify-between md:text-left">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#6F8057]">
+                <p className="text-xs font-medium tracking-widest text-white/30 uppercase">
                   Future capabilities
                 </p>
-                <h2 className="mt-3 max-w-[720px] text-3xl font-semibold">Dibangun setelah sinyal produk cukup.</h2>
+                <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
+                  Built after product signal is sufficient.
+                </h2>
               </div>
-              <Badge tone="paper">Belum aktif penuh</Badge>
+              <Badge tone="glass">Not yet fully active</Badge>
             </div>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {capabilities.map((item) => (
-                <CapabilityCard icon={item.icon} key={item.title} text={item.text} title={item.title} />
+                <CapabilityCard
+                  accent={item.accent}
+                  icon={item.icon}
+                  key={item.title}
+                  text={item.text}
+                  title={item.title}
+                />
               ))}
             </div>
           </div>
         </section>
 
-        <section className="px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mx-auto grid max-w-[1160px] gap-4 md:grid-cols-3">
+        {/* Boundaries */}
+        <section className="border-t border-white/[0.06] px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-[1000px] gap-4 md:grid-cols-3">
             <BoundaryCard
               icon={Map}
-              title="Tidak ada peta palsu"
-              text="NaLI tidak menampilkan map atau alert seolah berjalan langsung tanpa integrasi backend yang benar."
+              title="No fake maps"
+              text="NaLI doesn't show maps or alerts as if running live without proper backend integration."
             />
             <BoundaryCard
               icon={Siren}
-              title="Bukan sistem darurat"
-              text="NaLI tidak menggantikan BMKG, BNPB, KLHK, ranger, reviewer, atau pakar lapangan."
+              title="Not an emergency system"
+              text="NaLI doesn't replace BMKG, BNPB, KLHK, rangers, reviewers, or field experts."
             />
             <BoundaryCard
               icon={ShieldCheck}
               title="Human review boundary"
-              text="Record profesional hanya bernilai setelah bahan, sumber, dan status review diperiksa manusia."
+              text="Professional records only have value after materials, sources, and review status are checked by humans."
             />
           </div>
         </section>
       </main>
       <SiteFooter />
-    </div>
+    </FieldIntelligenceShell>
   );
 }
 
-function CapabilityCard({ icon: Icon, text, title }: { icon: LucideIcon; text: string; title: string }) {
+function CapabilityCard({
+  accent,
+  icon: Icon,
+  text,
+  title,
+}: {
+  accent: string;
+  icon: LucideIcon;
+  text: string;
+  title: string;
+}) {
   return (
-    <Card className="p-5">
-      <Icon className="h-5 w-5 text-[#6F8057]" aria-hidden="true" />
-      <h3 className="mt-4 text-xl font-semibold">{title}</h3>
-      <p className="mt-3 text-sm leading-7 text-[#5F6B62]">{text}</p>
-    </Card>
+    <div className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 backdrop-blur-sm transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.05]">
+      {/* Accent glow */}
+      <div
+        className={`pointer-events-none absolute -top-8 -right-8 h-32 w-32 rounded-full bg-gradient-to-br ${accent} to-transparent opacity-50 blur-2xl transition-opacity duration-500 group-hover:opacity-80`}
+      />
+      {/* Top highlight */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+
+      <div className="relative z-10">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.04]">
+          <Icon className="h-5 w-5 text-white/50" aria-hidden="true" />
+        </div>
+        <h3 className="mt-4 text-lg font-semibold text-white">{title}</h3>
+        <p className="mt-3 text-sm leading-7 text-white/40">{text}</p>
+      </div>
+    </div>
   );
 }
 
 function BoundaryCard({ icon: Icon, text, title }: { icon: LucideIcon; text: string; title: string }) {
   return (
-    <Card className="p-5" tone="muted">
-      <Icon className="h-5 w-5 text-[#6F8057]" aria-hidden="true" />
-      <h3 className="mt-4 text-xl font-semibold">{title}</h3>
-      <p className="mt-3 text-sm leading-7 text-[#5F6B62]">{text}</p>
-    </Card>
+    <div className="rounded-2xl border border-white/[0.04] bg-white/[0.02] p-6 backdrop-blur-sm">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.04]">
+        <Icon className="h-5 w-5 text-white/30" aria-hidden="true" />
+      </div>
+      <h3 className="mt-4 text-lg font-semibold text-white/80">{title}</h3>
+      <p className="mt-3 text-sm leading-7 text-white/35">{text}</p>
+    </div>
   );
 }

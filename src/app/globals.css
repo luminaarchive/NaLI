@@ -6,6 +6,7 @@
   --color-forest-800: #294631;
   --color-forest-700: #385d42;
   --color-forest-600: #507754;
+  --color-forest-500: #5a8a62;
   --color-olive-800: #4f5e35;
   --color-olive-700: #627247;
   --color-olive-600: #758553;
@@ -19,15 +20,15 @@
   --color-conservation-orange: #d9782d;
   --color-warning-amber: #e5b94f;
   --color-rare-red: #a43d35;
-  --color-surface: #fbfaf5;
-  --color-on-surface: #132018;
-  --color-primary: #1e3525;
-  --color-on-primary: #fbfaf5;
-  --color-paper: #f7f3ea;
-  --color-paper-soft: #fcfaf4;
-  --color-ink: #111814;
-  --color-muted-ink: #5f6b62;
-  --color-border-soft: #ddd5c7;
+  --color-surface: #09090b;
+  --color-on-surface: #fafafa;
+  --color-primary: #6366f1;
+  --color-on-primary: #fafafa;
+  --color-paper: #09090b;
+  --color-paper-soft: #0f0f12;
+  --color-ink: #fafafa;
+  --color-muted-ink: rgba(255, 255, 255, 0.5);
+  --color-border-soft: rgba(255, 255, 255, 0.06);
 
   --spacing-sm: 16px;
   --spacing-margin: 40px;
@@ -38,13 +39,13 @@
   --spacing-md: 24px;
   --spacing-gutter: 24px;
 
-  --font-headline-md: "Avenir Next", "Segoe UI", sans-serif;
+  --font-headline-md: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
   --font-data-sm: "IBM Plex Mono", "SFMono-Regular", "Cascadia Mono", monospace;
-  --font-label-caps: "Avenir Next", "Segoe UI", sans-serif;
-  --font-display-lg-mobile: "Avenir Next", "Segoe UI", sans-serif;
-  --font-body-md: "Avenir Next", "Segoe UI", sans-serif;
-  --font-display-lg: "Avenir Next", "Segoe UI", sans-serif;
-  --font-body-sm: "Avenir Next", "Segoe UI", sans-serif;
+  --font-label-caps: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
+  --font-display-lg-mobile: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
+  --font-body-md: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
+  --font-display-lg: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
+  --font-body-sm: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
   --font-data-lg: "IBM Plex Mono", "SFMono-Regular", "Cascadia Mono", monospace;
 
   --text-headline-md: 24px;
@@ -77,55 +78,66 @@
 }
 
 body {
-  background-color: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-body-md);
+  background-color: #09090b;
+  color: #fafafa;
+  font-family: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* --- Field Input (dark mode) --- */
 .field-input {
   width: 100%;
-  border-radius: 8px;
-  border: 1px solid var(--color-stone-300);
-  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
   padding: 12px 14px;
-  color: var(--color-forest-950);
+  color: #fafafa;
   outline: none;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
 .field-input:focus {
-  border-color: var(--color-olive-700);
-  box-shadow: 0 0 0 3px var(--color-olive-100);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
+.field-input::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+/* --- Command Input (dark mode) --- */
 .command-input {
   width: 100%;
   resize: vertical;
-  border-radius: 8px;
-  border: 1px solid var(--color-border-soft);
-  background: #ffffff;
-  color: var(--color-ink);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: #fafafa;
   outline: none;
   transition:
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    background 180ms ease;
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    background 200ms ease;
 }
 
 .command-input::placeholder {
-  color: #8a8174;
+  color: rgba(255, 255, 255, 0.25);
 }
 
 .command-input:focus {
-  border-color: var(--color-forest-900);
-  background: #ffffff;
-  box-shadow: 0 0 0 3px #e8efe4;
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
 }
 
+/* --- Safe bottom --- */
 .safe-bottom {
   padding-bottom: max(24px, env(safe-area-inset-bottom));
 }
 
+/* --- Reduced motion --- */
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,
@@ -143,4 +155,68 @@ body {
 
 html {
   scroll-behavior: smooth;
+}
+
+/* --- Magic UI: Shimmer Button Effect --- */
+.shimmer-effect::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--shimmer-color, rgba(255, 255, 255, 0.08)) 50%,
+    transparent 100%
+  );
+  background-size: var(--shimmer-size, 200%) 100%;
+  animation: shimmer var(--shimmer-duration, 2.5s) ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* --- Magic UI: Border Beam Animation --- */
+.border-beam-glow {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    transparent 75%,
+    var(--border-beam-color-from, #6366f1) 85%,
+    var(--border-beam-color-to, #8b5cf6) 95%,
+    transparent 100%
+  );
+  animation: border-beam-rotate var(--border-beam-duration, 12s) linear infinite;
+  animation-delay: var(--border-beam-delay, 0s);
+}
+
+@keyframes border-beam-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* --- Scrollbar styling --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Selection color */
+::selection {
+  background: rgba(99, 102, 241, 0.3);
+  color: white;
 }

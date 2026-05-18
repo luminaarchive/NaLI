@@ -112,14 +112,14 @@ export function VoiceToForm({ onApply }: VoiceToFormProps) {
   }
 
   return (
-    <div className="rounded-sm border border-stone-200 bg-stone-50 p-3">
+    <div className="rounded-xl border border-white/[0.08] bg-[#09090b] p-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-forest-950 text-sm font-semibold">{t("observe.voice.title")}</p>
-          <p className="text-forest-700 mt-1 text-xs leading-5">{t("observe.voice.disclaimer")}</p>
+          <p className="text-white text-sm font-semibold">{t("observe.voice.title")}</p>
+          <p className="text-white/50 mt-1 text-xs leading-5">{t("observe.voice.disclaimer")}</p>
         </div>
         <button
-          className="text-forest-900 inline-flex min-h-10 items-center justify-center gap-2 rounded-sm border border-stone-300 bg-white px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+          className="text-white/80 inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/[0.1] bg-white px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
           disabled={!supported}
           onClick={startListening}
           type="button"
@@ -129,12 +129,12 @@ export function VoiceToForm({ onApply }: VoiceToFormProps) {
         </button>
       </div>
       {transcript ? (
-        <div className="text-forest-800 mt-3 flex items-start gap-2 rounded-sm border border-olive-300 bg-olive-100 p-3 text-sm leading-6">
-          <WandSparkles className="mt-0.5 h-4 w-4 shrink-0 text-olive-800" />
+        <div className="text-white/60 mt-3 flex items-start gap-2 rounded-xl border border-indigo-400/20 bg-indigo-400/10 p-3 text-sm leading-6">
+          <WandSparkles className="mt-0.5 h-4 w-4 shrink-0 text-indigo-300" />
           <p>{transcript}</p>
         </div>
       ) : null}
-      {!supported ? <p className="text-forest-600 mt-2 text-xs">{t("observe.voice.unsupported")}</p> : null}
+      {!supported ? <p className="text-white/40 mt-2 text-xs">{t("observe.voice.unsupported")}</p> : null}
     </div>
   );
 }

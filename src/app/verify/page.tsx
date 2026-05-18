@@ -44,20 +44,20 @@ export default function VerifyPage() {
   }
 
   return (
-    <main className="text-forest-950 min-h-screen bg-stone-50 px-4 py-10 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[#09090b] px-4 py-10 text-white sm:px-6 lg:px-8">
       <section className="mx-auto max-w-3xl">
-        <Link className="text-forest-800 text-sm font-semibold underline" href="/">
+        <Link className="text-sm font-semibold text-white/50 underline transition hover:text-white" href="/">
           NaLI
         </Link>
-        <div className="mt-6 rounded-sm border border-stone-200 bg-white p-5 shadow-sm">
+        <div className="mt-6 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 shadow-2xl backdrop-blur-xl">
           <div className="flex items-start gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-olive-100 text-olive-800">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] text-indigo-400/60">
               <ShieldCheck className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-xs font-semibold tracking-[0.08em] text-olive-700 uppercase">{t("verify.kicker")}</p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-[0]">{t("verify.title")}</h1>
-              <p className="text-forest-700 mt-3 text-sm leading-6">{t("verify.description")}</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/30">{t("verify.kicker")}</p>
+              <h1 className="mt-2 text-3xl font-bold tracking-tight">{t("verify.title")}</h1>
+              <p className="mt-3 text-sm leading-6 text-white/50">{t("verify.description")}</p>
             </div>
           </div>
 
@@ -66,14 +66,14 @@ export default function VerifyPage() {
               {t("verify.inputLabel")}
             </label>
             <input
-              className="min-h-12 flex-1 rounded-sm border border-stone-300 bg-white px-4 font-mono text-sm outline-none focus:border-olive-700 focus:ring-2 focus:ring-olive-100"
+              className="field-input min-h-12 flex-1 font-mono text-sm"
               id="hash"
               onChange={(event) => setHash(event.target.value)}
               placeholder="sha256..."
               value={hash}
             />
             <button
-              className="bg-forest-900 inline-flex min-h-12 items-center justify-center gap-2 rounded-sm px-5 text-sm font-semibold text-white disabled:opacity-60"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#09090b] disabled:opacity-60"
               disabled={isLoading}
               type="submit"
             >
@@ -82,12 +82,12 @@ export default function VerifyPage() {
             </button>
           </form>
 
-          <p className="text-forest-700 mt-4 rounded-sm border border-stone-200 bg-stone-50 p-3 text-sm leading-6">
+          <p className="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-sm leading-6 text-white/40">
             {t("verify.disclaimer")}
           </p>
 
           {error ? (
-            <p className="border-conservation-orange/40 bg-conservation-orange/10 text-forest-800 mt-4 rounded-sm border p-3 text-sm">
+            <p className="mt-4 rounded-xl border border-amber-400/20 bg-amber-400/10 p-3 text-sm text-amber-200">
               {error}
             </p>
           ) : null}
@@ -123,9 +123,9 @@ export default function VerifyPage() {
 
 function VerifyField({ label, mono, value }: { label: string; mono?: boolean; value: string }) {
   return (
-    <div className="rounded-sm border border-stone-200 bg-stone-50 p-3">
-      <dt className="text-forest-600 text-xs font-semibold tracking-[0.08em] uppercase">{label}</dt>
-      <dd className={`text-forest-950 mt-1 text-sm leading-5 break-all ${mono ? "font-mono" : ""}`}>{value}</dd>
+    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+      <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-white/30">{label}</dt>
+      <dd className={`mt-1 break-all text-sm leading-5 text-white/70 ${mono ? "font-mono" : ""}`}>{value}</dd>
     </div>
   );
 }

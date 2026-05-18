@@ -54,49 +54,49 @@ export function LocationMemoryPanel({ latitude, longitude }: LocationMemoryPanel
   }, [latitude, longitude]);
 
   return (
-    <section className="rounded-sm border border-stone-200 bg-white p-4 shadow-sm">
+    <section className="rounded-xl border border-white/[0.08] bg-white p-4 shadow-sm">
       <div className="mb-4 flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-olive-100 text-olive-800">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-400/10 text-indigo-300">
           <History className="h-5 w-5" />
         </span>
         <div>
-          <h2 className="text-forest-950 text-lg font-semibold">{t("observe.locationMemory.title")}</h2>
-          <p className="text-forest-700 text-sm leading-6">{t("observe.locationMemory.description")}</p>
+          <h2 className="text-white text-lg font-semibold">{t("observe.locationMemory.title")}</h2>
+          <p className="text-white/50 text-sm leading-6">{t("observe.locationMemory.description")}</p>
         </div>
       </div>
 
-      {isLoading ? <p className="text-forest-700 text-sm">{t("observe.locationMemory.loading")}</p> : null}
+      {isLoading ? <p className="text-white/50 text-sm">{t("observe.locationMemory.loading")}</p> : null}
 
       {error ? (
-        <div className="border-conservation-orange/40 bg-conservation-orange/10 text-forest-800 flex items-start gap-2 rounded-sm border p-3 text-sm leading-6">
-          <AlertTriangle className="text-conservation-orange mt-0.5 h-4 w-4 shrink-0" />
+        <div className="border-amber-400/30 bg-amber-400/10 text-white/60 flex items-start gap-2 rounded-xl border p-3 text-sm leading-6">
+          <AlertTriangle className="text-amber-300 mt-0.5 h-4 w-4 shrink-0" />
           <p>{error}</p>
         </div>
       ) : null}
 
       {!isLoading && !error && rows.length === 0 ? (
-        <p className="text-forest-700 rounded-sm border border-stone-200 bg-stone-50 p-3 text-sm leading-6">
+        <p className="text-white/50 rounded-xl border border-white/[0.08] bg-[#09090b] p-3 text-sm leading-6">
           {t("observe.locationMemory.empty")}
         </p>
       ) : null}
 
       <div className="space-y-3">
         {rows.map((row) => (
-          <article className="rounded-sm border border-stone-200 bg-stone-50 p-3" key={row.id}>
+          <article className="rounded-xl border border-white/[0.08] bg-[#09090b] p-3" key={row.id}>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-forest-950 text-sm font-semibold italic">
+                <p className="text-white text-sm font-semibold italic">
                   {row.scientific_name || t("archive.speciesPending")}
                 </p>
-                <p className="text-forest-700 text-xs">{row.local_name || t("archive.commonNamePending")}</p>
+                <p className="text-white/50 text-xs">{row.local_name || t("archive.commonNamePending")}</p>
               </div>
               {row.anomaly_flag ? (
-                <span className="bg-conservation-orange text-forest-950 rounded-sm px-2 py-1 text-[10px] font-bold">
+                <span className="bg-amber-400/10 text-white rounded-xl px-2 py-1 text-[10px] font-bold">
                   {t("observe.locationMemory.anomaly")}
                 </span>
               ) : null}
             </div>
-            <div className="text-forest-700 mt-3 grid gap-2 text-xs">
+            <div className="text-white/50 mt-3 grid gap-2 text-xs">
               <span className="flex items-center gap-1.5">
                 <Clock className="h-3.5 w-3.5" />
                 {row.observed_at ? new Date(row.observed_at).toLocaleDateString() : t("common.pending")}
@@ -110,14 +110,14 @@ export function LocationMemoryPanel({ latitude, longitude }: LocationMemoryPanel
             </div>
             {row.can_access_detail ? (
               <Link
-                className="text-forest-900 mt-3 inline-flex text-xs font-semibold underline"
+                className="text-white/80 mt-3 inline-flex text-xs font-semibold underline"
                 href={`/observation/${row.id}`}
               >
                 {t("observe.locationMemory.openDetail")}
               </Link>
             ) : null}
             {row.field_case_id ? (
-              <p className="text-forest-700 mt-2 text-xs font-semibold">
+              <p className="text-white/50 mt-2 text-xs font-semibold">
                 {t("observe.locationMemory.caseLinked")}: {row.field_case_id}
               </p>
             ) : null}

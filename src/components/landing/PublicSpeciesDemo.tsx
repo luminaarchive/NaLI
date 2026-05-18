@@ -83,35 +83,35 @@ export function PublicSpeciesDemo() {
     : "/register";
 
   return (
-    <section id="demo" className="border-b border-stone-200 bg-white py-16">
+    <section id="demo" className="border-b border-white/[0.08] bg-white py-16">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:px-8">
         <div>
-          <p className="text-xs font-semibold tracking-[0.08em] text-olive-700 uppercase">
+          <p className="text-xs font-semibold tracking-[0.08em] text-white/30 uppercase">
             {t("landing.publicDemo.kicker")}
           </p>
-          <h2 className="text-forest-950 mt-3 text-3xl leading-tight font-semibold tracking-[0] sm:text-4xl">
+          <h2 className="text-white mt-3 text-3xl leading-tight font-semibold tracking-[0] sm:text-4xl">
             {t("landing.publicDemo.title")}
           </h2>
-          <p className="text-forest-700 mt-4 text-base leading-7">{t("landing.publicDemo.description")}</p>
-          <p className="text-forest-800 mt-5 rounded-sm border border-stone-300 bg-stone-50 p-4 text-sm leading-6">
+          <p className="text-white/50 mt-4 text-base leading-7">{t("landing.publicDemo.description")}</p>
+          <p className="text-white/60 mt-5 rounded-xl border border-white/[0.1] bg-[#09090b] p-4 text-sm leading-6">
             {t("landing.publicDemo.disclaimer")}
           </p>
         </div>
 
-        <div className="rounded-sm border border-stone-300 bg-stone-100 p-4 sm:p-5">
+        <div className="rounded-xl border border-white/[0.1] bg-white/[0.03] p-4 sm:p-5">
           <form className="flex flex-col gap-3 sm:flex-row" onSubmit={onSubmit}>
             <label className="sr-only" htmlFor="public-species-query">
               {t("landing.publicDemo.inputLabel")}
             </label>
             <input
-              className="text-forest-950 min-h-12 flex-1 rounded-sm border border-stone-300 bg-white px-4 text-base transition outline-none focus:border-olive-700 focus:ring-2 focus:ring-olive-200"
+              className="text-white min-h-12 flex-1 rounded-xl border border-white/[0.1] bg-white px-4 text-base transition outline-none focus:border-indigo-400/40 focus:ring-2 focus:ring-olive-200"
               id="public-species-query"
               onChange={(event) => setQuery(event.target.value)}
               placeholder={t("landing.publicDemo.placeholder")}
               value={query}
             />
             <button
-              className="bg-forest-900 hover:bg-forest-800 inline-flex min-h-12 items-center justify-center gap-2 rounded-sm px-5 text-sm font-semibold text-stone-50 transition disabled:cursor-not-allowed disabled:opacity-60"
+              className="bg-white hover:bg-forest-800 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-[#09090b] transition disabled:cursor-not-allowed disabled:opacity-60"
               disabled={isLoading}
               type="submit"
             >
@@ -123,7 +123,7 @@ export function PublicSpeciesDemo() {
           <div className="mt-3 flex flex-wrap gap-2">
             {suggestions.map((suggestion) => (
               <button
-                className="text-forest-800 rounded-sm border border-stone-300 bg-white px-3 py-2 text-xs font-semibold transition hover:bg-stone-50"
+                className="text-white/60 rounded-xl border border-white/[0.1] bg-white/[0.06] px-3 py-2 text-xs font-semibold transition hover:bg-[#09090b]"
                 key={suggestion}
                 onClick={() => void runLookup(suggestion)}
                 type="button"
@@ -135,16 +135,16 @@ export function PublicSpeciesDemo() {
 
           <div aria-live="polite" className="mt-5">
             {error ? (
-              <div className="border-conservation-orange/50 bg-conservation-orange/10 text-forest-900 flex items-start gap-2 rounded-sm border p-4 text-sm leading-6">
-                <AlertTriangle className="text-conservation-orange mt-0.5 h-4 w-4 shrink-0" />
+              <div className="border-amber-400/30/50 bg-amber-400/10 text-white/80 flex items-start gap-2 rounded-xl border p-4 text-sm leading-6">
+                <AlertTriangle className="text-amber-300 mt-0.5 h-4 w-4 shrink-0" />
                 <p>{error}</p>
               </div>
             ) : null}
 
             {result ? (
-              <article className="overflow-hidden rounded-sm border border-stone-300 bg-white">
+              <article className="overflow-hidden rounded-xl border border-white/[0.1] bg-white">
                 {visual?.verified ? (
-                  <div className="relative aspect-[16/9] bg-stone-200">
+                  <div className="relative aspect-[16/9] bg-white/[0.04]">
                     <Image
                       alt={language === "id" ? visual.altTextId : visual.altTextEn}
                       className="object-cover"
@@ -153,7 +153,7 @@ export function PublicSpeciesDemo() {
                       src={visual.imagePath}
                     />
                     <div className="from-forest-950/82 absolute inset-x-0 bottom-0 bg-gradient-to-t to-transparent p-4">
-                      <p className="text-xs font-semibold tracking-[0.08em] text-stone-50 uppercase">
+                      <p className="text-xs font-semibold tracking-[0.08em] text-[#09090b] uppercase">
                         {t("landing.publicDemo.demoBadge")}
                       </p>
                     </div>
@@ -162,19 +162,19 @@ export function PublicSpeciesDemo() {
 
                 <div className="flex flex-wrap items-start justify-between gap-3 p-4 pb-0">
                   <div>
-                    <p className="text-xs font-semibold tracking-[0.08em] text-olive-700 uppercase">
+                    <p className="text-xs font-semibold tracking-[0.08em] text-white/30 uppercase">
                       {t("landing.publicDemo.resultLabel")}
                     </p>
-                    <h3 className="text-forest-950 mt-2 text-2xl font-semibold italic">{result.scientificName}</h3>
-                    <p className="text-forest-700 text-sm font-medium">{result.commonNameId}</p>
+                    <h3 className="text-white mt-2 text-2xl font-semibold italic">{result.scientificName}</h3>
+                    <p className="text-white/50 text-sm font-medium">{result.commonNameId}</p>
                   </div>
                   <span
-                    className={`rounded-sm px-3 py-2 text-sm font-bold ${
+                    className={`rounded-xl px-3 py-2 text-sm font-bold ${
                       result.iucnStatus === "CR"
-                        ? "bg-rare-red text-white"
+                        ? "bg-red-500/10 text-white"
                         : result.iucnStatus === "EN"
-                          ? "bg-conservation-orange text-forest-950"
-                          : "bg-olive-700 text-white"
+                          ? "bg-amber-400/10 text-white"
+                          : "bg-indigo-500/60 text-white"
                     }`}
                   >
                     {result.iucnStatus}
@@ -188,15 +188,15 @@ export function PublicSpeciesDemo() {
                   <ResultField label={t("landing.publicDemo.source")} value={result.sourceLabel} />
                 </dl>
 
-                <p className="text-forest-800 mx-4 mt-4 rounded-sm border border-olive-300 bg-olive-50 p-3 text-sm leading-6">
+                <p className="text-white/60 mx-4 mt-4 rounded-xl border border-indigo-400/20 bg-olive-50 p-3 text-sm leading-6">
                   {result.conservationContext}
                 </p>
-                <div className="mt-4 flex flex-col gap-3 border-t border-stone-200 p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-forest-700 text-xs font-semibold tracking-[0.08em] uppercase">
+                <div className="mt-4 flex flex-col gap-3 border-t border-white/[0.08] p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-white/50 text-xs font-semibold tracking-[0.08em] uppercase">
                     {t("landing.publicDemo.demoBadge")}
                   </p>
                   <Link
-                    className="bg-forest-900 hover:bg-forest-800 inline-flex min-h-11 items-center justify-center rounded-sm px-4 text-sm font-semibold text-stone-50 transition"
+                    className="bg-white hover:bg-forest-800 inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold text-[#09090b] transition"
                     href={ctaHref}
                   >
                     {t("landing.publicDemo.createObservation")}
@@ -213,9 +213,9 @@ export function PublicSpeciesDemo() {
 
 function ResultField({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-sm border border-stone-200 bg-stone-50 p-3">
-      <dt className="text-forest-600 text-xs font-semibold tracking-[0.08em] uppercase">{label}</dt>
-      <dd className="text-forest-950 mt-1 text-sm leading-5">{value}</dd>
+    <div className="rounded-xl border border-white/[0.08] bg-[#09090b] p-3">
+      <dt className="text-white/40 text-xs font-semibold tracking-[0.08em] uppercase">{label}</dt>
+      <dd className="text-white mt-1 text-sm leading-5">{value}</dd>
     </div>
   );
 }

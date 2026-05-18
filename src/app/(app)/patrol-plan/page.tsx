@@ -55,16 +55,16 @@ export default async function PatrolPlanPage() {
   );
 
   return (
-    <main className="text-forest-950 min-h-screen bg-stone-50 px-4 py-6 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[#09090b] px-4 py-6 text-white sm:px-6 lg:px-8">
       <section className="mx-auto max-w-5xl">
-        <p className="text-xs font-semibold tracking-[0.08em] text-olive-700 uppercase">{t("patrolPlan.kicker")}</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-[0]">{t("patrolPlan.title")}</h1>
-        <p className="text-forest-700 mt-3 max-w-3xl text-sm leading-6">{t("patrolPlan.description")}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/30">{t("patrolPlan.kicker")}</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight">{t("patrolPlan.title")}</h1>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-white/50">{t("patrolPlan.description")}</p>
 
         <div className="mt-6 grid gap-4">
           {priorities.map((priority, index) => (
-            <article className="rounded-sm border border-stone-200 bg-white p-5 shadow-sm" key={priority.targetArea}>
-              <p className="text-xs font-semibold tracking-[0.08em] text-olive-700 uppercase">
+            <article className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm" key={priority.targetArea}>
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/30">
                 {String(index + 1).padStart(2, "0")}
               </p>
               <h2 className="mt-2 text-xl font-semibold">{priority.targetArea}</h2>
@@ -77,7 +77,7 @@ export default async function PatrolPlanPage() {
           ))}
         </div>
 
-        <p className="text-forest-700 mt-5 rounded-sm border border-stone-200 bg-white p-4 text-sm leading-6">
+        <p className="mt-5 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-sm leading-6 text-white/50 backdrop-blur-sm">
           {patrolPlannerDisclaimer[language]}
         </p>
         <PatrolPlanExport priorities={priorities} />
@@ -88,9 +88,9 @@ export default async function PatrolPlanPage() {
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-sm border border-stone-200 bg-stone-50 p-3">
-      <dt className="text-forest-600 text-xs font-semibold tracking-[0.08em] uppercase">{label}</dt>
-      <dd className="text-forest-800 mt-1 text-sm leading-6">{value}</dd>
+    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+      <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-white/30">{label}</dt>
+      <dd className="mt-1 text-sm leading-6 text-white/60">{value}</dd>
     </div>
   );
 }

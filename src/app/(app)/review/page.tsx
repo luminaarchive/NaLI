@@ -35,13 +35,13 @@ export default async function ReviewPage() {
   const role = await getOperationalRole(supabase, session.user.id);
   if (!role.canReview) {
     return (
-      <main className="text-forest-950 min-h-screen bg-stone-50 px-4 py-8">
-        <section className="mx-auto max-w-2xl rounded-sm border border-stone-200 bg-white p-6">
-          <p className="text-xs font-semibold tracking-[0.08em] text-olive-700 uppercase">
+      <main className="min-h-screen bg-[#09090b] px-4 py-8 text-white">
+        <section className="mx-auto max-w-2xl rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/30">
             {t("reviewQueue.roleKicker")}
           </p>
           <h1 className="mt-2 text-2xl font-semibold">{t("reviewQueue.roleTitle")}</h1>
-          <p className="text-forest-700 mt-3 text-sm leading-6">{t("reviewQueue.roleDescription")}</p>
+          <p className="mt-3 text-sm leading-6 text-white/50">{t("reviewQueue.roleDescription")}</p>
         </section>
       </main>
     );
@@ -59,11 +59,11 @@ export default async function ReviewPage() {
   const rows = (data ?? []) as ReviewQueueRow[];
 
   return (
-    <main className="text-forest-950 min-h-screen bg-stone-50 px-4 py-6 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[#09090b] px-4 py-6 text-white sm:px-6 lg:px-8">
       <section className="mx-auto max-w-6xl">
-        <p className="text-xs font-semibold tracking-[0.08em] text-olive-700 uppercase">{t("reviewQueue.kicker")}</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-[0]">{t("reviewQueue.title")}</h1>
-        <p className="text-forest-700 mt-3 max-w-3xl text-sm leading-6">{t("reviewQueue.description")}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/30">{t("reviewQueue.kicker")}</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight">{t("reviewQueue.title")}</h1>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-white/50">{t("reviewQueue.description")}</p>
 
         <div className="mt-6 grid gap-4">
           {rows.length ? (
@@ -71,22 +71,22 @@ export default async function ReviewPage() {
               const reasoning = row.reasoning_snapshot ?? {};
               const signals = row.signal_snapshot ?? {};
               return (
-                <article className="rounded-sm border border-stone-200 bg-white p-5 shadow-sm" key={row.id}>
+                <article className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm" key={row.id}>
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                      <p className="text-xs font-semibold tracking-[0.08em] text-olive-700 uppercase">
+                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/30">
                         {row.observation_status || t("reviewQueue.pendingReview")}
                       </p>
                       <h2 className="mt-2 text-2xl font-semibold italic">
                         {row.scientific_name || t("reviewQueue.speciesPending")}
                       </h2>
-                      <p className="text-forest-700 text-sm">{row.local_name || t("reviewQueue.commonNamePending")}</p>
+                      <p className="text-sm text-white/50">{row.local_name || t("reviewQueue.commonNamePending")}</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <Badge icon={ShieldCheck} label={row.conservation_status || "NE"} />
-                      <Badge icon={ClipboardCheck} label={row.review_status || t("reviewQueue.unreviewed")} />
+                      <ReviewBadge icon={ShieldCheck} label={row.conservation_status || "NE"} />
+                      <ReviewBadge icon={ClipboardCheck} label={row.review_status || t("reviewQueue.unreviewed")} />
                       {row.anomaly_flag || row.is_anomaly ? (
-                        <Badge icon={AlertTriangle} label={t("reviewQueue.anomaly")} />
+                        <ReviewBadge icon={AlertTriangle} label={t("reviewQueue.anomaly")} />
                       ) : null}
                     </div>
                   </div>
@@ -111,7 +111,7 @@ export default async function ReviewPage() {
 
                   <div className="mt-4 flex flex-wrap gap-3">
                     <Link
-                      className="text-forest-900 inline-flex min-h-10 items-center gap-2 rounded-sm border border-stone-300 px-3 text-sm font-semibold"
+                      className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 text-sm font-semibold text-white/70 transition hover:bg-white/[0.08]"
                       href={`/observation/${row.id}`}
                     >
                       <Fingerprint className="h-4 w-4" />
@@ -124,7 +124,7 @@ export default async function ReviewPage() {
               );
             })
           ) : (
-            <div className="text-forest-700 rounded-sm border border-stone-200 bg-white p-6 text-sm leading-6">
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 text-sm leading-6 text-white/50 backdrop-blur-sm">
               {t("reviewQueue.empty")}
             </div>
           )}
@@ -134,9 +134,9 @@ export default async function ReviewPage() {
   );
 }
 
-function Badge({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
+function ReviewBadge({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
   return (
-    <span className="text-forest-800 inline-flex items-center gap-1.5 rounded-sm border border-stone-300 bg-stone-50 px-2.5 py-1 text-xs font-semibold">
+    <span className="inline-flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-white/60">
       <Icon className="h-3.5 w-3.5" />
       {label}
     </span>
@@ -145,9 +145,9 @@ function Badge({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-sm border border-stone-200 bg-stone-50 p-3">
-      <p className="text-forest-600 text-xs font-semibold tracking-[0.08em] uppercase">{label}</p>
-      <p className="text-forest-950 mt-1 text-sm font-semibold">{value}</p>
+    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/30">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-white/70">{value}</p>
     </div>
   );
 }

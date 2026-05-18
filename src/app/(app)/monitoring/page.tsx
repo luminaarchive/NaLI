@@ -138,17 +138,17 @@ export default async function MonitoringPage() {
   });
 
   return (
-    <div className="text-forest-950 min-h-screen bg-stone-50">
-      <section className="border-b border-stone-200 bg-stone-100">
+    <div className="min-h-screen bg-[#09090b] text-white">
+      <section className="border-b border-white/[0.06] bg-white/[0.02]">
         <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[1fr_390px] lg:px-8">
           <div>
-            <p className="font-label-caps mb-2 text-[11px] tracking-[0.08em] text-olive-700 uppercase">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/30">
               {t("monitoring.eyebrow")}
             </p>
-            <h1 className="font-display-lg text-forest-950 max-w-3xl text-3xl leading-tight md:text-5xl">
+            <h1 className="max-w-3xl text-3xl font-semibold leading-tight text-white md:text-5xl">
               {t("monitoring.title")}
             </h1>
-            <p className="text-forest-700 mt-3 max-w-2xl text-sm leading-6 md:text-base">{t("monitoring.context")}</p>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-white/50 md:text-base">{t("monitoring.context")}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -167,27 +167,27 @@ export default async function MonitoringPage() {
           </div>
         ) : (
           <>
-            <section className="rounded-md border border-stone-200 bg-white p-4 sm:p-5">
+            <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 backdrop-blur-sm sm:p-5">
               <div className="mb-5 flex items-center justify-between gap-4">
                 <div>
-                  <p className="font-label-caps text-[11px] tracking-[0.08em] text-olive-700 uppercase">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/30">
                     {t("monitoring.regionalWatchGrid")}
                   </p>
-                  <h2 className="font-headline-md text-forest-950 text-xl">
+                  <h2 className="text-xl font-semibold text-white">
                     {t("monitoring.ecologicalPressureRegions")}
                   </h2>
                 </div>
-                <MapPinned className="text-forest-700 h-5 w-5 shrink-0" />
+                <MapPinned className="h-5 w-5 shrink-0 text-white/30" />
               </div>
 
               {regions.length ? (
                 <div className="space-y-4">
                   {regions.map((region) => (
-                    <article key={region.code} className="rounded-md border border-stone-200 p-4">
+                    <article key={region.code} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
                       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <h3 className="font-data-sm text-forest-950 text-base">{region.name}</h3>
-                          <p className="mt-1 text-xs text-stone-500">
+                          <h3 className="text-base font-semibold text-white/80">{region.name}</h3>
+                          <p className="mt-1 text-xs text-white/30">
                             {region.observationCount} persisted observations
                           </p>
                         </div>
@@ -211,23 +211,23 @@ export default async function MonitoringPage() {
                 {patterns.length ? (
                   <div className="space-y-3">
                     {patterns.map((pattern) => (
-                      <div key={pattern.id} className="rounded-sm border border-stone-200 bg-stone-50 px-4 py-3">
+                      <div key={pattern.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
                         <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-                          <span className="font-data-sm text-forest-950 text-sm">
+                          <span className="text-sm font-semibold text-white/80">
                             {formatStatus(pattern.pattern_type)}
                           </span>
-                          <span className="font-label-caps text-[10px] tracking-[0.08em] text-olive-700 uppercase">
+                          <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/30">
                             {pattern.severity}
                           </span>
                         </div>
-                        <p className="text-forest-700 text-sm leading-6">
+                        <p className="text-sm leading-6 text-white/50">
                           {pattern.evidence_summary?.[0] ?? pattern.region_key}
                         </p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-forest-700 text-sm leading-6">No persisted anomaly clusters yet.</p>
+                  <p className="text-sm leading-6 text-white/50">No persisted anomaly clusters yet.</p>
                 )}
               </Panel>
 
@@ -236,7 +236,7 @@ export default async function MonitoringPage() {
                   <div className="space-y-3">
                     {alerts.map((alert) => (
                       <Link
-                        className="text-forest-800 flex items-start justify-between gap-3 rounded-sm border border-stone-200 bg-white px-4 py-3 text-sm hover:border-olive-600"
+                        className="flex items-start justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-sm text-white/60 transition hover:border-white/[0.12]"
                         href="/alerts"
                         key={alert.id}
                       >
@@ -246,16 +246,16 @@ export default async function MonitoringPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-forest-700 text-sm leading-6">No active ecological alerts are persisted.</p>
+                  <p className="text-sm leading-6 text-white/50">No active ecological alerts are persisted.</p>
                 )}
               </Panel>
 
               <Panel icon={Briefcase} title="Linked field cases">
                 {cases.length ? (
-                  <div className="text-forest-800 space-y-3 text-sm leading-6">
+                  <div className="space-y-3 text-sm leading-6 text-white/60">
                     {cases.map((fieldCase) => (
                       <Link
-                        className="block rounded-sm border border-stone-200 bg-stone-50 px-4 py-3 hover:border-olive-600"
+                        className="block rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 transition hover:border-white/[0.12]"
                         href="/cases"
                         key={fieldCase.id}
                       >
@@ -264,7 +264,7 @@ export default async function MonitoringPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-forest-700 text-sm leading-6">No linked field cases have been created.</p>
+                  <p className="text-sm leading-6 text-white/50">No linked field cases have been created.</p>
                 )}
               </Panel>
             </section>
@@ -278,12 +278,12 @@ export default async function MonitoringPage() {
 function SignalBar({ label, value }: { label: string; value: number }) {
   return (
     <div>
-      <div className="font-label-caps text-forest-700 mb-2 flex items-center justify-between gap-3 text-[11px] tracking-[0.08em] uppercase">
+      <div className="mb-2 flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/30">
         <span>{label}</span>
-        <span className="font-data-sm shrink-0">{percent(value)}</span>
+        <span className="shrink-0">{percent(value)}</span>
       </div>
-      <div className="h-2 overflow-hidden rounded-sm bg-stone-200">
-        <div className="bg-forest-800 h-full rounded-sm" style={{ width: percent(value) }} />
+      <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
+        <div className="h-full rounded-full bg-indigo-500/60" style={{ width: percent(value) }} />
       </div>
     </div>
   );
@@ -291,20 +291,20 @@ function SignalBar({ label, value }: { label: string; value: number }) {
 
 function EmptyState({ detail, title }: { detail: string; title: string }) {
   return (
-    <section className="rounded-md border border-stone-200 bg-white p-6">
-      <p className="font-label-caps text-[11px] tracking-[0.08em] text-olive-700 uppercase">Waiting for field data</p>
-      <h2 className="font-headline-md text-forest-950 mt-2 text-xl">{title}</h2>
-      <p className="text-forest-700 mt-3 max-w-2xl text-sm leading-6">{detail}</p>
+    <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-sm">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/30">Waiting for field data</p>
+      <h2 className="mt-2 text-xl font-semibold text-white">{title}</h2>
+      <p className="mt-3 max-w-2xl text-sm leading-6 text-white/50">{detail}</p>
     </section>
   );
 }
 
 function Panel({ children, icon: Icon, title }: { children: ReactNode; icon: LucideIcon; title: string }) {
   return (
-    <div className="rounded-md border border-stone-200 bg-white p-4 sm:p-5">
+    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 backdrop-blur-sm sm:p-5">
       <div className="mb-4 flex items-center gap-2">
-        <Icon className="text-forest-800 h-5 w-5" />
-        <h2 className="font-headline-md text-forest-950 text-lg">{title}</h2>
+        <Icon className="h-5 w-5 text-white/40" />
+        <h2 className="text-lg font-semibold text-white">{title}</h2>
       </div>
       {children}
     </div>
@@ -313,10 +313,10 @@ function Panel({ children, icon: Icon, title }: { children: ReactNode; icon: Luc
 
 function Metric({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
-    <div className="rounded-md border border-stone-200 bg-stone-50 p-4">
-      <Icon className="text-forest-800 mb-3 h-5 w-5" />
-      <p className="font-data-lg text-forest-950 text-2xl">{value}</p>
-      <p className="font-label-caps text-forest-600 mt-1 text-[10px] tracking-[0.08em] uppercase">{label}</p>
+    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 backdrop-blur-sm">
+      <Icon className="mb-3 h-5 w-5 text-white/40" />
+      <p className="text-2xl font-semibold text-white">{value}</p>
+      <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/30">{label}</p>
     </div>
   );
 }

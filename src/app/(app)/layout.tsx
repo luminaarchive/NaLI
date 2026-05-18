@@ -14,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="text-forest-950 flex min-h-screen flex-col bg-stone-50">
+    <div className="flex min-h-screen flex-col bg-[#09090b] text-white">
       <div className="fixed top-3 right-3 z-[60]">
         <LanguageSwitcher compact />
       </div>

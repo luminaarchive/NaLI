@@ -278,14 +278,14 @@ export default function ObserveWorkflow() {
   };
 
   return (
-    <div className="text-forest-950 min-h-screen bg-stone-50 pb-24">
+    <div className="text-white min-h-screen bg-[#09090b] pb-24">
       <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 lg:px-8">
         <header className="mb-5">
-          <p className="text-xs font-semibold tracking-[0.08em] text-olive-700 uppercase">{t("observe.title")}</p>
-          <h1 className="text-forest-950 mt-2 text-2xl font-semibold tracking-[0] sm:text-4xl">
+          <p className="text-xs font-semibold tracking-[0.08em] text-white/30 uppercase">{t("observe.title")}</p>
+          <h1 className="text-white mt-2 text-2xl font-semibold tracking-[0] sm:text-4xl">
             {t("common.fieldObservation")}
           </h1>
-          <p className="text-forest-700 mt-2 max-w-2xl text-sm leading-6 sm:text-base">{t("observe.context")}</p>
+          <p className="text-white/50 mt-2 max-w-2xl text-sm leading-6 sm:text-base">{t("observe.context")}</p>
         </header>
 
         <OfflineNotice queued={offlineQueued} />
@@ -293,7 +293,7 @@ export default function ObserveWorkflow() {
           <div className="mb-4 space-y-2">
             {realtimeAlerts.slice(0, 2).map((alert) => (
               <div
-                className="border-conservation-orange/40 bg-conservation-orange/10 text-forest-900 rounded-sm border p-3 text-sm font-semibold"
+                className="border-amber-400/30 bg-amber-400/10 text-white/80 rounded-xl border p-3 text-sm font-semibold"
                 key={alert.id}
               >
                 {alert.message}
@@ -313,8 +313,8 @@ export default function ObserveWorkflow() {
               detail={t("observe.uploadHint")}
             >
               <div
-                className={`relative overflow-hidden rounded-sm border-2 border-dashed ${
-                  isDragging ? "border-olive-700 bg-olive-100" : "border-stone-300 bg-stone-100"
+                className={`relative overflow-hidden rounded-xl border-2 border-dashed ${
+                  isDragging ? "border-indigo-400/40 bg-indigo-400/10" : "border-white/[0.1] bg-white/[0.03]"
                 }`}
                 onDragOver={(event) => {
                   event.preventDefault();
@@ -333,7 +333,7 @@ export default function ObserveWorkflow() {
                     <img alt="Uploaded observation preview" className="h-full w-full object-cover" src={previewUrl} />
                     <button
                       aria-label="Remove selected photo"
-                      className="bg-forest-950/85 absolute top-3 right-3 inline-flex h-10 w-10 items-center justify-center rounded-sm text-stone-50"
+                      className="bg-[#09090b]/85 absolute top-3 right-3 inline-flex h-10 w-10 items-center justify-center rounded-xl text-white"
                       onClick={() => setPhotoFile(null)}
                       type="button"
                     >
@@ -346,9 +346,9 @@ export default function ObserveWorkflow() {
                     onClick={() => fileInputRef.current?.click()}
                     type="button"
                   >
-                    <Upload className="h-8 w-8 text-olive-700" />
-                    <span className="text-forest-950 font-semibold">{t("observe.upload")}</span>
-                    <span className="text-forest-700 text-sm">
+                    <Upload className="h-8 w-8 text-white/30" />
+                    <span className="text-white font-semibold">{t("observe.upload")}</span>
+                    <span className="text-white/50 text-sm">
                       JPG, PNG, or HEIC from field camera and Android gallery
                     </span>
                   </button>
@@ -357,7 +357,7 @@ export default function ObserveWorkflow() {
 
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <button
-                  className="text-forest-900 inline-flex min-h-11 items-center justify-center gap-2 rounded-sm border border-stone-300 bg-white px-4 text-sm font-semibold"
+                  className="text-[#09090b] inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/[0.1] bg-white/[0.06] px-4 text-sm font-semibold"
                   onClick={() => fileInputRef.current?.click()}
                   type="button"
                 >
@@ -365,7 +365,7 @@ export default function ObserveWorkflow() {
                   {t("observe.upload")}
                 </button>
                 <button
-                  className="bg-forest-900 inline-flex min-h-11 items-center justify-center gap-2 rounded-sm px-4 text-sm font-semibold text-stone-50"
+                  className="bg-white inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-[#09090b]"
                   onClick={() => cameraInputRef.current?.click()}
                   type="button"
                 >
@@ -398,25 +398,25 @@ export default function ObserveWorkflow() {
               title="Audio recording"
               detail="Reserved for bird calls and acoustic observations."
             >
-              <div className="rounded-sm border border-stone-200 bg-stone-100 p-4">
+              <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
                 <div className="mb-4 flex items-center justify-between gap-4">
                   <button
-                    className="bg-forest-900 inline-flex min-h-11 items-center justify-center gap-2 rounded-sm px-4 text-sm font-semibold text-stone-50"
+                    className="bg-white inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-[#09090b]"
                     type="button"
                   >
                     <Mic className="h-4 w-4" />
                     Start Recording
                   </button>
-                  <span className="text-forest-600 text-right text-xs font-semibold tracking-[0.08em] uppercase">
+                  <span className="text-white/40 text-right text-xs font-semibold tracking-[0.08em] uppercase">
                     Placeholder
                   </span>
                 </div>
-                <div className="flex h-16 items-end gap-1 rounded-sm border border-stone-200 bg-white px-3 py-2">
+                <div className="flex h-16 items-end gap-1 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2">
                   {[24, 42, 30, 54, 36, 48, 28, 58, 38, 44, 26, 50, 34, 46, 30, 40].map((height, index) => (
-                    <span className="w-full rounded-t-sm bg-olive-300" key={`${height}-${index}`} style={{ height }} />
+                    <span className="w-full rounded-t-sm bg-indigo-400/30" key={`${height}-${index}`} style={{ height }} />
                   ))}
                 </div>
-                <p className="text-forest-700 mt-3 text-sm">Bird audio identification integration coming soon</p>
+                <p className="text-white/50 mt-3 text-sm">Bird audio identification integration coming soon</p>
               </div>
             </FieldCard>
 
@@ -442,7 +442,7 @@ export default function ObserveWorkflow() {
                 }}
               />
               <textarea
-                className="text-forest-950 mt-3 min-h-36 w-full resize-none rounded-sm border border-stone-300 bg-white p-4 text-base leading-7 transition outline-none focus:border-olive-700 focus:ring-2 focus:ring-olive-100"
+                className="text-white mt-3 min-h-36 w-full resize-none rounded-xl border border-white/[0.1] bg-white p-4 text-base leading-7 transition outline-none focus:border-indigo-400/40 focus:ring-2 focus:ring-indigo-400/10"
                 maxLength={2000}
                 onChange={(event) => {
                   setDescription(event.target.value);
@@ -451,7 +451,7 @@ export default function ObserveWorkflow() {
                 placeholder={t("observe.descriptionPlaceholder")}
                 value={description}
               />
-              <div className="text-forest-600 mt-2 flex items-center justify-between text-xs">
+              <div className="text-white/40 mt-2 flex items-center justify-between text-xs">
                 <span>Supports Bahasa Indonesia and English observations</span>
                 <span>{description.length} / 2000</span>
               </div>
@@ -464,14 +464,14 @@ export default function ObserveWorkflow() {
               <LocationMemoryPanel latitude={coords.latitude} longitude={coords.longitude} />
             ) : null}
 
-            <div className="rounded-sm border border-stone-200 bg-white p-4">
+            <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
               {submitError ? (
-                <div className="border-rare-red/40 bg-rare-red/10 text-forest-800 mb-3 rounded-sm border p-3 text-sm leading-6">
+                <div className="border-red-500/20 bg-red-500/10 text-white/60 mb-3 rounded-xl border p-3 text-sm leading-6">
                   {t("observe.uploadFailed")} {submitError}
                 </div>
               ) : null}
               <button
-                className="bg-forest-900 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-sm px-5 text-sm font-semibold text-stone-50 transition disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500"
+                className="bg-white inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-[#09090b] transition disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/20"
                 disabled={!canAnalyze || pipelineState === "running"}
                 onClick={analyzeObservation}
                 type="button"
@@ -480,7 +480,7 @@ export default function ObserveWorkflow() {
                 {t("common.analyzeObservation")}
               </button>
               <button
-                className="text-forest-900 mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-sm border border-stone-300 bg-stone-50 px-5 text-sm font-semibold"
+                className="text-white/80 mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-white/[0.1] bg-[#09090b] px-5 text-sm font-semibold"
                 onClick={saveOffline}
                 type="button"
               >
@@ -488,7 +488,7 @@ export default function ObserveWorkflow() {
                 Save Offline
               </button>
               {!canAnalyze ? (
-                <p className="text-forest-700 mt-3 text-sm leading-6">
+                <p className="text-white/50 mt-3 text-sm leading-6">
                   Add a photo or field description and wait for GPS before analysis.
                 </p>
               ) : null}
@@ -529,14 +529,14 @@ function FieldCard({
   title: string;
 }) {
   return (
-    <section className="rounded-sm border border-stone-200 bg-white p-4 shadow-sm">
+    <section className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 backdrop-blur-sm">
       <div className="mb-4 flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-olive-100 text-olive-800">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-400/10 text-indigo-300">
           {icon}
         </span>
         <div>
-          <h2 className="text-forest-950 text-lg font-semibold">{title}</h2>
-          <p className="text-forest-700 text-sm leading-6">{detail}</p>
+          <h2 className="text-white text-lg font-semibold">{title}</h2>
+          <p className="text-white/50 text-sm leading-6">{detail}</p>
         </div>
       </div>
       {children}
@@ -548,14 +548,14 @@ function UploadProgress({ hasPhoto, progress }: { hasPhoto: boolean; progress: n
   if (!hasPhoto) return null;
 
   return (
-    <div className="mt-3 rounded-sm border border-stone-200 bg-stone-50 p-3">
-      <div className="text-forest-600 mb-2 flex items-center justify-between text-xs font-semibold tracking-[0.08em] uppercase">
+    <div className="mt-3 rounded-xl border border-white/[0.08] bg-[#09090b] p-3">
+      <div className="text-white/40 mb-2 flex items-center justify-between text-xs font-semibold tracking-[0.08em] uppercase">
         <span>Upload preparation</span>
         <span>{progress}%</span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-stone-200">
+      <div className="h-2 overflow-hidden rounded-full bg-white/[0.04]">
         <div
-          className="h-full rounded-full bg-olive-700 transition-all duration-200"
+          className="h-full rounded-full bg-indigo-500/60 transition-all duration-200"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -573,42 +573,42 @@ function GpsCard({
   const stateCopy = {
     locating: {
       label: "locating...",
-      tone: "border-warning-amber bg-warning-amber/10 text-forest-950",
+      tone: "border-amber-400/20 bg-amber-400/20 text-white",
       icon: RefreshCcw,
     },
     acquired: {
       label: "GPS acquired",
-      tone: "border-olive-300 bg-olive-100 text-forest-950",
+      tone: "border-indigo-400/20 bg-indigo-400/10 text-white",
       icon: LocateFixed,
     },
     "low-accuracy": {
       label: "low accuracy warning",
-      tone: "border-conservation-orange bg-conservation-orange/10 text-forest-950",
+      tone: "border-amber-400/30 bg-amber-400/10 text-white",
       icon: AlertTriangle,
     },
     unavailable: {
       label: "GPS unavailable",
-      tone: "border-rare-red bg-rare-red/10 text-forest-950",
+      tone: "border-red-500/20 bg-red-500/10 text-white",
       icon: AlertTriangle,
     },
   }[state];
   const Icon = stateCopy.icon;
 
   return (
-    <section className="rounded-sm border border-stone-200 bg-white p-4 shadow-sm">
+    <section className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 backdrop-blur-sm">
       <div className="mb-4 flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-olive-100 text-olive-800">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-400/10 text-indigo-300">
           <MapPin className="h-5 w-5" />
         </span>
         <div>
-          <h2 className="text-forest-950 text-lg font-semibold">GPS detection</h2>
-          <p className="text-forest-700 text-sm leading-6">
+          <h2 className="text-white text-lg font-semibold">GPS detection</h2>
+          <p className="text-white/50 text-sm leading-6">
             Coordinates are attached to the observation log and protected for sensitive species.
           </p>
         </div>
       </div>
 
-      <div className={`mb-3 flex items-center gap-2 rounded-sm border p-3 text-sm ${stateCopy.tone}`}>
+      <div className={`mb-3 flex items-center gap-2 rounded-xl border p-3 text-sm ${stateCopy.tone}`}>
         <Icon className={`h-4 w-4 ${state === "locating" ? "animate-spin" : ""}`} />
         <span className="font-semibold">{stateCopy.label}</span>
       </div>
@@ -624,22 +624,22 @@ function GpsCard({
 
 function Coordinate({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-sm border border-stone-200 bg-stone-50 p-3">
-      <p className="text-forest-600 text-xs font-semibold tracking-[0.08em] uppercase">{label}</p>
-      <p className="text-forest-950 mt-1 text-sm font-semibold break-words">{value}</p>
+    <div className="rounded-xl border border-white/[0.08] bg-[#09090b] p-3">
+      <p className="text-white/40 text-xs font-semibold tracking-[0.08em] uppercase">{label}</p>
+      <p className="text-white mt-1 text-sm font-semibold break-words">{value}</p>
     </div>
   );
 }
 
 function PipelineCard({ activeStep, state }: { activeStep: number; state: PipelineState }) {
   return (
-    <section className="rounded-sm border border-stone-200 bg-white p-4 shadow-sm">
+    <section className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 backdrop-blur-sm">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-forest-950 text-lg font-semibold">Analysis pipeline</h2>
-          <p className="text-forest-700 text-sm">Sequential operational analysis states</p>
+          <h2 className="text-white text-lg font-semibold">Analysis pipeline</h2>
+          <p className="text-white/50 text-sm">Sequential operational analysis states</p>
         </div>
-        <span className="text-forest-700 rounded-sm bg-stone-100 px-2.5 py-1 text-xs font-semibold tracking-[0.08em] uppercase">
+        <span className="text-white/50 rounded-xl bg-white/[0.03] px-2.5 py-1 text-xs font-semibold tracking-[0.08em] uppercase">
           {state === "complete" ? "Complete" : state === "running" ? "Running" : "Ready"}
         </span>
       </div>
@@ -650,18 +650,18 @@ function PipelineCard({ activeStep, state }: { activeStep: number; state: Pipeli
           const isActive = state === "running" && index === activeStep;
           return (
             <div
-              className={`flex items-center gap-3 rounded-sm border p-3 text-sm ${
+              className={`flex items-center gap-3 rounded-xl border p-3 text-sm ${
                 isActive
-                  ? "text-forest-950 border-olive-300 bg-olive-100"
+                  ? "text-white border-indigo-400/20 bg-indigo-400/10"
                   : isDone
-                    ? "text-forest-700 border-stone-200 bg-stone-50"
-                    : "text-forest-500 border-stone-200 bg-white"
+                    ? "text-white/50 border-white/[0.08] bg-[#09090b]"
+                    : "text-white/30 border-white/[0.08] bg-white/[0.03]"
               }`}
               key={step}
             >
               <span
                 className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-                  isDone ? "bg-olive-700 text-white" : isActive ? "bg-warning-amber text-forest-950" : "bg-stone-200"
+                  isDone ? "bg-indigo-500/60 text-white" : isActive ? "bg-amber-400/20 text-white" : "bg-white/[0.04]"
                 }`}
               >
                 {isDone ? (
@@ -669,7 +669,7 @@ function PipelineCard({ activeStep, state }: { activeStep: number; state: Pipeli
                 ) : isActive ? (
                   <ChevronDown className="h-3.5 w-3.5 animate-bounce" />
                 ) : (
-                  <span className="h-1.5 w-1.5 rounded-full bg-stone-400" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
                 )}
               </span>
               <span className="font-medium">{step}</span>
@@ -699,7 +699,7 @@ function ResultCard({
   return (
     <motion.section
       animate={{ opacity: 1, y: 0 }}
-      className="overflow-hidden rounded-sm border border-stone-300 bg-white shadow-sm"
+      className="overflow-hidden rounded-xl border border-white/[0.1] bg-white/[0.03] backdrop-blur-sm"
       initial={{ opacity: 0, y: 14 }}
       transition={{ duration: 0.35 }}
     >
@@ -711,15 +711,15 @@ function ResultCard({
           sizes="(min-width: 1024px) 42vw, 100vw"
           src={result.image}
         />
-        <span className="bg-forest-950/85 absolute top-3 left-3 rounded-sm px-3 py-2 text-xs font-semibold tracking-[0.08em] text-stone-50 uppercase">
+        <span className="bg-[#09090b]/85 absolute top-3 left-3 rounded-lg px-3 py-2 text-xs font-semibold tracking-[0.08em] text-white uppercase">
           Structured result
         </span>
       </div>
       <div className="p-4">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-forest-950 text-2xl font-semibold italic">{result.scientificName}</h2>
-            <p className="text-forest-700 text-sm">{result.localName}</p>
+            <h2 className="text-white text-2xl font-semibold italic">{result.scientificName}</h2>
+            <p className="text-white/50 text-sm">{result.localName}</p>
           </div>
           <StatusBadge status={result.status} />
         </div>
@@ -733,12 +733,12 @@ function ResultCard({
           <Coordinate label="Longitude" value={coords.longitude.toFixed(5)} />
         </div>
 
-        <div className="border-conservation-orange/40 bg-conservation-orange/10 mt-3 rounded-sm border p-3">
+        <div className="border-amber-400/30 bg-amber-400/10 mt-3 rounded-xl border p-3">
           <div className="flex gap-2">
-            <AlertTriangle className="text-conservation-orange mt-0.5 h-4 w-4 shrink-0" />
+            <AlertTriangle className="text-amber-300 mt-0.5 h-4 w-4 shrink-0" />
             <div>
-              <p className="text-forest-950 text-sm font-semibold">Anomaly detection warning</p>
-              <p className="text-forest-800 mt-1 text-sm leading-6">{result.anomaly}</p>
+              <p className="text-white text-sm font-semibold">Anomaly detection warning</p>
+              <p className="text-white/60 mt-1 text-sm leading-6">{result.anomaly}</p>
             </div>
           </div>
         </div>
@@ -747,7 +747,7 @@ function ResultCard({
         <InfoBlock title="Ecological notes" text={result.notes} />
         {persistedObservationId ? (
           <button
-            className="bg-forest-900 mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-sm px-4 text-sm font-semibold text-stone-50"
+            className="bg-white mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl px-4 text-sm font-semibold text-[#09090b]"
             onClick={onOpenPersisted}
             type="button"
           >
@@ -755,7 +755,7 @@ function ResultCard({
           </button>
         ) : (
           <Link
-            className="text-forest-900 mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-sm border border-stone-300 bg-stone-50 px-4 text-sm font-semibold"
+            className="text-white/80 mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-white/[0.1] bg-[#09090b] px-4 text-sm font-semibold"
             href="/dashboard"
           >
             View Field Log Dashboard
@@ -768,11 +768,11 @@ function ResultCard({
 
 function EmptyResultCard() {
   return (
-    <section className="text-forest-700 rounded-sm border border-stone-200 bg-stone-100 p-4 text-sm leading-6">
-      <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-sm bg-white text-olive-800">
+    <section className="text-white/50 rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 text-sm leading-6">
+      <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-white/[0.06] text-indigo-300">
         <ShieldCheck className="h-5 w-5" />
       </div>
-      <h2 className="text-forest-950 text-lg font-semibold">Observation result will appear here</h2>
+      <h2 className="text-white text-lg font-semibold">Observation result will appear here</h2>
       <p className="mt-2">
         After analysis, NaLI will show species identification, conservation context, anomaly review, coordinates, and
         structured notes in this panel.
@@ -783,18 +783,18 @@ function EmptyResultCard() {
 
 function StatusBadge({ status }: { status: SpeciesResult["status"] }) {
   const styles = {
-    CR: "bg-rare-red text-white",
-    EN: "bg-conservation-orange text-forest-950",
-    VU: "bg-warning-amber text-forest-950",
+    CR: "bg-red-500/10 text-white",
+    EN: "bg-amber-400/10 text-white",
+    VU: "bg-amber-400/20 text-white",
   }[status];
-  return <span className={`rounded-sm px-3 py-1.5 text-sm font-bold ${styles}`}>{status}</span>;
+  return <span className={`rounded-xl px-3 py-1.5 text-sm font-bold ${styles}`}>{status}</span>;
 }
 
 function InfoBlock({ text, title }: { text: string; title: string }) {
   return (
-    <div className="mt-3 rounded-sm border border-stone-200 bg-stone-50 p-3">
-      <p className="text-forest-600 text-xs font-semibold tracking-[0.08em] uppercase">{title}</p>
-      <p className="text-forest-800 mt-1 text-sm leading-6">{text}</p>
+    <div className="mt-3 rounded-xl border border-white/[0.08] bg-[#09090b] p-3">
+      <p className="text-white/40 text-xs font-semibold tracking-[0.08em] uppercase">{title}</p>
+      <p className="text-white/60 mt-1 text-sm leading-6">{text}</p>
     </div>
   );
 }
@@ -814,8 +814,8 @@ function OfflineNotice({ queued }: { queued: boolean }) {
 
 function NoticeItem({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div className="text-forest-800 flex items-center gap-2 rounded-sm border border-stone-200 bg-white px-3 py-2 text-sm font-medium">
-      <span className="text-olive-700">{icon}</span>
+    <div className="text-white/60 flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm font-medium">
+      <span className="text-white/30">{icon}</span>
       {label}
     </div>
   );
