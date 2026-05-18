@@ -4,7 +4,7 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
-# NaLI v1.5 Project Instructions
+# NaLI v1.5.3 Project Instructions
 
 ## Project Purpose
 
@@ -14,6 +14,8 @@ NaLI by NatIve is one brand with two modes:
 - Professional Mode: NaLI Field Intelligence.
 
 The current MVP priority is the Public Layer: Field Note / Source to Report Generator plus Start From Zero guidance. The Professional Layer may be visible as positioning and product information, but must not be presented as a fully live operational system unless the feature is actually implemented and verified.
+
+NaLI v1.5.3 Sprint 0 is a foundation sprint: Guest Mode first, hardcoded integrity filtering, lightweight report persistence, NaLI Energy ledger preparation, and payment/export-gate preparation only. Do not expand into the full Professional Layer during Sprint 0.
 
 ## Current MVP Scope
 
@@ -29,6 +31,7 @@ Build the smallest working Learn & Report flow:
 - Result page distinguishes draft reports from start-from-zero guidance, then shows evidence/checklists, uncertainty/source limits, disclaimers, and simple copy/export.
 - `/field-intelligence` is informational only for now.
 - `/pricing` is a beta pricing placeholder. Do not claim payment is active.
+- Guest Mode report persistence may be used when Supabase server env vars are configured. If not configured, the client must gracefully fall back to local browser storage.
 
 ## Local Commands
 
@@ -48,7 +51,11 @@ Build the smallest working Learn & Report flow:
 - Auth: Supabase auth via `src/proxy.ts` and protected `(app)` routes.
 - Database: Supabase scaffolding exists. Do not create or modify production schema without a migration.
 - Server API routes live under `src/app/api/**/route.ts`.
-- Learn & Report AI provider integration uses server-only OpenRouter env vars. If `OPENROUTER_API_KEY` is missing or all models fail, the report route returns a clearly labeled DEMO/MOCK result.
+- Learn & Report AI provider integration uses server-only provider env vars. Public UI must use NaLI processing language, not provider names. If provider keys are missing or all models fail, the report route returns a clearly labeled DEMO/MOCK result.
+- Sprint 0 persistence stores guest and report access secrets as SHA-256 hashes only. Raw report access values may be returned to the browser once so `/report/[id]` can load a persisted report.
+- Sprint 0 report workflow statuses must use only: `pending_upload`, `verifying`, `pending_payment`, `processing`, `export_ready`, `failed`.
+- NaLI Energy balance must be computed from `SUM(amount)` in `energy_ledger`; do not create a separate balance table.
+- `rate_limits` must use the composite primary key `(key_hash, action_type)`.
 - Read relevant local Next.js docs in `node_modules/next/dist/docs/` before coding against App Router APIs.
 
 ## NaLI Integrity Rules
@@ -71,6 +78,8 @@ Build the smallest working Learn & Report flow:
 - If Crossref/NCBI verification is not implemented, label it clearly: "Source verification belum aktif di MVP ini."
 - Evidence hash, if shown, is only a "digital integrity marker", never legal proof or academic validation.
 - Human review is final. NaLI output is draft/support, not final truth.
+- Hardcoded server-side integrity policy must run before the model/provider call. Prompt instructions alone are not enough.
+- Processing classes `Peregrine`, `Obsidian`, and `Zephyr` are internal routing classes, not public products.
 
 ## Do Not Rules
 
@@ -79,9 +88,12 @@ Build the smallest working Learn & Report flow:
 - Do not claim realtime field data, active payment, institutional deployments, legal admissibility, or verified professional integrations unless backed by working implementation and verification.
 - Do not expose server secrets with `NEXT_PUBLIC_`.
 - Do not expose `OPENROUTER_API_KEY` or any AI provider key to the browser.
+- Do not expose provider names as public product branding in marketing or report UI. Use NaLI processing language.
+- Do not call user-facing usage units by provider-cost terms. Use "NaLI Energy" when the concept is shown.
 - Do not commit `.env.local` or print secrets.
 - Do not run destructive SQL or modify production Supabase schema without an explicit migration file and review.
-- Do not overbuild v1.5 deferred features in the MVP: full review queue, patrol planner, realtime alerts, BirdNET, Neo4j, full Darwin Core institutional export, payment gateway, SOS system, or enterprise dashboard.
+- Do not duplicate payment order IDs into `reports`; payment truth belongs in `payments` joined by `report_id`.
+- Do not overbuild v1.5.3 deferred features in the MVP: full review queue, patrol planner, realtime alerts, H3/PostGIS, BirdNET, Neo4j, full Darwin Core institutional export, recurring subscription, SOS system, or enterprise dashboard.
 
 ## Definition Of Done
 
@@ -89,10 +101,12 @@ Build the smallest working Learn & Report flow:
 - Public CTA leads to `/create-report`.
 - Report form validates at least one material for draft mode, topic/request for start-from-zero mode, and required academic integrity consent.
 - API route validates the same guardrails server-side.
+- Server-side integrity policy blocks unsafe academic-cheating, fake citation, fake data, fake statistics, fake coordinate, and plagiarism-evasion requests before provider calls.
 - Draft output is labeled as a draft and includes the required disclaimer.
 - Start-from-zero output is labeled as guidance, not a draft report, and includes the required guidance disclaimer.
 - Evidence table or guidance checklists, uncertainty/source limits, and next user steps are visible.
 - Copy/export works in a simple format.
+- Supabase Sprint 0 migrations are additive and safe; if they are not applied or env vars are missing, the app falls back instead of crashing.
 - Forbidden academic-cheating wording is absent from UI.
 - No fake realtime/payment/institutional claims are introduced.
 - `npm run lint`, `npm run typecheck`, and `npm run build` pass, or failures are reported with exact causes.

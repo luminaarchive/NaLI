@@ -528,7 +528,7 @@ function findingsFromInput(input: ReportRequest) {
   return findings.length > 0 ? findings : ["Belum ada temuan faktual yang dapat disusun dari bahan pengguna."];
 }
 
-export function buildMockDraftReport(input: ReportRequest, modelUsed = "mock"): DraftReport {
+export function buildMockDraftReport(input: ReportRequest, modelUsed = "NaLI Preview Engine"): DraftReport {
   const evidenceTable = buildEvidenceTable(input);
   const issue = detectIssue(`${input.mainText} ${input.title}`);
   const location = input.location || detectLocation(input.mainText);
@@ -571,7 +571,7 @@ export function buildMockDraftReport(input: ReportRequest, modelUsed = "mock"): 
         ? input.sourceUrls.map((url) => `${url} - diberikan oleh pengguna; belum diverifikasi otomatis.`)
         : ["Belum ada URL sumber. Source verification belum aktif di MVP ini."],
     source_verification_status: SOURCE_VERIFICATION_MVP_STATUS,
-    status: "DEMO/MOCK - OpenRouter unavailable or not configured.",
+    status: "DEMO/MOCK - NaLI preview engine unavailable or not configured.",
     title: input.title,
     uncertainty_note:
       "Uncertainty note: draft ini bergantung pada bahan pengguna. NaLI belum memverifikasi URL, lokasi, file, angka, atau klaim ilmiah. Jangan menambahkan sitasi, statistik, atau kesimpulan final tanpa pemeriksaan manusia.",
@@ -585,7 +585,7 @@ export function buildMockDraftReport(input: ReportRequest, modelUsed = "mock"): 
   };
 }
 
-export function buildMockStartGuide(input: ReportRequest, modelUsed = "mock"): StartFromZeroGuide {
+export function buildMockStartGuide(input: ReportRequest, modelUsed = "NaLI Preview Engine"): StartFromZeroGuide {
   const createdAt = formatJakartaDate();
   const source = input.mainText || input.topic || input.reportTemplate;
   const riverTopic = /sungai|air|banjir|erosi|limbah|sampah/i.test(source);
@@ -672,7 +672,7 @@ export function buildMockStartGuide(input: ReportRequest, modelUsed = "mock"): S
           "Artikel edukasi dari institusi kredibel",
           "Pedoman metode observasi sederhana",
         ],
-    status: "DEMO/MOCK - OpenRouter unavailable or not configured.",
+    status: "DEMO/MOCK - NaLI preview engine unavailable or not configured.",
     suggested_outline: [
       "Pendahuluan",
       "Tujuan observasi",
@@ -691,7 +691,7 @@ export function buildMockStartGuide(input: ReportRequest, modelUsed = "mock"): S
 
 export const buildMockEvidenceReport = buildMockDraftReport;
 
-export function buildMockResult(input: ReportRequest, modelUsed = "mock"): ReportResult {
+export function buildMockResult(input: ReportRequest, modelUsed = "NaLI Preview Engine"): ReportResult {
   return input.mode === "start_from_zero" ? buildMockStartGuide(input, modelUsed) : buildMockDraftReport(input, modelUsed);
 }
 
@@ -765,7 +765,7 @@ export function normalizeProviderResult(raw: Record<string, unknown>, input: Rep
       mode: "start_from_zero",
       model_used: modelUsed,
       next_steps: safeStringArray(guideRaw.next_steps, guideFallback.next_steps),
-      status: "AI_GENERATED_OPENROUTER",
+      status: "AI_GENERATED_NALI",
       suggested_outline: safeStringArray(guideRaw.suggested_outline, guideFallback.suggested_outline),
     };
   }
@@ -799,7 +799,7 @@ export function normalizeProviderResult(raw: Record<string, unknown>, input: Rep
     next_user_steps: safeStringArray(draftRaw.next_user_steps, draftFallback.next_user_steps),
     source_notes: safeStringArray(draftRaw.source_notes, draftFallback.source_notes),
     source_verification_status: SOURCE_VERIFICATION_MVP_STATUS,
-    status: "AI_GENERATED_OPENROUTER",
+    status: "AI_GENERATED_NALI",
     user_review_checklist: safeStringArray(draftRaw.user_review_checklist, draftFallback.user_review_checklist),
   };
 }

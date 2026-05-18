@@ -15,6 +15,8 @@ const requiredKeys = [
 
 const optionalProviderKeys = [
   "OPENROUTER_API_KEY",
+  "MIDTRANS_SERVER_KEY",
+  "MIDTRANS_MERCHANT_ID",
   "IUCN_API_KEY",
   "EBIRD_API_KEY",
   "NASA_FIRMS_API_KEY",
@@ -85,6 +87,11 @@ export const env = {
         "z-ai/glm-4.5-air:free,nvidia/nemotron-3-super:free,openrouter/free",
       siteUrl: process.env.OPENROUTER_SITE_URL ?? "https://naliai.vercel.app",
       siteName: process.env.OPENROUTER_SITE_NAME ?? "NaLI by NatIve",
+    },
+    midtrans: {
+      merchantId: process.env.MIDTRANS_MERCHANT_ID ?? "",
+      serverKey: process.env.MIDTRANS_SERVER_KEY ?? "",
+      environment: process.env.MIDTRANS_ENVIRONMENT ?? "sandbox",
     },
     iucn: {
       apiKey: process.env.IUCN_API_KEY ?? "",

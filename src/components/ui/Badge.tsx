@@ -6,11 +6,11 @@ type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
 };
 
 const tones = {
-  amber: "border-warning-amber/50 bg-warning-amber/15 text-warning-amber",
-  cyan: "border-data-cyan/40 bg-data-cyan/10 text-data-cyan",
-  dark: "border-white/15 bg-white/10 text-stone-100",
-  green: "border-olive-300/50 bg-olive-100 text-forest-900",
-  paper: "border-stone-300 bg-stone-50 text-forest-800",
+  amber: "border-[#D8B98B] bg-[#FFF7E8] text-[#8A4F2D]",
+  cyan: "border-[#D4E0D1] bg-[#E8EFE4] text-[#173D2B]",
+  dark: "border-[#DDD5C7] bg-[#FCFAF4] text-[#111814]",
+  green: "border-[#D4E0D1] bg-[#E8EFE4] text-[#173D2B]",
+  paper: "border-[#DDD5C7] bg-[#FCFAF4] text-[#5F6B62]",
 };
 
 export function Badge({ className, tone = "paper", ...props }: BadgeProps) {

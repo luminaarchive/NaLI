@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requestOpenRouterJson } from "@/lib/ai/openrouter";
+import { evaluateIntegrityPolicy } from "@/lib/integrity/policy";
+import { persistGeneratedReport } from "@/lib/reports/persistence";
 import {
   buildMockResult,
   buildReportPrompt,
   normalizeProviderResult,
+  type ReportRequestInput,
   validateReportRequest,
 } from "@/lib/reports/reportGenerator";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/security/rate-limit";
@@ -21,6 +24,10 @@ const systemPrompt = [
   "Every start-from-zero output must include outline, observation questions, field note template, evidence checklist, source search checklist, and disclaimer.",
   "Return JSON only.",
 ].join(" ");
+
+function getInputObject(body: unknown): Record<string, unknown> {
+  return body && typeof body === "object" && !Array.isArray(body) ? (body as Record<string, unknown>) : {};
+}
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "unknown";
@@ -52,7 +59,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const validated = validateReportRequest(body && typeof body === "object" ? body : {});
+  const input = getInputObject(body);
+  const integrityDecision = evaluateIntegrityPolicy(input as ReportRequestInput);
+
+  if (!integrityDecision.allowed) {
+    return NextResponse.json(
+      {
+        code: integrityDecision.code,
+        error: integrityDecision.message,
+      },
+      { headers, status: 400 },
+    );
+  }
+
+  const validated = validateReportRequest(input as ReportRequestInput);
 
   if (!validated.success) {
     return NextResponse.json(
@@ -74,17 +94,20 @@ export async function POST(req: NextRequest) {
       openRouterResult.json && typeof openRouterResult.json === "object"
         ? (openRouterResult.json as Record<string, unknown>)
         : {};
-    const report = normalizeProviderResult(
-      rawReport,
-      validated.data,
-      openRouterResult.model,
-    );
+    const report = normalizeProviderResult(rawReport, validated.data, "NaLI Preview Engine");
+    const persistence = await persistGeneratedReport({
+      guestSessionId: input.guestSessionId,
+      input: validated.data,
+      report,
+    });
 
     return NextResponse.json(
       {
         id: report.id,
+        persistence: persistence.persisted ? "supabase" : persistence.reason,
+        report_access_token: persistence.persisted ? persistence.reportAccessToken : undefined,
         mode: "ai",
-        provider: "openrouter",
+        provider: "nali",
         report,
       },
       { headers, status: 200 },
@@ -92,13 +115,20 @@ export async function POST(req: NextRequest) {
   }
 
   const report = buildMockResult(validated.data);
+  const persistence = await persistGeneratedReport({
+    guestSessionId: input.guestSessionId,
+    input: validated.data,
+    report,
+  });
 
   return NextResponse.json(
     {
       id: report.id,
+      persistence: persistence.persisted ? "supabase" : persistence.reason,
+      report_access_token: persistence.persisted ? persistence.reportAccessToken : undefined,
       mode: "mock",
-      notice: "DEMO/MOCK - OpenRouter unavailable or not configured.",
-      provider: "mock",
+      notice: "DEMO/MOCK - NaLI preview engine unavailable or not configured.",
+      provider: "nali",
       report,
     },
     { headers, status: 200 },

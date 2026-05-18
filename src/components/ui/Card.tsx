@@ -7,9 +7,9 @@ type CardProps = HTMLAttributes<HTMLElement> & {
 };
 
 const tones = {
-  dark: "border-white/10 bg-white/10 text-stone-50",
-  muted: "border-stone-200 bg-stone-50 text-forest-950",
-  paper: "border-stone-200 bg-white text-forest-950 shadow-sm",
+  dark: "border-[#27382f] bg-[#07100B] text-stone-50",
+  muted: "border-[#DDD5C7] bg-[#FCFAF4] text-[#111814]",
+  paper: "border-[#DDD5C7] bg-white text-[#111814]",
 };
 
 export function Card({ as: Component = "article", className, tone = "paper", ...props }: CardProps) {

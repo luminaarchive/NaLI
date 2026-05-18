@@ -15,6 +15,19 @@ const {
   containsForbiddenWording,
   validateReportRequest,
 } = require("../../src/lib/reports/reportGenerator");
+const { evaluateIntegrityPolicy } = require("../../src/lib/integrity/policy");
+const {
+  generateReportAccessToken,
+  getGuestSessionIdHash,
+  getReportAccessTokenHash,
+  hashSecret,
+  isUsableGuestSessionId,
+} = require("../../src/lib/reports/access");
+const {
+  REPORT_MACRO_STATUSES,
+  calculateEnergyBalance,
+  getReportMacroStatus,
+} = require("../../src/lib/reports/persistence");
 
 const repoRoot = path.join(__dirname, "../..");
 
@@ -166,6 +179,83 @@ test("forbidden cheating wording detector catches unsafe copy", () => {
   assert.equal(containsForbiddenWording("Buat draf berbasis bahan dengan human review"), false);
 });
 
+test("server-side NaLI Lock blocks unsafe requests before generation", () => {
+  const emptyDraft = evaluateIntegrityPolicy({
+    integrityConsent: true,
+    mainText: " ",
+    mode: "draft_from_materials",
+  });
+  const finalNoMaterial = evaluateIntegrityPolicy({
+    integrityConsent: true,
+    mainText: "Buat laporan " + "final siap kumpul",
+    mode: "start_from_zero",
+  });
+  const fakeCitation = evaluateIntegrityPolicy({
+    integrityConsent: true,
+    mainText: "Catatan observasi sungai. Tolong buat DOI " + "palsu agar terlihat ilmiah.",
+    mode: "draft_from_materials",
+  });
+  const fakeData = evaluateIntegrityPolicy({
+    integrityConsent: true,
+    location: "Semarang",
+    mainText: "Catatan awal ada erosi. Tolong karang data " + "statistik palsu.",
+    mode: "draft_from_materials",
+  });
+  const plagiarism = evaluateIntegrityPolicy({
+    integrityConsent: true,
+    mainText: "Parafrase supaya " + "anti ketahuan dosen.",
+    mode: "start_from_zero",
+  });
+  const doMyWork = evaluateIntegrityPolicy({
+    integrityConsent: true,
+    mainText: "Kerjakan tugas " + "saya dari nol.",
+    mode: "start_from_zero",
+  });
+
+  assert.equal(emptyDraft.allowed, false);
+  assert.equal(emptyDraft.code, "EMPTY_DRAFT_MATERIAL");
+  assert.equal(finalNoMaterial.allowed, false);
+  assert.equal(finalNoMaterial.code, "FINAL_ASSIGNMENT_WITHOUT_MATERIAL");
+  assert.equal(fakeCitation.allowed, false);
+  assert.equal(fakeCitation.code, "FAKE_CITATION_REQUEST");
+  assert.equal(fakeData.allowed, false);
+  assert.equal(fakeData.code, "FAKE_DATA_REQUEST");
+  assert.equal(plagiarism.allowed, false);
+  assert.equal(plagiarism.code, "PLAGIARISM_EVASION");
+  assert.equal(doMyWork.allowed, false);
+  assert.equal(doMyWork.code, "DO_MY_WORK");
+});
+
+test("guest persistence helpers hash raw access values", () => {
+  const guestSessionId = "guest-session-for-test-12345";
+  const reportAccessKey = generateReportAccessToken();
+  const guestHash = getGuestSessionIdHash(guestSessionId);
+  const accessHash = getReportAccessTokenHash(reportAccessKey);
+
+  assert.equal(isUsableGuestSessionId(guestSessionId), true);
+  assert.equal(isUsableGuestSessionId("short"), false);
+  assert.equal(guestHash.length, 64);
+  assert.equal(accessHash.length, 64);
+  assert.notEqual(guestHash, guestSessionId);
+  assert.notEqual(accessHash, reportAccessKey);
+  assert.equal(hashSecret(guestSessionId), guestHash);
+  assert.ok(reportAccessKey.length >= 40);
+});
+
+test("Sprint 0 persistence statuses and NaLI Energy math stay constrained", () => {
+  assert.deepEqual(REPORT_MACRO_STATUSES, [
+    "pending_upload",
+    "verifying",
+    "pending_payment",
+    "processing",
+    "export_ready",
+    "failed",
+  ]);
+  assert.equal(calculateEnergyBalance([{ amount: 10 }, { amount: -4 }, { amount: -1 }, { amount: 3 }]), 8);
+  assert.equal(getReportMacroStatus({ status: "DEMO/MOCK - generated preview" }), "export_ready");
+  assert.equal(getReportMacroStatus({ status: "failed during preview" }), "failed");
+});
+
 test("public route files exist for the core MVP links", () => {
   const routeFiles = [
     "src/app/page.tsx",
@@ -175,6 +265,8 @@ test("public route files exist for the core MVP links", () => {
     "src/app/pricing/page.tsx",
     "src/app/report/[id]/page.tsx",
     "src/app/api/reports/generate/route.ts",
+    "src/app/api/reports/[id]/route.ts",
+    "src/app/api/payments/create/route.ts",
   ];
 
   for (const file of routeFiles) {
@@ -194,6 +286,25 @@ test("OpenRouter provider remains server-only in source", () => {
 
   assert.match(providerSource, /process\.env\.OPENROUTER_API_KEY/);
   assert.doesNotMatch(providerSource + appSource, /NEXT_PUBLIC_OPENROUTER/i);
+});
+
+test("provider names and payment-unit wording are absent from public UI source", () => {
+  const files = [
+    "src/app/page.tsx",
+    "src/app/learn-report/page.tsx",
+    "src/app/create-report/page.tsx",
+    "src/app/field-intelligence/page.tsx",
+    "src/app/pricing/page.tsx",
+    "src/components/report/HomeCommandBox.tsx",
+    "src/components/report/ReportResultClient.tsx",
+  ];
+  const source = files.map((file) => fs.readFileSync(path.join(repoRoot, file), "utf8")).join("\n");
+  const publicBrandingPattern = new RegExp(
+    ["OpenRouter", "G" + "PT", "Gemini", "Claude", "API " + "credit", "Report " + "Credits"].join("|"),
+    "i",
+  );
+
+  assert.doesNotMatch(source, publicBrandingPattern);
 });
 
 test("public UI and report output source avoid forbidden academic cheating wording", () => {
