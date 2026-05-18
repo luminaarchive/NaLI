@@ -137,6 +137,23 @@ body {
   padding-bottom: max(24px, env(safe-area-inset-bottom));
 }
 
+/* --- Ambient background blobs (CSS-only, GPU-composited) --- */
+.ambient-blob {
+  will-change: transform;
+  animation-name: ambient-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+}
+
+@keyframes ambient-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(60px, 40px) scale(1.08); }
+  50% { transform: translate(20px, -30px) scale(0.95); }
+  75% { transform: translate(-40px, 50px) scale(1.05); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
 /* --- Reduced motion --- */
 @media (prefers-reduced-motion: reduce) {
   *,

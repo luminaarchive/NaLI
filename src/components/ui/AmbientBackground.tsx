@@ -1,13 +1,20 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
-
+/**
+ * AmbientBackground — CSS-only ambient glow layer.
+ *
+ * Performance rules applied:
+ * - CSS animations only (transform + opacity) — no JS animation frames
+ * - No filter:blur() in animation loop — pre-blurred via large border-radius + gradient
+ * - will-change scoped to animated blobs only
+ * - prefers-reduced-motion kills all animation
+ * - Max 3 blobs
+ * - Pointer-events disabled, aria-hidden
+ */
 export function AmbientBackground() {
-  const shouldReduceMotion = useReducedMotion();
-
   return (
     <div
-      className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+      className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
       aria-hidden="true"
     >
       {/* Deep dark base */}
@@ -23,75 +30,36 @@ export function AmbientBackground() {
         }}
       />
 
-      {/* Primary ambient blob - indigo/blue */}
-      <motion.div
-        className="absolute -left-[20%] -top-[10%] h-[70vh] w-[70vh] rounded-full"
+      {/* Blob 1 — indigo, top-left */}
+      <div
+        className="ambient-blob absolute -left-[15%] -top-[10%] h-[60vh] w-[60vh] rounded-full opacity-40"
         style={{
           background:
-            "radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(99,102,241,0.05) 40%, transparent 70%)",
-          filter: "blur(80px)",
-        }}
-        animate={
-          shouldReduceMotion
-            ? {}
-            : {
-                x: [0, 80, 30, 0],
-                y: [0, 60, -20, 0],
-                scale: [1, 1.1, 0.95, 1],
-              }
-        }
-        transition={{
-          duration: 25,
-          repeat: Infinity,
-          ease: "easeInOut",
+            "radial-gradient(circle, rgba(99,102,241,0.35) 0%, rgba(99,102,241,0.08) 50%, transparent 70%)",
+          animationDelay: "0s",
+          animationDuration: "25s",
         }}
       />
 
-      {/* Secondary ambient blob - violet */}
-      <motion.div
-        className="absolute -right-[10%] top-[20%] h-[60vh] w-[60vh] rounded-full"
+      {/* Blob 2 — violet, right */}
+      <div
+        className="ambient-blob absolute -right-[10%] top-[15%] h-[55vh] w-[55vh] rounded-full opacity-30"
         style={{
           background:
-            "radial-gradient(circle, rgba(139,92,246,0.12) 0%, rgba(139,92,246,0.04) 40%, transparent 70%)",
-          filter: "blur(100px)",
-        }}
-        animate={
-          shouldReduceMotion
-            ? {}
-            : {
-                x: [0, -60, 20, 0],
-                y: [0, -40, 60, 0],
-                scale: [1, 0.9, 1.05, 1],
-              }
-        }
-        transition={{
-          duration: 30,
-          repeat: Infinity,
-          ease: "easeInOut",
+            "radial-gradient(circle, rgba(139,92,246,0.3) 0%, rgba(139,92,246,0.06) 50%, transparent 70%)",
+          animationDelay: "-8s",
+          animationDuration: "30s",
         }}
       />
 
-      {/* Tertiary ambient blob - cyan/blue accent */}
-      <motion.div
-        className="absolute bottom-[10%] left-[30%] h-[50vh] w-[50vh] rounded-full"
+      {/* Blob 3 — cyan accent, bottom */}
+      <div
+        className="ambient-blob absolute bottom-[5%] left-[25%] h-[45vh] w-[45vh] rounded-full opacity-25"
         style={{
           background:
-            "radial-gradient(circle, rgba(56,189,248,0.08) 0%, rgba(56,189,248,0.03) 40%, transparent 70%)",
-          filter: "blur(90px)",
-        }}
-        animate={
-          shouldReduceMotion
-            ? {}
-            : {
-                x: [0, 40, -30, 0],
-                y: [0, -50, 30, 0],
-                scale: [1, 1.08, 0.92, 1],
-              }
-        }
-        transition={{
-          duration: 22,
-          repeat: Infinity,
-          ease: "easeInOut",
+            "radial-gradient(circle, rgba(56,189,248,0.2) 0%, rgba(56,189,248,0.04) 50%, transparent 70%)",
+          animationDelay: "-15s",
+          animationDuration: "22s",
         }}
       />
 
