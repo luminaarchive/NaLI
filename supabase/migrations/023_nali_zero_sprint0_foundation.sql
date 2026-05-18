@@ -65,10 +65,11 @@ FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 CREATE TABLE IF NOT EXISTS public.payments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  report_id UUID REFERENCES public.reports(id) ON DELETE CASCADE,
+  report_id UUID NOT NULL REFERENCES public.reports(id) ON DELETE CASCADE,
   midtrans_order_id TEXT UNIQUE NOT NULL,
   amount NUMERIC(12,2) NOT NULL,
-  status TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('pending', 'paid', 'failed', 'expired', 'cancelled', 'denied')),
+  export_type TEXT NOT NULL DEFAULT 'markdown' CHECK (export_type IN ('markdown', 'pdf', 'docx')),
   payment_type TEXT,
   payment_expires_at TIMESTAMPTZ,
   raw_notification JSONB NOT NULL DEFAULT '{}'::jsonb,

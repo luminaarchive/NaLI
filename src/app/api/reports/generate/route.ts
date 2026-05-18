@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
       {
         id: report.id,
         persistence: persistence.persisted ? "supabase" : persistence.reason,
-        report_access_token: persistence.persisted ? persistence.reportAccessToken : undefined,
+        report_access_key: persistence.persisted ? persistence.reportAccessToken : undefined,
         mode: "ai",
         provider: "nali",
         report,
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     {
       id: report.id,
       persistence: persistence.persisted ? "supabase" : persistence.reason,
-      report_access_token: persistence.persisted ? persistence.reportAccessToken : undefined,
+      report_access_key: persistence.persisted ? persistence.reportAccessToken : undefined,
       mode: "mock",
       notice: "DEMO/MOCK - NaLI preview engine unavailable or not configured.",
       provider: "nali",

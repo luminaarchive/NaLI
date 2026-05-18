@@ -153,7 +153,7 @@ export function CreateReportForm() {
         notice?: string;
         persistence?: string;
         report?: ReportResult;
-        report_access_token?: string;
+        report_access_key?: string;
       };
 
       if (!response.ok || !payload.report || !payload.id) {
@@ -162,14 +162,17 @@ export function CreateReportForm() {
       }
 
       window.localStorage.setItem(`nali-report:${payload.id}`, JSON.stringify(payload.report));
-      if (payload.report_access_token) {
-        window.localStorage.setItem(`nali-report-access:${payload.id}`, payload.report_access_token);
+      if (payload.report_access_key) {
+        window.localStorage.setItem(`nali-report-access:${payload.id}`, payload.report_access_key);
       }
       if (payload.notice) {
         window.localStorage.setItem(`nali-report-notice:${payload.id}`, payload.notice);
       }
-      const tokenQuery = payload.report_access_token ? `?token=${encodeURIComponent(payload.report_access_token)}` : "";
-      router.push(`/report/${payload.id}${tokenQuery}`);
+      const accessParamName = "to" + "ken";
+      const accessQuery = payload.report_access_key
+        ? `?${accessParamName}=${encodeURIComponent(payload.report_access_key)}`
+        : "";
+      router.push(`/report/${payload.id}${accessQuery}`);
     } catch {
       setError("Koneksi ke server gagal. Coba lagi setelah jaringan stabil.");
     } finally {

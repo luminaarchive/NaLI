@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { NaLILogoMark } from "./NaLILogoMark";
 import { AnnouncementPill } from "./AnnouncementPill";
 import { Sparkles } from "lucide-react";
 
@@ -12,17 +11,8 @@ export function NaLIHero() {
         Evidence-based AI
       </AnnouncementPill>
 
-      <motion.div
-        className="mt-6"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-      >
-        <NaLILogoMark size="lg" />
-      </motion.div>
-
       <motion.h1
-        className="mt-6 text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl"
+        className="mt-8 text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl"
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.15 }}

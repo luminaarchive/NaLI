@@ -17,6 +17,8 @@ const optionalProviderKeys = [
   "OPENROUTER_API_KEY",
   "MIDTRANS_SERVER_KEY",
   "MIDTRANS_MERCHANT_ID",
+  "MIDTRANS_ENVIRONMENT",
+  "NALI_EXPORT_PRICE_IDR",
   "IUCN_API_KEY",
   "EBIRD_API_KEY",
   "NASA_FIRMS_API_KEY",
@@ -92,6 +94,7 @@ export const env = {
       merchantId: process.env.MIDTRANS_MERCHANT_ID ?? "",
       serverKey: process.env.MIDTRANS_SERVER_KEY ?? "",
       environment: process.env.MIDTRANS_ENVIRONMENT ?? "sandbox",
+      exportPriceIdr: process.env.NALI_EXPORT_PRICE_IDR ?? "19000",
     },
     iucn: {
       apiKey: process.env.IUCN_API_KEY ?? "",

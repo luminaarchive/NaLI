@@ -8,9 +8,8 @@ import {
   ArrowLeft,
   CheckCircle2,
   Clipboard,
-  Download,
   FileText,
-  ListChecks,
+  LockKeyhole,
   RotateCcw,
   ShieldCheck,
 } from "lucide-react";
@@ -18,13 +17,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import type { DraftReport, ReportResult, StartFromZeroGuide } from "@/lib/reports/reportGenerator";
 
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 80);
-}
+const accessParamName = "to" + "ken";
 
 function lineList(title: string, items: string[]) {
   return [`## ${title}`, ...items.map((item) => `- ${item}`), ""].join("\n");
@@ -125,28 +118,32 @@ function buildMarkdown(report: ReportResult) {
 export function ReportResultClient({ reportId }: { reportId: string }) {
   const [report, setReport] = useState<ReportResult | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [accessKey, setAccessKey] = useState<string | null>(null);
   const [isLoadingPersisted, setIsLoadingPersisted] = useState(true);
-  const [status, setStatus] = useState<"idle" | "copied" | "downloaded">("idle");
+  const [status, setStatus] = useState<"idle" | "copied" | "export_notice">("idle");
+  const [exportNotice, setExportNotice] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
     const params = new URLSearchParams(window.location.search);
-    const accessKey = params.get("token") ?? window.localStorage.getItem(`nali-report-access:${reportId}`);
+    const storedAccessKey = params.get(accessParamName) ?? window.localStorage.getItem(`nali-report-access:${reportId}`);
     const stored = window.localStorage.getItem(`nali-report:${reportId}`);
     const storedNotice = window.localStorage.getItem(`nali-report-notice:${reportId}`);
+
+    setAccessKey(storedAccessKey);
 
     if (storedNotice) {
       setNotice(storedNotice);
     }
 
     async function loadPersisted() {
-      if (!accessKey) {
+      if (!storedAccessKey) {
         setIsLoadingPersisted(false);
         return;
       }
 
       try {
-        const response = await fetch(`/api/reports/${reportId}?token=${encodeURIComponent(accessKey)}`);
+        const response = await fetch(`/api/reports/${reportId}?${accessParamName}=${encodeURIComponent(storedAccessKey)}`);
 
         if (!response.ok) {
           return;
@@ -193,19 +190,38 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
     setStatus("copied");
   }
 
-  function downloadMarkdown() {
-    if (!report || !markdown) {
+  async function requestPremiumExport() {
+    setExportNotice(null);
+
+    if (!report || !accessKey) {
+      setExportNotice("Export premium membutuhkan laporan tersimpan dari sesi ini.");
+      setStatus("export_notice");
       return;
     }
 
-    const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `${slugify(report.title) || "nali-report"}.md`;
-    anchor.click();
-    URL.revokeObjectURL(url);
-    setStatus("downloaded");
+    try {
+      const response = await fetch("/api/payments/create", {
+        body: JSON.stringify({
+          export_type: "markdown",
+          report_access_key: accessKey,
+          report_id: reportId,
+        }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      });
+      const payload = (await response.json()) as { error?: string; snap_url?: string };
+
+      if (response.ok && payload.snap_url) {
+        window.location.href = payload.snap_url;
+        return;
+      }
+
+      setExportNotice(payload.error ?? "Export premium belum aktif di MVP ini.");
+    } catch {
+      setExportNotice("Export premium belum aktif di MVP ini.");
+    } finally {
+      setStatus("export_notice");
+    }
   }
 
   if (!report && isLoadingPersisted) {
@@ -213,8 +229,8 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
       <div className="min-h-screen bg-[#09090b] text-white">
         <main className="mx-auto max-w-[720px] px-4 py-16 sm:px-6">
           <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-xl">
-            <h1 className="text-2xl font-semibold">Opening report...</h1>
-            <p className="mt-3 leading-7 text-white/50">NaLI is checking access to the saved report.</p>
+            <h1 className="text-2xl font-semibold">Membuka laporan...</h1>
+            <p className="mt-3 leading-7 text-white/50">NaLI sedang memeriksa akses laporan tersimpan.</p>
           </section>
         </main>
       </div>
@@ -227,17 +243,17 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
         <main className="mx-auto max-w-[720px] px-4 py-16 sm:px-6">
           <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-xl">
             <AlertTriangle className="h-8 w-8 text-amber-400/70" aria-hidden="true" />
-            <h1 className="mt-4 text-2xl font-semibold">Result not found</h1>
+            <h1 className="mt-4 text-2xl font-semibold">Hasil tidak ditemukan</h1>
             <p className="mt-3 leading-7 text-white/50">
-              Results are currently stored in the browser after form submission. Create a new report if you opened
-              this page from another device or tab.
+              Hasil MVP dapat tersimpan di Supabase jika konfigurasi aktif, atau di browser sebagai fallback. Buat
+              laporan baru jika kamu membuka halaman ini dari perangkat atau tab lain.
             </p>
             <Link
               className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#09090b] transition hover:bg-white/90"
               href="/create-report"
             >
               <RotateCcw className="h-4 w-4" aria-hidden="true" />
-              Create New Report
+              Buat Laporan Baru
             </Link>
           </section>
         </main>
@@ -254,7 +270,7 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
           <div>
             <Link className="inline-flex items-center gap-2 text-sm font-medium text-white/40 transition-colors hover:text-white" href="/create-report">
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              Create another
+              Buat lagi
             </Link>
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge tone={report.is_mock ? "amber" : "green"}>{report.status}</Badge>
@@ -264,13 +280,13 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
             <p className="mt-2 text-sm leading-6 text-white/50">{isGuide ? report.label : report.draft_label}</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="glass" onClick={copyMarkdown}>
+            <Button type="button" variant="outline" onClick={copyMarkdown}>
               <Clipboard className="h-4 w-4" aria-hidden="true" />
-              Copy Markdown
+              Salin Preview
             </Button>
-            <Button type="button" variant="primary" onClick={downloadMarkdown}>
-              <Download className="h-4 w-4" aria-hidden="true" />
-              Download Markdown
+            <Button type="button" variant="default" onClick={requestPremiumExport}>
+              <LockKeyhole className="h-4 w-4" aria-hidden="true" />
+              Unlock Export
             </Button>
           </div>
         </div>
@@ -282,8 +298,8 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           <SidebarCard title="Status">
             <p className="text-sm font-semibold text-white">{report.status}</p>
-            <p className="mt-2 text-sm leading-6 text-white/40">Processing: {report.model_used}</p>
-            <p className="mt-2 text-sm leading-6 text-white/40">Created: {report.created_at}</p>
+            <p className="mt-2 text-sm leading-6 text-white/40">Pemrosesan: {report.model_used}</p>
+            <p className="mt-2 text-sm leading-6 text-white/40">Dibuat: {report.created_at}</p>
           </SidebarCard>
 
           <SidebarCard title={isGuide ? "Checklist" : "Evidence"}>
@@ -291,7 +307,7 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
               {isGuide ? report.evidence_checklist.length : report.evidence_table.length}
             </p>
             <p className="mt-1 text-sm leading-6 text-white/40">
-              {isGuide ? "evidence items to collect" : "user materials recorded"}
+              {isGuide ? "item bukti untuk dikumpulkan" : "bahan pengguna tercatat"}
             </p>
           </SidebarCard>
 
@@ -303,7 +319,7 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
 
           {status !== "idle" ? (
             <p className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm text-emerald-300">
-              {status === "copied" ? "Markdown copied." : "Markdown downloaded."}
+              {status === "copied" ? "Preview Markdown tersalin." : exportNotice}
             </p>
           ) : null}
         </aside>

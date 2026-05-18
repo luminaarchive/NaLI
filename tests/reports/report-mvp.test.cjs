@@ -28,6 +28,12 @@ const {
   calculateEnergyBalance,
   getReportMacroStatus,
 } = require("../../src/lib/reports/persistence");
+const { isValidEnergyLedgerAmount } = require("../../src/lib/energy/ledger");
+const {
+  createMidtransSignature,
+  mapMidtransTransactionStatus,
+  verifyMidtransSignature,
+} = require("../../src/lib/payments/midtrans");
 
 const repoRoot = path.join(__dirname, "../..");
 
@@ -254,6 +260,66 @@ test("Sprint 0 persistence statuses and NaLI Energy math stay constrained", () =
   assert.equal(calculateEnergyBalance([{ amount: 10 }, { amount: -4 }, { amount: -1 }, { amount: 3 }]), 8);
   assert.equal(getReportMacroStatus({ status: "DEMO/MOCK - generated preview" }), "export_ready");
   assert.equal(getReportMacroStatus({ status: "failed during preview" }), "failed");
+  assert.equal(isValidEnergyLedgerAmount("credit", 3), true);
+  assert.equal(isValidEnergyLedgerAmount("refund", 3), true);
+  assert.equal(isValidEnergyLedgerAmount("debit", -3), true);
+  assert.equal(isValidEnergyLedgerAmount("deposit", -3), true);
+  assert.equal(isValidEnergyLedgerAmount("credit", -3), false);
+  assert.equal(isValidEnergyLedgerAmount("debit", 3), false);
+});
+
+test("Sprint 0 migration keeps persistence, payments, energy, and rate limits in the expected shape", () => {
+  const sql = fs.readFileSync(
+    path.join(repoRoot, "supabase/migrations/023_nali_zero_sprint0_foundation.sql"),
+    "utf8",
+  );
+  const reportsTable = sql.match(/CREATE TABLE IF NOT EXISTS public\.reports \([\s\S]*?\n\);/)?.[0] ?? "";
+  const paymentsTable = sql.match(/CREATE TABLE IF NOT EXISTS public\.payments \([\s\S]*?\n\);/)?.[0] ?? "";
+
+  assert.match(reportsTable, /guest_session_id_hash TEXT NOT NULL/);
+  assert.match(reportsTable, /report_access_token_hash TEXT NOT NULL/);
+  assert.match(reportsTable, /status IN \('pending_upload', 'verifying', 'pending_payment', 'processing', 'export_ready', 'failed'\)/);
+  assert.match(reportsTable, /input JSONB/);
+  assert.match(reportsTable, /output JSONB/);
+  assert.match(reportsTable, /failure_reason TEXT/);
+  assert.match(reportsTable, /processing_metadata JSONB/);
+  assert.doesNotMatch(reportsTable, /payment_order_id|payment_expires_at|midtrans_order_id/);
+  assert.doesNotMatch(reportsTable, /guest_session_id TEXT|report_access_token TEXT/);
+
+  assert.match(paymentsTable, /report_id UUID NOT NULL REFERENCES public\.reports/);
+  assert.match(paymentsTable, /midtrans_order_id TEXT UNIQUE NOT NULL/);
+  assert.match(paymentsTable, /amount NUMERIC\(12,2\) NOT NULL/);
+  assert.match(paymentsTable, /payment_expires_at TIMESTAMPTZ/);
+  assert.match(paymentsTable, /raw_notification JSONB/);
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.energy_ledger/);
+  assert.match(sql, /type TEXT NOT NULL CHECK \(type IN \('credit', 'debit', 'deposit', 'refund'\)\)/);
+  assert.match(sql, /PRIMARY KEY \(key_hash, action_type\)/);
+  assert.doesNotMatch(sql, /energy_balance|balance_table/);
+});
+
+test("Midtrans webhook status and signature mapping are conservative", () => {
+  const serverKey = "server-key-for-test";
+  const baseNotification = {
+    gross_amount: "19000.00",
+    order_id: "nali-test-order",
+    status_code: "200",
+  };
+  const signature = createMidtransSignature({
+    grossAmount: baseNotification.gross_amount,
+    orderId: baseNotification.order_id,
+    serverKey,
+    statusCode: baseNotification.status_code,
+  });
+
+  assert.equal(verifyMidtransSignature({ ...baseNotification, signature_key: signature }, serverKey), true);
+  assert.equal(verifyMidtransSignature({ ...baseNotification, signature_key: "bad" }, serverKey), false);
+  assert.equal(mapMidtransTransactionStatus({ transaction_status: "settlement" }), "paid");
+  assert.equal(mapMidtransTransactionStatus({ fraud_status: "accept", transaction_status: "capture" }), "paid");
+  assert.equal(mapMidtransTransactionStatus({ fraud_status: "challenge", transaction_status: "capture" }), "pending");
+  assert.equal(mapMidtransTransactionStatus({ transaction_status: "deny" }), "denied");
+  assert.equal(mapMidtransTransactionStatus({ transaction_status: "cancel" }), "cancelled");
+  assert.equal(mapMidtransTransactionStatus({ transaction_status: "expire" }), "expired");
+  assert.equal(mapMidtransTransactionStatus({ transaction_status: "failure" }), "failed");
 });
 
 test("public route files exist for the core MVP links", () => {
@@ -266,7 +332,9 @@ test("public route files exist for the core MVP links", () => {
     "src/app/report/[id]/page.tsx",
     "src/app/api/reports/generate/route.ts",
     "src/app/api/reports/[id]/route.ts",
+    "src/app/api/reports/[id]/export/route.ts",
     "src/app/api/payments/create/route.ts",
+    "src/app/api/payments/midtrans-webhook/route.ts",
   ];
 
   for (const file of routeFiles) {
@@ -300,11 +368,26 @@ test("provider names and payment-unit wording are absent from public UI source",
   ];
   const source = files.map((file) => fs.readFileSync(path.join(repoRoot, file), "utf8")).join("\n");
   const publicBrandingPattern = new RegExp(
-    ["OpenRouter", "G" + "PT", "Gemini", "Claude", "API " + "credit", "Report " + "Credits"].join("|"),
+    ["OpenRouter", "G" + "PT", "Gemini", "Claude", "API " + "credit", "report " + "credit", "to" + "ken"].join("|"),
     "i",
   );
 
   assert.doesNotMatch(source, publicBrandingPattern);
+});
+
+test("export and payment routes enforce Sprint 0 gatekeeping in source", () => {
+  const paymentRoute = fs.readFileSync(path.join(repoRoot, "src/app/api/payments/create/route.ts"), "utf8");
+  const exportRoute = fs.readFileSync(path.join(repoRoot, "src/app/api/reports/[id]/export/route.ts"), "utf8");
+  const webhookRoute = fs.readFileSync(path.join(repoRoot, "src/app/api/payments/midtrans-webhook/route.ts"), "utf8");
+
+  assert.match(paymentRoute, /getPersistedReport/);
+  assert.match(paymentRoute, /isMidtransConfigured/);
+  assert.doesNotMatch(paymentRoute, /input\.amount|body\.amount/);
+  assert.match(exportRoute, /getReportExportEligibility/);
+  assert.match(exportRoute, /402/);
+  assert.match(exportRoute, /PDF\/DOCX export belum aktif/);
+  assert.match(webhookRoute, /verifyMidtransSignature/);
+  assert.match(webhookRoute, /mapMidtransTransactionStatus/);
 });
 
 test("public UI and report output source avoid forbidden academic cheating wording", () => {

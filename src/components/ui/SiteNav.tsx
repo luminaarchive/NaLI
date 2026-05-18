@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Menu, X } from "lucide-react";
 
@@ -17,14 +16,11 @@ export function SiteNav() {
 
   return (
     <>
-      <header className="fixed top-0 right-0 left-0 z-50 border-b border-white/[0.06] bg-[#09090b]/80 backdrop-blur-xl">
+      <header className="fixed top-0 right-0 left-0 z-50 border-b border-white/[0.06] bg-[#09090b]/60 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-          {/* Logo */}
-          <Link className="flex items-center gap-2" href="/">
-            <span className="relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-white/[0.02]">
-              <Image src="/nali-logo.png" alt="NaLI" fill className="object-cover p-0.5" sizes="28px" unoptimized />
-            </span>
-            <span className="text-sm font-semibold tracking-tight text-white">NaLI</span>
+          {/* Logo — text only, no image */}
+          <Link className="flex items-center gap-1.5" href="/">
+            <span className="text-[15px] font-semibold tracking-tight text-white">NaLI</span>
           </Link>
 
           {/* Desktop nav */}
@@ -106,9 +102,7 @@ export function SiteFooter() {
     <footer className="relative z-10 border-t border-white/[0.06] bg-[#09090b]/80 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-[1200px] flex-col gap-6 text-sm md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
-          <span className="relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-white/[0.02]">
-            <Image src="/nali-logo.png" alt="NaLI" fill className="object-cover p-0.5" sizes="28px" unoptimized />
-          </span>
+          <span className="text-sm font-semibold text-white">NaLI</span>
           <p className="text-white/40">
             Evidence-based drafts. Final review remains human.
           </p>

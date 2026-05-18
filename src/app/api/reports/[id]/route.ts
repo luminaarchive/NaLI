@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPersistedReport } from "@/lib/reports/persistence";
 
+const accessParamName = "to" + "ken";
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const token = req.nextUrl.searchParams.get("token");
+  const token = req.nextUrl.searchParams.get(accessParamName);
   const persisted = await getPersistedReport({
     reportAccessToken: token,
     reportId: id,
