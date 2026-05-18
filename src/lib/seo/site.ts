@@ -2,20 +2,20 @@ export const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://naliai.vercel
 
 export const seoKeywords = [
   "NaLI",
-  "NaLI AI",
   "aplikasi laporan lapangan berbasis bukti",
   "field report generator Indonesia",
   "evidence-based academic report Indonesia",
-  "wildlife field intelligence Indonesia",
-  "AI identifikasi satwa Indonesia",
-  "AI konservasi Indonesia",
+  "draft laporan berbasis bahan",
+  "laporan observasi lingkungan",
+  "evidence table",
+  "uncertainty note",
   "biodiversity intelligence Indonesia",
   "conservation field software Indonesia",
   "sistem observasi satwa Indonesia",
 ];
 
 export const siteDescription =
-  "NaLI helps turn field notes and sources into evidence-based draft reports, while progressively building professional field intelligence for Indonesian biodiversity workflows.";
+  "NaLI membantu mengubah catatan, sumber, dan data lapangan menjadi draft laporan berbasis bukti dengan evidence table, uncertainty note, dan human review.";
 
 export function buildJsonLdGraph() {
   return {

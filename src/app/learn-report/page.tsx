@@ -1,116 +1,146 @@
-import Link from "next/link";
-import { ArrowRight, CheckCircle2, FileText, SearchCheck } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  ClipboardList,
+  Compass,
+  FileText,
+  ShieldCheck,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
+import { ButtonLink } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { SiteFooter, SiteNav } from "@/components/ui/SiteNav";
 
-const users = ["siswa", "mahasiswa", "guru", "staf lapangan", "NGO/CSR junior", "peneliti junior", "komunitas alam"];
-
-const useCases = [
+const users = ["siswa SMP/SMA", "mahasiswa", "guru/dosen muda", "pekerja lapangan", "NGO/CSR junior", "peneliti junior", "komunitas alam"];
+const outputs = [
   "laporan praktikum",
   "laporan observasi lingkungan",
   "laporan field trip",
   "laporan kegiatan proyek",
-  "literature matrix",
-  "source checker",
+  "panduan observasi awal",
+  "evidence checklist",
   "draft berbasis bahan",
 ];
 
 export default function LearnReportPage() {
   return (
     <div className="min-h-screen bg-stone-50 text-forest-950">
-      <header className="border-stone-200 bg-white border-b">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
-          <Link className="text-lg font-semibold" href="/">
-            NaLI
-          </Link>
-          <Link
-            className="bg-forest-900 hover:bg-forest-800 inline-flex min-h-10 items-center gap-2 rounded-sm px-4 text-sm font-semibold text-stone-50 transition"
-            href="/create-report"
-          >
-            Mulai Susun Laporan
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
-        </div>
-      </header>
-
+      <SiteNav />
       <main>
-        <section className="border-stone-200 border-b bg-white">
-          <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
-            <p className="text-olive-700 text-xs font-semibold tracking-[0.08em] uppercase">Public Mode</p>
-            <h1 className="mt-4 max-w-4xl text-4xl leading-tight font-semibold tracking-[0] sm:text-5xl">
-              NaLI Learn & Report
-            </h1>
-            <p className="text-forest-800 mt-5 max-w-3xl text-lg leading-8">
-              NaLI Learn & Report membantu mengubah catatan, sumber, lokasi, dan bahan mentah menjadi draft laporan
-              berbasis bukti. Output tetap harus diperiksa, diedit, dan diverifikasi oleh pengguna.
+        <section className="border-b border-stone-200 bg-white px-4 py-14 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1160px]">
+            <Badge tone="green">Public Mode</Badge>
+            <h1 className="mt-4 text-4xl font-semibold tracking-[0] sm:text-5xl">NaLI Learn & Report</h1>
+            <p className="mt-5 max-w-[720px] text-lg leading-8 text-forest-800">
+              Untuk menyusun laporan sains, lingkungan, dan observasi dari bahan yang kamu punya — atau membantumu
+              mulai ketika belum punya bahan.
             </p>
+            <div className="mt-8 grid gap-4 lg:grid-cols-2">
+              <PathCard
+                cta="Buat Draf"
+                href="/create-report"
+                icon={ClipboardList}
+                title="Saya sudah punya bahan"
+                text="Masukkan catatan, URL, lokasi, hasil praktikum, atau field note. NaLI menyusun draft berbasis bahan."
+              />
+              <PathCard
+                cta="Mulai dari Nol"
+                href="/create-report?mode=start_from_zero"
+                icon={Compass}
+                title="Saya belum punya bahan"
+                text="NaLI membuat panduan observasi, checklist bukti, source search checklist, dan outline awal."
+              />
+            </div>
           </div>
         </section>
 
-        <section className="border-stone-200 border-b bg-stone-100 py-12">
-          <div className="mx-auto grid max-w-6xl gap-6 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-            <div className="border-stone-200 bg-white p-5 shadow-sm">
-              <h2 className="flex items-center gap-2 text-xl font-semibold">
-                <FileText className="h-5 w-5 text-olive-700" aria-hidden="true" />
-                Untuk siapa
-              </h2>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {users.map((user) => (
-                  <span className="border-stone-300 bg-stone-50 rounded-sm border px-3 py-1 text-sm" key={user}>
-                    {user}
-                  </span>
-                ))}
-              </div>
+        <section className="px-4 py-14 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-[1160px] gap-8 lg:grid-cols-[0.8fr_1.2fr]">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-olive-700">Untuk siapa</p>
+              <h2 className="mt-3 text-3xl font-semibold">Dibuat untuk pengguna yang perlu laporan rapi.</h2>
             </div>
+            <div className="flex flex-wrap gap-2">
+              {users.map((user) => (
+                <Badge className="min-h-10 px-4 text-sm" key={user} tone="paper">
+                  {user}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        </section>
 
-            <div className="border-stone-200 bg-white p-5 shadow-sm">
-              <h2 className="flex items-center gap-2 text-xl font-semibold">
-                <SearchCheck className="h-5 w-5 text-olive-700" aria-hidden="true" />
-                Bisa membantu apa
-              </h2>
-              <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                {useCases.map((item) => (
-                  <p className="flex gap-2 text-sm leading-6" key={item}>
+        <section className="border-y border-stone-200 bg-stone-100 px-4 py-14 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1160px]">
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-olive-700">Output</p>
+            <h2 className="mt-3 max-w-[720px] text-3xl font-semibold">Yang bisa dibuat NaLI tanpa melampaui bukti.</h2>
+            <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {outputs.map((item) => (
+                <Card className="p-4" key={item}>
+                  <FileText className="h-5 w-5 text-olive-700" aria-hidden="true" />
+                  <p className="mt-3 text-sm font-semibold leading-6">{item}</p>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="px-4 py-14 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1160px] rounded-lg border border-forest-900/10 bg-white p-6 shadow-sm">
+            <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+              <div>
+                <ShieldCheck className="h-6 w-6 text-olive-700" aria-hidden="true" />
+                <h2 className="mt-4 text-3xl font-semibold">Integritas akademik tetap di depan.</h2>
+                <p className="mt-3 text-sm leading-7 text-forest-700">
+                  NaLI bukan alat untuk membuat karya final tanpa review. Semua hasil harus diperiksa manusia.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {["Bukan karya final", "Tidak membuat sitasi palsu", "Tidak membuat data palsu", "Human review wajib"].map((item) => (
+                  <p className="flex gap-2 rounded-lg border border-stone-200 bg-stone-50 p-4 text-sm font-semibold leading-6" key={item}>
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-olive-700" aria-hidden="true" />
                     <span>{item}</span>
                   </p>
                 ))}
               </div>
             </div>
-          </div>
-        </section>
-
-        <section className="bg-white py-12">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-4 md:grid-cols-3">
-              {[
-                {
-                  title: "Bukan karya final",
-                  text: "NaLI menyusun draft berbasis bahan. Pengguna tetap wajib memeriksa dan mengedit.",
-                },
-                {
-                  title: "Tidak membuat sitasi palsu",
-                  text: "URL dari pengguna akan dicatat sebagai bahan dan diberi status belum terverifikasi di MVP ini.",
-                },
-                {
-                  title: "Batas bukti terlihat",
-                  text: "Setiap draft memiliki evidence table, uncertainty note, dan disclaimer integritas akademik.",
-                },
-              ].map((item) => (
-                <article className="border-stone-200 bg-stone-50 p-5" key={item.title}>
-                  <h2 className="text-lg font-semibold">{item.title}</h2>
-                  <p className="text-forest-700 mt-3 text-sm leading-7">{item.text}</p>
-                </article>
-              ))}
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <ButtonLink href="/create-report">Buat Draf</ButtonLink>
+              <ButtonLink href="/create-report?mode=start_from_zero" variant="secondary">
+                Mulai dari Nol
+              </ButtonLink>
             </div>
-            <Link
-              className="bg-forest-900 hover:bg-forest-800 mt-8 inline-flex min-h-12 items-center gap-2 rounded-sm px-5 text-sm font-semibold text-stone-50 transition"
-              href="/create-report"
-            >
-              Mulai Susun Laporan
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
           </div>
         </section>
       </main>
+      <SiteFooter />
     </div>
+  );
+}
+
+function PathCard({
+  cta,
+  href,
+  icon: Icon,
+  text,
+  title,
+}: {
+  cta: string;
+  href: string;
+  icon: LucideIcon;
+  text: string;
+  title: string;
+}) {
+  return (
+    <Card className="p-5">
+      <Icon className="h-6 w-6 text-olive-700" aria-hidden="true" />
+      <h2 className="mt-4 text-2xl font-semibold">{title}</h2>
+      <p className="mt-3 text-sm leading-7 text-forest-700">{text}</p>
+      <ButtonLink className="mt-5" href={href}>
+        {cta}
+        <ArrowRight className="h-4 w-4" aria-hidden="true" />
+      </ButtonLink>
+    </Card>
   );
 }

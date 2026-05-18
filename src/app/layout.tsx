@@ -61,7 +61,7 @@ export default async function RootLayout({
   const language = await getServerLanguage();
 
   return (
-    <html lang={language}>
+    <html data-scroll-behavior="smooth" lang={language}>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />

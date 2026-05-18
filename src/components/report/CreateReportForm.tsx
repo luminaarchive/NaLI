@@ -1,34 +1,53 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, CheckCircle2, FileText, LinkIcon, Loader2, MapPin, UploadCloud } from "lucide-react";
-import { reportTemplates, userRoles, type EvidenceReport } from "@/lib/reports/reportGenerator";
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  ChevronDown,
+  ClipboardList,
+  Compass,
+  FileText,
+  LinkIcon,
+  Loader2,
+  MapPin,
+  Paperclip,
+  type LucideIcon,
+} from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
+import { reportTemplates, userRoles, type ReportMode, type ReportResult } from "@/lib/reports/reportGenerator";
+import { cn } from "@/lib/utils";
 
 type FormState = {
-  template: string;
+  mode: ReportMode;
+  mainText: string;
+  reportTemplate: string;
   title: string;
-  role: string;
-  notes: string;
+  userRole: string;
   sourceUrls: string;
   location: string;
-  uploadedFileNote: string;
-  integrityAccepted: boolean;
+  fileDescription: string;
+  integrityConsent: boolean;
 };
 
 const initialForm: FormState = {
-  integrityAccepted: false,
+  fileDescription: "",
+  integrityConsent: false,
   location: "",
-  notes: "",
-  role: "mahasiswa",
+  mainText: "",
+  mode: "draft_from_materials",
+  reportTemplate: "Laporan Observasi Lingkungan",
   sourceUrls: "",
-  template: "Laporan Observasi Lingkungan",
   title: "",
-  uploadedFileNote: "",
+  userRole: "pengguna",
 };
 
+const guardrails = ["Evidence Table", "Uncertainty Note", "No Fake Citation", "Human Review"];
+
 function hasMaterial(form: FormState) {
-  return [form.notes, form.sourceUrls, form.location, form.uploadedFileNote].some((value) => value.trim().length > 0);
+  return [form.mainText, form.sourceUrls, form.location, form.fileDescription].some((value) => value.trim().length > 0);
 }
 
 export function CreateReportForm() {
@@ -38,9 +57,35 @@ export function CreateReportForm() {
   const [notice, setNotice] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get("mode");
+    const stored = window.localStorage.getItem("nali-create-report-prefill");
+
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as Partial<FormState>;
+        setForm((current) => ({
+          ...current,
+          mainText: parsed.mainText ?? current.mainText,
+          mode: parsed.mode === "start_from_zero" ? "start_from_zero" : current.mode,
+          reportTemplate: parsed.reportTemplate ?? current.reportTemplate,
+        }));
+      } catch {
+        // Ignore invalid local prefill data.
+      } finally {
+        window.localStorage.removeItem("nali-create-report-prefill");
+      }
+    }
+
+    if (mode === "start_from_zero" || mode === "draft_from_materials") {
+      setForm((current) => ({ ...current, mode }));
+    }
+  }, []);
+
   const materialCount = useMemo(
-    () => [form.notes, form.sourceUrls, form.location, form.uploadedFileNote].filter((value) => value.trim()).length,
-    [form.location, form.notes, form.sourceUrls, form.uploadedFileNote],
+    () => [form.mainText, form.sourceUrls, form.location, form.fileDescription].filter((value) => value.trim()).length,
+    [form.fileDescription, form.location, form.mainText, form.sourceUrls],
   );
 
   function updateField<K extends keyof FormState>(field: K, value: FormState[K]) {
@@ -54,18 +99,18 @@ export function CreateReportForm() {
     setError(null);
     setNotice(null);
 
-    if (!form.title.trim()) {
-      setError("Isi judul laporan terlebih dahulu.");
+    if (form.mode === "draft_from_materials" && !hasMaterial(form)) {
+      setError("Masukkan minimal satu bahan dulu: catatan, lokasi, URL, atau ringkasan file.");
       return;
     }
 
-    if (!hasMaterial(form)) {
-      setError("Masukkan minimal satu bahan: catatan, URL sumber, lokasi, atau keterangan file.");
+    if (form.mode === "start_from_zero" && !form.mainText.trim()) {
+      setError("Tulis dulu topik atau jenis laporan yang ingin kamu mulai.");
       return;
     }
 
-    if (!form.integrityAccepted) {
-      setError("Centang pernyataan integritas akademik sebelum membuat draft.");
+    if (!form.integrityConsent) {
+      setError("Centang pernyataan integritas dulu sebelum melanjutkan.");
       return;
     }
 
@@ -83,11 +128,11 @@ export function CreateReportForm() {
         error?: string;
         id?: string;
         notice?: string;
-        report?: EvidenceReport;
+        report?: ReportResult;
       };
 
       if (!response.ok || !payload.report || !payload.id) {
-        setError(payload.error ?? "Draft belum bisa dibuat. Periksa bahan dan coba lagi.");
+        setError(payload.error ?? "NaLI belum bisa melanjutkan. Periksa input dan coba lagi.");
         return;
       }
 
@@ -103,166 +148,229 @@ export function CreateReportForm() {
     }
   }
 
+  const isDraft = form.mode === "draft_from_materials";
+
   return (
-    <form className="space-y-6" onSubmit={handleSubmit}>
-      <section className="border-stone-200 bg-white p-4 shadow-sm sm:p-6">
-        <div className="grid gap-4 lg:grid-cols-2">
-          <label className="block">
-            <span className="text-forest-950 text-sm font-semibold">Template laporan</span>
-            <select
-              className="field-input mt-2"
-              value={form.template}
-              onChange={(event) => updateField("template", event.target.value)}
-            >
-              {reportTemplates.map((template) => (
-                <option key={template} value={template}>
-                  {template}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="block">
-            <span className="text-forest-950 text-sm font-semibold">Peran pengguna</span>
-            <select
-              className="field-input mt-2"
-              value={form.role}
-              onChange={(event) => updateField("role", event.target.value)}
-            >
-              {userRoles.map((role) => (
-                <option key={role} value={role}>
-                  {role}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <label className="mt-4 block">
-          <span className="text-forest-950 text-sm font-semibold">Judul laporan</span>
-          <input
-            className="field-input mt-2"
-            placeholder="Contoh: Observasi kualitas air sungai di sekitar sekolah"
-            value={form.title}
-            onChange={(event) => updateField("title", event.target.value)}
-          />
-        </label>
-      </section>
-
-      <section className="border-stone-200 bg-white p-4 shadow-sm sm:p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-forest-950 text-sm font-semibold">Bahan minimal</p>
-            <p className="text-forest-700 mt-1 text-sm leading-6">
-              Masukkan setidaknya satu bahan nyata. NaLI menyusun dari bahan yang kamu berikan.
-            </p>
+    <form className="safe-bottom" onSubmit={handleSubmit}>
+      <section className="rounded-lg border border-white/10 bg-[#07100c]/80 p-2 shadow-[0_24px_80px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+        <div className="rounded-md border border-white/10 bg-white/5 p-3 sm:p-4">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <ModeButton
+              active={isDraft}
+              description="Untuk catatan, URL, lokasi, hasil praktikum, atau field note."
+              icon={ClipboardList}
+              label="Saya sudah punya bahan"
+              onClick={() => updateField("mode", "draft_from_materials")}
+            />
+            <ModeButton
+              active={!isDraft}
+              description="Untuk panduan observasi, checklist bukti, dan outline awal."
+              icon={Compass}
+              label="Saya belum punya bahan"
+              onClick={() => updateField("mode", "start_from_zero")}
+            />
           </div>
-          <span className="border-olive-300 bg-olive-100 text-forest-900 rounded-sm border px-3 py-1 text-xs font-semibold">
-            {materialCount} bahan
-          </span>
-        </div>
 
-        <label className="mt-5 block">
-          <span className="text-forest-950 flex items-center gap-2 text-sm font-semibold">
-            <FileText className="h-4 w-4 text-olive-700" aria-hidden="true" />
-            Catatan utama
-          </span>
-          <textarea
-            className="field-input mt-2 min-h-40 resize-y"
-            placeholder="Tulis catatan observasi, bahan praktikum, ringkasan kegiatan, atau poin dari field note."
-            value={form.notes}
-            onChange={(event) => updateField("notes", event.target.value)}
-          />
-        </label>
-
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          <label className="block">
-            <span className="text-forest-950 flex items-center gap-2 text-sm font-semibold">
-              <LinkIcon className="h-4 w-4 text-olive-700" aria-hidden="true" />
-              URL sumber opsional
+          <label className="mt-3 block">
+            <span className="mb-1 block text-sm font-semibold text-stone-100">
+              {isDraft ? "Bahan utama" : "Topik atau tugas awal"}
             </span>
             <textarea
-              className="field-input mt-2 min-h-28 resize-y"
-              placeholder="Satu URL per baris. Sumber akan ditandai belum terverifikasi di MVP ini."
-              value={form.sourceUrls}
-              onChange={(event) => updateField("sourceUrls", event.target.value)}
+              className="command-input min-h-[124px] p-4 text-base leading-7 sm:min-h-[240px]"
+              value={form.mainText}
+              onChange={(event) => updateField("mainText", event.target.value)}
+              placeholder={
+                isDraft
+                  ? "Tulis catatan, lokasi, atau sumber yang ingin disusun...\n\nContoh: Saya mengamati erosi di Banjir Kanal Semarang. Tebing sungai terlihat terkikis, air cukup deras, dan ada bagian tanah longsor kecil di sisi kanan sungai."
+                  : "Tulis topik atau tugas yang ingin kamu mulai...\n\nContoh: Aku mau bikin laporan observasi lingkungan tentang sungai, tapi belum punya catatan."
+              }
             />
           </label>
 
-          <label className="block">
-            <span className="text-forest-950 flex items-center gap-2 text-sm font-semibold">
-              <MapPin className="h-4 w-4 text-olive-700" aria-hidden="true" />
-              Lokasi opsional
-            </span>
+          <label className="mt-3 flex gap-3 rounded-lg border border-white/10 bg-white/5 p-2 sm:p-3">
             <input
-              className="field-input mt-2"
-              placeholder="Contoh: Bogor, bantaran Sungai Ciliwung"
-              value={form.location}
-              onChange={(event) => updateField("location", event.target.value)}
+              checked={form.integrityConsent}
+              className="mt-1 h-4 w-4 accent-[#7DD3C7]"
+              type="checkbox"
+              onChange={(event) => updateField("integrityConsent", event.target.checked)}
             />
-            <p className="text-forest-700 mt-2 text-xs leading-5">
-              Lokasi dicatat sebagai bahan pengguna dan belum diverifikasi otomatis.
-            </p>
+            <span className="text-sm leading-6 text-stone-200">
+              Saya paham output NaLI adalah draft/panduan berbasis bahan, bukan karya final.
+            </span>
           </label>
-        </div>
 
-        <div className="border-stone-200 bg-stone-50 mt-4 border p-4">
-          <div className="flex items-start gap-3">
-            <UploadCloud className="mt-0.5 h-5 w-5 text-olive-700" aria-hidden="true" />
-            <div className="min-w-0 flex-1">
-              <p className="text-forest-950 text-sm font-semibold">Upload file</p>
-              <p className="text-forest-700 mt-1 text-sm leading-6">
-                Upload belum aktif di MVP ini. Untuk sekarang, tulis nama file atau ringkasan bahan yang akan
-                dilampirkan.
-              </p>
-              <input
-                className="field-input mt-3"
-                placeholder="Contoh: Foto daun mangrove dan catatan pH dari praktikum"
-                value={form.uploadedFileNote}
-                onChange={(event) => updateField("uploadedFileNote", event.target.value)}
-              />
+          <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-end">
+            <label className="block">
+              <span className="sr-only text-xs font-semibold uppercase tracking-[0.08em] text-stone-400 sm:not-sr-only sm:mb-2 sm:block">
+                Template
+              </span>
+              <select
+                className="field-input border-white/15 bg-white/10 text-stone-50 [color-scheme:dark]"
+                value={form.reportTemplate}
+                onChange={(event) => updateField("reportTemplate", event.target.value)}
+              >
+                {reportTemplates.map((template) => (
+                  <option key={template} value={template}>
+                    {template}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <button
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-stone-50 px-5 text-sm font-semibold text-forest-950 transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-data-cyan disabled:pointer-events-none disabled:opacity-60 sm:min-h-12"
+              disabled={isSubmitting}
+              type="submit"
+            >
+              {isSubmitting ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : isDraft ? (
+                <FileText className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Compass className="h-4 w-4" aria-hidden="true" />
+              )}
+              {isDraft ? "Buat Draf Berbasis Bahan" : "Buat Panduan Mulai"}
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {guardrails.map((item) => (
+              <Badge key={item} tone="cyan">
+                {item}
+              </Badge>
+            ))}
+            {isDraft ? (
+              <Badge tone="dark">{materialCount} bahan terisi</Badge>
+            ) : (
+              <Badge tone="dark">Panduan awal, bukan draft final</Badge>
+            )}
+          </div>
+
+          <details className="group mt-4 rounded-lg border border-white/10 bg-white/5">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-stone-100">
+              Tambahkan detail opsional
+              <ChevronDown className="h-4 w-4 transition group-open:rotate-180" aria-hidden="true" />
+            </summary>
+            <div className="grid gap-4 border-t border-white/10 p-4 lg:grid-cols-2">
+              <label className="block">
+                <span className="text-sm font-semibold text-stone-200">Judul laporan</span>
+                <input
+                  className="field-input mt-2 border-white/15 bg-white/10 text-stone-50 placeholder:text-stone-500"
+                  placeholder="Boleh kosong, NaLI akan membuat judul aman"
+                  value={form.title}
+                  onChange={(event) => updateField("title", event.target.value)}
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-semibold text-stone-200">Peran pengguna</span>
+                <select
+                  className="field-input mt-2 border-white/15 bg-white/10 text-stone-50 [color-scheme:dark]"
+                  value={form.userRole}
+                  onChange={(event) => updateField("userRole", event.target.value)}
+                >
+                  {userRoles.map((role) => (
+                    <option key={role} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block lg:col-span-2">
+                <span className="flex items-center gap-2 text-sm font-semibold text-stone-200">
+                  <LinkIcon className="h-4 w-4 text-data-cyan" aria-hidden="true" />
+                  URL sumber
+                </span>
+                <textarea
+                  className="field-input mt-2 min-h-24 resize-y border-white/15 bg-white/10 text-stone-50 placeholder:text-stone-500"
+                  placeholder="Satu URL per baris. URL akan dicatat sebagai bahan pengguna dan belum diverifikasi otomatis."
+                  value={form.sourceUrls}
+                  onChange={(event) => updateField("sourceUrls", event.target.value)}
+                />
+              </label>
+
+              <label className="block">
+                <span className="flex items-center gap-2 text-sm font-semibold text-stone-200">
+                  <MapPin className="h-4 w-4 text-data-cyan" aria-hidden="true" />
+                  Lokasi opsional
+                </span>
+                <input
+                  className="field-input mt-2 border-white/15 bg-white/10 text-stone-50 placeholder:text-stone-500"
+                  placeholder="Contoh: Banjir Kanal Semarang"
+                  value={form.location}
+                  onChange={(event) => updateField("location", event.target.value)}
+                />
+              </label>
+
+              <label className="block">
+                <span className="flex items-center gap-2 text-sm font-semibold text-stone-200">
+                  <Paperclip className="h-4 w-4 text-data-cyan" aria-hidden="true" />
+                  Keterangan file/lampiran
+                </span>
+                <input
+                  className="field-input mt-2 border-white/15 bg-white/10 text-stone-50 placeholder:text-stone-500"
+                  placeholder="Upload belum aktif. Tulis ringkasan file jika perlu."
+                  value={form.fileDescription}
+                  onChange={(event) => updateField("fileDescription", event.target.value)}
+                />
+              </label>
             </div>
-          </div>
+          </details>
         </div>
       </section>
 
-      <section className="border-stone-200 bg-white p-4 shadow-sm sm:p-6">
-        <label className="flex gap-3">
-          <input
-            checked={form.integrityAccepted}
-            className="mt-1 h-4 w-4 accent-[#315f45]"
-            type="checkbox"
-            onChange={(event) => updateField("integrityAccepted", event.target.checked)}
-          />
-          <span className="text-forest-800 text-sm leading-6">
-            Saya memahami bahwa output NaLI adalah draft bantuan berbasis bahan, bukan karya final. Saya bertanggung
-            jawab untuk memeriksa, mengedit, dan memverifikasi hasil akhir.
-          </span>
-        </label>
+      {error || notice ? (
+        <section className="mt-4 rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
+          {error ? (
+            <div className="flex gap-3 rounded-lg border border-rare-red/40 bg-rare-red/10 p-3 text-sm leading-6 text-rare-red">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <p>{error}</p>
+            </div>
+          ) : null}
 
-        {error ? (
-          <div className="border-rare-red/40 bg-rare-red/8 text-rare-red mt-5 flex gap-3 border p-3 text-sm leading-6">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            <p>{error}</p>
-          </div>
-        ) : null}
-
-        {notice ? (
-          <div className="border-data-cyan/40 bg-data-cyan/10 text-forest-900 mt-5 flex gap-3 border p-3 text-sm leading-6">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            <p>{notice}</p>
-          </div>
-        ) : null}
-
-        <button
-          className="bg-forest-900 hover:bg-forest-800 mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-sm px-5 text-sm font-semibold text-stone-50 transition disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-          disabled={isSubmitting}
-          type="submit"
-        >
-          {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <FileText className="h-4 w-4" aria-hidden="true" />}
-          Buat Draf Berbasis Bahan
-        </button>
-      </section>
+          {notice ? (
+            <div className="flex gap-3 rounded-lg border border-data-cyan/40 bg-data-cyan/10 p-3 text-sm leading-6 text-forest-900">
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <p>{notice}</p>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
     </form>
+  );
+}
+
+function ModeButton({
+  active,
+  description,
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  description: string;
+  icon: LucideIcon;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className={cn(
+        "rounded-lg border p-2 text-left transition sm:p-4",
+        active
+          ? "border-data-cyan/60 bg-data-cyan/10 text-stone-50"
+          : "border-white/10 bg-white/5 text-stone-300 hover:bg-white/10 hover:text-stone-50",
+      )}
+      type="button"
+      onClick={onClick}
+    >
+      <span className="flex items-center gap-2 text-sm font-semibold">
+        <Icon className="h-4 w-4 text-data-cyan" aria-hidden="true" />
+        {label}
+      </span>
+      <span className="mt-2 hidden text-xs leading-5 text-stone-400 sm:block">{description}</span>
+    </button>
   );
 }

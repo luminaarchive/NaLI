@@ -1,39 +1,26 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
+import { requestOpenRouterJson } from "@/lib/ai/openrouter";
 import {
-  buildMockEvidenceReport,
+  buildMockResult,
   buildReportPrompt,
-  normalizeProviderReport,
+  normalizeProviderResult,
   validateReportRequest,
-  type EvidenceReport,
 } from "@/lib/reports/reportGenerator";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/security/rate-limit";
 
-function parseProviderJson(text: string): Partial<EvidenceReport> | null {
-  const trimmed = text.trim();
-  const withoutFence = trimmed
-    .replace(/^```json\s*/i, "")
-    .replace(/^```\s*/i, "")
-    .replace(/```$/i, "")
-    .trim();
-
-  try {
-    return JSON.parse(withoutFence) as Partial<EvidenceReport>;
-  } catch {
-    const start = withoutFence.indexOf("{");
-    const end = withoutFence.lastIndexOf("}");
-
-    if (start < 0 || end <= start) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(withoutFence.slice(start, end + 1)) as Partial<EvidenceReport>;
-    } catch {
-      return null;
-    }
-  }
-}
+const systemPrompt = [
+  "You are NaLI by NatIve.",
+  "Generate Indonesian evidence-based report drafts or start-from-zero guidance.",
+  "Use only user-provided materials for draft mode.",
+  "For start-from-zero mode, generate only guidance, not report findings.",
+  "You may structure, clarify, suggest missing evidence, and infer safe titles/topics from user-provided text.",
+  "Do not invent citations, DOI, statistics, field observations, coordinates, source verification, or final scientific claims.",
+  "If URLs are provided, label them as user-provided and not yet verified.",
+  "Source verification is not active in this MVP.",
+  "Every draft output must include additional evidence needed, user review checklist, uncertainty note, and disclaimer.",
+  "Every start-from-zero output must include outline, observation questions, field note template, evidence checklist, source search checklist, and disclaimer.",
+  "Return JSON only.",
+].join(" ");
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "unknown";
@@ -46,7 +33,7 @@ export async function POST(req: NextRequest) {
   if (!rateLimit.allowed) {
     return NextResponse.json(
       {
-        error: "Terlalu banyak permintaan. Tunggu sebentar sebelum membuat draft lagi.",
+        error: "Terlalu banyak permintaan. Tunggu sebentar sebelum melanjutkan.",
       },
       { headers, status: 429 },
     );
@@ -77,72 +64,43 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim();
+  const openRouterResult = await requestOpenRouterJson({
+    prompt: buildReportPrompt(validated.data),
+    system: systemPrompt,
+  });
 
-  if (!anthropicKey) {
-    const report = buildMockEvidenceReport(validated.data);
-
-    return NextResponse.json(
-      {
-        id: report.id,
-        mode: "mock",
-        notice:
-          "ANTHROPIC_API_KEY belum dikonfigurasi. Ini adalah DEMO/MOCK yang aman, bukan output AI provider.",
-        report,
-      },
-      { headers, status: 200 },
+  if (openRouterResult) {
+    const rawReport =
+      openRouterResult.json && typeof openRouterResult.json === "object"
+        ? (openRouterResult.json as Record<string, unknown>)
+        : {};
+    const report = normalizeProviderResult(
+      rawReport,
+      validated.data,
+      openRouterResult.model,
     );
-  }
-
-  try {
-    const anthropic = new Anthropic({ apiKey: anthropicKey });
-    const response = await anthropic.messages.create({
-      max_tokens: 2600,
-      messages: [
-        {
-          content: buildReportPrompt(validated.data),
-          role: "user",
-        },
-      ],
-      model: process.env.NALI_REPORT_MODEL ?? "claude-sonnet-4-20250514",
-      system:
-        "You are NaLI Learn & Report. Produce evidence-bound Indonesian draft reports. Never fabricate citations, DOI, statistics, observations, coordinates, or field data. Return only valid JSON.",
-      temperature: 0.2,
-    });
-
-    const text = response.content
-      .map((block) => (block.type === "text" ? block.text : ""))
-      .join("\n")
-      .trim();
-    const parsed = parseProviderJson(text);
-
-    if (!parsed) {
-      return NextResponse.json(
-        {
-          error:
-            "AI provider mengembalikan format yang belum bisa dibaca. Coba lagi, atau gunakan mode mock saat pengembangan lokal.",
-        },
-        { headers, status: 502 },
-      );
-    }
-
-    const report = normalizeProviderReport(parsed, validated.data);
 
     return NextResponse.json(
       {
         id: report.id,
         mode: "ai",
+        provider: "openrouter",
         report,
       },
       { headers, status: 200 },
     );
-  } catch {
-    return NextResponse.json(
-      {
-        error:
-          "Report generator belum bisa menghubungi AI provider. Periksa ANTHROPIC_API_KEY atau coba lagi nanti.",
-      },
-      { headers, status: 502 },
-    );
   }
+
+  const report = buildMockResult(validated.data);
+
+  return NextResponse.json(
+    {
+      id: report.id,
+      mode: "mock",
+      notice: "DEMO/MOCK - OpenRouter unavailable or not configured.",
+      provider: "mock",
+      report,
+    },
+    { headers, status: 200 },
+  );
 }

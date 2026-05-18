@@ -14,6 +14,7 @@ const requiredKeys = [
 ] as const;
 
 const optionalProviderKeys = [
+  "OPENROUTER_API_KEY",
   "IUCN_API_KEY",
   "EBIRD_API_KEY",
   "NASA_FIRMS_API_KEY",
@@ -76,6 +77,15 @@ export const env = {
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
   },
   providers: {
+    openrouter: {
+      apiKey: process.env.OPENROUTER_API_KEY ?? "",
+      model: process.env.OPENROUTER_MODEL ?? "openai/gpt-oss-120b:free",
+      fallbackModels:
+        process.env.OPENROUTER_FALLBACK_MODELS ??
+        "z-ai/glm-4.5-air:free,nvidia/nemotron-3-super:free,openrouter/free",
+      siteUrl: process.env.OPENROUTER_SITE_URL ?? "https://naliai.vercel.app",
+      siteName: process.env.OPENROUTER_SITE_NAME ?? "NaLI by NatIve",
+    },
     iucn: {
       apiKey: process.env.IUCN_API_KEY ?? "",
       apiBase: process.env.IUCN_API_BASE ?? "https://apiv3.iucnredlist.org/api/v3",

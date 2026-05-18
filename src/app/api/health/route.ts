@@ -49,6 +49,7 @@ export async function GET() {
 
   const providers = {
     gbif: "available" as ProviderStatus,
+    openrouter: providerStatus(envStatus.providers.OPENROUTER_API_KEY.availability === "configured"),
     iucn: providerStatus(envStatus.providers.IUCN_API_KEY.availability === "configured"),
     birdnet: providerStatus(envStatus.providers.BIRDNET_API_KEY.availability === "configured"),
     anthropic: providerStatus(envStatus.providers.ANTHROPIC_API_KEY.availability === "configured"),

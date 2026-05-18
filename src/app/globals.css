@@ -24,6 +24,9 @@
   --color-on-surface: #132018;
   --color-primary: #1e3525;
   --color-on-primary: #fbfaf5;
+  --color-nali-night: #050806;
+  --color-nali-charcoal: #08110d;
+  --color-nali-forest: #10261b;
 
   --spacing-sm: 16px;
   --spacing-margin: 40px;
@@ -76,11 +79,12 @@ body {
   background-color: var(--color-surface);
   color: var(--color-on-surface);
   font-family: var(--font-body-md);
+  min-height: 100vh;
 }
 
 .field-input {
   width: 100%;
-  border-radius: 2px;
+  border-radius: 8px;
   border: 1px solid var(--color-stone-300);
   background: #ffffff;
   padding: 12px 14px;
@@ -93,8 +97,84 @@ body {
   box-shadow: 0 0 0 3px var(--color-olive-100);
 }
 
+.command-input {
+  width: 100%;
+  resize: vertical;
+  border-radius: 8px;
+  border: 1px solid rgba(243, 239, 226, 0.16);
+  background: rgba(5, 8, 6, 0.58);
+  color: #f3efe2;
+  outline: none;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.command-input::placeholder {
+  color: rgba(243, 239, 226, 0.52);
+}
+
+.command-input:focus {
+  border-color: rgba(125, 211, 199, 0.72);
+  background: rgba(5, 8, 6, 0.72);
+  box-shadow: 0 0 0 4px rgba(125, 211, 199, 0.1);
+}
+
+.aurora-mesh {
+  background:
+    radial-gradient(ellipse at 22% 16%, rgba(45, 214, 123, 0.34), transparent 36%),
+    radial-gradient(ellipse at 74% 24%, rgba(125, 211, 199, 0.22), transparent 34%),
+    radial-gradient(ellipse at 52% 68%, rgba(111, 143, 82, 0.32), transparent 42%),
+    linear-gradient(135deg, #050806 0%, #08110d 38%, #10261b 100%);
+  filter: saturate(1.05);
+  transform: scale(1.08);
+  animation: aurora-shift 18s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-shift {
+  from {
+    background-position:
+      0% 0%,
+      100% 0%,
+      50% 100%,
+      0% 0%;
+  }
+  to {
+    background-position:
+      8% 12%,
+      82% 18%,
+      58% 88%,
+      0% 0%;
+  }
+}
+
+.topography-grid {
+  background-image:
+    linear-gradient(rgba(243, 239, 226, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(243, 239, 226, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.safe-bottom {
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+}
