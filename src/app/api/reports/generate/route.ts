@@ -10,6 +10,7 @@ import {
   validateReportRequest,
 } from "@/lib/reports/reportGenerator";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/security/rate-limit";
+import { logUsageEvent } from "@/lib/usage/logging";
 
 const systemPrompt = [
   "You are NaLI by NatIve.",
@@ -27,6 +28,24 @@ const systemPrompt = [
 
 function getInputObject(body: unknown): Record<string, unknown> {
   return body && typeof body === "object" && !Array.isArray(body) ? (body as Record<string, unknown>) : {};
+}
+
+function getInputSize(input: {
+  fileDescription: string;
+  location: string;
+  mainText: string;
+  sourceUrls: string[];
+  title: string;
+  topic: string;
+}) {
+  return [
+    input.title,
+    input.mainText,
+    input.topic,
+    input.location,
+    input.fileDescription,
+    ...input.sourceUrls,
+  ].join("\n").length;
 }
 
 export async function POST(req: NextRequest) {
@@ -100,6 +119,18 @@ export async function POST(req: NextRequest) {
       input: validated.data,
       report,
     });
+    void logUsageEvent({
+      actionType: validated.data.mode === "start_from_zero" ? "start_from_zero_guidance" : "report_preview",
+      guestSessionId: input.guestSessionId,
+      inputSize: getInputSize(validated.data),
+      metadata: {
+        persistence: persistence.persisted ? "supabase" : persistence.reason,
+        result_kind: "provider",
+      },
+      mode: validated.data.mode,
+      reportId: report.id,
+      status: "generated",
+    });
 
     return NextResponse.json(
       {
@@ -119,6 +150,18 @@ export async function POST(req: NextRequest) {
     guestSessionId: input.guestSessionId,
     input: validated.data,
     report,
+  });
+  void logUsageEvent({
+    actionType: validated.data.mode === "start_from_zero" ? "start_from_zero_guidance" : "report_preview",
+    guestSessionId: input.guestSessionId,
+    inputSize: getInputSize(validated.data),
+    metadata: {
+      persistence: persistence.persisted ? "supabase" : persistence.reason,
+      result_kind: "mock",
+    },
+    mode: validated.data.mode,
+    reportId: report.id,
+    status: "generated",
   });
 
   return NextResponse.json(

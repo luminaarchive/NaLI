@@ -34,6 +34,14 @@ const {
   mapMidtransTransactionStatus,
   verifyMidtransSignature,
 } = require("../../src/lib/payments/midtrans");
+const {
+  estimateEnergyForAction,
+  logUsageEvent,
+  shouldEnterCostProtectionMode,
+} = require("../../src/lib/usage/logging");
+const { getSystemReadiness } = require("../../src/lib/system/readiness");
+const { GET: getReadiness } = require("../../src/app/api/system/readiness/route");
+const { POST: postFeedback } = require("../../src/app/api/reports/[id]/feedback/route");
 
 const repoRoot = path.join(__dirname, "../..");
 

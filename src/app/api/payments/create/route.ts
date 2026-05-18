@@ -10,6 +10,7 @@ import {
 } from "@/lib/payments/midtrans";
 import { createPaymentRecord, getSuccessfulPaymentForReport } from "@/lib/payments/store";
 import { getPersistedReport } from "@/lib/reports/persistence";
+import { logUsageEvent } from "@/lib/usage/logging";
 
 function getInputObject(body: unknown): Record<string, unknown> {
   return body && typeof body === "object" && !Array.isArray(body) ? (body as Record<string, unknown>) : {};
@@ -39,6 +40,12 @@ export async function POST(req: NextRequest) {
   }
 
   if (!isMidtransConfigured()) {
+    void logUsageEvent({
+      actionType: "premium_export_attempt",
+      metadata: { export_type: exportType, payment_gateway: "not_configured" },
+      reportId,
+      status: "not_configured",
+    });
     return NextResponse.json(
       {
         error: "Export premium belum aktif di MVP ini.",
@@ -67,6 +74,12 @@ export async function POST(req: NextRequest) {
   const existingPayment = await getSuccessfulPaymentForReport(reportId);
 
   if (existingPayment.found) {
+    void logUsageEvent({
+      actionType: "premium_export_attempt",
+      metadata: { export_type: exportType, payment_status: "already_paid" },
+      reportId,
+      status: "already_paid",
+    });
     return NextResponse.json(
       {
         error: "Export untuk laporan ini sudah terbuka.",

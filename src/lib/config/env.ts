@@ -69,6 +69,9 @@ export function getEnvStatus() {
 }
 
 export const env = {
+  admin: {
+    viewEnabled: process.env.ADMIN_VIEW_ENABLED === "true",
+  },
   app: {
     url: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
     version: process.env.NEXT_PUBLIC_APP_VERSION ?? process.env.npm_package_version ?? "0.1.0",

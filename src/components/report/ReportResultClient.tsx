@@ -122,6 +122,9 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
   const [isLoadingPersisted, setIsLoadingPersisted] = useState(true);
   const [status, setStatus] = useState<"idle" | "copied" | "export_notice">("idle");
   const [exportNotice, setExportNotice] = useState<string | null>(null);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "sent" | "fallback" | "error">("idle");
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -224,6 +227,36 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
     }
   }
 
+  async function submitFeedback(rating: "helpful" | "not_helpful") {
+    setFeedbackStatus("idle");
+    setFeedbackMessage(null);
+
+    try {
+      const response = await fetch(`/api/reports/${reportId}/feedback`, {
+        body: JSON.stringify({
+          comment: feedbackComment,
+          rating,
+          report_access_key: accessKey,
+        }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      });
+      const payload = (await response.json()) as { message?: string; error?: string; stored?: boolean };
+
+      if (response.ok) {
+        setFeedbackStatus(payload.stored ? "sent" : "fallback");
+        setFeedbackMessage(payload.message ?? "Feedback diterima.");
+        return;
+      }
+
+      setFeedbackStatus("error");
+      setFeedbackMessage(payload.error ?? "Feedback belum bisa dikirim.");
+    } catch {
+      setFeedbackStatus("error");
+      setFeedbackMessage("Feedback belum bisa dikirim.");
+    }
+  }
+
   if (!report && isLoadingPersisted) {
     return (
       <div className="min-h-screen bg-[#09090b] text-white">
@@ -279,16 +312,6 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
             <h1 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">{report.title}</h1>
             <p className="mt-2 text-sm leading-6 text-white/50">{isGuide ? report.label : report.draft_label}</p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="outline" onClick={copyMarkdown}>
-              <Clipboard className="h-4 w-4" aria-hidden="true" />
-              Salin Preview
-            </Button>
-            <Button type="button" variant="default" onClick={requestPremiumExport}>
-              <LockKeyhole className="h-4 w-4" aria-hidden="true" />
-              Unlock Export
-            </Button>
-          </div>
         </div>
       </header>
 
@@ -316,6 +339,33 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
               <p className="text-sm leading-6 text-white/40">{report.source_verification_status}</p>
             </SidebarCard>
           ) : null}
+
+          <SidebarCard title="Free Preview">
+            <p className="text-sm leading-6 text-white/40">Salin isi preview untuk ditinjau dan diedit manual.</p>
+            <Button className="mt-3 w-full" type="button" variant="outline" onClick={copyMarkdown}>
+              <Clipboard className="h-4 w-4" aria-hidden="true" />
+              Salin Preview
+            </Button>
+          </SidebarCard>
+
+          <SidebarCard title="Export Premium">
+            <p className="text-sm leading-6 text-white/40">Export premium belum aktif di MVP ini.</p>
+            <Button className="mt-3 w-full" disabled={!accessKey} type="button" variant="default" onClick={requestPremiumExport}>
+              <LockKeyhole className="h-4 w-4" aria-hidden="true" />
+              Unlock Export
+            </Button>
+            {!accessKey ? (
+              <p className="mt-2 text-xs leading-5 text-white/30">Export membutuhkan laporan tersimpan dari sesi ini.</p>
+            ) : null}
+          </SidebarCard>
+
+          <FeedbackCard
+            comment={feedbackComment}
+            message={feedbackMessage}
+            onCommentChange={setFeedbackComment}
+            onSubmit={submitFeedback}
+            status={feedbackStatus}
+          />
 
           {status !== "idle" ? (
             <p className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm text-emerald-300">
@@ -480,5 +530,54 @@ function SidebarCard({ children, title }: { children: ReactNode; title: string }
       <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/30">{title}</p>
       <div className="mt-3">{children}</div>
     </section>
+  );
+}
+
+function FeedbackCard({
+  comment,
+  message,
+  onCommentChange,
+  onSubmit,
+  status,
+}: {
+  comment: string;
+  message: string | null;
+  onCommentChange: (value: string) => void;
+  onSubmit: (rating: "helpful" | "not_helpful") => void;
+  status: "idle" | "sent" | "fallback" | "error";
+}) {
+  return (
+    <SidebarCard title="Feedback">
+      <p className="text-sm font-semibold text-white">Apakah hasil ini membantu?</p>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <Button type="button" variant="outline" onClick={() => onSubmit("helpful")}>
+          Membantu
+        </Button>
+        <Button type="button" variant="outline" onClick={() => onSubmit("not_helpful")}>
+          Kurang membantu
+        </Button>
+      </div>
+      <label className="mt-3 block">
+        <span className="sr-only">Catatan singkat untuk memperbaiki NaLI</span>
+        <textarea
+          className="min-h-20 w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm leading-6 text-white outline-none transition focus:border-white/20"
+          maxLength={1000}
+          onChange={(event) => onCommentChange(event.target.value)}
+          placeholder="Catatan singkat untuk memperbaiki NaLI"
+          value={comment}
+        />
+      </label>
+      {message ? (
+        <p
+          className={`mt-3 rounded-xl border p-3 text-sm leading-6 ${
+            status === "error"
+              ? "border-amber-400/20 bg-amber-400/10 text-amber-200"
+              : "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
+          }`}
+        >
+          {message}
+        </p>
+      ) : null}
+    </SidebarCard>
   );
 }

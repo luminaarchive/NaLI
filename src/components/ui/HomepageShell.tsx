@@ -1,14 +1,14 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { CodexMagicBackground } from "./CodexMagicBackground";
-import { SiteNav } from "./SiteNav";
+import { CodexAtmosphericBackground } from "./CodexAtmosphericBackground";
+import { CodexNav } from "./CodexNav";
 
 export function HomepageShell({ children }: { children: ReactNode }) {
   return (
-    <div className="relative min-h-screen text-white">
-      <CodexMagicBackground />
-      <SiteNav />
+    <div className="relative min-h-screen text-gray-900">
+      <CodexAtmosphericBackground />
+      <CodexNav />
       {children}
     </div>
   );

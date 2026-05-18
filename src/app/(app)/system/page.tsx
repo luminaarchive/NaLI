@@ -1,257 +1,190 @@
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Database,
-  HardDrive,
-  KeyRound,
-  RadioTower,
-  ShieldCheck,
-  WifiOff,
-  type LucideIcon,
-} from "lucide-react";
-import { createClient } from "@supabase/supabase-js";
-import { getEnvStatus } from "@/lib/config/env";
-import { env } from "@/lib/config/env";
-import { getServerTranslations } from "@/lib/i18n/server";
-import { getScientificProviderHealth, type ScientificProviderStatus } from "@/lib/scientific-bridge";
+import Link from "next/link";
+import { AlertTriangle, CheckCircle2, Database, FileText, LockKeyhole, ShieldCheck, WifiOff } from "lucide-react";
+import { getDailyUsageSummary, shouldEnterCostProtectionMode } from "@/lib/usage/logging";
+import { getSystemReadiness } from "@/lib/system/readiness";
 
 export const dynamic = "force-dynamic";
 
-type LiveStatus = "ok" | "degraded" | "unverified";
-type LiveInfrastructureStatus = {
-  database: LiveStatus;
-  storage: LiveStatus;
-  migrations: LiveStatus;
-  livePersistence: LiveStatus;
-  rls: LiveStatus;
+type ReadinessStatus = "configured" | "missing" | "inactive" | "prepared" | "disabled";
+
+const statusStyles: Record<ReadinessStatus, string> = {
+  configured: "border-[#315f45]/20 bg-[#e8efe4] text-[#173d2b]",
+  disabled: "border-[#cfc6b7] bg-[#fcfaf4] text-[#5f6b62]",
+  inactive: "border-[#cfc6b7] bg-[#fcfaf4] text-[#5f6b62]",
+  missing: "border-[#9a5b35]/20 bg-[#fff4e8] text-[#9a5b35]",
+  prepared: "border-[#315f45]/15 bg-white text-[#173d2b]",
 };
 
-async function getLiveInfrastructureStatus(): Promise<LiveInfrastructureStatus> {
-  if (!env.supabase.url || !env.supabase.serviceRoleKey) {
-    return {
-      database: "degraded" as LiveStatus,
-      storage: "degraded" as LiveStatus,
-      migrations: "degraded" as LiveStatus,
-      livePersistence: "degraded" as LiveStatus,
-      rls: "unverified" as LiveStatus,
-    };
-  }
-
-  const supabase = createClient(env.supabase.url, env.supabase.serviceRoleKey, {
-    auth: { persistSession: false },
-  });
-
-  const [{ error: observationsError }, { error: reasoningColumnError }, { data: buckets, error: bucketsError }] =
-    await Promise.all([
-      supabase.from("observations").select("id", { count: "exact", head: true }).limit(1),
-      supabase
-        .from("observations")
-        .select(
-          "reasoning_snapshot,signal_snapshot,reasoning_trace_id,conservation_priority_score,conservation_priority_category",
-        )
-        .limit(1),
-      supabase.storage.listBuckets(),
-    ]);
-
-  const observationBucket = buckets?.find(
-    (bucket) => bucket.name === "observation_media" || bucket.id === "observation_media",
-  );
-  const storageReady = !bucketsError && observationBucket?.public === false;
-  const reasoningReady = !reasoningColumnError;
-  const databaseReady = !observationsError;
-
-  return {
-    database: databaseReady ? "ok" : "degraded",
-    storage: storageReady ? "ok" : "degraded",
-    migrations: databaseReady && reasoningReady ? "ok" : "degraded",
-    livePersistence: databaseReady && reasoningReady && storageReady ? "ok" : "degraded",
-    rls: "unverified" as LiveStatus,
+function statusLabel(status: ReadinessStatus) {
+  const labels: Record<ReadinessStatus, string> = {
+    configured: "configured",
+    disabled: "disabled",
+    inactive: "inactive",
+    missing: "missing env",
+    prepared: "prepared",
   };
+
+  return labels[status];
 }
 
 export default async function SystemReadinessPage() {
-  const { language, t } = await getServerTranslations();
-  const envStatus = getEnvStatus();
-  const providerEntries = Object.entries(envStatus.providers);
-  const scientificHealth = getScientificProviderHealth();
-  const liveStatus = await getLiveInfrastructureStatus();
-  const knownWarnings = [
-    t("warnings.optionalProviders"),
-    t("warnings.healthDegraded"),
-    t("warnings.backgroundAnalysis"),
-  ];
+  const readiness = getSystemReadiness();
+  const usage = await getDailyUsageSummary();
+  const costProtection = shouldEnterCostProtectionMode();
 
-  const checks: Array<{
-    label: string;
-    detail: string;
-    status: LiveStatus;
-    icon: LucideIcon;
-  }> = [
-    { label: "Auth configured", detail: "Supabase public URL and anon key are available for session handling.", status: envStatus.required.NEXT_PUBLIC_SUPABASE_URL.availability === "configured" && envStatus.required.NEXT_PUBLIC_SUPABASE_ANON_KEY.availability === "configured" ? "ok" : "degraded", icon: KeyRound },
-    { label: "Supabase connected", detail: "Server-side runtime can reach the observations schema using configured Supabase credentials.", status: liveStatus.database, icon: Database },
-    { label: "Storage configured", detail: "The private observation_media bucket is reachable and public access is disabled.", status: liveStatus.storage, icon: HardDrive },
-    { label: "Storage bucket validation", detail: "Run npm run validate:storage to verify the private observation_media bucket, signed URLs, path convention, and cleanup behavior.", status: liveStatus.storage, icon: HardDrive },
-    { label: "Migrations reflected", detail: "Observations schema includes operational reasoning columns for snapshots, trace IDs, and conservation priority persistence.", status: liveStatus.migrations, icon: Database },
-    { label: "RLS validation", detail: "Run npm run validate:rls to check anon access, user-scoped observation data, media access, analysis traces, and public species reference behavior.", status: liveStatus.rls, icon: ShieldCheck },
-    { label: "Live persistence readiness", detail: "Run npm run validate:supabase and node tests/e2e/smoke-observation-flow.cjs with production-like env vars before release.", status: liveStatus.livePersistence, icon: Database },
-    { label: "Offline queue available", detail: "Client-side field capture can continue using local queue infrastructure.", status: "ok", icon: WifiOff },
-    { label: "Observation create route", detail: "POST /api/observations accepts media, field notes, GPS metadata, and returns an observation_id before background analysis begins.", status: "ok", icon: RadioTower },
-    { label: "Orchestrator available", detail: "Observation creation queues the provider pipeline and persists reasoning snapshots, signal snapshots, events, and field case decisions.", status: "ok", icon: ShieldCheck },
-    { label: "Health endpoint available", detail: "GET /api/health reports app, database, storage, provider, timestamp, and version status for deployment smoke checks.", status: "ok", icon: Database },
-    { label: "Last build/runtime status", detail: "Run npm run lint, npm run typecheck, npm run build, npm run verify, and node tests/e2e/smoke-observation-flow.cjs before release.", status: "ok", icon: ShieldCheck },
-  ];
+  const checks = [
+    {
+      detail: readiness.supabaseConfigured
+        ? "Server runtime has the required Supabase values."
+        : "Persistence code is ready, but this environment is missing Supabase values.",
+      label: "Supabase persistence",
+      status: readiness.supabaseConfigured ? "configured" : "missing",
+    },
+    {
+      detail: readiness.openRouterConfigured
+        ? "Provider path can be used by server code."
+        : "NaLI will keep using safe DEMO/MOCK fallback when provider access is absent.",
+      label: "AI provider",
+      status: readiness.openRouterConfigured ? "configured" : "missing",
+    },
+    {
+      detail: readiness.midtransConfigured
+        ? "Payment route can attempt one-time export creation."
+        : "Payment route remains honest and returns not-configured responses.",
+      label: "Midtrans payment",
+      status: readiness.midtransConfigured ? "configured" : "missing",
+    },
+    {
+      detail: readiness.adminViewEnabled
+        ? "Founder order view can read operational metadata when Supabase is configured."
+        : "Order data view is disabled by ADMIN_VIEW_ENABLED.",
+      label: "Admin order view",
+      status: readiness.adminViewEnabled ? "configured" : "disabled",
+    },
+    {
+      detail:
+        readiness.exportGateStatus === "active"
+          ? "Export gate can check payment records."
+          : "Export gate is prepared but locked until persistence and payment are configured.",
+      label: "Export gate",
+      status: readiness.exportGateStatus === "active" ? "configured" : "prepared",
+    },
+    {
+      detail: "Source verification remains intentionally inactive in Sprint 0.",
+      label: "Source verification",
+      status: "inactive",
+    },
+    {
+      detail: "File upload and PDF processing are not active in this code-side step.",
+      label: "File upload",
+      status: "inactive",
+    },
+    {
+      detail: "Professional Field Intelligence remains positioning only for this sprint.",
+      label: "Field Intelligence",
+      status: "inactive",
+    },
+  ] satisfies Array<{ detail: string; label: string; status: ReadinessStatus }>;
 
   return (
-    <div className="min-h-screen bg-[#09090b] px-4 py-6 text-white sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <header className="mb-6 border-b border-white/[0.06] pb-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/30">
-            {t("system.eyebrow")}
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold text-white">{t("system.title")}</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/50">{t("system.context")}</p>
+    <div className="min-h-screen bg-[#f7f3ea] px-4 py-8 text-[#111814] sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-6xl">
+        <header className="border-b border-[#ddd5c7] pb-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#6f8057]">Internal Sprint 0</p>
+          <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">System Readiness</h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5f6b62]">
+                Pemeriksaan internal tanpa menampilkan nilai rahasia. Halaman ini hanya menunjukkan apakah fondasi
+                Sprint 0 siap, terkunci, atau belum dikonfigurasi.
+              </p>
+            </div>
+            <Link
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#173d2b]/20 bg-white px-4 text-sm font-semibold text-[#173d2b] transition hover:bg-[#e8efe4]"
+              href="/system/orders"
+            >
+              <FileText className="h-4 w-4" aria-hidden="true" />
+              Founder Order View
+            </Link>
+          </div>
         </header>
 
-        <main className="grid gap-5 lg:grid-cols-[1fr_380px]">
-          <section className="grid gap-4 md:grid-cols-2">
-            {checks.map((check) => (
-              <StatusCard detail={check.detail} icon={check.icon} key={check.label} label={check.label} status={check.status} />
-            ))}
-          </section>
+        <section className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {checks.map((check) => (
+            <ReadinessCard key={check.label} {...check} />
+          ))}
+        </section>
 
-          <aside className="space-y-5">
-            <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm">
-              <div className="mb-4 flex items-center gap-2">
-                <RadioTower className="h-5 w-5 text-white/40" />
-                <h2 className="text-lg font-semibold">{t("system.providerHealth")}</h2>
-              </div>
-              <div className="space-y-3">
-                <ProviderRow label="GBIF occurrence data" status="configured" />
-                {providerEntries.map(([key, status]) => (
-                  <ProviderRow key={key} label={key.replace("_API_KEY", "").toLowerCase()} status={status.availability} />
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm">
-              <div className="mb-4 flex items-center gap-2">
-                <Database className="h-5 w-5 text-white/40" />
-                <h2 className="text-lg font-semibold">
-                  {language === "id" ? "Matriks Intelijen Sumber" : "Source Intelligence Matrix"}
-                </h2>
-              </div>
-              <div className="space-y-3">
-                {scientificHealth.map((entry) => (
-                  <ProviderMatrixRow key={entry.name} name={entry.name} note={language === "id" ? (entry.noteId ?? entry.note) : entry.note} purpose={language === "id" ? (entry.purposeId ?? entry.purpose) : entry.purpose} status={entry.status} />
-                ))}
-                <ProviderMatrixRow name="Location memory" note={language === "id" ? "RPC PostGIS telah discaffold; status live bergantung pada validasi migrasi Supabase." : "PostGIS RPC scaffolded; live status depends on Supabase migration validation."} purpose={language === "id" ? "Riwayat observasi sekitar 500m." : "500m nearby observation history."} status={liveStatus.database === "ok" ? "configured" : "degraded"} />
-                <ProviderMatrixRow name="Evidence hash" note={language === "id" ? "Library SHA-256 dan scaffold migrasi tersedia; penggunaan hukum tetap perlu validasi forensik." : "SHA-256 library and migration scaffold exist; legal use still needs forensic validation."} purpose={language === "id" ? "Pemeriksaan integritas catatan lapangan yang tahan perubahan." : "Tamper-evident field record integrity check."} status={liveStatus.migrations === "ok" ? "configured" : "degraded"} />
-                <ProviderMatrixRow name="Review queue" note={language === "id" ? "Kebijakan reviewer/admin harus divalidasi sebelum digunakan operasional." : "Reviewer/admin policies must be validated before operational use."} purpose={language === "id" ? "Alur validasi manusia." : "Human validation workflow."} status={liveStatus.migrations === "ok" ? "configured" : "degraded"} />
-                <ProviderMatrixRow name="Workflow power tools" note={language === "id" ? "Konsep GSD, LLM-wiki, Hermes, dan DESIGN.md didokumentasikan dan diekstrak ke skill lokal." : "GSD, LLM-wiki, Hermes, and DESIGN.md concepts are documented and extracted into local skills."} purpose={language === "id" ? "Disiplin workflow Codex." : "Codex workflow discipline."} status="fallback" />
-                <ProviderMatrixRow name="Codex skill pack" note={language === "id" ? ".codex/skills/nali-* dicommit sebagai manual operasi lokal untuk pekerjaan berikutnya." : ".codex/skills/nali-* is committed as the local operating manual for future work."} purpose={language === "id" ? "Perilaku agen khusus NaLI." : "NaLI-specific agent behavior."} status="configured" />
-              </div>
-            </section>
-
-            <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm">
-              <div className="mb-4 flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-white/40" />
-                <h2 className="text-lg font-semibold">{t("system.validationCommands")}</h2>
-              </div>
-              <div className="space-y-2">
-                {[
-                  "npm run validate:vercel-env",
-                  "npm run validate:supabase",
-                  "npm run validate:storage",
-                  "npm run validate:rls",
-                  "npm run validate:production",
-                ].map((command) => (
-                  <p key={command} className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2 font-mono text-xs text-white/60">
-                    {command}
-                  </p>
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm">
-              <div className="mb-4 flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-white/40" />
-                <h2 className="text-lg font-semibold">{t("system.knownWarnings")}</h2>
-              </div>
-              <div className="space-y-2">
-                {knownWarnings.map((warning) => (
-                  <p key={warning} className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-sm leading-6 text-white/50">
-                    {warning}
-                  </p>
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm">
-              <div className="mb-4 flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-white/40" />
-                <h2 className="text-lg font-semibold">{t("system.activeLanguage")}</h2>
-              </div>
-              <p className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-sm font-semibold uppercase text-white/60">
-                {language}
-              </p>
-            </section>
-          </aside>
-        </main>
-      </div>
-    </div>
-  );
-}
-
-function ProviderMatrixRow({ name, note, purpose, status }: { name: string; note: string; purpose: string; status: ScientificProviderStatus }) {
-  const available = status === "live" || status === "configured";
-
-  return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-3">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-semibold text-white/80">{name}</span>
-        <span className={`flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] ${available ? "bg-green-400/10 text-green-300" : "bg-white/[0.04] text-white/40"}`}>
-          {available ? <CheckCircle2 className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
-          {status}
-        </span>
-      </div>
-      <p className="mt-2 text-xs leading-5 text-white/50">{purpose}</p>
-      <p className="mt-1 text-xs leading-5 text-white/30">{note}</p>
-    </div>
-  );
-}
-
-function StatusCard({ detail, icon: Icon, label, status }: { detail: string; icon: LucideIcon; label: string; status: LiveStatus }) {
-  const isOk = status === "ok";
-  const isUnverified = status === "unverified";
-
-  return (
-    <article className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm">
-      <div className="mb-4 flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04]">
-            <Icon className="h-5 w-5 text-white/50" />
+        <section className="mt-6 grid gap-4 lg:grid-cols-[1fr_360px]">
+          <div className="rounded-lg border border-[#ddd5c7] bg-[#fcfaf4] p-5">
+            <div className="flex items-center gap-2">
+              <Database className="h-5 w-5 text-[#315f45]" aria-hidden="true" />
+              <h2 className="text-lg font-semibold">Usage and Cost Protection</h2>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <Metric label="NaLI Energy today" value={usage.ready ? String(usage.summary.estimatedEnergy) : "not active"} />
+              <Metric label="Usage events today" value={usage.ready ? String(usage.summary.eventCount) : "not active"} />
+              <Metric label="Protection mode" value={costProtection.active ? "active" : "observational"} />
+            </div>
+            <p className="mt-4 text-sm leading-6 text-[#5f6b62]">
+              Cost logging is non-blocking. If Supabase is not configured in this environment, report generation still
+              works through the existing fallback path.
+            </p>
           </div>
-          <h2 className="text-lg font-semibold">{label}</h2>
+
+          <aside className="rounded-lg border border-[#ddd5c7] bg-white p-5">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-[#315f45]" aria-hidden="true" />
+              <h2 className="text-lg font-semibold">Sprint 0 Boundaries</h2>
+            </div>
+            <ul className="mt-4 space-y-3 text-sm leading-6 text-[#5f6b62]">
+              <BoundaryItem>Guest Mode first.</BoundaryItem>
+              <BoundaryItem>No file upload, PDF processing, or source verification in this step.</BoundaryItem>
+              <BoundaryItem>Export premium stays locked until payment is actually configured.</BoundaryItem>
+              <BoundaryItem>No provider keys or secret values are printed here.</BoundaryItem>
+            </ul>
+          </aside>
+        </section>
+      </main>
+    </div>
+  );
+}
+
+function ReadinessCard({ detail, label, status }: { detail: string; label: string; status: ReadinessStatus }) {
+  const Icon = status === "configured" ? CheckCircle2 : status === "missing" ? AlertTriangle : LockKeyhole;
+
+  return (
+    <article className="rounded-lg border border-[#ddd5c7] bg-white p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="font-semibold">{label}</h2>
+          <p className="mt-2 text-sm leading-6 text-[#5f6b62]">{detail}</p>
         </div>
-        <span className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] ${isOk ? "bg-green-400/10 text-green-300" : isUnverified ? "bg-white/[0.04] text-white/40" : "bg-amber-400/10 text-amber-300"}`}>
-          {status === "ok" ? "ok" : status}
-        </span>
+        <Icon className="h-5 w-5 shrink-0 text-[#6f8057]" aria-hidden="true" />
       </div>
-      <p className="text-sm leading-6 text-white/50">{detail}</p>
+      <span
+        className={`mt-4 inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${statusStyles[status]}`}
+      >
+        {statusLabel(status)}
+      </span>
     </article>
   );
 }
 
-function ProviderRow({ label, status }: { label: string; status: string }) {
-  const available = status === "configured";
-
+function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
-      <span className="text-sm capitalize text-white/60">{label}</span>
-      <span className={`flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] ${available ? "text-green-300" : "text-white/30"}`}>
-        {available ? <CheckCircle2 className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
-        {available ? "available" : "unconfigured"}
-      </span>
+    <div className="rounded-md border border-[#ddd5c7] bg-white p-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#6f8057]">{label}</p>
+      <p className="mt-2 text-xl font-semibold text-[#111814]">{value}</p>
     </div>
+  );
+}
+
+function BoundaryItem({ children }: { children: string }) {
+  return (
+    <li className="flex gap-2">
+      <WifiOff className="mt-1 h-4 w-4 shrink-0 text-[#6f8057]" aria-hidden="true" />
+      <span>{children}</span>
+    </li>
   );
 }
