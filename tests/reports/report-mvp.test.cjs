@@ -305,6 +305,22 @@ test("Sprint 0 migration keeps persistence, payments, energy, and rate limits in
   assert.doesNotMatch(sql, /energy_balance|balance_table/);
 });
 
+test("Sprint 0 operational migration adds usage and feedback tables safely", () => {
+  const sql = fs.readFileSync(
+    path.join(repoRoot, "supabase/migrations/20260518212110_sprint0_operational_foundation.sql"),
+    "utf8",
+  );
+
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.usage_events/);
+  assert.match(sql, /processing_class TEXT CHECK \(processing_class IN \('Peregrine', 'Obsidian', 'Zephyr'\)\)/);
+  assert.match(sql, /estimated_energy INTEGER/);
+  assert.match(sql, /metadata JSONB NOT NULL DEFAULT '\{\}'::jsonb/);
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.report_feedback/);
+  assert.match(sql, /rating TEXT NOT NULL CHECK \(rating IN \('helpful', 'not_helpful'\)\)/);
+  assert.match(sql, /report_feedback_service_role_all/);
+  assert.match(sql, /usage_events_service_role_all/);
+});
+
 test("Midtrans webhook status and signature mapping are conservative", () => {
   const serverKey = "server-key-for-test";
   const baseNotification = {
@@ -330,6 +346,104 @@ test("Midtrans webhook status and signature mapping are conservative", () => {
   assert.equal(mapMidtransTransactionStatus({ transaction_status: "failure" }), "failed");
 });
 
+test("system readiness reports booleans without exposing secret values", async () => {
+  const original = {
+    openrouter: process.env.OPENROUTER_API_KEY,
+    serviceRole: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  };
+  process.env.OPENROUTER_API_KEY = "sk-test-secret-value-should-not-appear";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "supabase-secret-value-should-not-appear";
+
+  try {
+    const response = await getReadiness();
+    const payload = await response.json();
+    const serialized = JSON.stringify(payload);
+
+    assert.equal(typeof payload.openRouterConfigured, "boolean");
+    assert.equal(typeof payload.supabaseConfigured, "boolean");
+    assert.doesNotMatch(serialized, /sk-test-secret-value-should-not-appear|supabase-secret-value-should-not-appear/);
+  } finally {
+    process.env.OPENROUTER_API_KEY = original.openrouter;
+    process.env.SUPABASE_SERVICE_ROLE_KEY = original.serviceRole;
+  }
+});
+
+test("missing env does not crash readiness or usage logging", async () => {
+  const original = {
+    anon: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    serviceRole: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  };
+  delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+  delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  try {
+    const readiness = getSystemReadiness();
+    const usage = await logUsageEvent({
+      actionType: "report_preview",
+      inputSize: 120,
+      mode: "draft_from_materials",
+      status: "test",
+    });
+
+    assert.equal(readiness.supabaseConfigured, false);
+    assert.equal(usage.logged, false);
+    assert.equal(usage.reason, "supabase_unconfigured");
+  } finally {
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = original.anon;
+    process.env.NEXT_PUBLIC_SUPABASE_URL = original.url;
+    process.env.SUPABASE_SERVICE_ROLE_KEY = original.serviceRole;
+  }
+});
+
+test("usage logging estimates NaLI Energy with internal processing classes only", () => {
+  const draftEstimate = estimateEnergyForAction("report_preview", "draft_from_materials", 3200);
+  const guideEstimate = estimateEnergyForAction("start_from_zero_guidance", "start_from_zero", 200);
+  const protection = shouldEnterCostProtectionMode();
+  const serialized = JSON.stringify({ draftEstimate, guideEstimate, protection });
+
+  assert.equal(draftEstimate.processingClass, "Obsidian");
+  assert.equal(guideEstimate.processingClass, "Peregrine");
+  assert.equal(protection.active, false);
+  assert.doesNotMatch(serialized, /OpenRouter|GPT|Gemini|Claude|API credit|report credit/i);
+});
+
+test("feedback route validates rating and gracefully falls back when persistence is missing", async () => {
+  const original = {
+    serviceRole: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  };
+  delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+  delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  try {
+    const invalid = await postFeedback(
+      new Request("http://localhost/api/reports/test-report/feedback", {
+        body: JSON.stringify({ rating: "maybe" }),
+        method: "POST",
+      }),
+      { params: Promise.resolve({ id: "test-report" }) },
+    );
+    const fallback = await postFeedback(
+      new Request("http://localhost/api/reports/test-report/feedback", {
+        body: JSON.stringify({ comment: "Cukup membantu.", rating: "helpful" }),
+        method: "POST",
+      }),
+      { params: Promise.resolve({ id: "test-report" }) },
+    );
+    const fallbackPayload = await fallback.json();
+
+    assert.equal(invalid.status, 400);
+    assert.equal(fallback.status, 202);
+    assert.equal(fallbackPayload.stored, false);
+    assert.match(fallbackPayload.message, /persistence belum aktif/i);
+  } finally {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = original.url;
+    process.env.SUPABASE_SERVICE_ROLE_KEY = original.serviceRole;
+  }
+});
+
 test("public route files exist for the core MVP links", () => {
   const routeFiles = [
     "src/app/page.tsx",
@@ -341,8 +455,12 @@ test("public route files exist for the core MVP links", () => {
     "src/app/api/reports/generate/route.ts",
     "src/app/api/reports/[id]/route.ts",
     "src/app/api/reports/[id]/export/route.ts",
+    "src/app/api/reports/[id]/feedback/route.ts",
     "src/app/api/payments/create/route.ts",
     "src/app/api/payments/midtrans-webhook/route.ts",
+    "src/app/api/system/readiness/route.ts",
+    "src/app/(app)/system/page.tsx",
+    "src/app/(app)/system/orders/page.tsx",
   ];
 
   for (const file of routeFiles) {

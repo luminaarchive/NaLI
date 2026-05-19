@@ -1,6 +1,8 @@
 -- NaLI Zero Sprint 0 operational foundation
 -- Additive only: internal usage logging and lightweight report feedback.
 
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 CREATE TABLE IF NOT EXISTS public.usage_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   guest_session_id_hash TEXT,
