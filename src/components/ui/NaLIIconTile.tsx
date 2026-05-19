@@ -21,40 +21,19 @@ export function NaLIIconTile() {
         {/* Animated cloud interior */}
         <div className="absolute inset-0 overflow-hidden rounded-[22px] sm:rounded-[26px]">
           <div
-            className="codex-cloud codex-drift-1 absolute rounded-full"
+            className="absolute -inset-1/2 opacity-60"
             style={{
-              left: "-40%",
-              top: "-30%",
-              width: "160%",
-              height: "140%",
               background:
-                "radial-gradient(ellipse at 40% 50%, rgba(96,165,250,0.45) 0%, rgba(139,188,255,0.2) 40%, transparent 70%)",
-              filter: "blur(8px)",
+                "conic-gradient(from 90deg at 50% 50%, rgba(99,102,241,0.1) 0%, rgba(139,92,246,0.15) 25%, rgba(167,139,250,0.1) 50%, rgba(196,181,253,0.15) 75%, rgba(99,102,241,0.1) 100%)",
+              filter: "blur(12px)",
+              animation: "spin 12s linear infinite",
             }}
           />
           <div
-            className="codex-cloud codex-drift-2 absolute rounded-full"
+            className="absolute inset-0"
             style={{
-              right: "-30%",
-              top: "-20%",
-              width: "140%",
-              height: "130%",
               background:
-                "radial-gradient(ellipse at 60% 40%, rgba(139,124,255,0.4) 0%, rgba(196,181,253,0.18) 40%, transparent 70%)",
-              filter: "blur(8px)",
-            }}
-          />
-          <div
-            className="codex-cloud codex-bloom absolute rounded-full"
-            style={{
-              left: "50%",
-              top: "50%",
-              width: "80%",
-              height: "80%",
-              transform: "translate(-50%, -50%)",
-              background:
-                "radial-gradient(circle, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.25) 40%, transparent 65%)",
-              filter: "blur(4px)",
+                "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.3) 100%)",
             }}
           />
         </div>
