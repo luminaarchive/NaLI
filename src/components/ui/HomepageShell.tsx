@@ -4,20 +4,22 @@ import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { CodexNav } from "./CodexNav";
 import { NaLICodexBackground } from "./NaLICodexBackground";
+import { ScrollDarkenOverlay } from "./ScrollDarkenOverlay";
 
 /**
- * HomepageShell — Wraps homepage content with light atmospheric background,
- * nav, and body overrides to ensure the homepage is light-themed despite
- * the app's default dark body.
+ * HomepageShell — Wraps homepage content with:
+ * 1. Rich atmospheric fixed background
+ * 2. Scroll-linked darkening overlay
+ * 3. Transparent nav
+ * 4. Body color overrides for homepage context
  */
 export function HomepageShell({ children }: { children: ReactNode }) {
-  /* Override the dark body background/color on mount, restore on unmount */
   useEffect(() => {
     const body = document.body;
     const prevBg = body.style.backgroundColor;
     const prevColor = body.style.color;
-    body.style.backgroundColor = "#f7fbff";
-    body.style.color = "#0f172a";
+    body.style.backgroundColor = "#17103a";
+    body.style.color = "#ffffff";
     return () => {
       body.style.backgroundColor = prevBg;
       body.style.color = prevColor;
@@ -25,8 +27,9 @@ export function HomepageShell({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-[#f7fbff] text-[#0f172a]">
+    <div className="relative min-h-screen text-white">
       <NaLICodexBackground />
+      <ScrollDarkenOverlay />
       <CodexNav />
       {children}
     </div>
