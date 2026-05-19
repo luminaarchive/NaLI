@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
+const { PDFDocument } = require("pdf-lib");
 
 const {
   DRAFT_LABEL,
@@ -28,6 +29,14 @@ const {
   calculateEnergyBalance,
   getReportMacroStatus,
 } = require("../../src/lib/reports/persistence");
+const {
+  MAX_REPORT_UPLOAD_BYTES,
+  REPORT_UPLOAD_JOB_STATUSES,
+  REPORT_UPLOAD_STEPS,
+  createReportUploadRequest,
+  confirmReportUpload,
+  verifyReportUpload,
+} = require("../../src/lib/reports/uploads");
 const { isValidEnergyLedgerAmount } = require("../../src/lib/energy/ledger");
 const {
   createMidtransSignature,
@@ -42,8 +51,114 @@ const {
 const { getSystemReadiness } = require("../../src/lib/system/readiness");
 const { GET: getReadiness } = require("../../src/app/api/system/readiness/route");
 const { POST: postFeedback } = require("../../src/app/api/reports/[id]/feedback/route");
+const { POST: postCreateUpload } = require("../../src/app/api/reports/create-upload/route");
 
 const repoRoot = path.join(__dirname, "../..");
+
+function snapshotSupabaseEnv() {
+  return {
+    anon: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    serviceRole: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  };
+}
+
+function restoreSupabaseEnv(snapshot) {
+  if (snapshot.anon === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = snapshot.anon;
+
+  if (snapshot.serviceRole === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+  else process.env.SUPABASE_SERVICE_ROLE_KEY = snapshot.serviceRole;
+
+  if (snapshot.url === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+  else process.env.NEXT_PUBLIC_SUPABASE_URL = snapshot.url;
+}
+
+function makeUploadStore(overrides = {}) {
+  const state = {
+    jobs: new Map(),
+    reports: new Map(),
+    signedUrl: "https://example.supabase.co/storage/v1/object/upload/sign/nali_report_uploads/test.pdf?token=signed",
+    updates: [],
+    ...overrides.state,
+  };
+
+  const store = {
+    async createPendingUpload({ job, report }) {
+      state.reports.set(report.id, { ...report });
+      state.jobs.set(job.report_id, { ...job });
+      return { ok: true };
+    },
+    async createSignedUploadUrl(storagePath) {
+      state.lastSignedPath = storagePath;
+      return { ok: true, signedUrl: state.signedUrl };
+    },
+    async getReportByAccess(reportId, accessHash) {
+      const report = state.reports.get(reportId);
+      if (!report || report.report_access_token_hash !== accessHash) {
+        return { found: false };
+      }
+      return { found: true, report };
+    },
+    async getReportForVerification(reportId) {
+      const report = state.reports.get(reportId);
+      return report ? { found: true, report } : { found: false };
+    },
+    async markVerificationStarted(reportId, metadata) {
+      const report = state.reports.get(reportId);
+      if (report) {
+        state.reports.set(reportId, {
+          ...report,
+          processing_metadata: metadata,
+          status: "verifying",
+        });
+      }
+      const job = state.jobs.get(reportId) ?? { attempts: 0, report_id: reportId, status: "queued" };
+      state.jobs.set(reportId, { ...job, attempts: job.attempts + 1, status: "verifying" });
+      return { ok: true };
+    },
+    async storeVerificationFailure(reportId, patch) {
+      const report = state.reports.get(reportId);
+      state.updates.push({ patch, reportId, type: "failure" });
+      if (report) state.reports.set(reportId, { ...report, ...patch });
+      const job = state.jobs.get(reportId) ?? { report_id: reportId };
+      state.jobs.set(reportId, { ...job, last_error: patch.failure_reason, status: "failed" });
+      return { ok: true };
+    },
+    async storeVerificationSuccess(reportId, patch) {
+      const report = state.reports.get(reportId);
+      state.updates.push({ patch, reportId, type: "success" });
+      if (report) state.reports.set(reportId, { ...report, ...patch });
+      const job = state.jobs.get(reportId) ?? { report_id: reportId };
+      state.jobs.set(reportId, { ...job, status: "verified" });
+      return { ok: true };
+    },
+    async getStorageInfo() {
+      return {
+        found: true,
+        lastModified: "2026-05-19T10:00:00.000Z",
+        size: 12,
+      };
+    },
+    async downloadStorageObject() {
+      return {
+        downloaded: true,
+        file: new Blob([Buffer.from("%PDF-invalid")], { type: "application/pdf" }),
+      };
+    },
+    ...overrides.store,
+  };
+
+  return { state, store };
+}
+
+async function makePdfBytes(pageCount) {
+  const pdf = await PDFDocument.create();
+  for (let index = 0; index < pageCount; index += 1) {
+    pdf.addPage();
+  }
+  return pdf.save();
+}
 
 test("draft mode accepts material without requiring title or role", () => {
   const result = validateReportRequest({
@@ -276,6 +391,384 @@ test("Sprint 0 persistence statuses and NaLI Energy math stay constrained", () =
   assert.equal(isValidEnergyLedgerAmount("debit", 3), false);
 });
 
+test("create-upload rejects files above the 10MB Sprint 0 limit", async () => {
+  const response = await postCreateUpload(
+    new Request("http://localhost/api/reports/create-upload", {
+      body: JSON.stringify({
+        contentType: "application/pdf",
+        fileName: "catatan.pdf",
+        fileSizeBytes: MAX_REPORT_UPLOAD_BYTES + 1,
+        guestSessionId: "guest-session-for-upload-test",
+      }),
+      method: "POST",
+    }),
+  );
+  const payload = await response.json();
+
+  assert.equal(response.status, 400);
+  assert.equal(payload.code, "FILE_TOO_LARGE");
+});
+
+test("create-upload rejects non-PDF files before storage setup is checked", async () => {
+  const response = await postCreateUpload(
+    new Request("http://localhost/api/reports/create-upload", {
+      body: JSON.stringify({
+        contentType: "text/plain",
+        fileName: "catatan.txt",
+        fileSizeBytes: 1200,
+        guestSessionId: "guest-session-for-upload-test",
+      }),
+      method: "POST",
+    }),
+  );
+  const payload = await response.json();
+
+  assert.equal(response.status, 400);
+  assert.equal(payload.code, "PDF_ONLY");
+});
+
+test("create-upload returns not configured when Supabase env is missing", async () => {
+  const original = snapshotSupabaseEnv();
+  delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+  delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  try {
+    const response = await postCreateUpload(
+      new Request("http://localhost/api/reports/create-upload", {
+        body: JSON.stringify({
+          contentType: "application/pdf",
+          fileName: "catatan.pdf",
+          fileSizeBytes: 1200,
+          guestSessionId: "guest-session-for-upload-test",
+        }),
+        method: "POST",
+      }),
+    );
+    const payload = await response.json();
+
+    assert.equal(response.status, 503);
+    assert.equal(payload.code, "UPLOAD_NOT_CONFIGURED");
+    assert.equal(payload.uploadConfigured, false);
+  } finally {
+    restoreSupabaseEnv(original);
+  }
+});
+
+test("create-upload creates a pending upload report when storage is mocked", async () => {
+  const { state, store } = makeUploadStore();
+  const result = await createReportUploadRequest(
+    {
+      contentType: "application/pdf",
+      fileName: "Catatan Sungai.pdf",
+      fileSizeBytes: 4096,
+      guestSessionId: "guest-session-for-upload-test",
+    },
+    {
+      createReportId: () => "11111111-1111-4111-8111-111111111111",
+      createUploadNonce: () => "nonce-test",
+      now: () => new Date("2026-05-19T08:00:00.000Z"),
+      store,
+    },
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.report_id, "11111111-1111-4111-8111-111111111111");
+  assert.equal(result.storage_path, "pending_reports/11111111-1111-4111-8111-111111111111/nonce-test.pdf");
+  assert.match(result.signed_upload_url, /^https:\/\/example\.supabase\.co\/storage\/v1\/object\/upload\/sign/);
+  assert.ok(result.report_access_token.length >= 40);
+  assert.equal(state.lastSignedPath, "pending_reports/11111111-1111-4111-8111-111111111111/nonce-test.pdf");
+
+  const report = state.reports.get(result.report_id);
+  const job = state.jobs.get(result.report_id);
+  assert.equal(report.status, "pending_upload");
+  assert.equal(report.storage_path, result.storage_path);
+  assert.equal(report.original_filename, "Catatan Sungai.pdf");
+  assert.equal(report.guest_session_id_hash.length, 64);
+  assert.equal(report.report_access_token_hash.length, 64);
+  assert.notEqual(report.report_access_token_hash, result.report_access_token);
+  assert.equal(job.status, "queued");
+});
+
+test("confirm-upload is idempotent after verification succeeds", async () => {
+  const { state, store } = makeUploadStore();
+  const created = await createReportUploadRequest(
+    {
+      contentType: "application/pdf",
+      fileName: "catatan.pdf",
+      fileSizeBytes: 1024,
+      guestSessionId: "guest-session-for-upload-test",
+    },
+    {
+      createReportId: () => "22222222-2222-4222-8222-222222222222",
+      createUploadNonce: () => "nonce-test",
+      now: () => new Date("2026-05-19T08:00:00.000Z"),
+      store,
+    },
+  );
+  assert.equal(created.ok, true);
+  state.reports.set(created.report_id, {
+    ...state.reports.get(created.report_id),
+    page_count: 4,
+    status: "pending_payment",
+    verified_file_sha256: "a".repeat(64),
+  });
+  state.jobs.set(created.report_id, {
+    ...state.jobs.get(created.report_id),
+    status: "verified",
+  });
+
+  const first = await confirmReportUpload(
+    {
+      reportAccessToken: created.report_access_token,
+      reportId: created.report_id,
+    },
+    { store },
+  );
+  const second = await confirmReportUpload(
+    {
+      reportAccessToken: created.report_access_token,
+      reportId: created.report_id,
+    },
+    { store },
+  );
+
+  assert.equal(first.ok, true);
+  assert.equal(first.idempotent, true);
+  assert.equal(first.status, "pending_payment");
+  assert.equal(second.ok, true);
+  assert.equal(second.idempotent, true);
+  assert.equal(second.status, "pending_payment");
+});
+
+test("upload verification fails expired uploads", async () => {
+  const reportId = "33333333-3333-4333-8333-333333333333";
+  const { state, store } = makeUploadStore({
+    state: {
+      reports: new Map([
+        [
+          reportId,
+          {
+            id: reportId,
+            status: "pending_upload",
+            storage_path: `pending_reports/${reportId}/nonce-test.pdf`,
+            upload_expires_at: "2026-05-19T08:00:00.000Z",
+          },
+        ],
+      ]),
+    },
+  });
+
+  const result = await verifyReportUpload(reportId, {
+    now: () => new Date("2026-05-19T10:00:00.000Z"),
+    store,
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.code, "UPLOAD_EXPIRED");
+  assert.equal(state.reports.get(reportId).status, "failed");
+  assert.equal(state.reports.get(reportId).failure_stage, "reading_metadata");
+});
+
+test("upload verification fails invalid PDF magic bytes", async () => {
+  const reportId = "44444444-4444-4444-8444-444444444444";
+  const { state, store } = makeUploadStore({
+    state: {
+      reports: new Map([
+        [
+          reportId,
+          {
+            id: reportId,
+            status: "pending_upload",
+            storage_path: `pending_reports/${reportId}/nonce-test.pdf`,
+            upload_expires_at: "2026-05-19T12:00:00.000Z",
+          },
+        ],
+      ]),
+    },
+    store: {
+      async downloadStorageObject() {
+        return {
+          downloaded: true,
+          file: new Blob([Buffer.from("not-a-pdf")], { type: "application/pdf" }),
+        };
+      },
+    },
+  });
+
+  const result = await verifyReportUpload(reportId, {
+    now: () => new Date("2026-05-19T10:00:00.000Z"),
+    store,
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.code, "INVALID_PDF_MAGIC_BYTES");
+  assert.equal(state.reports.get(reportId).status, "failed");
+  assert.equal(state.reports.get(reportId).failure_stage, "checking_integrity");
+});
+
+test("upload verification stores sha256, page count, and storage metadata", async () => {
+  const reportId = "55555555-5555-4555-8555-555555555555";
+  const bytes = await makePdfBytes(2);
+  const { state, store } = makeUploadStore({
+    state: {
+      reports: new Map([
+        [
+          reportId,
+          {
+            id: reportId,
+            status: "pending_upload",
+            storage_path: `pending_reports/${reportId}/nonce-test.pdf`,
+            upload_expires_at: "2026-05-19T12:00:00.000Z",
+          },
+        ],
+      ]),
+    },
+    store: {
+      async downloadStorageObject() {
+        return {
+          downloaded: true,
+          file: new Blob([Buffer.from(bytes)], { type: "application/pdf" }),
+        };
+      },
+      async getStorageInfo() {
+        return {
+          found: true,
+          lastModified: "2026-05-19T10:30:00.000Z",
+          size: bytes.length,
+        };
+      },
+    },
+  });
+
+  const result = await verifyReportUpload(reportId, {
+    now: () => new Date("2026-05-19T10:00:00.000Z"),
+    store,
+  });
+  const report = state.reports.get(reportId);
+
+  assert.equal(result.ok, true);
+  assert.equal(report.status, "pending_payment");
+  assert.equal(report.file_size_bytes, bytes.length);
+  assert.equal(report.page_count, 2);
+  assert.equal(report.storage_last_modified, "2026-05-19T10:30:00.000Z");
+  assert.equal(report.verified_file_sha256.length, 64);
+  assert.deepEqual(REPORT_UPLOAD_STEPS, [
+    "reading_metadata",
+    "calculating_fingerprint",
+    "reading_page_count",
+    "checking_integrity",
+  ]);
+  assert.equal(report.processing_metadata.upload_verification.page_gate, "regular");
+});
+
+test("upload verification fails PDFs above the Sprint 0 page limit", async () => {
+  const reportId = "66666666-6666-4666-8666-666666666666";
+  const bytes = await makePdfBytes(101);
+  const { state, store } = makeUploadStore({
+    state: {
+      reports: new Map([
+        [
+          reportId,
+          {
+            id: reportId,
+            status: "pending_upload",
+            storage_path: `pending_reports/${reportId}/nonce-test.pdf`,
+            upload_expires_at: "2026-05-19T12:00:00.000Z",
+          },
+        ],
+      ]),
+    },
+    store: {
+      async downloadStorageObject() {
+        return {
+          downloaded: true,
+          file: new Blob([Buffer.from(bytes)], { type: "application/pdf" }),
+        };
+      },
+      async getStorageInfo() {
+        return {
+          found: true,
+          lastModified: "2026-05-19T10:30:00.000Z",
+          size: bytes.length,
+        };
+      },
+    },
+  });
+
+  const result = await verifyReportUpload(reportId, {
+    now: () => new Date("2026-05-19T10:00:00.000Z"),
+    store,
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.code, "PAGE_LIMIT_EXCEEDED");
+  assert.equal(state.reports.get(reportId).status, "failed");
+  assert.equal(state.reports.get(reportId).failure_stage, "checking_integrity");
+});
+
+test("upload verification marks 51 to 100 page PDFs with graduated gate metadata", async () => {
+  const reportId = "77777777-7777-4777-8777-777777777777";
+  const bytes = await makePdfBytes(51);
+  const { state, store } = makeUploadStore({
+    state: {
+      reports: new Map([
+        [
+          reportId,
+          {
+            id: reportId,
+            status: "pending_upload",
+            storage_path: `pending_reports/${reportId}/nonce-test.pdf`,
+            upload_expires_at: "2026-05-19T12:00:00.000Z",
+          },
+        ],
+      ]),
+    },
+    store: {
+      async downloadStorageObject() {
+        return {
+          downloaded: true,
+          file: new Blob([Buffer.from(bytes)], { type: "application/pdf" }),
+        };
+      },
+      async getStorageInfo() {
+        return {
+          found: true,
+          lastModified: "2026-05-19T10:30:00.000Z",
+          size: bytes.length,
+        };
+      },
+    },
+  });
+
+  const result = await verifyReportUpload(reportId, {
+    now: () => new Date("2026-05-19T10:00:00.000Z"),
+    store,
+  });
+  const pageGate = state.reports.get(reportId).processing_metadata.upload_verification.page_gate;
+
+  assert.equal(result.ok, true);
+  assert.equal(state.reports.get(reportId).status, "pending_payment");
+  assert.equal(pageGate.tier, "graduated_gate_fee");
+  assert.equal(pageGate.fee_status, "prepared_not_charged");
+});
+
+test("upload verification uses only allowed report macro-statuses and job states", () => {
+  assert.deepEqual(REPORT_UPLOAD_JOB_STATUSES, ["queued", "verifying", "verified", "failed"]);
+  assert.equal(REPORT_MACRO_STATUSES.includes("pending_upload"), true);
+  assert.equal(REPORT_MACRO_STATUSES.includes("verifying"), true);
+  assert.equal(REPORT_MACRO_STATUSES.includes("pending_payment"), true);
+  assert.equal(REPORT_MACRO_STATUSES.includes("uploaded"), false);
+  assert.equal(REPORT_UPLOAD_JOB_STATUSES.includes("uploaded"), false);
+});
+
+test("upload verification is not coupled to the AI report generation route", () => {
+  const uploadSource = fs.readFileSync(path.join(repoRoot, "src/lib/reports/uploads.ts"), "utf8");
+
+  assert.doesNotMatch(uploadSource, /requestOpenRouterJson|buildReportPrompt|normalizeProviderResult|buildMockResult/);
+  assert.doesNotMatch(uploadSource, /OPENROUTER_API_KEY|ANTHROPIC_API_KEY/);
+});
+
 test("Sprint 0 migration keeps persistence, payments, energy, and rate limits in the expected shape", () => {
   const sql = fs.readFileSync(
     path.join(repoRoot, "supabase/migrations/023_nali_zero_sprint0_foundation.sql"),
@@ -321,6 +814,22 @@ test("Sprint 0 operational migration adds usage and feedback tables safely", () 
   assert.match(sql, /usage_events_service_role_all/);
 });
 
+test("presigned upload migration is additive and keeps upload states separate from report macro-statuses", () => {
+  const sql = fs.readFileSync(
+    path.join(repoRoot, "supabase/migrations/20260519090000_nali_zero_presigned_upload_foundation.sql"),
+    "utf8",
+  );
+
+  assert.match(sql, /ALTER TABLE public\.reports\s+ADD COLUMN IF NOT EXISTS verified_file_sha256 TEXT/);
+  assert.match(sql, /ALTER TABLE public\.reports\s+ADD COLUMN IF NOT EXISTS storage_last_modified TIMESTAMPTZ/);
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.upload_verification_jobs/);
+  assert.match(sql, /status IN \('queued', 'verifying', 'verified', 'failed'\)/);
+  assert.match(sql, /INSERT INTO storage\.buckets/);
+  assert.match(sql, /nali_report_uploads/);
+  assert.doesNotMatch(sql, /status IN \('pending_upload', 'verifying', 'uploaded'/);
+  assert.doesNotMatch(sql, /DROP TABLE|DROP COLUMN|DELETE FROM public\.reports/i);
+});
+
 test("Midtrans webhook status and signature mapping are conservative", () => {
   const serverKey = "server-key-for-test";
   const baseNotification = {
@@ -361,6 +870,8 @@ test("system readiness reports booleans without exposing secret values", async (
 
     assert.equal(typeof payload.openRouterConfigured, "boolean");
     assert.equal(typeof payload.supabaseConfigured, "boolean");
+    assert.equal(payload.uploadPrepared, true);
+    assert.equal(typeof payload.uploadConfigured, "boolean");
     assert.doesNotMatch(serialized, /sk-test-secret-value-should-not-appear|supabase-secret-value-should-not-appear/);
   } finally {
     process.env.OPENROUTER_API_KEY = original.openrouter;
@@ -388,6 +899,8 @@ test("missing env does not crash readiness or usage logging", async () => {
     });
 
     assert.equal(readiness.supabaseConfigured, false);
+    assert.equal(readiness.uploadPrepared, true);
+    assert.equal(readiness.uploadConfigured, false);
     assert.equal(usage.logged, false);
     assert.equal(usage.reason, "supabase_unconfigured");
   } finally {
@@ -456,6 +969,8 @@ test("public route files exist for the core MVP links", () => {
     "src/app/api/reports/[id]/route.ts",
     "src/app/api/reports/[id]/export/route.ts",
     "src/app/api/reports/[id]/feedback/route.ts",
+    "src/app/api/reports/create-upload/route.ts",
+    "src/app/api/reports/confirm-upload/route.ts",
     "src/app/api/payments/create/route.ts",
     "src/app/api/payments/midtrans-webhook/route.ts",
     "src/app/api/system/readiness/route.ts",

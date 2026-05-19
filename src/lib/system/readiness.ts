@@ -1,5 +1,6 @@
 import { env } from "@/lib/config/env";
 import { isMidtransConfigured } from "@/lib/payments/midtrans";
+import { getReportUploadReadiness } from "@/lib/reports/uploads";
 
 export type SystemReadiness = {
   adminViewEnabled: boolean;
@@ -12,6 +13,8 @@ export type SystemReadiness = {
   sourceVerificationActive: false;
   supabaseConfigured: boolean;
   uploadActive: false;
+  uploadConfigured: boolean;
+  uploadPrepared: true;
 };
 
 function hasValue(value: string | undefined) {
@@ -26,6 +29,7 @@ export function getSystemReadiness(): SystemReadiness {
   );
   const openRouterConfigured = hasValue(process.env.OPENROUTER_API_KEY);
   const midtransConfigured = isMidtransConfigured();
+  const upload = getReportUploadReadiness();
 
   return {
     adminViewEnabled: env.admin.viewEnabled,
@@ -38,5 +42,7 @@ export function getSystemReadiness(): SystemReadiness {
     sourceVerificationActive: false,
     supabaseConfigured,
     uploadActive: false,
+    uploadConfigured: upload.uploadConfigured,
+    uploadPrepared: upload.uploadPrepared,
   };
 }

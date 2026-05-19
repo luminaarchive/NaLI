@@ -14,6 +14,7 @@ import {
   Loader2,
   MapPin,
   Paperclip,
+  UploadCloud,
   type LucideIcon,
 } from "lucide-react";
 import { reportTemplates, userRoles, type ReportMode, type ReportResult } from "@/lib/reports/reportGenerator";
@@ -44,6 +45,7 @@ const initialForm: FormState = {
 };
 
 const guestSessionKey = "nali-guest-session-id";
+const maxUploadBytes = 10 * 1024 * 1024;
 
 function makeGuestSessionId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -65,8 +67,11 @@ function getOrCreateGuestSessionId() {
   return next;
 }
 
-function hasMaterial(form: FormState) {
-  return [form.mainText, form.sourceUrls, form.location, form.fileDescription].some((value) => value.trim().length > 0);
+function hasMaterial(form: FormState, hasPdfUpload: boolean) {
+  return (
+    hasPdfUpload ||
+    [form.mainText, form.sourceUrls, form.location, form.fileDescription].some((value) => value.trim().length > 0)
+  );
 }
 
 export function CreateReportForm() {
@@ -75,6 +80,9 @@ export function CreateReportForm() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedPdf, setSelectedPdf] = useState<File | null>(null);
+  const [uploadConfigured, setUploadConfigured] = useState(false);
+  const [uploadState, setUploadState] = useState<"idle" | "preparing" | "uploading" | "verifying">("idle");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -102,9 +110,28 @@ export function CreateReportForm() {
     }
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch("/api/system/readiness")
+      .then((response) => response.json())
+      .then((payload: { uploadConfigured?: boolean }) => {
+        if (!cancelled) setUploadConfigured(payload.uploadConfigured === true);
+      })
+      .catch(() => {
+        if (!cancelled) setUploadConfigured(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const materialCount = useMemo(
-    () => [form.mainText, form.sourceUrls, form.location, form.fileDescription].filter((value) => value.trim()).length,
-    [form.fileDescription, form.location, form.mainText, form.sourceUrls],
+    () =>
+      [form.mainText, form.sourceUrls, form.location, form.fileDescription].filter((value) => value.trim()).length +
+      (form.mode === "draft_from_materials" && selectedPdf ? 1 : 0),
+    [form.fileDescription, form.location, form.mainText, form.mode, form.sourceUrls, selectedPdf],
   );
 
   function updateField<K extends keyof FormState>(field: K, value: FormState[K]) {
@@ -113,12 +140,41 @@ export function CreateReportForm() {
     setNotice(null);
   }
 
+  function handlePdfChange(file: File | null) {
+    setError(null);
+    setNotice(null);
+
+    if (!file) {
+      setSelectedPdf(null);
+      return;
+    }
+
+    const fileName = file.name.toLowerCase();
+    const isPdf = fileName.endsWith(".pdf") && (!file.type || file.type === "application/pdf");
+
+    if (!isPdf) {
+      setSelectedPdf(null);
+      setError("Sprint 0 hanya menerima PDF.");
+      return;
+    }
+
+    if (file.size > maxUploadBytes) {
+      setSelectedPdf(null);
+      setError("Ukuran PDF melebihi batas Sprint 0 sebesar 10MB.");
+      return;
+    }
+
+    setSelectedPdf(file);
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     setNotice(null);
 
-    if (form.mode === "draft_from_materials" && !hasMaterial(form)) {
+    const shouldUploadPdf = form.mode === "draft_from_materials" && Boolean(selectedPdf);
+
+    if (form.mode === "draft_from_materials" && !hasMaterial(form, shouldUploadPdf)) {
       setError("Masukkan minimal satu bahan dulu: catatan, lokasi, URL, atau ringkasan file.");
       return;
     }
@@ -137,6 +193,89 @@ export function CreateReportForm() {
 
     try {
       const guestSessionId = getOrCreateGuestSessionId();
+
+      if (shouldUploadPdf && selectedPdf) {
+        setUploadState("preparing");
+        const createResponse = await fetch("/api/reports/create-upload", {
+          body: JSON.stringify({
+            contentType: selectedPdf.type || "application/pdf",
+            fileName: selectedPdf.name,
+            fileSizeBytes: selectedPdf.size,
+            guestSessionId,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          method: "POST",
+        });
+        const createPayload = (await createResponse.json()) as {
+          error?: string;
+          report_access_key?: string;
+          report_id?: string;
+          signed_upload_url?: string;
+        };
+
+        if (
+          !createResponse.ok ||
+          !createPayload.report_id ||
+          !createPayload.report_access_key ||
+          !createPayload.signed_upload_url
+        ) {
+          setError(createPayload.error ?? "Upload PDF belum bisa disiapkan di environment ini.");
+          return;
+        }
+
+        setUploadState("uploading");
+        const uploadResponse = await fetch(createPayload.signed_upload_url, {
+          body: selectedPdf,
+          headers: {
+            "cache-control": "max-age=3600",
+            "content-type": "application/pdf",
+            "x-upsert": "false",
+          },
+          method: "PUT",
+        });
+
+        if (!uploadResponse.ok) {
+          setError("Upload langsung ke Supabase Storage gagal. NaLI tidak menandai upload sebagai berhasil.");
+          return;
+        }
+
+        setUploadState("verifying");
+        const confirmResponse = await fetch("/api/reports/confirm-upload", {
+          body: JSON.stringify({
+            report_access_key: createPayload.report_access_key,
+            report_id: createPayload.report_id,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          method: "POST",
+        });
+        const confirmPayload = (await confirmResponse.json()) as {
+          error?: string;
+          page_count?: number;
+          status?: string;
+        };
+
+        if (!confirmResponse.ok) {
+          setError(confirmPayload.error ?? "Upload masuk, tetapi verifikasi PDF belum berhasil.");
+          return;
+        }
+
+        window.localStorage.setItem(`nali-report-access:${createPayload.report_id}`, createPayload.report_access_key);
+        window.localStorage.setItem(
+          `nali-report-upload:${createPayload.report_id}`,
+          JSON.stringify({
+            page_count: confirmPayload.page_count ?? null,
+            status: confirmPayload.status ?? "pending_payment",
+          }),
+        );
+        setNotice("PDF berhasil diunggah dan diverifikasi. AI belum diproses pada langkah upload ini.");
+        setSelectedPdf(null);
+        return;
+      }
+
       const response = await fetch("/api/reports/generate", {
         body: JSON.stringify({
           ...form,
@@ -177,10 +316,22 @@ export function CreateReportForm() {
       setError("Koneksi ke server gagal. Coba lagi setelah jaringan stabil.");
     } finally {
       setIsSubmitting(false);
+      setUploadState("idle");
     }
   }
 
   const isDraft = form.mode === "draft_from_materials";
+  const uploadDisabled = !isDraft || !uploadConfigured || isSubmitting;
+  const uploadStatusText =
+    uploadState === "preparing"
+      ? "Menyiapkan URL upload..."
+      : uploadState === "uploading"
+        ? "Mengunggah langsung ke Supabase Storage..."
+        : uploadState === "verifying"
+          ? "Memeriksa metadata dan integritas PDF..."
+          : selectedPdf
+            ? selectedPdf.name
+            : "Belum ada PDF dipilih.";
 
   return (
     <form className="safe-bottom" onSubmit={handleSubmit}>
@@ -199,7 +350,10 @@ export function CreateReportForm() {
               description="Untuk panduan observasi, checklist bukti, dan outline awal."
               icon={Compass}
               label="Saya belum punya bahan"
-              onClick={() => updateField("mode", "start_from_zero")}
+              onClick={() => {
+                setSelectedPdf(null);
+                updateField("mode", "start_from_zero");
+              }}
             />
           </div>
 
@@ -340,6 +494,39 @@ export function CreateReportForm() {
                   onChange={(event) => updateField("fileDescription", event.target.value)}
                 />
               </label>
+
+              <div className="lg:col-span-2">
+                <div className="flex flex-col gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="flex items-center gap-2 text-sm font-semibold text-white/80">
+                      <UploadCloud className="h-4 w-4 text-indigo-400/60" aria-hidden="true" />
+                      Upload PDF opsional
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-white/40">
+                      Maksimal 10MB. Upload belum aktif jika Supabase Storage belum dikonfigurasi.
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-white/30">{uploadStatusText}</p>
+                  </div>
+                  <label
+                    className={cn(
+                      "inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-full border px-4 text-sm font-semibold transition",
+                      uploadDisabled
+                        ? "cursor-not-allowed border-white/[0.05] text-white/30"
+                        : "border-white/[0.12] text-white/75 hover:bg-white/[0.06]",
+                    )}
+                  >
+                    <UploadCloud className="h-4 w-4" aria-hidden="true" />
+                    Pilih PDF
+                    <input
+                      accept="application/pdf,.pdf"
+                      className="sr-only"
+                      disabled={uploadDisabled}
+                      type="file"
+                      onChange={(event) => handlePdfChange(event.target.files?.[0] ?? null)}
+                    />
+                  </label>
+                </div>
+              </div>
             </div>
           </details>
         </div>
