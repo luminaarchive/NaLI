@@ -10,8 +10,11 @@ NaLI must run safely when optional providers are unconfigured. Missing optional 
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase browser auth/data key | Yes |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server-only privileged DB/storage tasks | No |
 | `NEXT_PUBLIC_APP_URL` | Canonical app URL/SEO | Yes |
+| `CRON_SECRET` | Internal maintenance/cron bearer secret | No |
+| `MAINTENANCE_SECRET` | Internal maintenance header secret fallback | No |
 
 Never expose `SUPABASE_SERVICE_ROLE_KEY` in client code.
+Keep `CRON_SECRET=` and `MAINTENANCE_SECRET=` empty until the cleanup route is intentionally activated.
 
 ## Optional Provider Env
 

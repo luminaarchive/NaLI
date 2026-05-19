@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, Database, FileText, LockKeyhole, ShieldCheck, WifiOff } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Database, FileText, LockKeyhole, RefreshCw, ShieldCheck, WifiOff } from "lucide-react";
+import { purgeExpiredReports } from "@/lib/maintenance/purge";
 import { getDailyUsageSummary, shouldEnterCostProtectionMode } from "@/lib/usage/logging";
 import { getSystemReadiness } from "@/lib/system/readiness";
 
@@ -27,10 +28,16 @@ function statusLabel(status: ReadinessStatus) {
   return labels[status];
 }
 
-export default async function SystemReadinessPage() {
+export default async function SystemReadinessPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ purgeDryRun?: string }>;
+}) {
+  const params = await searchParams;
   const readiness = getSystemReadiness();
   const usage = await getDailyUsageSummary();
   const costProtection = shouldEnterCostProtectionMode();
+  const purgeDryRun = params?.purgeDryRun === "1" ? await purgeExpiredReports({ dryRun: true }) : null;
 
   const checks = [
     {
@@ -75,9 +82,18 @@ export default async function SystemReadinessPage() {
       status: "inactive",
     },
     {
-      detail: "File upload and PDF processing are not active in this code-side step.",
+      detail: readiness.uploadConfigured
+        ? "PDF upload foundation can request private direct upload URLs."
+        : "PDF upload foundation is prepared, but Supabase Storage is not configured here.",
       label: "File upload",
-      status: "inactive",
+      status: readiness.uploadConfigured ? "configured" : "prepared",
+    },
+    {
+      detail: readiness.maintenanceSecretConfigured
+        ? "Cleanup route has an internal maintenance secret configured."
+        : "Cleanup code is prepared, but the maintenance secret is missing.",
+      label: "Purge/Cleanup Foundation",
+      status: readiness.purgeConfigured ? "configured" : readiness.purgePrepared ? "prepared" : "missing",
     },
     {
       detail: "Professional Field Intelligence remains positioning only for this sprint.",
@@ -134,16 +150,63 @@ export default async function SystemReadinessPage() {
 
           <aside className="rounded-lg border border-[#ddd5c7] bg-white p-5">
             <div className="flex items-center gap-2">
+              <RefreshCw className="h-5 w-5 text-[#315f45]" aria-hidden="true" />
+              <h2 className="text-lg font-semibold">Purge/Cleanup Foundation</h2>
+            </div>
+            <dl className="mt-4 space-y-3 text-sm leading-6 text-[#5f6b62]">
+              <SystemMeta label="Prepared" value={readiness.purgePrepared ? "yes" : "no"} />
+              <SystemMeta
+                label="Configured"
+                value={readiness.purgeConfigured ? "configured" : "missing secret or Supabase env"}
+              />
+              <SystemMeta label="Last run" value="not implemented" />
+              <SystemMeta label="Mode" value="dry-run route available" />
+            </dl>
+            <form className="mt-4" method="GET">
+              <input name="purgeDryRun" type="hidden" value="1" />
+              <button
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#173d2b]/20 bg-[#fcfaf4] px-4 text-sm font-semibold text-[#173d2b] transition hover:bg-[#e8efe4]"
+                type="submit"
+              >
+                <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                Run Cleanup Dry Run
+              </button>
+            </form>
+            {purgeDryRun ? (
+              <div className="mt-4 rounded-md border border-[#ddd5c7] bg-[#fcfaf4] p-3 text-sm leading-6 text-[#5f6b62]">
+                {"skipped" in purgeDryRun ? (
+                  <p>Dry run skipped: {purgeDryRun.reason}.</p>
+                ) : (
+                  <dl className="grid grid-cols-2 gap-2">
+                    <SystemMeta label="Scanned" value={String(purgeDryRun.scanned)} />
+                    <SystemMeta label="Would delete reports" value={String(purgeDryRun.wouldDeleteReports)} />
+                    <SystemMeta
+                      label="Would delete storage"
+                      value={String(purgeDryRun.wouldDeleteStorageObjects)}
+                    />
+                    <SystemMeta label="Would mark failed" value={String(purgeDryRun.wouldMarkFailed)} />
+                    <SystemMeta label="Errors" value={String(purgeDryRun.errors.length)} />
+                  </dl>
+                )}
+              </div>
+            ) : null}
+          </aside>
+        </section>
+
+        <section className="mt-4 grid gap-4 lg:grid-cols-[1fr_360px]">
+          <div className="rounded-lg border border-[#ddd5c7] bg-white p-5">
+            <div className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-[#315f45]" aria-hidden="true" />
               <h2 className="text-lg font-semibold">Sprint 0 Boundaries</h2>
             </div>
             <ul className="mt-4 space-y-3 text-sm leading-6 text-[#5f6b62]">
               <BoundaryItem>Guest Mode first.</BoundaryItem>
-              <BoundaryItem>No file upload, PDF processing, or source verification in this step.</BoundaryItem>
+              <BoundaryItem>No AI PDF extraction or source verification in this step.</BoundaryItem>
               <BoundaryItem>Export premium stays locked until payment is actually configured.</BoundaryItem>
               <BoundaryItem>No provider keys or secret values are printed here.</BoundaryItem>
+              <BoundaryItem>Purge cleanup starts in dry-run mode and avoids paid/export-ready reports.</BoundaryItem>
             </ul>
-          </aside>
+          </div>
         </section>
       </main>
     </div>
@@ -176,6 +239,15 @@ function Metric({ label, value }: { label: string; value: string }) {
     <div className="rounded-md border border-[#ddd5c7] bg-white p-3">
       <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#6f8057]">{label}</p>
       <p className="mt-2 text-xl font-semibold text-[#111814]">{value}</p>
+    </div>
+  );
+}
+
+function SystemMeta({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-[#6f8057]">{label}</dt>
+      <dd className="mt-1 font-semibold text-[#111814]">{value}</dd>
     </div>
   );
 }
