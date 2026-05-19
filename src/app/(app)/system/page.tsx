@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Database, FileText, LockKeyhole, RefreshCw, ShieldCheck, WifiOff } from "lucide-react";
 import { purgeExpiredReports } from "@/lib/maintenance/purge";
-import { getDailyUsageSummary, shouldEnterCostProtectionMode } from "@/lib/usage/logging";
+import { getDailyUsageSummary } from "@/lib/usage/logging";
 import { getSystemReadiness } from "@/lib/system/readiness";
+import { getCostProtectionStatus } from "@/lib/usage/costProtection";
 
 export const dynamic = "force-dynamic";
 
@@ -36,10 +37,15 @@ export default async function SystemReadinessPage({
   const params = await searchParams;
   const readiness = getSystemReadiness();
   const usage = await getDailyUsageSummary();
-  const costProtection = shouldEnterCostProtectionMode();
+  const costProtection = await getCostProtectionStatus();
   const purgeDryRun = params?.purgeDryRun === "1" ? await purgeExpiredReports({ dryRun: true }) : null;
 
   const checks = [
+    {
+      detail: "Server-side policy blocks unsafe academic integrity requests before model/provider calls.",
+      label: "NaLI Lock",
+      status: readiness.naliLockPrepared ? "prepared" : "missing",
+    },
     {
       detail: readiness.supabaseConfigured
         ? "Server runtime has the required Supabase values."
@@ -75,6 +81,22 @@ export default async function SystemReadinessPage({
           : "Export gate is prepared but locked until persistence and payment are configured.",
       label: "Export gate",
       status: readiness.exportGateStatus === "active" ? "configured" : "prepared",
+    },
+    {
+      detail: readiness.rateLimitPrepared
+        ? "Abuse-limit code is prepared and uses hashed keys when persistence is configured."
+        : "Rate limit foundation is missing.",
+      label: "Rate Limit Foundation",
+      status: readiness.rateLimitPrepared ? "prepared" : "missing",
+    },
+    {
+      detail: costProtection.active
+        ? "Heavy generation is temporarily limited by the daily NaLI Energy threshold."
+        : costProtection.configured
+          ? "Daily NaLI Energy threshold is configured and checked before heavy generation."
+          : "Cost protection is prepared, but usage logging or daily threshold is not configured here.",
+      label: "Cost Protection",
+      status: costProtection.active || costProtection.configured ? "configured" : "prepared",
     },
     {
       detail: "Source verification remains intentionally inactive in Sprint 0.",
@@ -140,7 +162,10 @@ export default async function SystemReadinessPage({
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <Metric label="NaLI Energy today" value={usage.ready ? String(usage.summary.estimatedEnergy) : "not active"} />
               <Metric label="Usage events today" value={usage.ready ? String(usage.summary.eventCount) : "not active"} />
-              <Metric label="Protection mode" value={costProtection.active ? "active" : "observational"} />
+              <Metric
+                label="Protection mode"
+                value={costProtection.active ? "active" : costProtection.configured ? "monitoring" : "prepared"}
+              />
             </div>
             <p className="mt-4 text-sm leading-6 text-[#5f6b62]">
               Cost logging is non-blocking. If Supabase is not configured in this environment, report generation still

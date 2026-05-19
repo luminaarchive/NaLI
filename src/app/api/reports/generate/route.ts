@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requestOpenRouterJson } from "@/lib/ai/openrouter";
+import { guardReportOutput } from "@/lib/integrity/outputGuard";
 import { evaluateIntegrityPolicy } from "@/lib/integrity/policy";
+import { checkRateLimit, RATE_LIMITED_MESSAGE, rateLimitHeaders } from "@/lib/rateLimit/limit";
 import { persistGeneratedReport } from "@/lib/reports/persistence";
 import {
   buildMockResult,
   buildReportPrompt,
   normalizeProviderResult,
   type ReportRequestInput,
+  type ReportResult,
   validateReportRequest,
 } from "@/lib/reports/reportGenerator";
-import { checkRateLimit, rateLimitHeaders } from "@/lib/security/rate-limit";
+import { getCostProtectionStatus } from "@/lib/usage/costProtection";
 import { logUsageEvent } from "@/lib/usage/logging";
 
 const systemPrompt = [
@@ -48,23 +51,11 @@ function getInputSize(input: {
   ].join("\n").length;
 }
 
+function guardOutput(report: ReportResult) {
+  return guardReportOutput(report, { sourceVerificationActive: false });
+}
+
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "unknown";
-  const rateLimit = checkRateLimit(`report-generate:${ip}`, {
-    limit: 10,
-    windowMs: 60_000,
-  });
-  const headers = rateLimitHeaders(rateLimit);
-
-  if (!rateLimit.allowed) {
-    return NextResponse.json(
-      {
-        error: "Terlalu banyak permintaan. Tunggu sebentar sebelum melanjutkan.",
-      },
-      { headers, status: 429 },
-    );
-  }
-
   let body: unknown;
 
   try {
@@ -74,18 +65,31 @@ export async function POST(req: NextRequest) {
       {
         error: "Format permintaan tidak valid. Kirim data form sebagai JSON.",
       },
-      { headers, status: 400 },
+      { status: 400 },
     );
   }
 
   const input = getInputObject(body);
+  const rateLimit = await checkRateLimit({
+    actionType: "generate_report",
+    guestSessionId: input.guestSessionId,
+    request: req,
+  });
+  const headers = rateLimitHeaders(rateLimit);
+
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: RATE_LIMITED_MESSAGE }, { headers, status: 429 });
+  }
+
   const integrityDecision = evaluateIntegrityPolicy(input as ReportRequestInput);
 
   if (!integrityDecision.allowed) {
     return NextResponse.json(
       {
-        code: integrityDecision.code,
-        error: integrityDecision.message,
+        code: integrityDecision.reasonCode,
+        error: integrityDecision.userMessage,
+        matchedSignals: integrityDecision.matchedSignals,
+        severity: integrityDecision.severity,
       },
       { headers, status: 400 },
     );
@@ -103,6 +107,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const costProtection = await getCostProtectionStatus();
+  if (costProtection.active) {
+    return NextResponse.json(
+      {
+        error: "Sistem sedang membatasi pemrosesan berat hari ini untuk menjaga stabilitas layanan.",
+        status: "cost_protection_active",
+      },
+      { headers, status: 429 },
+    );
+  }
+
   const openRouterResult = await requestOpenRouterJson({
     prompt: buildReportPrompt(validated.data),
     system: systemPrompt,
@@ -113,7 +128,19 @@ export async function POST(req: NextRequest) {
       openRouterResult.json && typeof openRouterResult.json === "object"
         ? (openRouterResult.json as Record<string, unknown>)
         : {};
-    const report = normalizeProviderResult(rawReport, validated.data, "NaLI Preview Engine");
+    const guarded = guardOutput(normalizeProviderResult(rawReport, validated.data, "NaLI Preview Engine"));
+
+    if (!guarded.allowed) {
+      return NextResponse.json(
+        {
+          code: guarded.reasonCode,
+          error: guarded.userMessage,
+        },
+        { headers, status: 502 },
+      );
+    }
+
+    const report = guarded.report;
     const persistence = await persistGeneratedReport({
       guestSessionId: input.guestSessionId,
       input: validated.data,
@@ -145,7 +172,18 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const report = buildMockResult(validated.data);
+  const guarded = guardOutput(buildMockResult(validated.data));
+  if (!guarded.allowed) {
+    return NextResponse.json(
+      {
+        code: guarded.reasonCode,
+        error: guarded.userMessage,
+      },
+      { headers, status: 502 },
+    );
+  }
+
+  const report = guarded.report;
   const persistence = await persistGeneratedReport({
     guestSessionId: input.guestSessionId,
     input: validated.data,

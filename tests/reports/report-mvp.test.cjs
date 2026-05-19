@@ -872,6 +872,11 @@ test("system readiness reports booleans without exposing secret values", async (
     assert.equal(typeof payload.supabaseConfigured, "boolean");
     assert.equal(payload.uploadPrepared, true);
     assert.equal(typeof payload.uploadConfigured, "boolean");
+    assert.equal(payload.naliLockPrepared, true);
+    assert.equal(payload.rateLimitPrepared, true);
+    assert.equal(payload.costProtectionPrepared, true);
+    assert.equal(typeof payload.costProtectionConfigured, "boolean");
+    assert.equal(typeof payload.costProtectionActive, "boolean");
     assert.doesNotMatch(serialized, /sk-test-secret-value-should-not-appear|supabase-secret-value-should-not-appear/);
   } finally {
     process.env.OPENROUTER_API_KEY = original.openrouter;
@@ -901,6 +906,9 @@ test("missing env does not crash readiness or usage logging", async () => {
     assert.equal(readiness.supabaseConfigured, false);
     assert.equal(readiness.uploadPrepared, true);
     assert.equal(readiness.uploadConfigured, false);
+    assert.equal(readiness.rateLimitPrepared, true);
+    assert.equal(readiness.costProtectionPrepared, true);
+    assert.equal(readiness.costProtectionConfigured, false);
     assert.equal(usage.logged, false);
     assert.equal(usage.reason, "supabase_unconfigured");
   } finally {

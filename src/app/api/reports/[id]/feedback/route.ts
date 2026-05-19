@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, RATE_LIMITED_MESSAGE, rateLimitHeaders } from "@/lib/rateLimit/limit";
 import { getOptionalSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getPersistedReport } from "@/lib/reports/persistence";
 import { logUsageEvent } from "@/lib/usage/logging";
@@ -32,6 +33,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   if (!rating) {
     return NextResponse.json({ error: "Pilih feedback: helpful atau not_helpful." }, { status: 400 });
+  }
+
+  const rateLimit = await checkRateLimit({
+    actionType: "feedback_submit",
+    guestSessionId: input.guestSessionId,
+    request: req,
+  });
+
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: RATE_LIMITED_MESSAGE }, { headers: rateLimitHeaders(rateLimit), status: 429 });
   }
 
   const supabase = getOptionalSupabaseAdminClient();

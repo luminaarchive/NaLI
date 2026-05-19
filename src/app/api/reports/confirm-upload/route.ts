@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, RATE_LIMITED_MESSAGE, rateLimitHeaders } from "@/lib/rateLimit/limit";
 import { confirmReportUpload } from "@/lib/reports/uploads";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +20,16 @@ export async function POST(req: NextRequest) {
   }
 
   const input = body && typeof body === "object" && !Array.isArray(body) ? (body as Record<string, unknown>) : {};
+  const rateLimit = await checkRateLimit({
+    actionType: "confirm_upload",
+    guestSessionId: input.guestSessionId,
+    request: req,
+  });
+
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: RATE_LIMITED_MESSAGE }, { headers: rateLimitHeaders(rateLimit), status: 429 });
+  }
+
   const result = await confirmReportUpload({
     reportAccessToken:
       typeof input.report_access_key === "string"

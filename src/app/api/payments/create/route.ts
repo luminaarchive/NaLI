@@ -9,6 +9,7 @@ import {
   normalizeExportType,
 } from "@/lib/payments/midtrans";
 import { createPaymentRecord, getSuccessfulPaymentForReport } from "@/lib/payments/store";
+import { checkRateLimit, RATE_LIMITED_MESSAGE, rateLimitHeaders } from "@/lib/rateLimit/limit";
 import { getPersistedReport } from "@/lib/reports/persistence";
 import { logUsageEvent } from "@/lib/usage/logging";
 
@@ -37,6 +38,16 @@ export async function POST(req: NextRequest) {
 
   if (!reportId || !reportAccessKey) {
     return NextResponse.json({ error: "Laporan dan access key diperlukan sebelum membuat pembayaran." }, { status: 400 });
+  }
+
+  const rateLimit = await checkRateLimit({
+    actionType: "payment_create",
+    guestSessionId: input.guestSessionId,
+    request: req,
+  });
+
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: RATE_LIMITED_MESSAGE }, { headers: rateLimitHeaders(rateLimit), status: 429 });
   }
 
   if (!isMidtransConfigured()) {

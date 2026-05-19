@@ -12,9 +12,11 @@ NaLI must run safely when optional providers are unconfigured. Missing optional 
 | `NEXT_PUBLIC_APP_URL` | Canonical app URL/SEO | Yes |
 | `CRON_SECRET` | Internal maintenance/cron bearer secret | No |
 | `MAINTENANCE_SECRET` | Internal maintenance header secret fallback | No |
+| `NALI_DAILY_ENERGY_LIMIT` | Optional daily NaLI Energy threshold for cost protection | No |
 
 Never expose `SUPABASE_SERVICE_ROLE_KEY` in client code.
 Keep `CRON_SECRET=` and `MAINTENANCE_SECRET=` empty until the cleanup route is intentionally activated.
+Keep `NALI_DAILY_ENERGY_LIMIT=` empty until usage logging is intentionally configured.
 
 ## Optional Provider Env
 

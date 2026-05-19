@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { purgeExpiredReports } from "@/lib/maintenance/purge";
+import { checkRateLimit, RATE_LIMITED_MESSAGE, rateLimitHeaders } from "@/lib/rateLimit/limit";
 
 export const dynamic = "force-dynamic";
 
@@ -57,6 +58,15 @@ export async function POST(req: NextRequest) {
       },
       { status: 401 },
     );
+  }
+
+  const rateLimit = await checkRateLimit({
+    actionType: "maintenance_purge",
+    request: req,
+  });
+
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: RATE_LIMITED_MESSAGE }, { headers: rateLimitHeaders(rateLimit), status: 429 });
   }
 
   let body: Record<string, unknown> = {};
