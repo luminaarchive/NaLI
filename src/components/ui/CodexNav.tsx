@@ -31,10 +31,7 @@ export function CodexNav() {
       >
         <div className="mx-auto flex h-[56px] max-w-[1200px] items-center justify-between px-5 sm:px-6 lg:px-8">
           {/* Wordmark */}
-          <Link
-            href="/"
-            className="text-[15px] font-semibold tracking-[-0.01em] text-[#111827]"
-          >
+          <Link href="/" className="text-[15px] font-semibold tracking-[-0.01em] text-[#111827]">
             NaLI
           </Link>
 
@@ -68,11 +65,7 @@ export function CodexNav() {
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
-            {mobileOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </header>

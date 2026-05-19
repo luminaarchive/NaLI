@@ -84,7 +84,12 @@
 body {
   background-color: #09090b;
   color: #fafafa;
-  font-family: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
+  font-family:
+    "Inter",
+    "SF Pro Display",
+    -apple-system,
+    system-ui,
+    sans-serif;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -99,7 +104,9 @@ body {
   padding: 12px 14px;
   color: #fafafa;
   outline: none;
-  transition: border-color 200ms ease, box-shadow 200ms ease;
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease;
 }
 
 .field-input:focus {
@@ -153,12 +160,30 @@ body {
   animation: ambient-drift-slow 24s ease-in-out infinite both;
 }
 @keyframes ambient-drift-slow {
-  0%   { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.50; }
-  20%  { transform: translate(100px, -60px) scale(1.18) rotate(2deg); opacity: 0.70; }
-  40%  { transform: translate(40px, -120px) scale(0.92) rotate(-1deg); opacity: 0.40; }
-  60%  { transform: translate(-80px, -40px) scale(1.22) rotate(3deg); opacity: 0.65; }
-  80%  { transform: translate(-30px, 80px) scale(0.88) rotate(-2deg); opacity: 0.35; }
-  100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.50; }
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 0.5;
+  }
+  20% {
+    transform: translate(100px, -60px) scale(1.18) rotate(2deg);
+    opacity: 0.7;
+  }
+  40% {
+    transform: translate(40px, -120px) scale(0.92) rotate(-1deg);
+    opacity: 0.4;
+  }
+  60% {
+    transform: translate(-80px, -40px) scale(1.22) rotate(3deg);
+    opacity: 0.65;
+  }
+  80% {
+    transform: translate(-30px, 80px) scale(0.88) rotate(-2deg);
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 0.5;
+  }
 }
 
 /* Medium drift: diagonal movement — right violet blob */
@@ -166,11 +191,26 @@ body {
   animation: ambient-drift-medium 18s ease-in-out infinite both;
 }
 @keyframes ambient-drift-medium {
-  0%   { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.40; }
-  25%  { transform: translate(-120px, 80px) scale(1.25) rotate(-3deg); opacity: 0.70; }
-  50%  { transform: translate(-60px, 160px) scale(0.85) rotate(2deg); opacity: 0.30; }
-  75%  { transform: translate(80px, 60px) scale(1.15) rotate(-1deg); opacity: 0.60; }
-  100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.40; }
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 0.4;
+  }
+  25% {
+    transform: translate(-120px, 80px) scale(1.25) rotate(-3deg);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate(-60px, 160px) scale(0.85) rotate(2deg);
+    opacity: 0.3;
+  }
+  75% {
+    transform: translate(80px, 60px) scale(1.15) rotate(-1deg);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 0.4;
+  }
 }
 
 /* Fast drift: vertical rise/fall — left cyan blob */
@@ -178,12 +218,30 @@ body {
   animation: ambient-drift-fast 14s ease-in-out infinite both;
 }
 @keyframes ambient-drift-fast {
-  0%   { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.35; }
-  20%  { transform: translate(60px, -140px) scale(1.20) rotate(2deg); opacity: 0.65; }
-  40%  { transform: translate(140px, -60px) scale(0.90) rotate(-3deg); opacity: 0.35; }
-  60%  { transform: translate(80px, 100px) scale(1.15) rotate(1deg); opacity: 0.75; }
-  80%  { transform: translate(-40px, 50px) scale(0.88) rotate(-2deg); opacity: 0.30; }
-  100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.35; }
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 0.35;
+  }
+  20% {
+    transform: translate(60px, -140px) scale(1.2) rotate(2deg);
+    opacity: 0.65;
+  }
+  40% {
+    transform: translate(140px, -60px) scale(0.9) rotate(-3deg);
+    opacity: 0.35;
+  }
+  60% {
+    transform: translate(80px, 100px) scale(1.15) rotate(1deg);
+    opacity: 0.75;
+  }
+  80% {
+    transform: translate(-40px, 50px) scale(0.88) rotate(-2deg);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 0.35;
+  }
 }
 
 /* Bloom breathe: center bloom slowly expands/contracts behind command box */
@@ -191,10 +249,22 @@ body {
   animation: ambient-bloom 12s ease-in-out infinite both;
 }
 @keyframes ambient-bloom {
-  0%   { transform: translate(-50%, 0) scale(1); opacity: 0.45; }
-  33%  { transform: translate(-50%, -20px) scale(1.20); opacity: 0.70; }
-  66%  { transform: translate(-50%, 15px) scale(0.90); opacity: 0.35; }
-  100% { transform: translate(-50%, 0) scale(1); opacity: 0.45; }
+  0% {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 0.45;
+  }
+  33% {
+    transform: translate(-50%, -20px) scale(1.2);
+    opacity: 0.7;
+  }
+  66% {
+    transform: translate(-50%, 15px) scale(0.9);
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 0.45;
+  }
 }
 
 /* Morph: soft shape-shifting glow — top accent */
@@ -202,11 +272,26 @@ body {
   animation: ambient-morph 20s ease-in-out infinite both;
 }
 @keyframes ambient-morph {
-  0%   { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.30; }
-  25%  { transform: translate(-60px, 100px) scale(1.15) rotate(4deg); opacity: 0.55; }
-  50%  { transform: translate(40px, 40px) scale(0.90) rotate(-2deg); opacity: 0.25; }
-  75%  { transform: translate(80px, -60px) scale(1.10) rotate(3deg); opacity: 0.50; }
-  100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.30; }
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 0.3;
+  }
+  25% {
+    transform: translate(-60px, 100px) scale(1.15) rotate(4deg);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate(40px, 40px) scale(0.9) rotate(-2deg);
+    opacity: 0.25;
+  }
+  75% {
+    transform: translate(80px, -60px) scale(1.1) rotate(3deg);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 0.3;
+  }
 }
 
 /* --- Atmospheric light background blobs (Codex-style) --- */
@@ -218,42 +303,96 @@ body {
   animation: atmos-drift-left 26s ease-in-out infinite both;
 }
 @keyframes atmos-drift-left {
-  0%   { transform: translate(0, 0) scale(1); opacity: 0.75; }
-  25%  { transform: translate(60px, -40px) scale(1.06); opacity: 0.90; }
-  50%  { transform: translate(30px, 50px) scale(0.96); opacity: 0.70; }
-  75%  { transform: translate(-50px, 20px) scale(1.04); opacity: 0.85; }
-  100% { transform: translate(0, 0) scale(1); opacity: 0.75; }
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.75;
+  }
+  25% {
+    transform: translate(60px, -40px) scale(1.06);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(30px, 50px) scale(0.96);
+    opacity: 0.7;
+  }
+  75% {
+    transform: translate(-50px, 20px) scale(1.04);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.75;
+  }
 }
 
 .atmos-drift-right {
   animation: atmos-drift-right 22s ease-in-out infinite both;
 }
 @keyframes atmos-drift-right {
-  0%   { transform: translate(0, 0) scale(1); opacity: 0.70; }
-  25%  { transform: translate(-70px, 50px) scale(1.08); opacity: 0.90; }
-  50%  { transform: translate(-30px, -40px) scale(0.95); opacity: 0.65; }
-  75%  { transform: translate(40px, 30px) scale(1.05); opacity: 0.85; }
-  100% { transform: translate(0, 0) scale(1); opacity: 0.70; }
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.7;
+  }
+  25% {
+    transform: translate(-70px, 50px) scale(1.08);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(-30px, -40px) scale(0.95);
+    opacity: 0.65;
+  }
+  75% {
+    transform: translate(40px, 30px) scale(1.05);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.7;
+  }
 }
 
 .atmos-bloom {
   animation: atmos-bloom-light 18s ease-in-out infinite both;
 }
 @keyframes atmos-bloom-light {
-  0%   { transform: translate(-50%, 0) scale(1); opacity: 0.80; }
-  33%  { transform: translate(-50%, -15px) scale(1.06); opacity: 0.95; }
-  66%  { transform: translate(-50%, 10px) scale(0.97); opacity: 0.75; }
-  100% { transform: translate(-50%, 0) scale(1); opacity: 0.80; }
+  0% {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 0.8;
+  }
+  33% {
+    transform: translate(-50%, -15px) scale(1.06);
+    opacity: 0.95;
+  }
+  66% {
+    transform: translate(-50%, 10px) scale(0.97);
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 0.8;
+  }
 }
 
 .atmos-drift-bottom {
   animation: atmos-drift-bottom 24s ease-in-out infinite both;
 }
 @keyframes atmos-drift-bottom {
-  0%   { transform: translate(-50%, 0) scale(1); opacity: 0.60; }
-  33%  { transform: translate(-50%, -30px) scale(1.05); opacity: 0.80; }
-  66%  { transform: translate(-50%, 20px) scale(0.96); opacity: 0.55; }
-  100% { transform: translate(-50%, 0) scale(1); opacity: 0.60; }
+  0% {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 0.6;
+  }
+  33% {
+    transform: translate(-50%, -30px) scale(1.05);
+    opacity: 0.8;
+  }
+  66% {
+    transform: translate(-50%, 20px) scale(0.96);
+    opacity: 0.55;
+  }
+  100% {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 0.6;
+  }
 }
 
 /* --- Codex Volumetric Cloud Animations (Subtle, breathing, drifting) --- */
@@ -262,10 +401,22 @@ body {
   animation: codex-field-1-anim 45s ease-in-out infinite both;
 }
 @keyframes codex-field-1-anim {
-  0%   { transform: translate(0, 0) scale(1); opacity: 0.7; }
-  33%  { transform: translate(-3%, 4%) scale(1.05); opacity: 0.85; }
-  66%  { transform: translate(2%, -3%) scale(0.96); opacity: 0.6; }
-  100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.7;
+  }
+  33% {
+    transform: translate(-3%, 4%) scale(1.05);
+    opacity: 0.85;
+  }
+  66% {
+    transform: translate(2%, -3%) scale(0.96);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.7;
+  }
 }
 
 .codex-field-2 {
@@ -273,10 +424,22 @@ body {
   animation: codex-field-2-anim 55s ease-in-out infinite both;
 }
 @keyframes codex-field-2-anim {
-  0%   { transform: translate(0, 0) scale(1); opacity: 0.6; }
-  33%  { transform: translate(4%, -2%) scale(1.03); opacity: 0.45; }
-  66%  { transform: translate(-2%, 5%) scale(1.08); opacity: 0.75; }
-  100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+  33% {
+    transform: translate(4%, -2%) scale(1.03);
+    opacity: 0.45;
+  }
+  66% {
+    transform: translate(-2%, 5%) scale(1.08);
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
 }
 
 .codex-mass-1 {
@@ -284,9 +447,15 @@ body {
   animation: codex-mass-1-anim 35s ease-in-out infinite both;
 }
 @keyframes codex-mass-1-anim {
-  0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
-  50%  { transform: translate(5%, -4%) scale(1.06) rotate(1deg); }
-  100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate(5%, -4%) scale(1.06) rotate(1deg);
+  }
+  100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
 }
 
 .codex-mass-2 {
@@ -294,9 +463,15 @@ body {
   animation: codex-mass-2-anim 40s ease-in-out infinite both;
 }
 @keyframes codex-mass-2-anim {
-  0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
-  50%  { transform: translate(-4%, 5%) scale(1.08) rotate(-1deg); }
-  100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate(-4%, 5%) scale(1.08) rotate(-1deg);
+  }
+  100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
 }
 
 .codex-bloom {
@@ -304,9 +479,18 @@ body {
   animation: codex-bloom-anim 25s ease-in-out infinite both;
 }
 @keyframes codex-bloom-anim {
-  0%   { transform: scale(1); opacity: 0.9; }
-  50%  { transform: scale(1.15); opacity: 0.6; }
-  100% { transform: scale(1); opacity: 0.9; }
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
 }
 
 .codex-mist {
@@ -314,9 +498,144 @@ body {
   animation: codex-mist-anim 30s ease-in-out infinite both;
 }
 @keyframes codex-mist-anim {
-  0%   { opacity: 0.8; }
-  50%  { opacity: 0.5; }
-  100% { opacity: 0.8; }
+  0% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+/* --- NaLI Codex-style atmospheric canvas --- */
+.nali-atmosphere-drift-a,
+.nali-atmosphere-drift-b,
+.nali-atmosphere-drift-c,
+.nali-atmosphere-breathe,
+.nali-atmosphere-veil,
+.nali-atmosphere-grain {
+  will-change: transform, opacity;
+}
+
+.nali-atmosphere-drift-a {
+  animation: nali-atmosphere-drift-a 40s ease-in-out infinite both;
+}
+
+@keyframes nali-atmosphere-drift-a {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(-1deg);
+    opacity: 0.82;
+  }
+  33% {
+    transform: translate3d(72px, -38px, 0) scale(1.06) rotate(1deg);
+    opacity: 0.98;
+  }
+  66% {
+    transform: translate3d(34px, 64px, 0) scale(0.97) rotate(-2deg);
+    opacity: 0.74;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(-1deg);
+    opacity: 0.82;
+  }
+}
+
+.nali-atmosphere-drift-b {
+  animation: nali-atmosphere-drift-b 48s ease-in-out infinite both;
+}
+
+@keyframes nali-atmosphere-drift-b {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1.02) rotate(1deg);
+    opacity: 0.84;
+  }
+  30% {
+    transform: translate3d(-82px, 46px, 0) scale(0.98) rotate(-1deg);
+    opacity: 0.72;
+  }
+  68% {
+    transform: translate3d(-36px, -54px, 0) scale(1.08) rotate(2deg);
+    opacity: 0.98;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.02) rotate(1deg);
+    opacity: 0.84;
+  }
+}
+
+.nali-atmosphere-drift-c {
+  animation: nali-atmosphere-drift-c 32s ease-in-out infinite both;
+}
+
+@keyframes nali-atmosphere-drift-c {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.72;
+  }
+  45% {
+    transform: translate3d(44px, -34px, 0) scale(1.05);
+    opacity: 0.94;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.72;
+  }
+}
+
+.nali-atmosphere-breathe {
+  animation: nali-atmosphere-breathe 24s ease-in-out infinite both;
+}
+
+@keyframes nali-atmosphere-breathe {
+  0% {
+    transform: translate3d(var(--nali-breathe-x, 0), 0, 0) scale(1);
+    opacity: 0.88;
+  }
+  50% {
+    transform: translate3d(var(--nali-breathe-x, 0), -18px, 0) scale(1.06);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--nali-breathe-x, 0), 0, 0) scale(1);
+    opacity: 0.88;
+  }
+}
+
+.nali-atmosphere-veil {
+  animation: nali-atmosphere-veil 60s ease-in-out infinite both;
+}
+
+@keyframes nali-atmosphere-veil {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+    opacity: 0.74;
+  }
+  50% {
+    transform: translate3d(-30px, 22px, 0) scale(1.03) rotate(1deg);
+    opacity: 0.96;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+    opacity: 0.74;
+  }
+}
+
+.nali-atmosphere-grain {
+  animation: nali-atmosphere-grain 36s ease-in-out infinite both;
+}
+
+@keyframes nali-atmosphere-grain {
+  0% {
+    opacity: 0.045;
+  }
+  50% {
+    opacity: 0.07;
+  }
+  100% {
+    opacity: 0.045;
+  }
 }
 
 /* --- Reduced motion --- */
@@ -332,7 +651,11 @@ body {
 }
 
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 300,
+    "GRAD" 0,
+    "opsz" 24;
 }
 
 html {
@@ -355,8 +678,12 @@ html {
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* --- Magic UI: Border Beam Animation --- */
@@ -374,8 +701,12 @@ html {
 }
 
 @keyframes border-beam-rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* --- Scrollbar styling --- */
@@ -447,48 +778,50 @@ html {
   --animate-shimmer-slide: shimmer-slide var(--speed) ease-in-out infinite alternate;
   --animate-spin-around: spin-around calc(var(--speed) * 2) infinite linear;
   @keyframes shimmer-slide {
-  to {
-    transform: translate(calc(100cqw - 100%), 0);
+    to {
+      transform: translate(calc(100cqw - 100%), 0);
     }
   }
   @keyframes spin-around {
-  0% {
-    transform: translateZ(0) rotate(0);
+    0% {
+      transform: translateZ(0) rotate(0);
     }
-  15%, 35% {
-    transform: translateZ(0) rotate(90deg);
+    15%,
+    35% {
+      transform: translateZ(0) rotate(90deg);
     }
-  65%, 85% {
-    transform: translateZ(0) rotate(270deg);
+    65%,
+    85% {
+      transform: translateZ(0) rotate(270deg);
     }
-  100% {
-    transform: translateZ(0) rotate(360deg);
+    100% {
+      transform: translateZ(0) rotate(360deg);
     }
   }
-  --animate-aurora: aurora 8s ease-in-out infinite alternate
-;
+  --animate-aurora: aurora 8s ease-in-out infinite alternate;
   @keyframes aurora {
-  0% {
-    background-position: 0% 50%;
-    transform: rotate(-5deg) scale(0.9);
+    0% {
+      background-position: 0% 50%;
+      transform: rotate(-5deg) scale(0.9);
     }
-  25% {
-    background-position: 50% 100%;
-    transform: rotate(5deg) scale(1.1);
+    25% {
+      background-position: 50% 100%;
+      transform: rotate(5deg) scale(1.1);
     }
-  50% {
-    background-position: 100% 50%;
-    transform: rotate(-3deg) scale(0.95);
+    50% {
+      background-position: 100% 50%;
+      transform: rotate(-3deg) scale(0.95);
     }
-  75% {
-    background-position: 50% 0%;
-    transform: rotate(3deg) scale(1.05);
+    75% {
+      background-position: 50% 0%;
+      transform: rotate(3deg) scale(1.05);
     }
-  100% {
-    background-position: 0% 50%;
-    transform: rotate(-5deg) scale(0.9);
+    100% {
+      background-position: 0% 50%;
+      transform: rotate(-5deg) scale(0.9);
     }
-  }}
+  }
+}
 
 :root {
   --background: oklch(1 0 0);

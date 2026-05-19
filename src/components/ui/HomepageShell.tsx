@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import type { ReactNode } from "react";
-import { CodexAtmosphericBackground } from "./CodexAtmosphericBackground";
 import { CodexNav } from "./CodexNav";
+import { NaLICodexBackground } from "./NaLICodexBackground";
 
 /**
  * HomepageShell — Wraps homepage content with light atmospheric background,
@@ -26,7 +26,7 @@ export function HomepageShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="relative min-h-screen bg-[#f7fbff] text-[#0f172a]">
-      <CodexAtmosphericBackground />
+      <NaLICodexBackground />
       <CodexNav />
       {children}
     </div>
