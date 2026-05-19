@@ -1,106 +1,95 @@
 "use client";
 
 /**
- * NaLIIconTile — Unique NaLI identity icon.
- * Concept: "natural evidence intelligence"
- * Visual motif: abstract leaf outline + pulse/evidence line + subtle "N" negative space.
- * Rounded square tile with white/glass background, blue/violet inner glow, soft shadow.
- * Symbol in blue/violet/teal gradient, SVG inline, premium feel.
+ * NaLIIconTile — Clean, minimal NaLI identity icon.
+ * Concept: a single stylized "N" formed by two rising field lines,
+ * conveying "natural evidence intelligence" in one clear stroke.
+ * Animated atmospheric cloud interior like Codex icon tile.
  */
 export function NaLIIconTile() {
   return (
     <div className="relative mx-auto mb-8">
-      {/* Outer tile — rounded square like premium app icon */}
       <div
-        className="relative flex h-20 w-20 items-center justify-center rounded-[22px] sm:h-24 sm:w-24 sm:rounded-[26px]"
+        className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-[22px] sm:h-24 sm:w-24 sm:rounded-[26px]"
         style={{
           background:
-            "linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,244,255,0.9) 50%, rgba(245,243,255,0.92) 100%)",
+            "linear-gradient(135deg, rgba(255,255,255,0.88) 0%, rgba(240,244,255,0.82) 50%, rgba(237,232,255,0.88) 100%)",
           boxShadow:
-            "0 8px 40px rgba(99,102,241,0.12), 0 2px 12px rgba(139,92,246,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
+            "0 8px 40px rgba(99,102,241,0.14), 0 2px 12px rgba(139,92,246,0.08), inset 0 1px 0 rgba(255,255,255,0.9)",
         }}
       >
-        {/* Subtle ring */}
+        {/* Animated cloud interior */}
+        <div className="absolute inset-0 overflow-hidden rounded-[22px] sm:rounded-[26px]">
+          <div
+            className="codex-cloud codex-drift-1 absolute rounded-full"
+            style={{
+              left: "-40%",
+              top: "-30%",
+              width: "160%",
+              height: "140%",
+              background:
+                "radial-gradient(ellipse at 40% 50%, rgba(96,165,250,0.45) 0%, rgba(139,188,255,0.2) 40%, transparent 70%)",
+              filter: "blur(8px)",
+            }}
+          />
+          <div
+            className="codex-cloud codex-drift-2 absolute rounded-full"
+            style={{
+              right: "-30%",
+              top: "-20%",
+              width: "140%",
+              height: "130%",
+              background:
+                "radial-gradient(ellipse at 60% 40%, rgba(139,124,255,0.4) 0%, rgba(196,181,253,0.18) 40%, transparent 70%)",
+              filter: "blur(8px)",
+            }}
+          />
+          <div
+            className="codex-cloud codex-bloom absolute rounded-full"
+            style={{
+              left: "50%",
+              top: "50%",
+              width: "80%",
+              height: "80%",
+              transform: "translate(-50%, -50%)",
+              background:
+                "radial-gradient(circle, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.25) 40%, transparent 65%)",
+              filter: "blur(4px)",
+            }}
+          />
+        </div>
+
+        {/* Ring + inner shadow */}
         <div className="absolute inset-0 rounded-[22px] ring-1 ring-black/[0.04] sm:rounded-[26px]" />
+        <div className="absolute inset-[1px] rounded-[21px] shadow-inner shadow-black/[0.03] sm:rounded-[25px]" />
 
-        {/* Inner subtle blue/violet glow */}
-        <div
-          className="absolute inset-[2px] rounded-[20px] sm:rounded-[24px]"
-          style={{
-            background:
-              "radial-gradient(ellipse at 30% 30%, rgba(99,102,241,0.06) 0%, transparent 60%), radial-gradient(ellipse at 70% 70%, rgba(139,92,246,0.05) 0%, transparent 60%)",
-          }}
-        />
-
-        {/* Inner shadow */}
-        <div className="absolute inset-[1px] rounded-[21px] shadow-inner shadow-black/[0.02] sm:rounded-[25px]" />
-
-        {/* NaLI Symbol SVG — leaf + pulse + evidence node */}
+        {/* Clean NaLI symbol — single stylized "N" */}
         <svg
-          viewBox="0 0 48 48"
+          viewBox="0 0 40 40"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="relative h-10 w-10 sm:h-12 sm:w-12"
+          className="relative z-10 h-9 w-9 sm:h-11 sm:w-11"
           aria-hidden="true"
         >
           <defs>
-            <linearGradient id="nali-grad" x1="8" y1="8" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#6366f1" />
-              <stop offset="50%" stopColor="#8b5cf6" />
-              <stop offset="100%" stopColor="#06b6d4" />
-            </linearGradient>
-            <linearGradient id="nali-grad-light" x1="8" y1="8" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#818cf8" />
-              <stop offset="100%" stopColor="#a78bfa" />
+            <linearGradient id="nali-g" x1="8" y1="6" x2="32" y2="34" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#4f46e5" />
+              <stop offset="100%" stopColor="#7c3aed" />
             </linearGradient>
           </defs>
-
-          {/* Left leaf stroke — curves up from bottom-left */}
+          {/*
+            Clean "N" mark:
+            - Left vertical stroke
+            - Diagonal connecting stroke
+            - Right vertical stroke
+            Rounded caps, generous weight, unmistakable at any size.
+          */}
           <path
-            d="M12 38 C14 28, 18 18, 24 10"
-            stroke="url(#nali-grad)"
-            strokeWidth="2.5"
+            d="M11 32 L11 10 L29 32 L29 10"
+            stroke="url(#nali-g)"
+            strokeWidth="3.2"
             strokeLinecap="round"
             strokeLinejoin="round"
-          />
-
-          {/* Right leaf stroke — curves up from bottom-right */}
-          <path
-            d="M36 38 C34 28, 30 18, 24 10"
-            stroke="url(#nali-grad)"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-
-          {/* Central vein / evidence pulse line — the "N" diagonal */}
-          <path
-            d="M18 32 L18 18 L30 32 L30 18"
-            stroke="url(#nali-grad)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            opacity="0.85"
-          />
-
-          {/* Small glowing evidence node at top */}
-          <circle
-            cx="24"
-            cy="10"
-            r="2.5"
-            fill="url(#nali-grad)"
-            opacity="0.9"
-          />
-
-          {/* Tiny intelligence spark */}
-          <circle
-            cx="24"
-            cy="10"
-            r="4"
-            fill="none"
-            stroke="url(#nali-grad-light)"
-            strokeWidth="0.8"
-            opacity="0.4"
           />
         </svg>
       </div>
