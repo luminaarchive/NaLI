@@ -7,7 +7,7 @@ import { FluidVideoBackground } from "./FluidVideoBackground";
 import { ScrollDarkenOverlay } from "./ScrollDarkenOverlay";
 
 /**
- * HomepageShell — Wraps homepage content with:
+ * HomepageShell: wraps homepage content with:
  * 1. Fluid video ambient glow background (with CSS fallback)
  * 2. Scroll-linked darkening overlay
  * 3. Transparent/dark glass nav

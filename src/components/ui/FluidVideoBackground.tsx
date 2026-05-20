@@ -1,144 +1,161 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
-/**
- * FluidVideoBackground — High-performance, video-based fluid ambient background system.
- * 
- * Features:
- * 1. Muted, loop, playsInline, autoPlay with preload="metadata".
- * 2. Fallbacks gracefully to high-quality animated CSS glow if files fail to load or are missing.
- * 3. Supports prefers-reduced-motion by rendering a static background overlay.
- * 4. Includes dark readability overlay and radial vignette layers to maintain text contrast.
- * 5. Uses a subtle noise/grain texture for high-fidelity aesthetics.
- * 6. Placed safely at z-0 behind content without z-index stacking issues.
- */
+const videoSources: { src: string; type: string }[] = [];
+
 export function FluidVideoBackground() {
-  const [videoFailed, setVideoFailed] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    // Check and listen for prefers-reduced-motion media query
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setPrefersReducedMotion(mediaQuery.matches);
-    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
-    mediaQuery.addEventListener("change", handler);
-    return () => mediaQuery.removeEventListener("change", handler);
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setPrefersReducedMotion(mq.matches);
+    const handler = (event: MediaQueryListEvent) => setPrefersReducedMotion(event.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
   }, []);
 
-  // Gracefully handle case where video files do not load or exist
-  useEffect(() => {
-    const videoEl = videoRef.current;
-    if (!videoEl || prefersReducedMotion) return;
-
-    // If metadata doesn't load within 3 seconds, indicate potential load issue/absence
-    const checkTimeout = setTimeout(() => {
-      if (videoEl.readyState < 1 && !videoLoaded) {
-        console.warn("Video background sources are slow to respond or missing. Retaining fallback visual layer.");
-      }
-    }, 3000);
-
-    return () => clearTimeout(checkTimeout);
-  }, [prefersReducedMotion, videoLoaded]);
-
-  const handleVideoError = () => {
-    console.error("Fluid video background failed to load or source is missing. Falling back to CSS glow background.");
-    setVideoFailed(true);
-  };
-
-  const handleVideoLoaded = () => {
-    setVideoLoaded(true);
-  };
-
-  const showVideo = !prefersReducedMotion && !videoFailed;
+  const showVideo = videoSources.length > 0 && !prefersReducedMotion && !videoFailed;
+  const animateClass = prefersReducedMotion ? "" : "will-change-transform";
 
   return (
     <div
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-0 h-screen w-screen overflow-hidden bg-[#07090e]"
     >
-      {/* 1. Main Background / Video / CSS Fallback Wrapper */}
       <div className="absolute inset-0 h-full w-full">
-        {showVideo && (
+        {showVideo ? (
           <video
-            ref={videoRef}
             autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            onLoadedData={handleVideoLoaded}
-            onError={handleVideoError}
-            poster="/ambient/nali-fluid-poster.jpg"
-            className={`h-full w-full object-cover transition-opacity duration-1000 ${
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
               videoLoaded ? "opacity-100" : "opacity-0"
             }`}
+            loop
+            muted
+            onCanPlay={() => setVideoLoaded(true)}
+            onError={() => setVideoFailed(true)}
+            playsInline
+            poster="/ambient/nali-fluid-poster.jpg"
+            preload="metadata"
+            ref={videoRef}
           >
-            <source src="/ambient/nali-fluid-glow.webm" type="video/webm" />
-            <source src="/ambient/nali-fluid-glow.mp4" type="video/mp4" />
+            {videoSources.map((source) => (
+              <source key={source.src} src={source.src} type={source.type} />
+            ))}
           </video>
-        )}
+        ) : null}
 
-        {/* CSS Fallback (rendered when video is loading, fails, or prefers-reduced-motion is active) */}
-        {(!videoLoaded || !showVideo) && (
-          <div className="absolute inset-0 h-full w-full transition-opacity duration-1000">
-            {/* Layer 1: Emerald glow (left/bottom) */}
-            <div
-              className={`absolute -bottom-[10%] -left-[10%] h-[75vw] w-[75vw] max-w-[700px] max-h-[700px] rounded-full bg-emerald-500/32 blur-[100px] mix-blend-screen transform-gpu sm:h-[50vw] sm:w-[50vw] sm:blur-[160px] ${
-                prefersReducedMotion ? "" : "animate-fluid-1"
-              }`}
-              style={{ willChange: "transform, opacity" }}
-            />
+        <div
+          className="absolute inset-0 h-full w-full bg-cover bg-center opacity-[0.18]"
+          style={{ backgroundImage: "url('/ambient/nali-fluid-poster.jpg')" }}
+        />
 
-            {/* Layer 2: Cyan/teal glow (center/bottom) */}
-            <div
-              className={`absolute -bottom-[12%] left-[15%] h-[85vw] w-[85vw] max-w-[850px] max-h-[850px] rounded-full bg-cyan-500/26 blur-[110px] mix-blend-screen transform-gpu sm:h-[60vw] sm:w-[60vw] sm:blur-[180px] ${
-                prefersReducedMotion ? "" : "animate-fluid-2"
-              }`}
-              style={{ willChange: "transform, opacity" }}
-            />
+        <div
+          className={`absolute rounded-full mix-blend-screen transform-gpu ${animateClass}`}
+          style={{
+            bottom: "-15%",
+            left: "-10%",
+            width: "min(70vw, 700px)",
+            height: "min(70vw, 700px)",
+            background:
+              "radial-gradient(circle, rgba(16,185,129,0.34) 0%, rgba(16,185,129,0) 70%)",
+            filter: "blur(60px)",
+            animation: prefersReducedMotion
+              ? "none"
+              : "nali-blob-1 14s infinite alternate ease-in-out",
+          }}
+        />
 
-            {/* Layer 3: Indigo/violet glow (right/bottom) */}
-            <div
-              className={`absolute -bottom-[10%] -right-[10%] h-[70vw] w-[70vw] max-w-[700px] max-h-[700px] rounded-full bg-indigo-600/24 blur-[90px] mix-blend-screen transform-gpu sm:h-[50vw] sm:w-[50vw] sm:blur-[140px] ${
-                prefersReducedMotion ? "" : "animate-fluid-3"
-              }`}
-              style={{ willChange: "transform, opacity" }}
-            />
+        <div
+          className={`absolute rounded-full mix-blend-screen transform-gpu ${animateClass}`}
+          style={{
+            bottom: "-20%",
+            left: "20%",
+            width: "min(80vw, 800px)",
+            height: "min(80vw, 800px)",
+            background:
+              "radial-gradient(circle, rgba(6,182,212,0.28) 0%, rgba(6,182,212,0) 70%)",
+            filter: "blur(70px)",
+            animation: prefersReducedMotion
+              ? "none"
+              : "nali-blob-2 18s infinite alternate ease-in-out",
+          }}
+        />
 
-            {/* Layer 4: Soft blue upper haze */}
-            <div
-              className={`absolute -top-[10%] left-[20%] h-[60vw] w-[60vw] max-w-[600px] max-h-[600px] rounded-full bg-blue-900/12 blur-[120px] mix-blend-screen transform-gpu ${
-                prefersReducedMotion ? "" : "animate-fluid-breathe"
-              }`}
-              style={{ willChange: "transform, opacity" }}
-            />
-          </div>
-        )}
+        <div
+          className={`absolute rounded-full mix-blend-screen transform-gpu ${animateClass}`}
+          style={{
+            bottom: "-10%",
+            right: "-10%",
+            width: "min(65vw, 650px)",
+            height: "min(65vw, 650px)",
+            background:
+              "radial-gradient(circle, rgba(124,58,237,0.28) 0%, rgba(124,58,237,0) 70%)",
+            filter: "blur(60px)",
+            animation: prefersReducedMotion
+              ? "none"
+              : "nali-blob-3 16s infinite alternate ease-in-out",
+          }}
+        />
+
+        <div
+          className={`absolute rounded-full mix-blend-screen transform-gpu ${animateClass}`}
+          style={{
+            top: "-5%",
+            left: "30%",
+            width: "min(50vw, 500px)",
+            height: "min(50vw, 500px)",
+            background:
+              "radial-gradient(circle, rgba(20,184,166,0.16) 0%, rgba(20,184,166,0) 70%)",
+            filter: "blur(80px)",
+            animation: prefersReducedMotion
+              ? "none"
+              : "nali-blob-breathe 20s infinite alternate ease-in-out",
+          }}
+        />
       </div>
 
-      {/* 2. Readability overlay to darken and normalize contrast */}
-      <div 
-        className="pointer-events-none absolute inset-0 h-full w-full bg-[#07090e]/50 mix-blend-multiply" 
-      />
-
-      {/* 3. Vignette/radial gradient overlay to focus center content */}
       <div
         className="pointer-events-none absolute inset-0 h-full w-full"
         style={{
-          background: "radial-gradient(circle at 50% 40%, transparent 20%, rgba(7, 9, 14, 0.4) 60%, rgba(7, 9, 14, 0.95) 100%)",
+          background:
+            "radial-gradient(ellipse 80% 60% at 50% 40%, transparent 30%, rgba(7,9,14,0.5) 65%, rgba(7,9,14,0.92) 100%)",
         }}
       />
 
-      {/* 4. Subtle noise/grain texture overlay for premium cinematic feel */}
       <div
-        className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.035] mix-blend-overlay"
+        className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.03] mix-blend-overlay"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
         }}
       />
+
+      <style>{`
+        @keyframes nali-blob-1 {
+          0% { transform: translate3d(0, 10%, 0) scale(1); opacity: 0.55; }
+          33% { transform: translate3d(12%, -8%, 0) scale(1.2); opacity: 0.78; }
+          66% { transform: translate3d(-8%, -3%, 0) scale(0.92); opacity: 0.62; }
+          100% { transform: translate3d(5%, 5%, 0) scale(1.08); opacity: 0.68; }
+        }
+        @keyframes nali-blob-2 {
+          0% { transform: translate3d(0, 0, 0) scale(1.1); opacity: 0.48; }
+          50% { transform: translate3d(-12%, -15%, 0) scale(0.86); opacity: 0.68; }
+          100% { transform: translate3d(8%, -5%, 0) scale(1.14); opacity: 0.54; }
+        }
+        @keyframes nali-blob-3 {
+          0% { transform: translate3d(0, 0, 0) scale(0.9); opacity: 0.48; }
+          50% { transform: translate3d(-15%, -12%, 0) scale(1.24); opacity: 0.7; }
+          100% { transform: translate3d(5%, -8%, 0) scale(1); opacity: 0.58; }
+        }
+        @keyframes nali-blob-breathe {
+          0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.36; }
+          50% { transform: translate3d(-5%, 8%, 0) scale(1.16); opacity: 0.52; }
+          100% { transform: translate3d(3%, -3%, 0) scale(1.04); opacity: 0.42; }
+        }
+      `}</style>
     </div>
   );
 }
