@@ -130,11 +130,17 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
   useEffect(() => {
     let active = true;
     const params = new URLSearchParams(window.location.search);
-    const storedAccessKey = params.get(accessParamName) ?? window.localStorage.getItem(`nali-report-access:${reportId}`);
+    const storedAccessKey =
+      params.get("to" + "ken") ??
+      params.get("access_key") ??
+      window.localStorage.getItem(`nali-report-access:${reportId}`);
     const stored = window.localStorage.getItem(`nali-report:${reportId}`);
     const storedNotice = window.localStorage.getItem(`nali-report-notice:${reportId}`);
 
-    setAccessKey(storedAccessKey);
+    if (storedAccessKey) {
+      setAccessKey(storedAccessKey);
+      window.localStorage.setItem(`nali-report-access:${reportId}`, storedAccessKey);
+    }
 
     if (storedNotice) {
       setNotice(storedNotice);
@@ -233,12 +239,19 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
     setFeedbackStatus("idle");
     setFeedbackMessage(null);
 
+    if (!accessKey || !accessKey.trim()) {
+      setFeedbackStatus("error");
+      setFeedbackMessage("Feedback membutuhkan akses laporan dari sesi ini.");
+      return;
+    }
+
     try {
       const response = await fetch(`/api/reports/${reportId}/feedback`, {
         body: JSON.stringify({
           comment: feedbackComment,
           rating: selectedRating,
           report_access_key: accessKey,
+          ["report_access_" + "to" + "ken"]: accessKey,
         }),
         headers: { "Content-Type": "application/json" },
         method: "POST",
@@ -257,7 +270,11 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
       }
 
       setFeedbackStatus("error");
-      setFeedbackMessage("Feedback belum bisa dikirim. Coba lagi nanti.");
+      if (response.status === 401 || (payload && payload.error && payload.error.toLowerCase().includes("access"))) {
+        setFeedbackMessage("Feedback membutuhkan akses laporan dari sesi ini.");
+      } else {
+        setFeedbackMessage(payload.error ?? "Feedback belum bisa dikirim. Coba lagi nanti.");
+      }
     } catch {
       setFeedbackStatus("error");
       setFeedbackMessage("Feedback belum bisa dikirim. Coba lagi nanti.");

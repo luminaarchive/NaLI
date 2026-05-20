@@ -1136,7 +1136,7 @@ test("CreateReportForm prefill logic correctly maps parameters and overrides to 
   assert.ok(formSource.includes("modeVal = \"draft_from_materials\""), "CreateReportForm should override modeVal to draft_from_materials");
 });
 
-test("ReportResultClient contains the correct feedback UI copy according to specifications", () => {
+test("ReportResultClient contains the correct feedback UI copy and localStorage access fallback", () => {
   const resultClientSource = fs.readFileSync(path.join(repoRoot, "src/components/report/ReportResultClient.tsx"), "utf8");
 
   assert.ok(resultClientSource.includes("Apakah preview ini membantu?"), "Result client should contain: Apakah preview ini membantu?");
@@ -1144,6 +1144,84 @@ test("ReportResultClient contains the correct feedback UI copy according to spec
   assert.ok(resultClientSource.includes("Kurang membantu"), "Result client should contain: Kurang membantu");
   assert.ok(resultClientSource.includes("Catatan singkat opsional..."), "Result client should contain: Catatan singkat opsional...");
   assert.ok(resultClientSource.includes("Kirim feedback"), "Result client should contain: Kirim feedback");
+  
+  // 6. ReportResultClient source includes localStorage access fallback for report id
+  assert.ok(
+    resultClientSource.includes("window.localStorage.getItem(`nali-report-access:${reportId}`)") ||
+    resultClientSource.includes('window.localStorage.getItem("nali-report-access:" + reportId)') ||
+    resultClientSource.includes("window.localStorage.getItem(`nali-report-access:${reportId}`)"),
+    "ReportResultClient should check localStorage fallback nali-report-access:<report_id>"
+  );
+});
+
+test("Feedback route accepts tokens, validates ratings, and does not leak secrets", async () => {
+  const original = {
+    serviceRole: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  };
+  
+  // Configure mock env to bypass unconfigured check and run token verification
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "dummy-service-role-key";
+
+  try {
+    // 3. Missing token returns useful error (401 status)
+    const resNoToken = await postFeedback(
+      new Request("http://localhost/api/reports/test-report/feedback", {
+        body: JSON.stringify({ rating: "helpful" }),
+        method: "POST",
+      }),
+      { params: Promise.resolve({ id: "test-report" }) }
+    );
+    const payloadNoToken = await resNoToken.json();
+    assert.equal(resNoToken.status, 401);
+    assert.match(payloadNoToken.error, /requires a valid access key|access key yang valid/i);
+
+    // 4. Invalid rating still returns 400
+    const resInvalidRating = await postFeedback(
+      new Request("http://localhost/api/reports/test-report/feedback", {
+        body: JSON.stringify({ rating: "invalid-rating" }),
+        method: "POST",
+      }),
+      { params: Promise.resolve({ id: "test-report" }) }
+    );
+    assert.equal(resInvalidRating.status, 400);
+
+    // Now unconfigure Supabase to test fallback responses and token formats
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    // 1. Feedback route accepts report_access_token
+    const resTokenParam = await postFeedback(
+      new Request("http://localhost/api/reports/test-report/feedback", {
+        body: JSON.stringify({ rating: "helpful", report_access_token: "test-token" }),
+        method: "POST",
+      }),
+      { params: Promise.resolve({ id: "test-report" }) }
+    );
+    assert.equal(resTokenParam.status, 202);
+    const payloadTokenParam = await resTokenParam.json();
+    assert.equal(payloadTokenParam.stored, false);
+
+    // 2. Feedback route accepts report_access_key alias
+    const resKeyParam = await postFeedback(
+      new Request("http://localhost/api/reports/test-report/feedback", {
+        body: JSON.stringify({ rating: "helpful", report_access_key: "test-key" }),
+        method: "POST",
+      }),
+      { params: Promise.resolve({ id: "test-report" }) }
+    );
+    assert.equal(resKeyParam.status, 202);
+    const payloadKeyParam = await resKeyParam.json();
+    assert.equal(payloadKeyParam.stored, false);
+
+    // 5. Feedback response does not expose hash/token/secret
+    const serialized = JSON.stringify(payloadKeyParam);
+    assert.doesNotMatch(serialized, /hash|token|secret/i);
+  } finally {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = original.url;
+    process.env.SUPABASE_SERVICE_ROLE_KEY = original.serviceRole;
+  }
 });
 
 
