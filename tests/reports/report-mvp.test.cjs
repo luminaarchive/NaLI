@@ -1031,6 +1031,7 @@ test("export and payment routes enforce Sprint 0 gatekeeping in source", () => {
 
   assert.match(paymentRoute, /getPersistedReport/);
   assert.match(paymentRoute, /isMidtransConfigured/);
+  assert.match(paymentRoute, /manual_payment_pending/);
   assert.doesNotMatch(paymentRoute, /input\.amount|body\.amount/);
   assert.match(exportRoute, /getReportExportEligibility/);
   assert.match(exportRoute, /402/);
@@ -1290,6 +1291,5 @@ test("persisted report access key handoff, localStorage keys, and safety", () =>
   assert.match(generateRouteSource, /report_id: report\.id/);
   assert.match(generateRouteSource, /report_access_key: persistence\.persisted \?/);
 });
-
 
 

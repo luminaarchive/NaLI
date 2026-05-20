@@ -17,6 +17,10 @@ function getInputObject(body: unknown): Record<string, unknown> {
   return body && typeof body === "object" && !Array.isArray(body) ? (body as Record<string, unknown>) : {};
 }
 
+function createManualPaymentOrderId(reportId: string) {
+  return `manual-${reportId.slice(0, 8)}-${Date.now()}`;
+}
+
 export async function POST(req: NextRequest) {
   let body: unknown;
 
@@ -48,22 +52,6 @@ export async function POST(req: NextRequest) {
 
   if (!rateLimit.allowed) {
     return NextResponse.json({ error: RATE_LIMITED_MESSAGE }, { headers: rateLimitHeaders(rateLimit), status: 429 });
-  }
-
-  if (!isMidtransConfigured()) {
-    void logUsageEvent({
-      actionType: "premium_export_attempt",
-      metadata: { export_type: exportType, payment_gateway: "not_configured" },
-      reportId,
-      status: "not_configured",
-    });
-    return NextResponse.json(
-      {
-        error: "Export premium belum aktif di MVP ini.",
-        status: "not_configured",
-      },
-      { status: 503 },
-    );
   }
 
   const persisted = await getPersistedReport({ reportAccessToken: reportAccessKey, reportId });
@@ -101,8 +89,47 @@ export async function POST(req: NextRequest) {
   }
 
   const amount = getExportAmountIdr(exportType);
-  const midtransOrderId = createMidtransOrderId(reportId);
   const paymentExpiresAt = getMidtransPaymentExpiry();
+
+  if (!isMidtransConfigured()) {
+    const payment = await createPaymentRecord({
+      amount,
+      exportType,
+      midtransOrderId: createManualPaymentOrderId(reportId),
+      paymentExpiresAt,
+      reportId,
+    });
+
+    void logUsageEvent({
+      actionType: "premium_export_attempt",
+      metadata: { export_type: exportType, payment_gateway: "manual_pending" },
+      reportId,
+      status: payment.created ? "manual_payment_pending" : payment.reason,
+    });
+
+    if (!payment.created) {
+      return NextResponse.json(
+        {
+          error: "Pembayaran manual belum bisa dicatat di database. Hubungi admin sebelum membayar.",
+          status: payment.reason,
+        },
+        { status: 503 },
+      );
+    }
+
+    return NextResponse.json({
+      amount,
+      export_type: exportType,
+      message:
+        "Payment gateway belum dikonfigurasi. Pembayaran manual dicatat sebagai pending; export tetap terkunci sampai pembayaran dikonfirmasi admin.",
+      payment_id: payment.payment.id,
+      payment_mode: "manual",
+      payment_reference: payment.payment.midtrans_order_id,
+      status: "manual_payment_pending",
+    });
+  }
+
+  const midtransOrderId = createMidtransOrderId(reportId);
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://naliai.vercel.app";
 
   const midtransResponse = await fetch(getMidtransSnapEndpoint(), {

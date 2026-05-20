@@ -17,12 +17,17 @@ async function runSmokeTest() {
     page.setDefaultNavigationTimeout(30000);
     page.setDefaultTimeout(15000);
 
+    function redactForLog(value) {
+      return value
+        .replace(/([?&](?:token|access_key|report_access_key|report_access_token)=)[^&\s]+/gi, "$1[REDACTED]")
+        .replace(/[A-Za-z0-9_-]{40,}/g, "[LONG-REDACTED]")
+        .replace(/[a-f0-9]{32,}/gi, "[HEX-REDACTED]")
+        .replace(/session-[a-z0-9-]+/gi, "session-[REDACTED]");
+    }
+
     // Detailed console log capture with safety replacements
     page.on('console', msg => {
-      let text = msg.text();
-      // Safe replacement of potentially sensitive values to avoid printing raw secrets
-      text = text.replace(/[a-f0-9]{32,}/ig, '[HEX-REDACTED]');
-      text = text.replace(/session-[a-z0-9-]+/ig, 'session-[REDACTED]');
+      const text = redactForLog(msg.text());
       console.log(`[Browser Console] [${msg.type()}] ${text}`);
     });
 
@@ -32,11 +37,11 @@ async function runSmokeTest() {
 
     // Monitor all requests
     page.on('request', req => {
-      console.log(`[Request] ${req.method()} ${req.url()}`);
+      console.log(`[Request] ${req.method()} ${redactForLog(req.url())}`);
     });
 
     page.on('response', res => {
-      console.log(`[Response] ${res.status()} ${res.url()}`);
+      console.log(`[Response] ${res.status()} ${redactForLog(res.url())}`);
     });
 
     // Open create report page
