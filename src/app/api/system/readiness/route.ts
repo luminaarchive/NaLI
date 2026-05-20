@@ -57,6 +57,10 @@ export async function GET() {
       const { error: usageError, count: usageCount } = await supabase
         .from("usage_events")
         .select("id", { count: "exact", head: true });
+
+      const { error: paymentsError, count: paymentsCount } = await supabase
+        .from("payments")
+        .select("id", { count: "exact", head: true });
       
       dbStatus = {
         status: "attempted",
@@ -74,6 +78,11 @@ export async function GET() {
           success: !usageError,
           count: usageCount ?? null,
           error: usageError ? { code: usageError.code, message: usageError.message, details: usageError.details } : null
+        },
+        payments: {
+          success: !paymentsError,
+          count: paymentsCount ?? null,
+          error: paymentsError ? { code: paymentsError.code, message: paymentsError.message, details: paymentsError.details } : null
         }
       };
     } catch (err: any) {

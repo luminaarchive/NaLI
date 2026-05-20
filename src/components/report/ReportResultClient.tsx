@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   Clipboard,
+  Download,
   FileText,
   LockKeyhole,
   RotateCcw,
@@ -159,6 +160,7 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
   const [isLoadingPersisted, setIsLoadingPersisted] = useState(true);
   const [status, setStatus] = useState<"idle" | "copied" | "export_notice">("idle");
   const [exportNotice, setExportNotice] = useState<string | null>(null);
+  const [exportReadiness, setExportReadiness] = useState<"export_ready" | "export_locked" | "unknown">("unknown");
   const [feedbackComment, setFeedbackComment] = useState("");
   const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "sent" | "fallback" | "error">("idle");
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
@@ -199,11 +201,17 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
           return;
         }
 
-        const payload = (await response.json()) as { report?: ReportResult };
+        const payload = (await response.json()) as {
+          report?: ReportResult;
+          export_readiness?: "export_ready" | "export_locked";
+        };
 
         if (active && payload.report) {
           setReport(payload.report);
           window.localStorage.setItem(`nali-report:${reportId}`, JSON.stringify(payload.report));
+        }
+        if (active && payload.export_readiness) {
+          setExportReadiness(payload.export_readiness);
         }
       } catch {
         // LocalStorage fallback remains available when persistence is not configured.
@@ -437,14 +445,45 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
           </SidebarCard>
 
           <SidebarCard title="Export Premium">
-            <p className="text-sm leading-6 text-white/40">Export premium belum aktif di MVP ini.</p>
-            <Button className="mt-3 w-full" disabled={!accessKey} type="button" variant="default" onClick={requestPremiumExport}>
-              <LockKeyhole className="h-4 w-4" aria-hidden="true" />
-              Unlock Export
-            </Button>
-            {!accessKey ? (
-              <p className="mt-2 text-xs leading-5 text-white/30">Export membutuhkan laporan tersimpan dari sesi ini.</p>
-            ) : null}
+            {exportReadiness === "export_ready" ? (
+              <>
+                <p className="text-sm leading-6 text-white/40">Export premium telah aktif untuk laporan ini.</p>
+                <Button
+                  className="mt-3 w-full"
+                  disabled={!accessKey}
+                  type="button"
+                  variant="default"
+                  onClick={() => {
+                    window.open(
+                      `/api/reports/${reportId}/export?${accessParamName}=${encodeURIComponent(accessKey || "")}`,
+                      "_blank"
+                    );
+                  }}
+                >
+                  <Download className="h-4 w-4" aria-hidden="true" />
+                  Download Markdown
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm leading-6 text-white/40">Unduh dokumen berkualitas tinggi hasil analisis NaLI.</p>
+                <Button
+                  className="mt-3 w-full"
+                  disabled={!accessKey}
+                  type="button"
+                  variant="default"
+                  onClick={requestPremiumExport}
+                >
+                  <LockKeyhole className="h-4 w-4" aria-hidden="true" />
+                  Unlock Export
+                </Button>
+                {!accessKey ? (
+                  <p className="mt-2 text-xs leading-5 text-white/30">
+                    Export membutuhkan laporan tersimpan dari sesi ini.
+                  </p>
+                ) : null}
+              </>
+            )}
           </SidebarCard>
 
           {status !== "idle" ? (

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPersistedReport } from "@/lib/reports/persistence";
+import { getReportExportEligibility } from "@/lib/reports/exportGate";
 
 const accessParamName = "to" + "ken";
 
@@ -26,8 +27,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     );
   }
 
+  const eligibility = await getReportExportEligibility(id);
+
   return NextResponse.json({
     report: persisted.report,
     status: persisted.status,
+    export_readiness: eligibility.state,
   });
 }

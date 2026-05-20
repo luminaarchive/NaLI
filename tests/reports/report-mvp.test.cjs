@@ -1037,6 +1037,18 @@ test("export and payment routes enforce Sprint 0 gatekeeping in source", () => {
   assert.match(exportRoute, /PDF\/DOCX export belum aktif/);
   assert.match(webhookRoute, /verifyMidtransSignature/);
   assert.match(webhookRoute, /mapMidtransTransactionStatus/);
+
+  // Sprint 0.1 Paid Export checks
+  const reportIdRoute = fs.readFileSync(path.join(repoRoot, "src/app/api/reports/[id]/route.ts"), "utf8");
+  const readinessRoute = fs.readFileSync(path.join(repoRoot, "src/app/api/system/readiness/route.ts"), "utf8");
+  const resultClient = fs.readFileSync(path.join(repoRoot, "src/components/report/ReportResultClient.tsx"), "utf8");
+
+  assert.match(reportIdRoute, /getReportExportEligibility/);
+  assert.match(reportIdRoute, /export_readiness:\s*eligibility\.state/);
+  assert.match(readinessRoute, /\.from\("payments"\)/);
+  assert.match(resultClient, /exportReadiness/);
+  assert.match(resultClient, /Download Markdown/);
+  assert.match(resultClient, /Unlock Export/);
 });
 
 test("public UI and report output source avoid forbidden academic cheating wording", () => {

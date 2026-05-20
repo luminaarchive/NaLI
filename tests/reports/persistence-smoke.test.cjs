@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 const { NextRequest } = require("next/server");
 const { GET: getReport } = require("../../src/app/api/reports/[id]/route");
+const { GET: getExport } = require("../../src/app/api/reports/[id]/export/route");
 const { POST: postFeedback } = require("../../src/app/api/reports/[id]/feedback/route");
 const { getPersistedReport } = require("../../src/lib/reports/persistence");
 const { logUsageEvent } = require("../../src/lib/usage/logging");
@@ -113,6 +114,30 @@ test("usage logging fallback behavior under unconfigured env", async () => {
     });
     assert.equal(result.logged, false);
     assert.equal(result.reason, "supabase_unconfigured");
+  } finally {
+    restoreEnv(original);
+  }
+});
+
+test("export endpoint under unconfigured env returns 503 or 401", async () => {
+  const original = snapshotEnv();
+  delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+  delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  try {
+    // GET export without token -> 401
+    const resNoToken = await getExport(
+      new NextRequest("http://localhost/api/reports/11111111-1111-4111-8111-111111111111/export"),
+      { params: Promise.resolve({ id: "11111111-1111-4111-8111-111111111111" }) }
+    );
+    assert.equal(resNoToken.status, 401);
+
+    // GET export with token under unconfigured env -> 503
+    const resUnconfigured = await getExport(
+      new NextRequest("http://localhost/api/reports/11111111-1111-4111-8111-111111111111/export?token=some_token"),
+      { params: Promise.resolve({ id: "11111111-1111-4111-8111-111111111111" }) }
+    );
+    assert.equal(resUnconfigured.status, 503);
   } finally {
     restoreEnv(original);
   }
