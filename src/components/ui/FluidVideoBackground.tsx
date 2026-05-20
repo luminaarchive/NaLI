@@ -49,8 +49,11 @@ export function FluidVideoBackground() {
         ) : null}
 
         <div
-          className="absolute inset-0 h-full w-full bg-cover bg-center opacity-[0.18]"
-          style={{ backgroundImage: "url('/ambient/nali-fluid-poster.jpg')" }}
+          className="absolute inset-[-3%] h-[106%] w-[106%] bg-cover bg-center opacity-[0.10]"
+          style={{
+            backgroundImage: "url('/ambient/nali-fluid-poster.jpg')",
+            filter: "blur(18px) saturate(1.05)",
+          }}
         />
 
         <div

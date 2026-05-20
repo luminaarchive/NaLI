@@ -1,59 +1,76 @@
 "use client";
 
 interface NaLIMarkProps {
+  size?: number;
   className?: string;
+  monochrome?: boolean;
   gradientId?: string;
 }
 
 export function NaLIMark({
-  className = "h-6 w-6",
+  size = 24,
+  className,
+  monochrome = false,
   gradientId = "nali-mark-gradient",
 }: NaLIMarkProps) {
   const gradientUrl = `url(#${gradientId})`;
+  const strokeColor = monochrome ? "currentColor" : gradientUrl;
+  const fillColor = monochrome ? "currentColor" : gradientUrl;
 
   return (
     <svg
       aria-hidden="true"
       className={className}
       fill="none"
-      viewBox="0 0 48 48"
+      height={size}
+      viewBox="0 0 64 64"
+      width={size}
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
         <linearGradient
           gradientUnits="userSpaceOnUse"
           id={gradientId}
-          x1="8"
-          x2="40"
-          y1="42"
-          y2="6"
+          x1="11"
+          x2="52"
+          y1="55"
+          y2="8"
         >
           <stop offset="0%" stopColor="#10b981" />
-          <stop offset="48%" stopColor="#06b6d4" />
+          <stop offset="46%" stopColor="#06b6d4" />
           <stop offset="100%" stopColor="#7c3aed" />
         </linearGradient>
       </defs>
       <path
-        d="M13.5 39.5C12.2 31.8 12.8 19.5 15.8 8.5"
-        stroke={gradientUrl}
+        d="M16.7 53.5C18.9 46.5 19.6 39.2 18 32.6C16.5 26.4 19.2 18.7 23.5 9.7"
+        stroke={strokeColor}
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeWidth="4.8"
+        strokeWidth="5.8"
       />
       <path
-        d="M17.2 9.8C22.6 19.1 27.8 29.4 34.6 38.6"
-        stroke={gradientUrl}
+        d="M23.2 10.4C26.3 18.6 28.5 26.2 32.4 31.7C37.4 38.7 41.1 46 46.4 53"
+        stroke={strokeColor}
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeWidth="4.4"
+        strokeWidth="5.2"
       />
       <path
-        d="M35.2 39.4C37.2 29.8 36.6 18.4 33.2 8.2"
-        stroke={gradientUrl}
+        d="M46.6 53.2C42.7 45.1 43.4 37 46.2 29.6C49.1 22.1 46.8 14.9 41.2 8.7"
+        stroke={strokeColor}
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeWidth="4.8"
+        strokeWidth="5.8"
       />
+      <path
+        d="M27.1 18.6C30.2 25.7 33.3 32.7 37.7 40.4"
+        opacity="0.38"
+        stroke={strokeColor}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+      <circle cx="42.4" cy="8.8" fill={fillColor} r="2.4" />
     </svg>
   );
 }
@@ -78,7 +95,7 @@ export function NaLIIconTile() {
         }}
       />
       <NaLIMark
-        className="relative h-12 w-12 md:h-[52px] md:w-[52px]"
+        className="relative h-[42px] w-[42px] md:h-12 md:w-12"
         gradientId="nali-hero-mark-gradient"
       />
     </div>

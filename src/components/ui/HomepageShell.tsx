@@ -4,14 +4,12 @@ import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { CodexNav } from "./CodexNav";
 import { FluidVideoBackground } from "./FluidVideoBackground";
-import { ScrollDarkenOverlay } from "./ScrollDarkenOverlay";
 
 /**
  * HomepageShell: wraps homepage content with:
  * 1. Fluid video ambient glow background (with CSS fallback)
- * 2. Scroll-linked darkening overlay
- * 3. Transparent/dark glass nav
- * 4. Body color overrides for dark mode context
+ * 2. Transparent/dark glass nav
+ * 3. Body color overrides for dark mode context
  */
 export function HomepageShell({ children }: { children: ReactNode }) {
   useEffect(() => {
@@ -27,9 +25,8 @@ export function HomepageShell({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className="relative min-h-screen text-white bg-[#07090e]">
+    <div className="relative min-h-screen overflow-x-hidden bg-[#07090e] text-white">
       <FluidVideoBackground />
-      <ScrollDarkenOverlay />
       <CodexNav />
       {children}
     </div>

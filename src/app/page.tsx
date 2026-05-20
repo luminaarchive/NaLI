@@ -77,16 +77,41 @@ export default function HomePage() {
 
           <div aria-hidden="true" className="h-12 lg:h-20" />
 
-          <CodexProductPreview />
+          <div className="relative">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-[-20px] -top-24 -bottom-28 md:inset-x-[-32px] md:-top-32 md:-bottom-36"
+              style={{
+                background:
+                  "radial-gradient(circle at 50% 0%, rgba(6,182,212,0.12), transparent 55%), radial-gradient(circle at 20% 80%, rgba(16,185,129,0.08), transparent 45%), radial-gradient(circle at 80% 70%, rgba(124,58,237,0.08), transparent 45%)",
+              }}
+            />
+            <div className="relative z-10">
+              <CodexProductPreview />
+            </div>
+          </div>
 
-          <div aria-hidden="true" className="h-20 md:h-24" />
+          <div
+            aria-hidden="true"
+            className="-mx-5 h-[120px] md:-mx-8 md:h-[180px]"
+            style={{
+              background:
+                "radial-gradient(circle at 46% 8%, rgba(6,182,212,0.12), transparent 46%), radial-gradient(circle at 24% 58%, rgba(16,185,129,0.08), transparent 42%), radial-gradient(circle at 82% 54%, rgba(124,58,237,0.08), transparent 44%), linear-gradient(to bottom, rgba(7,9,14,0) 0%, rgba(7,9,14,0.72) 18%, rgba(7,9,14,0.92) 45%, #07090e 100%)",
+              WebkitMaskImage:
+                "linear-gradient(to bottom, transparent 0%, black 20%, black 100%)",
+              maskImage:
+                "linear-gradient(to bottom, transparent 0%, black 20%, black 100%)",
+            }}
+          />
         </section>
 
-        <section className="relative z-20 bg-[#07090e] pb-24">
-          <CodexFeatureShowcase />
+        <section className="homepage-feature-section relative z-20 pb-24">
+          <div className="homepage-feature-content relative z-10">
+            <CodexFeatureShowcase />
+          </div>
         </section>
 
-        <section className="relative z-20 bg-[#07090e] px-5 pb-20 md:px-8">
+        <section className="relative z-20 bg-[#07090e]/90 px-5 pb-20 backdrop-blur-sm md:px-8">
           <div className="mx-auto max-w-[680px] rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 text-center">
             <p className="text-sm leading-6 text-white/50">
               NaLI creates evidence-based drafts. Users remain responsible for final review,
@@ -96,7 +121,7 @@ export default function HomePage() {
         </section>
 
         <footer
-          className="relative z-20 bg-[#07090e] px-5 py-10 md:px-8"
+          className="relative z-20 bg-[#07090e]/90 px-5 py-10 backdrop-blur-sm md:px-8"
           style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
         >
           <div className="mx-auto flex max-w-[1200px] flex-col gap-6 text-sm md:flex-row md:items-center md:justify-between">
