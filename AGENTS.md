@@ -95,6 +95,11 @@ Build the smallest working Learn & Report flow:
 - Do not duplicate payment order IDs into `reports`; payment truth belongs in `payments` joined by `report_id`.
 - Do not overbuild v1.5.3 deferred features in the MVP: full review queue, patrol planner, realtime alerts, H3/PostGIS, BirdNET, Neo4j, full Darwin Core institutional export, recurring subscription, SOS system, or enterprise dashboard.
 
+## PUBLIC VISUAL LOCK
+
+- Do not redesign public UI without explicit founder approval.
+- Only bugfixes, overlap fixes, copy typo fixes, and backend work are allowed.
+
 ## Definition Of Done
 
 - Home page clearly shows Learn & Report and Field Intelligence.
