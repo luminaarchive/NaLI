@@ -20,7 +20,7 @@ const evidenceChips = ["Notes", "Source", "File", "Review"];
  */
 export function CodexProductPreview() {
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-[-270px] z-0 flex justify-center px-3 sm:bottom-[-240px] sm:px-4 lg:bottom-[-220px]">
+    <div className="pointer-events-none absolute inset-x-0 bottom-[-300px] z-0 flex justify-center px-3 sm:bottom-[-240px] sm:px-4 lg:bottom-[-220px]">
       {/* Soft cyan/indigo glow haze behind the card */}
       <div
         className="absolute bottom-[200px] left-[50%] h-[350px] w-[min(900px,80vw)] -translate-x-[50%] rounded-full bg-gradient-to-r from-cyan-500/22 via-indigo-500/28 to-purple-500/18 blur-[90px] mix-blend-screen transform-gpu pointer-events-none opacity-90"
@@ -59,7 +59,7 @@ export function CodexProductPreview() {
             <span className="h-3 w-3 rounded-full bg-[#28c840]" />
           </div>
           <div className="ml-3 min-w-0 text-xs font-medium text-white/55 sm:text-[13px]">
-            NaLI — Create Report
+            NaLI: Create Report
           </div>
           <div className="ml-auto hidden items-center gap-2 sm:flex">
             <span className="rounded-full border border-white/10 bg-white/[0.06] px-3.5 py-1.5 text-xs font-medium text-white/70">

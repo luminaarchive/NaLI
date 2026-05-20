@@ -5,7 +5,7 @@ export const START_FROM_ZERO_DISCLAIMER =
   "Panduan ini belum menjadi draft laporan berbasis bukti karena bahan observasi atau sumber belum tersedia. Pengguna perlu mengumpulkan data, catatan, foto, sumber, atau hasil pengamatan terlebih dahulu sebelum NaLI dapat menyusun draft laporan.";
 
 export const DRAFT_LABEL = "Draft bantuan belajar/penulisan berbasis bukti.";
-export const START_FROM_ZERO_LABEL = "Panduan awal — belum menjadi draft laporan berbasis bukti.";
+export const START_FROM_ZERO_LABEL = "Panduan awal, belum menjadi draft laporan berbasis bukti.";
 export const SOURCE_VERIFICATION_MVP_STATUS = "Source verification belum aktif di MVP ini.";
 
 export const reportTemplates = [

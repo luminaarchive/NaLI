@@ -26,7 +26,7 @@ const capabilities = [
   {
     icon: Fingerprint,
     title: "Evidence Hash",
-    text: "Digital integrity markers for file integrity — not legal proof or academic validation.",
+    text: "Digital integrity markers for file integrity, not legal proof or academic validation.",
     accent: "from-violet-500/20",
   },
   {

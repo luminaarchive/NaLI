@@ -42,7 +42,7 @@ export default function LearnReportPage() {
               NaLI Learn & Report
             </h1>
             <p className="mx-auto mt-5 max-w-[560px] text-base leading-7 text-white/50 sm:text-lg">
-              Build evidence-based reports from your materials — or get guided when starting from scratch.
+              Build evidence-based reports from your materials, or get guided when starting from scratch.
             </p>
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
               <PathCard

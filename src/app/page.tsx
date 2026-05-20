@@ -15,7 +15,7 @@ export default function HomePage() {
 
       <main className="relative z-10">
         {/* ═══════ HERO SECTION ═══════ */}
-        <section className="relative isolate min-h-[100svh] px-4 pt-[15vh] sm:px-6 sm:pt-[18vh] lg:px-8 lg:pt-[20vh]">
+        <section className="relative isolate min-h-[100svh] px-4 pt-[11vh] sm:px-6 sm:pt-[18vh] lg:px-8 lg:pt-[20vh]">
           {/* Hero content — above product preview */}
           <div className="relative z-20 mx-auto flex w-full max-w-[760px] flex-col items-center text-center">
             <NaLIIconTile />
@@ -27,16 +27,16 @@ export default function HomePage() {
               NaLI
             </h1>
 
-            <p className="mt-6 max-w-[650px] text-[17px] leading-8 text-balance text-white/85 sm:text-xl sm:leading-8">
+            <p className="mt-4 max-w-[650px] text-[17px] leading-8 text-balance text-white/85 sm:text-xl sm:leading-8 sm:mt-6">
               Evidence-based AI for reports, learning, and field intelligence.
             </p>
 
-            <p className="mt-3 text-sm text-balance text-white/55 sm:text-[15px]">
+            <p className="mt-2 text-sm text-balance text-white/55 sm:text-[15px] sm:mt-3">
               Turn notes, files, sources, and observations into structured drafts.
             </p>
 
             {/* Evidence Micro-details Chips */}
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-2 max-w-[640px]">
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 max-w-[640px] sm:mt-6">
               <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 text-[10px] sm:text-[11.5px] font-mono text-emerald-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span>Evidence Hash: SHA-256</span>
@@ -55,7 +55,7 @@ export default function HomePage() {
             </div>
 
             {/* CTA Buttons */}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:mt-8">
               <Link
                 href="/create-report"
                 className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-7 text-sm font-semibold text-[#1a1040] transition-all duration-200 hover:-translate-y-px hover:shadow-xl hover:shadow-white/20"
@@ -74,7 +74,7 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <p className="mt-6 text-xs text-white/45 sm:text-[13px]">
+            <p className="mt-4 text-xs text-white/45 sm:text-[13px] sm:mt-6">
               Public reports. Professional field intelligence. One evidence engine.
             </p>
           </div>
@@ -109,7 +109,7 @@ export default function HomePage() {
             <p
               className="mx-auto mt-4 max-w-[560px] text-[16px] leading-7 text-white/60"
             >
-              Dari upload hingga export — setiap langkah dilacak, setiap sumber
+              Dari upload hingga export, setiap langkah dilacak, setiap sumber
               tercatat, dan setiap draft siap direview.
             </p>
           </div>

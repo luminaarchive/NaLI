@@ -63,7 +63,7 @@ function FeatureUploadDraft() {
           Dapatkan draft otomatis.
         </h2>
         <p className="mt-5 text-[16px] leading-[1.7] text-white/60 sm:text-[17px]">
-          Dari catatan lapangan, file PDF, hingga observasi mentah — NaLI
+          Dari catatan lapangan, file PDF, hingga observasi mentah, NaLI
           mengubahnya menjadi draft berbasis evidensi yang siap direview. Setiap
           draft dilengkapi sumber, batasan, dan catatan ketidakpastian.
         </p>
@@ -353,7 +353,7 @@ function FeatureReviewExport() {
         </h2>
         <p className="mt-5 text-[16px] leading-[1.7] text-white/60 sm:text-[17px]">
           Tidak ada draft yang langsung diekspor. Setiap laporan melalui
-          checklist review — memastikan integritas akademis, verifikasi sumber,
+          checklist review, memastikan integritas akademis, verifikasi sumber,
           dan persetujuan eksplisit sebelum finalisasi.
         </p>
         <div className="mt-6 flex items-center gap-2 text-indigo-400 font-semibold text-[14px]">
