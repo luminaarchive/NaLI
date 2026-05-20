@@ -1,37 +1,15 @@
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, FileText, LockKeyhole, ShieldCheck } from "lucide-react";
 import { buildJsonLdGraph } from "@/lib/seo/site";
-import { HomeCommandBox } from "@/components/report/HomeCommandBox";
 import { HomepageShell } from "@/components/ui/HomepageShell";
 import { NaLIIconTile } from "@/components/ui/NaLIIconTile";
+import { CodexProductPreview } from "@/components/ui/CodexProductPreview";
+import { CodexFeatureShowcase } from "@/components/ui/CodexFeatureShowcase";
 
-const whatNaLIDoes = [
-  {
-    title: "Susun bahan",
-    text: "Ubah catatan, lokasi, URL, atau ringkasan file menjadi struktur laporan.",
-  },
-  {
-    title: "Buat draf atau panduan",
-    text: "Punya bahan jadi draf. Belum punya bahan jadi panduan mulai.",
-  },
-  {
-    title: "Tandai batas bukti",
-    text: "NaLI menampilkan evidence table, uncertainty note, dan checklist review.",
-  },
-];
-
-const safetyPoints = [
-  "Tidak membuat sitasi palsu",
-  "Tidak membuat data palsu",
-  "Tidak menerima empty prompt untuk draf",
-  "Output bukan karya final",
-];
-
-const pricingItems = [
-  ["Preview Gratis", "Aktif sebagai preview draf/panduan awal."],
-  ["One-Time Report", "Disiapkan untuk laporan sekali pakai setelah payment aktif."],
-  ["Export Premium", "Dokumen lebih rapi, terkunci sampai payment aktif."],
-  ["NaLI Energy nanti", "Untuk pemakaian lebih banyak setelah pola penggunaan jelas."],
+const chips = [
+  { label: "Evidence Hash: SHA-256", color: "#10b981" },
+  { label: "Source Coverage: Verified", color: "#14b8a6" },
+  { label: "Review: Required", color: "#6366f1" },
+  { label: "Export Gate: Active", color: "#7c3aed" },
 ];
 
 export default function HomePage() {
@@ -42,233 +20,132 @@ export default function HomePage() {
       <script dangerouslySetInnerHTML={{ __html: jsonLd }} type="application/ld+json" />
 
       <main className="relative z-10 overflow-x-hidden">
-        <section className="px-4 pt-24 pb-12 sm:px-6 md:pt-28 lg:px-8">
-          <div className="mx-auto flex max-w-[920px] flex-col items-center text-center">
+        <section className="relative isolate bg-transparent px-5 md:px-8">
+          <div className="mx-auto flex w-full max-w-[680px] flex-col items-center pt-[96px] text-center md:pt-[168px]">
             <NaLIIconTile />
-            <span className="mt-5 inline-flex rounded-md border border-[#DDD5C7] bg-white/70 px-3 py-1 text-xs font-semibold text-[#5F6B62]">
-              NaLI Learn & Report
-            </span>
-            <h1 className="mt-5 max-w-[820px] text-[40px] font-semibold leading-[1.08] tracking-normal text-[#111814] sm:text-[56px] lg:text-[68px]">
-              Ubah catatan menjadi laporan berbasis bukti.
+
+            <h1
+              className="mt-4 text-[56px] font-bold tracking-normal text-white lg:text-[80px]"
+              style={{ lineHeight: 1.05 }}
+            >
+              NaLI
             </h1>
-            <p className="mt-5 max-w-[680px] text-base leading-7 text-[#5F6B62] sm:text-lg">
-              NaLI membantu menyusun draf atau panduan awal tanpa mengarang data, sitasi, atau klaim.
+
+            <p className="mt-3 max-w-[560px] text-[19px] leading-[1.5] text-white/80 lg:text-[22px]">
+              Evidence-based AI for reports, learning, and field intelligence.
             </p>
 
-            <div className="mt-7 w-full">
-              <HomeCommandBox />
-            </div>
-
-            <p className="mt-4 text-sm font-medium text-[#5F6B62]">
-              NaLI menyusun, bukan mengarang. Validasi akhir tetap manusia.
+            <p className="mt-2 max-w-[560px] text-[15px] leading-6 text-white/50 lg:text-[16px]">
+              Turn notes, files, sources, and observations into structured drafts.
             </p>
-            <a className="mt-3 text-sm font-semibold text-[#173D2B] hover:underline" href="#cara-kerja">
-              Lihat cara kerja
-            </a>
-          </div>
 
-          <HeroPreview />
-        </section>
-
-        <section id="cara-kerja" className="border-y border-[#DDD5C7] bg-[#FCFAF4] px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1040px]">
-            <SectionHeading title="Apa yang NaLI lakukan?" />
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              {whatNaLIDoes.map((item) => (
-                <article className="rounded-lg border border-[#DDD5C7] bg-white p-5" key={item.title}>
-                  <h3 className="text-lg font-semibold text-[#111814]">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-[#5F6B62]">{item.text}</p>
-                </article>
+            <div className="mt-5 flex max-w-[600px] flex-wrap items-center justify-center gap-2">
+              {chips.map((chip) => (
+                <span
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 font-mono text-[11px] font-medium leading-none text-white/70 lg:px-3 lg:text-[12px]"
+                  key={chip.label}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{ backgroundColor: chip.color }}
+                  />
+                  {chip.label}
+                </span>
               ))}
             </div>
-          </div>
-        </section>
 
-        <section className="px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1040px]">
-            <SectionHeading title="Dua cara mulai" />
-            <div className="mt-8 grid gap-4 md:grid-cols-2">
-              <StartCard
-                cta="Buat Draf"
-                href="/create-report?mode=draft_from_materials"
-                text="Tempel catatan, hasil praktikum, lokasi, URL, atau ringkasan file."
-                title="Saya sudah punya bahan"
-              />
-              <StartCard
-                cta="Buat Panduan"
-                href="/create-report?mode=start_from_zero"
-                text="NaLI bantu membuat outline, pertanyaan observasi, dan checklist bukti."
-                title="Saya belum punya bahan"
-              />
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-[#07100B] px-4 py-14 text-white sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1040px]">
-            <SectionHeading inverse title="Kenapa NaLI aman?" />
-            <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {safetyPoints.map((point) => (
-                <p className="flex gap-2 rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm leading-6 text-white/80" key={point}>
-                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#B9CBAA]" aria-hidden="true" />
-                  <span>{point}</span>
-                </p>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mx-auto grid max-w-[1040px] gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-            <div>
-              <SectionHeading title="Export premium" />
-              <p className="mt-4 text-sm leading-7 text-[#5F6B62]">
-                Preview bisa dibaca gratis. Export premium disiapkan untuk hasil yang lebih rapi saat payment aktif.
-              </p>
-              <span className="mt-4 inline-flex rounded-md border border-[#D8A033]/30 bg-[#FFF7DF] px-3 py-1.5 text-xs font-semibold text-[#7A520F]">
-                Payment belum aktif di MVP ini.
-              </span>
+            <div className="mt-6 flex w-full max-w-[350px] flex-col items-center gap-3 sm:max-w-none sm:flex-row sm:justify-center sm:gap-4">
               <Link
-                className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#173D2B] px-5 text-sm font-semibold text-white transition hover:bg-[#102F20]"
+                className="inline-flex h-12 w-full items-center justify-center rounded-xl px-8 text-[16px] font-medium text-white transition duration-200 hover:-translate-y-px hover:brightness-110 sm:w-auto"
                 href="/create-report"
+                style={{
+                  background: "linear-gradient(135deg, #10b981, #7c3aed)",
+                  boxShadow: "0 16px 36px rgba(16,185,129,0.18), 0 6px 18px rgba(0,0,0,0.28)",
+                }}
               >
-                Coba buat preview
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                Start a report →
               </Link>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {[
-                "Layout laporan lebih rapi",
-                "Evidence table ikut terbawa",
-                "Disclaimer ikut terbawa",
-                "Checklist review ikut terbawa",
-                "Siap diedit sebelum dikumpulkan",
-              ].map((item) => (
-                <p className="flex gap-2 rounded-lg border border-[#DDD5C7] bg-white p-4 text-sm leading-6 text-[#5F6B62]" key={item}>
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#315F45]" aria-hidden="true" />
-                  <span>{item}</span>
-                </p>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="border-y border-[#DDD5C7] bg-[#FCFAF4] px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1040px]">
-            <SectionHeading title="Harga Sprint 0" />
-            <div className="mt-8 grid gap-4 md:grid-cols-4">
-              {pricingItems.map(([title, text]) => (
-                <article className="rounded-lg border border-[#DDD5C7] bg-white p-5" key={title}>
-                  <h3 className="text-base font-semibold text-[#111814]">{title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-[#5F6B62]">{text}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[760px] text-center">
-            <h2 className="text-3xl font-semibold text-[#111814]">Mulai dari satu catatan — atau mulai dari nol.</h2>
-            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link className="inline-flex h-11 items-center justify-center rounded-md bg-[#173D2B] px-5 text-sm font-semibold text-white" href="/create-report">
-                Mulai Laporan
-              </Link>
-              <Link className="inline-flex h-11 items-center justify-center rounded-md border border-[#DDD5C7] bg-white/70 px-5 text-sm font-semibold text-[#173D2B]" href="/create-report?mode=start_from_zero">
-                Buat Panduan
+              <Link
+                className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-white/20 px-8 text-[16px] font-medium text-white transition duration-200 hover:-translate-y-px hover:bg-white/[0.05] hover:border-white/30 sm:w-auto"
+                href="/field-intelligence"
+              >
+                Explore NaLI for work
               </Link>
             </div>
           </div>
+
+          <div aria-hidden="true" className="h-12 lg:h-20" />
+
+          <div className="relative">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-[-20px] -top-24 -bottom-28 md:inset-x-[-32px] md:-top-32 md:-bottom-36"
+              style={{
+                background:
+                  "radial-gradient(circle at 50% 0%, rgba(6,182,212,0.12), transparent 55%), radial-gradient(circle at 20% 80%, rgba(16,185,129,0.08), transparent 45%), radial-gradient(circle at 80% 70%, rgba(124,58,237,0.08), transparent 45%)",
+              }}
+            />
+            <div className="relative z-10">
+              <CodexProductPreview />
+            </div>
+          </div>
+
+          <div
+            aria-hidden="true"
+            className="-mx-5 h-[120px] md:-mx-8 md:h-[180px]"
+            style={{
+              background:
+                "radial-gradient(circle at 46% 8%, rgba(6,182,212,0.12), transparent 46%), radial-gradient(circle at 24% 58%, rgba(16,185,129,0.08), transparent 42%), radial-gradient(circle at 82% 54%, rgba(124,58,237,0.08), transparent 44%), linear-gradient(to bottom, rgba(7,9,14,0) 0%, rgba(7,9,14,0.72) 18%, rgba(7,9,14,0.92) 45%, #07090e 100%)",
+              WebkitMaskImage:
+                "linear-gradient(to bottom, transparent 0%, black 20%, black 100%)",
+              maskImage:
+                "linear-gradient(to bottom, transparent 0%, black 20%, black 100%)",
+            }}
+          />
         </section>
 
-        <footer className="border-t border-[#DDD5C7] bg-[#F5F1E8] px-4 py-10 sm:px-6 lg:px-8">
-          <div className="mx-auto flex max-w-[1180px] flex-col gap-5 text-sm md:flex-row md:items-center md:justify-between">
-            <p className="font-medium text-[#5F6B62]">NaLI by NatIve · Asisten laporan berbasis bukti</p>
-            <div className="flex flex-wrap gap-5 font-medium text-[#5F6B62]">
-              <Link className="hover:text-[#111814]" href="/learn-report">
+        <section className="homepage-feature-section relative z-20 pb-24">
+          <div className="homepage-feature-content relative z-10">
+            <CodexFeatureShowcase />
+          </div>
+        </section>
+
+        <section className="relative z-20 bg-[#07090e]/90 px-5 pb-20 backdrop-blur-sm md:px-8">
+          <div className="mx-auto max-w-[680px] rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 text-center">
+            <p className="text-sm leading-6 text-white/50">
+              NaLI creates evidence-based drafts. Users remain responsible for final review,
+              verification, and submission.
+            </p>
+          </div>
+        </section>
+
+        <footer
+          className="relative z-20 bg-[#07090e]/90 px-5 py-10 backdrop-blur-sm md:px-8"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          <div className="mx-auto flex max-w-[1200px] flex-col gap-6 text-sm md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-3">
+              <span className="text-sm font-semibold text-white">NaLI</span>
+              <p className="text-white/50">Evidence-based drafts. Final review remains human.</p>
+            </div>
+            <div className="flex flex-wrap gap-5 text-[13px] font-medium text-white/60">
+              <Link className="transition-colors hover:text-white" href="/learn-report">
                 Learn & Report
               </Link>
-              <Link className="hover:text-[#111814]" href="/field-intelligence">
+              <Link className="transition-colors hover:text-white" href="/field-intelligence">
                 Field Intelligence
               </Link>
-              <Link className="hover:text-[#111814]" href="/pricing">
-                Harga
+              <Link className="transition-colors hover:text-white" href="/pricing">
+                Pricing
               </Link>
-              <Link className="hover:text-[#111814]" href="/create-report">
-                Mulai Laporan
+              <Link className="transition-colors hover:text-white" href="/create-report">
+                Create Report
               </Link>
             </div>
           </div>
         </footer>
       </main>
     </HomepageShell>
-  );
-}
-
-function HeroPreview() {
-  const flow = ["Bahan", "Struktur", "Evidence table", "Review", "Export"];
-
-  return (
-    <div className="mx-auto mt-9 max-w-[860px] rounded-lg border border-[#DDD5C7] bg-white/80 p-4 shadow-[0_18px_48px_rgba(17,24,20,0.08)] sm:p-5">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="text-left">
-          <p className="text-xs font-semibold uppercase text-[#6F8057]">Preview alur</p>
-          <h2 className="mt-2 text-xl font-semibold text-[#111814]">Contoh struktur</h2>
-          <div className="mt-4 grid gap-2 text-sm text-[#5F6B62] sm:grid-cols-2">
-            {["Draf laporan", "Evidence table", "Checklist bukti", "Review manusia"].map((item) => (
-              <p className="flex gap-2" key={item}>
-                <FileText className="mt-0.5 h-4 w-4 shrink-0 text-[#6F8057]" aria-hidden="true" />
-                <span>{item}</span>
-              </p>
-            ))}
-          </div>
-        </div>
-        <div className="w-full rounded-lg border border-[#DDD5C7] bg-[#FCFAF4] p-3 md:max-w-[360px]">
-          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#5F6B62]">
-            {flow.map((item, index) => (
-              <span className="inline-flex items-center gap-2" key={item}>
-                <span
-                  className={
-                    index === flow.length - 1
-                      ? "rounded-md border border-[#D8A033]/30 bg-[#FFF7DF] px-2 py-1 text-[#7A520F]"
-                      : "rounded-md border border-[#DDD5C7] bg-white px-2 py-1"
-                  }
-                >
-                  {index === flow.length - 1 ? "Export premium terkunci" : item}
-                </span>
-                {index < flow.length - 1 ? <ArrowRight className="h-3 w-3 text-[#9D9482]" aria-hidden="true" /> : null}
-              </span>
-            ))}
-          </div>
-          <p className="mt-3 flex gap-2 text-xs leading-5 text-[#5F6B62]">
-            <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#7A520F]" aria-hidden="true" />
-            <span>Source verification belum aktif di MVP ini. URL pengguna dicatat sebagai bahan, belum diverifikasi otomatis.</span>
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SectionHeading({ inverse = false, title }: { inverse?: boolean; title: string }) {
-  return (
-    <div>
-      <h2 className={inverse ? "text-2xl font-semibold text-white sm:text-3xl" : "text-2xl font-semibold text-[#111814] sm:text-3xl"}>
-        {title}
-      </h2>
-    </div>
-  );
-}
-
-function StartCard({ cta, href, text, title }: { cta: string; href: string; text: string; title: string }) {
-  return (
-    <article className="rounded-lg border border-[#DDD5C7] bg-white p-5">
-      <h3 className="text-xl font-semibold text-[#111814]">{title}</h3>
-      <p className="mt-3 text-sm leading-7 text-[#5F6B62]">{text}</p>
-      <Link className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#173D2B] px-4 text-sm font-semibold text-white" href={href}>
-        {cta}
-        <ArrowRight className="h-4 w-4" aria-hidden="true" />
-      </Link>
-    </article>
   );
 }

@@ -1,39 +1,50 @@
-import { CheckCircle2, Clock3, FileText, LockKeyhole, Zap } from "lucide-react";
+import { CheckCircle2, Clock3, CreditCard, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { ButtonLink } from "@/components/ui/Button";
 import { SiteFooter } from "@/components/ui/SiteNav";
 import { PricingShell } from "@/components/ui/PricingShell";
 
-const plans = [
+const tiers = [
   {
-    icon: FileText,
-    name: "Preview Gratis",
-    status: "Aktif sebagai preview",
-    text: "Buat draf/panduan awal, evidence table, uncertainty note, dan checklist review.",
+    access: ["Limited drafts", "Basic outline", "Basic source check placeholder"],
+    fit: "New users wanting to try the Learn & Report flow.",
+    name: "Free",
+    price: "Rp0",
+    status: "Active for MVP",
   },
   {
-    icon: CheckCircle2,
-    name: "One-Time Report",
-    status: "Segera setelah payment aktif",
-    text: "Untuk laporan sekali pakai seperti observasi, praktikum, field trip, atau kegiatan lingkungan.",
+    access: ["Report drafts", "Markdown export", "Source coverage warning"],
+    fit: "Students who frequently assemble short reports.",
+    name: "Student",
+    price: "Rp29.000-49.000/mo",
+    status: "Beta, payment not active",
   },
   {
-    icon: LockKeyhole,
-    name: "Export Premium",
-    status: "Terkunci sampai payment aktif",
-    text: "Export Markdown/PDF nanti dengan evidence table, disclaimer, dan checklist review ikut terbawa.",
+    access: ["Literature matrix", "Source verification", "Scholar field mode later"],
+    fit: "Senior students, junior researchers, or teachers needing stronger source structure.",
+    name: "Scholar",
+    price: "Rp99.000-149.000/mo",
+    status: "Planned",
   },
   {
-    icon: Zap,
-    name: "NaLI Energy Pack",
-    status: "Disiapkan",
-    text: "Untuk pemakaian lebih banyak nanti, setelah pola penggunaan Sprint 0 terbukti.",
+    access: ["Report polishing", "Evidence gap review", "Professional writing support"],
+    fit: "NGO/CSR juniors, field staff, or project report writers.",
+    name: "Professional Writer",
+    price: "Beta only",
+    status: "Planned",
+  },
+];
+
+const oneTime = [
+  {
+    name: "Short report",
+    price: "Rp9.000-29.000",
+    text: "For short drafts based on notes or user-provided sources.",
   },
   {
-    icon: Clock3,
-    name: "Student/Scholar Later",
-    status: "Setelah one-time/export terbukti",
-    text: "Bukan fokus utama Sprint 0. Paket belajar lanjutan akan diputuskan setelah sinyal produk jelas.",
+    name: "College/practicum report",
+    price: "Rp29.000-99.000",
+    text: "For course or practicum reports needing more structured review checklists.",
   },
 ];
 
@@ -41,70 +52,103 @@ export default function PricingPage() {
   return (
     <PricingShell>
       <main className="relative z-10">
-        <section className="border-b border-[#DDD5C7] px-4 pt-28 pb-14 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[980px]">
-            <Badge tone="green">Harga Sprint 0</Badge>
-            <h1 className="mt-4 max-w-[760px] text-4xl font-semibold tracking-normal text-[#111814] sm:text-5xl">
-              Harga Sprint 0
+        <section className="border-b border-white/[0.06] px-4 pt-28 pb-14 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1160px]">
+            <Badge tone="green">Beta pricing</Badge>
+            <h1 className="mt-4 max-w-[720px] text-4xl font-bold tracking-tight text-white sm:text-5xl">
+              NaLI pricing structure
             </h1>
-            <p className="mt-5 max-w-[720px] text-lg leading-8 text-[#5F6B62]">
-              Mulai dari preview gratis. Export dan laporan berbayar akan dibuka bertahap setelah payment aktif.
+            <p className="mt-5 max-w-[720px] text-lg leading-8 text-white/50">
+              Beta pricing structure. Payment gateway is not yet active.
             </p>
             <div className="mt-6">
               <Badge tone="amber" className="px-4 py-2 text-sm">
-                Payment gateway belum aktif di MVP ini.
+                Payment gateway not active. These are initial beta structures.
               </Badge>
             </div>
           </div>
         </section>
 
         <section className="px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mx-auto grid max-w-[1180px] gap-4 md:grid-cols-2 lg:grid-cols-5">
-            {plans.map((plan) => {
-              const Icon = plan.icon;
-
-              return (
-                <article className="flex flex-col rounded-lg border border-[#DDD5C7] bg-white p-5" key={plan.name}>
-                  <Icon className="h-5 w-5 text-[#6F8057]" aria-hidden="true" />
-                  <h2 className="mt-4 text-xl font-semibold text-[#111814]">{plan.name}</h2>
-                  <p className="mt-3 text-sm leading-7 text-[#5F6B62]">{plan.text}</p>
-                  <div className="mt-auto pt-5">
-                    <Badge tone={plan.name === "Preview Gratis" ? "green" : "glass"}>{plan.status}</Badge>
+          <div className="mx-auto grid max-w-[1160px] gap-4 lg:grid-cols-4">
+            {tiers.map((tier) => (
+              <div
+                className="flex flex-col rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.05]"
+                key={tier.name}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-white">{tier.name}</h2>
+                    <p className="mt-2 text-lg font-semibold text-white/70">{tier.price}</p>
                   </div>
-                </article>
-              );
-            })}
+                  <CreditCard className="h-5 w-5 text-white/30" aria-hidden="true" />
+                </div>
+                <p className="mt-4 text-sm leading-7 text-white/40">
+                  <span className="font-semibold text-white/70">Fit: </span>
+                  {tier.fit}
+                </p>
+                <div className="mt-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/30">Core access</p>
+                  <ul className="mt-3 space-y-3 text-sm leading-6 text-white/50">
+                    {tier.access.map((feature) => (
+                      <li className="flex gap-2" key={feature}>
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400/50" aria-hidden="true" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-auto pt-6">
+                  <Badge tone={tier.name === "Free" ? "green" : "glass"}>{tier.status}</Badge>
+                  <ButtonLink
+                    className="mt-4 w-full"
+                    href="/create-report"
+                    variant={tier.name === "Free" ? "primary" : "glass"}
+                  >
+                    {tier.name === "Free" ? "Start Free" : "Coming soon"}
+                  </ButtonLink>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
-        <section className="border-y border-[#DDD5C7] bg-[#FCFAF4] px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mx-auto grid max-w-[1040px] gap-8 lg:grid-cols-[0.8fr_1.2fr]">
+        <section className="border-y border-white/[0.06] px-4 py-14 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-[1160px] gap-8 lg:grid-cols-[0.7fr_1.3fr]">
             <div>
-              <h2 className="text-3xl font-semibold text-[#111814]">Nilai utama: preview jelas, export rapi nanti.</h2>
-              <p className="mt-4 text-sm leading-7 text-[#5F6B62]">
-                Preview gratis membantu pengguna memeriksa struktur dan batas bukti. Export premium disiapkan untuk dokumen yang lebih rapi saat payment aktif.
+              <Badge tone="glass">One-Time Report</Badge>
+              <h2 className="mt-4 text-3xl font-semibold text-white">One-time options for beta validation.</h2>
+              <p className="mt-4 text-sm leading-7 text-white/40">
+                Payment not active. These packages are initial structures to understand user needs.
               </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {["Evidence table ikut terbawa", "Disclaimer tetap ada", "Checklist review ikut terbawa", "Siap diedit sebelum dikumpulkan"].map((item) => (
-                <p className="flex gap-2 rounded-lg border border-[#DDD5C7] bg-white p-4 text-sm leading-6 text-[#5F6B62]" key={item}>
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#315F45]" aria-hidden="true" />
-                  <span>{item}</span>
-                </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {oneTime.map((item) => (
+                <div
+                  className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm"
+                  key={item.name}
+                >
+                  <FileText className="h-5 w-5 text-white/30" aria-hidden="true" />
+                  <h3 className="mt-4 text-xl font-semibold text-white">{item.name}</h3>
+                  <p className="mt-2 text-lg font-semibold text-white/70">{item.price}</p>
+                  <p className="mt-3 text-sm leading-7 text-white/40">{item.text}</p>
+                </div>
               ))}
             </div>
           </div>
         </section>
 
         <section className="px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mx-auto grid max-w-[1040px] gap-4 md:grid-cols-[1fr_auto] md:items-center">
+          <div className="mx-auto grid max-w-[1160px] gap-4 md:grid-cols-[1fr_auto] md:items-center">
             <div>
-              <h2 className="text-3xl font-semibold text-[#111814]">Coba preview dulu.</h2>
-              <p className="mt-3 max-w-[680px] text-sm leading-7 text-[#5F6B62]">
-                Sprint 0 memvalidasi apakah NaLI membantu dari satu catatan atau dari nol tanpa mengarang data.
+              <Clock3 className="h-6 w-6 text-white/30" aria-hidden="true" />
+              <h2 className="mt-4 text-3xl font-semibold text-white">Try the MVP first, validate pricing later.</h2>
+              <p className="mt-3 max-w-[720px] text-sm leading-7 text-white/40">
+                The safest step now is to test whether NaLI helps from a single note or from scratch without
+                fabricating data.
               </p>
             </div>
-            <ButtonLink href="/create-report">Mulai Laporan</ButtonLink>
+            <ButtonLink href="/create-report">Try MVP</ButtonLink>
           </div>
         </section>
       </main>

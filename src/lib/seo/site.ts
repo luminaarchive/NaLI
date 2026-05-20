@@ -15,7 +15,7 @@ export const seoKeywords = [
 ];
 
 export const siteDescription =
-  "NaLI membantu menyusun draf laporan atau panduan mulai dari catatan, topik, lokasi, dan sumber tanpa mengarang data atau sitasi.";
+  "NaLI membantu mengubah catatan, sumber, dan data lapangan menjadi draft laporan berbasis bukti dengan evidence table, uncertainty note, dan human review.";
 
 export function buildJsonLdGraph() {
   return {
@@ -47,7 +47,7 @@ export function buildJsonLdGraph() {
           price: "0",
           priceCurrency: "IDR",
           availability: "https://schema.org/PreOrder",
-          description: "Harga beta disiapkan bertahap. Payment gateway belum aktif di MVP ini.",
+          description: "Planned beta pricing; payment is not live.",
         },
       },
       {
@@ -55,7 +55,7 @@ export function buildJsonLdGraph() {
         "@id": `${siteUrl}/#organization`,
         name: "NaLI",
         url: siteUrl,
-        description: "Produk Indonesia-first untuk draf laporan berbasis bahan, panduan mulai, dan workflow bukti yang direview manusia.",
+        description: "Indonesia-first evidence-based learning, reporting, and biodiversity field intelligence project.",
       },
     ],
   };

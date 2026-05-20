@@ -1,14 +1,14 @@
 {
-  "name": "NaLI — Asisten Laporan Berbasis Bukti",
+  "name": "NaLI - Wildlife Field Intelligence",
   "short_name": "NaLI",
-  "description": "NaLI membantu menyusun draf laporan atau panduan mulai dari catatan, topik, lokasi, dan sumber.",
-  "start_url": "/",
+  "description": "Wildlife field intelligence for ecological observations and conservation operations",
+  "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#F7F3EA",
-  "theme_color": "#173D2B",
+  "background_color": "#0a1f0e",
+  "theme_color": "#22c55e",
   "orientation": "portrait",
   "icons": [
-    { "src": "/icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ],
   "categories": ["utilities", "nature", "science"]
 }

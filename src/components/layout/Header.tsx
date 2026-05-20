@@ -38,7 +38,7 @@ export default function Header({
       )}
       <div className="flex items-center gap-2">
         <span className="relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-white/[0.02]">
-          <Image src="/logo-nali.png" alt="NaLI" fill className="object-contain p-0.5" sizes="28px" unoptimized />
+          <Image src="/nali-logo.png" alt="NaLI" fill className="object-cover p-0.5" sizes="28px" unoptimized />
         </span>
         <h1 className="text-lg font-semibold tracking-tight text-white">{title}</h1>
       </div>

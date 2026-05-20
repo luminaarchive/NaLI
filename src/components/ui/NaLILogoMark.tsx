@@ -19,7 +19,7 @@ export function NaLILogoMark({ size = "md", className }: NaLILogoMarkProps) {
   return (
     <motion.div
       className={cn(
-        "relative flex items-center justify-center overflow-hidden rounded-lg border border-[#DDD5C7] bg-white/75 shadow-[0_12px_30px_rgba(17,24,20,0.08)]",
+        "relative flex items-center justify-center overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-white/[0.02] backdrop-blur-sm",
         sizes[size],
         className,
       )}
@@ -27,11 +27,13 @@ export function NaLILogoMark({ size = "md", className }: NaLILogoMarkProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
+      {/* Subtle inner glow */}
+      <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-b from-emerald-400/10 to-transparent" />
       <Image
-        src="/logo-nali.png"
+        src="/nali-logo.png"
         alt="NaLI"
         fill
-        className="object-contain p-1.5"
+        className="object-cover p-1.5"
         sizes="80px"
         unoptimized
       />

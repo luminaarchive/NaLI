@@ -1,64 +1,12 @@
 "use client";
 
-import Link from "next/link";
+import type { ReactNode } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, FileText, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, Plus, Mic, ChevronDown } from "lucide-react";
 import { reportTemplates, type ReportMode } from "@/lib/reports/reportGenerator";
 import { cn } from "@/lib/utils";
-
-const startFromZeroSignals = [
-  "belum punya bahan",
-  "belum punya catatan",
-  "mulai dari nol",
-  "belum observasi",
-  "bantu cari topik",
-  "tidak tahu mulai dari mana",
-];
-
-const quickStarts: {
-  label: string;
-  mode?: ReportMode;
-  template?: string;
-}[] = [
-  { label: "Punya catatan", mode: "draft_from_materials" },
-  { label: "Belum punya bahan", mode: "start_from_zero" },
-  { label: "Observasi lingkungan", template: "Laporan Observasi Lingkungan" },
-  { label: "Praktikum", template: "Laporan Praktikum Biologi" },
-  { label: "Field trip", template: "Laporan Field Trip Sekolah" },
-];
-
-const examples: {
-  label: string;
-  mode: ReportMode;
-  template: string;
-}[] = [
-  {
-    label: "Saya mengamati erosi di Banjir Kanal Semarang...",
-    mode: "draft_from_materials",
-    template: "Laporan Observasi Lingkungan",
-  },
-  {
-    label: "Aku mau laporan observasi sungai tapi belum punya catatan.",
-    mode: "start_from_zero",
-    template: "Laporan Observasi Lingkungan",
-  },
-  {
-    label: "Saya punya hasil praktikum biologi, bantu susun laporan.",
-    mode: "draft_from_materials",
-    template: "Laporan Praktikum Biologi",
-  },
-];
-
-function inferReportMode(text: string, fallback: ReportMode): ReportMode {
-  const normalized = text.toLowerCase();
-
-  if (startFromZeroSignals.some((signal) => normalized.includes(signal))) {
-    return "start_from_zero";
-  }
-
-  return text.trim() ? "draft_from_materials" : fallback;
-}
 
 export function HomeCommandBox() {
   const router = useRouter();
@@ -66,126 +14,127 @@ export function HomeCommandBox() {
   const [mainText, setMainText] = useState("");
   const [reportTemplate, setReportTemplate] = useState("Laporan Observasi Lingkungan");
 
-  function applyQuickStart(chip: (typeof quickStarts)[number]) {
-    if (chip.mode) setMode(chip.mode);
-    if (chip.template) setReportTemplate(chip.template);
-  }
-
-  function applyExample(example: (typeof examples)[number]) {
-    setMainText(example.label);
-    setMode(example.mode);
-    setReportTemplate(example.template);
-  }
-
   function start() {
-    const trimmed = mainText.trim();
-    const nextMode = inferReportMode(trimmed, mode);
-    const params = new URLSearchParams({ mode: nextMode });
-
-    if (trimmed) params.set("q", trimmed);
-    if (reportTemplate) params.set("template", reportTemplate);
-
     window.localStorage.setItem(
       "nali-create-report-prefill",
       JSON.stringify({
-        mainText: trimmed,
-        mode: nextMode,
+        mainText,
+        mode,
         reportTemplate,
       }),
     );
-
-    router.push(`/create-report?${params.toString()}`);
+    router.push(`/create-report?mode=${mode}`);
   }
 
   return (
-    <div className="w-full">
-      <div className="overflow-hidden rounded-lg border border-[#D8D0C2] bg-[#FCFAF4] text-left shadow-[0_26px_70px_rgba(17,24,20,0.14)]">
-        <div className="flex flex-wrap items-center gap-2 border-b border-[#E5DED2] px-3 py-3 sm:px-4">
-          {quickStarts.map((chip) => (
-            <button
-              className={cn(
-                "rounded-md border px-3 py-1.5 text-xs font-semibold transition",
-                (chip.mode && chip.mode === mode) || chip.template === reportTemplate
-                  ? "border-[#6F8057] bg-[#E8EFE4] text-[#173D2B]"
-                  : "border-[#DDD5C7] bg-white/70 text-[#5F6B62] hover:bg-white hover:text-[#111814]",
-              )}
-              key={chip.label}
-              onClick={() => applyQuickStart(chip)}
-              type="button"
-            >
-              {chip.label}
-            </button>
-          ))}
-        </div>
+    <motion.div
+      className="relative w-full overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] shadow-2xl shadow-black/40 backdrop-blur-xl"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.3 }}
+    >
+      {/* Inner top glow */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
 
-        <label className="block px-3 pt-3 sm:px-4">
-          <span className="sr-only">Tulis catatan, topik, lokasi, atau sumbermu</span>
-          <textarea
-            className="min-h-[132px] w-full resize-none rounded-md border border-[#DDD5C7] bg-white px-4 py-3 text-[15px] leading-7 text-[#111814] outline-none transition placeholder:text-[#8A938B] focus:border-[#6F8057] focus:ring-4 focus:ring-[#6F8057]/15 sm:min-h-[148px]"
-            onChange={(event) => {
-              setMainText(event.target.value);
-              setMode(inferReportMode(event.target.value, mode));
-            }}
-            placeholder="Tulis catatan, topik, lokasi, atau sumbermu..."
-            value={mainText}
-          />
-        </label>
+      {/* Mode selector */}
+      <div className="flex gap-2 border-b border-white/[0.06] px-4 py-3">
+        <ModeChip active={mode === "draft_from_materials"} onClick={() => setMode("draft_from_materials")}>
+          I have materials
+        </ModeChip>
+        <ModeChip active={mode === "start_from_zero"} onClick={() => setMode("start_from_zero")}>
+          Start from scratch
+        </ModeChip>
+      </div>
 
-        <div className="flex flex-col gap-3 px-3 py-3 sm:px-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm leading-6 text-[#5F6B62]">
-              Punya bahan? NaLI buatkan draf. Belum punya bahan? NaLI buatkan panduan mulai.
-            </p>
+      {/* Text area */}
+      <div className="px-4 py-3">
+        <textarea
+          className="w-full resize-none bg-transparent text-[15px] leading-7 text-white/90 outline-none placeholder:text-white/25"
+          rows={4}
+          value={mainText}
+          onChange={(event) => setMainText(event.target.value)}
+          placeholder={
+            mode === "draft_from_materials"
+              ? "Ask NaLI to build a report from your notes..."
+              : "Describe the topic you want to explore..."
+          }
+        />
+      </div>
+
+      {/* Bottom bar */}
+      <div className="flex items-center justify-between border-t border-white/[0.06] px-4 py-3">
+        <div className="flex items-center gap-2">
+          {/* Plus icon */}
+          <button
+            type="button"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.08] text-white/40 transition-colors hover:bg-white/[0.06] hover:text-white/60"
+            aria-label="Add attachment"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+
+          {/* Template selector */}
+          <div className="relative">
             <select
-              aria-label="Template laporan"
-              className="h-9 rounded-md border border-[#DDD5C7] bg-white px-3 text-xs font-semibold text-[#5F6B62] outline-none focus:border-[#6F8057]"
-              onChange={(event) => setReportTemplate(event.target.value)}
+              aria-label="Report template"
+              className="h-8 cursor-pointer appearance-none rounded-lg border border-white/[0.08] bg-transparent py-0 pr-7 pl-3 text-xs font-medium text-white/50 outline-none transition-colors hover:border-white/[0.15] hover:text-white/70"
               value={reportTemplate}
+              onChange={(event) => setReportTemplate(event.target.value)}
             >
               {reportTemplates.map((template) => (
-                <option key={template} value={template}>
+                <option key={template} value={template} className="bg-[#18181b] text-white">
                   {template}
                 </option>
               ))}
             </select>
+            <ChevronDown className="pointer-events-none absolute top-1/2 right-2 h-3 w-3 -translate-y-1/2 text-white/30" />
           </div>
 
-          <div className="grid gap-2">
-            {examples.map((example) => (
-              <button
-                className="flex items-start gap-2 rounded-md border border-transparent px-2 py-1.5 text-left text-xs leading-5 text-[#5F6B62] transition hover:border-[#DDD5C7] hover:bg-white"
-                key={example.label}
-                onClick={() => applyExample(example)}
-                type="button"
-              >
-                {example.mode === "start_from_zero" ? (
-                  <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#6F8057]" aria-hidden="true" />
-                ) : (
-                  <FileText className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#6F8057]" aria-hidden="true" />
-                )}
-                <span>{example.label}</span>
-              </button>
-            ))}
-          </div>
+          {/* Mic */}
+          <button
+            type="button"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-white/30 transition-colors hover:text-white/50"
+            aria-label="Voice input"
+          >
+            <Mic className="h-4 w-4" />
+          </button>
         </div>
-      </div>
 
-      <div className="mt-4 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+        {/* Send button */}
         <button
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#173D2B] px-6 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(23,61,43,0.2)] transition hover:bg-[#102F20]"
-          onClick={start}
+          className="inline-flex h-9 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#09090b] transition-all hover:bg-white/90"
           type="button"
+          onClick={start}
         >
-          Mulai Laporan
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          {mode === "draft_from_materials" ? "Build Draft" : "Create Guide"}
+          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </button>
-        <Link
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-[#DDD5C7] bg-white/70 px-6 text-sm font-semibold text-[#173D2B] transition hover:bg-white"
-          href="/field-intelligence"
-        >
-          NaLI untuk Kerja
-        </Link>
       </div>
-    </div>
+    </motion.div>
+  );
+}
+
+function ModeChip({
+  active,
+  children,
+  onClick,
+}: {
+  active: boolean;
+  children: ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className={cn(
+        "rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200",
+        active
+          ? "border-white/[0.15] bg-white/[0.08] text-white"
+          : "border-transparent text-white/35 hover:text-white/60",
+      )}
+      type="button"
+      onClick={onClick}
+    >
+      {children}
+    </button>
   );
 }

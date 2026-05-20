@@ -81,7 +81,7 @@
   --text-data-lg--font-weight: 500;
 }
 
-/* NaLI v1.5 homepage design system variables */
+/* NaLI v1.5 homepage design system tokens */
 :root {
   --bg-base: #07090e;
   --bg-surface: #0f1117;
@@ -229,47 +229,6 @@ body {
   border-color: rgba(255, 255, 255, 0.15);
   background: rgba(255, 255, 255, 0.04);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
-}
-
-/* --- Learn & Report public form inputs (paper mode) --- */
-.report-field-input {
-  width: 100%;
-  border-radius: 8px;
-  border: 1px solid #ddd5c7;
-  background: rgba(255, 255, 255, 0.74);
-  padding: 12px 14px;
-  color: #111814;
-  outline: none;
-  transition:
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    background 180ms ease;
-}
-
-.report-command-input {
-  width: 100%;
-  resize: vertical;
-  border-radius: 8px;
-  border: 1px solid #d8d0c2;
-  background: rgba(255, 255, 255, 0.82);
-  color: #111814;
-  outline: none;
-  transition:
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    background 180ms ease;
-}
-
-.report-field-input::placeholder,
-.report-command-input::placeholder {
-  color: #8a938b;
-}
-
-.report-field-input:focus,
-.report-command-input:focus {
-  border-color: #6f8057;
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(111, 128, 87, 0.16);
 }
 
 /* --- Safe bottom --- */

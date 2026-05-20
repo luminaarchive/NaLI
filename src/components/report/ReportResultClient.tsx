@@ -62,7 +62,7 @@ function buildDraftMarkdown(report: DraftReport) {
     "| --- | --- | --- | --- |",
     evidenceRows,
     "",
-    "## Source verification belum aktif di MVP ini",
+    "## Source Verification",
     report.source_verification_status,
     "",
     ...report.source_notes.map((item) => `- ${item}`),
@@ -193,19 +193,6 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
     setStatus("copied");
   }
 
-  function downloadMarkdownPreview() {
-    if (!markdown) {
-      return;
-    }
-
-    const url = URL.createObjectURL(new Blob([markdown], { type: "text/markdown;charset=utf-8" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `nali-preview-${reportId}.md`;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
   async function requestPremiumExport() {
     setExportNotice(null);
 
@@ -272,11 +259,11 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
 
   if (!report && isLoadingPersisted) {
     return (
-      <div className="min-h-screen bg-[#F7F3EA] text-[#111814]">
+      <div className="min-h-screen bg-[#09090b] text-white">
         <main className="mx-auto max-w-[720px] px-4 py-16 sm:px-6">
-          <section className="rounded-lg border border-[#DDD5C7] bg-white p-6">
+          <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-xl">
             <h1 className="text-2xl font-semibold">Membuka laporan...</h1>
-            <p className="mt-3 leading-7 text-[#5F6B62]">NaLI sedang memeriksa akses laporan tersimpan.</p>
+            <p className="mt-3 leading-7 text-white/50">NaLI sedang memeriksa akses laporan tersimpan.</p>
           </section>
         </main>
       </div>
@@ -285,20 +272,21 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
 
   if (!report) {
     return (
-      <div className="min-h-screen bg-[#F7F3EA] text-[#111814]">
+      <div className="min-h-screen bg-[#09090b] text-white">
         <main className="mx-auto max-w-[720px] px-4 py-16 sm:px-6">
-          <section className="rounded-lg border border-[#DDD5C7] bg-white p-6">
-            <AlertTriangle className="h-8 w-8 text-[#7A520F]" aria-hidden="true" />
+          <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-xl">
+            <AlertTriangle className="h-8 w-8 text-amber-400/70" aria-hidden="true" />
             <h1 className="mt-4 text-2xl font-semibold">Hasil tidak ditemukan</h1>
-            <p className="mt-3 leading-7 text-[#5F6B62]">
-              Belum ada hasil. Mulai dari satu catatan atau topik. Hasil MVP dapat tersimpan di Supabase jika konfigurasi aktif, atau di browser sebagai fallback.
+            <p className="mt-3 leading-7 text-white/50">
+              Hasil MVP dapat tersimpan di Supabase jika konfigurasi aktif, atau di browser sebagai fallback. Buat
+              laporan baru jika kamu membuka halaman ini dari perangkat atau tab lain.
             </p>
             <Link
-              className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-md bg-[#173D2B] px-4 text-sm font-semibold text-white transition hover:bg-[#102F20]"
+              className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#09090b] transition hover:bg-white/90"
               href="/create-report"
             >
               <RotateCcw className="h-4 w-4" aria-hidden="true" />
-              Buat laporan baru
+              Buat Laporan Baru
             </Link>
           </section>
         </main>
@@ -309,21 +297,20 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
   const isGuide = report.mode === "start_from_zero";
 
   return (
-    <div className="min-h-screen bg-[#F7F3EA] text-[#111814]">
-      <header className="border-b border-[#DDD5C7] bg-[#F7F3EA]/92 backdrop-blur-md">
+    <div className="min-h-screen bg-[#09090b] text-white">
+      <header className="border-b border-white/[0.06] bg-[#09090b]/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1160px] flex-col gap-5 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div>
-            <Link className="inline-flex items-center gap-2 text-sm font-medium text-[#5F6B62] transition-colors hover:text-[#111814]" href="/create-report">
+            <Link className="inline-flex items-center gap-2 text-sm font-medium text-white/40 transition-colors hover:text-white" href="/create-report">
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Buat lagi
             </Link>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Badge tone="green">Preview laporan/panduan</Badge>
               <Badge tone={report.is_mock ? "amber" : "green"}>{report.status}</Badge>
-              <Badge tone="glass">{isGuide ? "Panduan mulai" : "Draf berbasis bahan"}</Badge>
+              <Badge tone="glass">{isGuide ? "Start From Zero" : "Draft From Materials"}</Badge>
             </div>
             <h1 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">{report.title}</h1>
-            <p className="mt-2 text-sm leading-6 text-[#5F6B62]">{isGuide ? report.label : report.draft_label}</p>
+            <p className="mt-2 text-sm leading-6 text-white/50">{isGuide ? report.label : report.draft_label}</p>
           </div>
         </div>
       </header>
@@ -333,56 +320,42 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
 
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           <SidebarCard title="Status">
-            <p className="text-sm font-semibold text-[#111814]">{report.status}</p>
-            <p className="mt-2 text-sm leading-6 text-[#5F6B62]">Pemrosesan NaLI</p>
-            <p className="mt-2 text-sm leading-6 text-[#5F6B62]">Dibuat: {report.created_at}</p>
+            <p className="text-sm font-semibold text-white">{report.status}</p>
+            <p className="mt-2 text-sm leading-6 text-white/40">Pemrosesan: {report.model_used}</p>
+            <p className="mt-2 text-sm leading-6 text-white/40">Dibuat: {report.created_at}</p>
           </SidebarCard>
 
           <SidebarCard title={isGuide ? "Checklist" : "Evidence"}>
-            <p className="text-3xl font-semibold text-[#111814]">
+            <p className="text-3xl font-semibold text-white">
               {isGuide ? report.evidence_checklist.length : report.evidence_table.length}
             </p>
-            <p className="mt-1 text-sm leading-6 text-[#5F6B62]">
+            <p className="mt-1 text-sm leading-6 text-white/40">
               {isGuide ? "item bukti untuk dikumpulkan" : "bahan pengguna tercatat"}
             </p>
           </SidebarCard>
 
           {!isGuide ? (
-            <SidebarCard title="Source verification belum aktif">
-              <p className="text-sm leading-6 text-[#5F6B62]">{report.source_verification_status}</p>
+            <SidebarCard title="Source Verification">
+              <p className="text-sm leading-6 text-white/40">{report.source_verification_status}</p>
             </SidebarCard>
           ) : null}
 
-          <SidebarCard title="Preview gratis">
-            <p className="text-sm leading-6 text-[#5F6B62]">Salin isi preview untuk ditinjau dan diedit manual.</p>
-            <Button className="mt-3 w-full border-[#DDD5C7] bg-white text-[#173D2B] hover:bg-[#FCFAF4]" type="button" variant="outline" onClick={copyMarkdown}>
+          <SidebarCard title="Free Preview">
+            <p className="text-sm leading-6 text-white/40">Salin isi preview untuk ditinjau dan diedit manual.</p>
+            <Button className="mt-3 w-full" type="button" variant="outline" onClick={copyMarkdown}>
               <Clipboard className="h-4 w-4" aria-hidden="true" />
-              Salin preview
-            </Button>
-            <Button className="mt-2 w-full border-[#DDD5C7] bg-white text-[#173D2B] hover:bg-[#FCFAF4]" type="button" variant="outline" onClick={downloadMarkdownPreview}>
-              <FileText className="h-4 w-4" aria-hidden="true" />
-              Unduh preview Markdown
+              Salin Preview
             </Button>
           </SidebarCard>
 
           <SidebarCard title="Export Premium">
-            <p className="text-sm leading-6 text-[#5F6B62]">
-              Preview ini bisa dibaca gratis. Export premium disiapkan untuk dokumen yang lebih rapi saat payment aktif.
-            </p>
-            <ul className="mt-3 space-y-2 text-xs leading-5 text-[#5F6B62]">
-              {["Struktur lebih rapi", "Evidence table ikut terbawa", "Disclaimer tetap ada", "Checklist review ikut terbawa"].map((item) => (
-                <li className="flex gap-2" key={item}>
-                  <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#315F45]" aria-hidden="true" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-            <Button className="mt-3 w-full bg-[#173D2B] text-white hover:bg-[#102F20]" disabled={!accessKey} type="button" variant="default" onClick={requestPremiumExport}>
+            <p className="text-sm leading-6 text-white/40">Export premium belum aktif di MVP ini.</p>
+            <Button className="mt-3 w-full" disabled={!accessKey} type="button" variant="default" onClick={requestPremiumExport}>
               <LockKeyhole className="h-4 w-4" aria-hidden="true" />
-              Export premium terkunci
+              Unlock Export
             </Button>
             {!accessKey ? (
-              <p className="mt-2 text-xs leading-5 text-[#5F6B62]">Export membutuhkan laporan tersimpan dari sesi ini.</p>
+              <p className="mt-2 text-xs leading-5 text-white/30">Export membutuhkan laporan tersimpan dari sesi ini.</p>
             ) : null}
           </SidebarCard>
 
@@ -395,8 +368,8 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
           />
 
           {status !== "idle" ? (
-            <p className="rounded-lg border border-emerald-500/20 bg-emerald-50 p-3 text-sm text-emerald-800">
-              {status === "copied" ? "Preview tersalin." : exportNotice}
+            <p className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm text-emerald-300">
+              {status === "copied" ? "Preview Markdown tersalin." : exportNotice}
             </p>
           ) : null}
         </aside>
@@ -416,7 +389,7 @@ function DraftContent({ notice, report }: { notice: string | null; report: Draft
       <ListSection items={report.findings} title="Temuan" />
       <ReportSection title="Analisis Awal">{report.preliminary_analysis}</ReportSection>
       <EvidenceTable report={report} />
-      <ListSection items={report.source_notes} title="Source verification belum aktif" note={report.source_verification_status} />
+      <ListSection items={report.source_notes} title="Source Verification" note={report.source_verification_status} />
       <ListSection items={report.additional_evidence_needed} title="Kebutuhan Bukti Tambahan" />
       <ListSection items={report.user_review_checklist} title="Checklist Review Pengguna" icon="check" />
       <ReportSection title="Uncertainty Note">{report.uncertainty_note}</ReportSection>
@@ -450,7 +423,7 @@ function Notice({ notice }: { notice: string | null }) {
   }
 
   return (
-    <div className="flex gap-3 rounded-lg border border-amber-500/20 bg-[#FFF7DF] p-4 text-sm leading-6 text-[#7A520F]">
+    <div className="flex gap-3 rounded-xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm leading-6 text-amber-200">
       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
       <p>{notice}</p>
     </div>
@@ -459,9 +432,9 @@ function Notice({ notice }: { notice: string | null }) {
 
 function ReportSection({ children, title }: { children: string; title: string }) {
   return (
-    <section className="rounded-lg border border-[#DDD5C7] bg-white p-5">
-      <h2 className="text-xl font-semibold text-[#111814]">{title}</h2>
-      <p className="mt-3 text-sm leading-7 text-[#5F6B62]">{children}</p>
+    <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm">
+      <h2 className="text-xl font-semibold text-white">{title}</h2>
+      <p className="mt-3 text-sm leading-7 text-white/50">{children}</p>
     </section>
   );
 }
@@ -480,13 +453,13 @@ function ListSection({
   const Icon = icon === "check" ? CheckCircle2 : FileText;
 
   return (
-    <section className="rounded-lg border border-[#DDD5C7] bg-white p-5">
-      <h2 className="text-xl font-semibold text-[#111814]">{title}</h2>
-      {note ? <p className="mt-2 text-sm leading-6 text-[#5F6B62]">{note}</p> : null}
-      <ul className="mt-4 space-y-3 text-sm leading-6 text-[#5F6B62]">
+    <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm">
+      <h2 className="text-xl font-semibold text-white">{title}</h2>
+      {note ? <p className="mt-2 text-sm leading-6 text-white/40">{note}</p> : null}
+      <ul className="mt-4 space-y-3 text-sm leading-6 text-white/50">
         {items.map((item) => (
           <li className="flex gap-2" key={item}>
-            <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[#6F8057]" aria-hidden="true" />
+            <Icon className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400/50" aria-hidden="true" />
             <span>{item}</span>
           </li>
         ))}
@@ -497,24 +470,24 @@ function ListSection({
 
 function EvidenceTable({ report }: { report: DraftReport }) {
   return (
-    <section className="rounded-lg border border-[#DDD5C7] bg-white p-5">
-      <h2 className="text-xl font-semibold text-[#111814]">Evidence Table</h2>
+    <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm">
+      <h2 className="text-xl font-semibold text-white">Evidence Table</h2>
       <div className="mt-4 hidden overflow-x-auto md:block">
         <table className="min-w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b border-[#DDD5C7]">
-              <th className="px-3 py-2 font-semibold text-[#5F6B62]">ID</th>
-              <th className="px-3 py-2 font-semibold text-[#5F6B62]">Tipe</th>
-              <th className="px-3 py-2 font-semibold text-[#5F6B62]">Ringkasan</th>
-              <th className="px-3 py-2 font-semibold text-[#5F6B62]">Status</th>
+            <tr className="border-b border-white/[0.06]">
+              <th className="px-3 py-2 font-semibold text-white/40">ID</th>
+              <th className="px-3 py-2 font-semibold text-white/40">Type</th>
+              <th className="px-3 py-2 font-semibold text-white/40">Summary</th>
+              <th className="px-3 py-2 font-semibold text-white/40">Status</th>
             </tr>
           </thead>
           <tbody>
             {report.evidence_table.map((row) => (
-              <tr className="border-b border-[#EEE7DB] align-top" key={row.id}>
-                <td className="px-3 py-3 font-mono text-xs text-[#5F6B62]">{row.id}</td>
-                <td className="px-3 py-3 text-[#5F6B62]">{row.material_type}</td>
-                <td className="px-3 py-3 text-[#5F6B62]">{row.summary}</td>
+              <tr className="border-b border-white/[0.04] align-top" key={row.id}>
+                <td className="px-3 py-3 font-mono text-xs text-white/60">{row.id}</td>
+                <td className="px-3 py-3 text-white/60">{row.material_type}</td>
+                <td className="px-3 py-3 text-white/50">{row.summary}</td>
                 <td className="px-3 py-3">
                   <Badge tone="glass">{row.verification_status}</Badge>
                 </td>
@@ -525,13 +498,13 @@ function EvidenceTable({ report }: { report: DraftReport }) {
       </div>
       <div className="mt-4 space-y-3 md:hidden">
         {report.evidence_table.map((row) => (
-          <div className="rounded-lg border border-[#DDD5C7] bg-[#FCFAF4] p-4" key={row.id}>
+          <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4" key={row.id}>
             <div className="flex items-center justify-between gap-3">
-              <span className="font-mono text-xs font-semibold text-[#5F6B62]">{row.id}</span>
+              <span className="font-mono text-xs font-semibold text-white/60">{row.id}</span>
               <Badge tone="cyan">{row.material_type}</Badge>
             </div>
-            <p className="mt-3 text-sm leading-6 text-[#5F6B62]">{row.summary}</p>
-            <p className="mt-3 text-xs leading-5 text-[#5F6B62]">{row.verification_status}</p>
+            <p className="mt-3 text-sm leading-6 text-white/50">{row.summary}</p>
+            <p className="mt-3 text-xs leading-5 text-white/35">{row.verification_status}</p>
           </div>
         ))}
       </div>
@@ -541,20 +514,20 @@ function EvidenceTable({ report }: { report: DraftReport }) {
 
 function Disclaimer({ children, tone }: { children: string; tone: "draft" | "guide" }) {
   return (
-    <section className="rounded-lg border border-amber-500/20 bg-[#FFF7DF] p-5">
-      <h2 className="flex items-center gap-2 text-xl font-semibold text-[#7A520F]">
-        <ShieldCheck className="h-5 w-5 text-[#7A520F]" aria-hidden="true" />
+    <section className="rounded-2xl border border-amber-400/20 bg-amber-400/10 p-5">
+      <h2 className="flex items-center gap-2 text-xl font-semibold text-amber-200">
+        <ShieldCheck className="h-5 w-5 text-amber-400/60" aria-hidden="true" />
         Disclaimer
       </h2>
-      <p className="mt-3 text-sm leading-7 text-[#7A520F]">{children}</p>
+      <p className="mt-3 text-sm leading-7 text-amber-100/70">{children}</p>
     </section>
   );
 }
 
 function SidebarCard({ children, title }: { children: ReactNode; title: string }) {
   return (
-    <section className="rounded-lg border border-[#DDD5C7] bg-white p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#5F6B62]">{title}</p>
+    <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 backdrop-blur-sm">
+      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/30">{title}</p>
       <div className="mt-3">{children}</div>
     </section>
   );
@@ -575,19 +548,19 @@ function FeedbackCard({
 }) {
   return (
     <SidebarCard title="Feedback">
-      <p className="text-sm font-semibold text-[#111814]">Apakah preview ini membantu?</p>
+      <p className="text-sm font-semibold text-white">Apakah hasil ini membantu?</p>
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <Button className="border-[#DDD5C7] bg-white text-[#173D2B] hover:bg-[#FCFAF4]" type="button" variant="outline" onClick={() => onSubmit("helpful")}>
+        <Button type="button" variant="outline" onClick={() => onSubmit("helpful")}>
           Membantu
         </Button>
-        <Button className="border-[#DDD5C7] bg-white text-[#173D2B] hover:bg-[#FCFAF4]" type="button" variant="outline" onClick={() => onSubmit("not_helpful")}>
+        <Button type="button" variant="outline" onClick={() => onSubmit("not_helpful")}>
           Kurang membantu
         </Button>
       </div>
       <label className="mt-3 block">
         <span className="sr-only">Catatan singkat untuk memperbaiki NaLI</span>
         <textarea
-          className="min-h-20 w-full resize-none rounded-lg border border-[#DDD5C7] bg-[#FCFAF4] px-3 py-2 text-sm leading-6 text-[#111814] outline-none transition focus:border-[#6F8057]"
+          className="min-h-20 w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm leading-6 text-white outline-none transition focus:border-white/20"
           maxLength={1000}
           onChange={(event) => onCommentChange(event.target.value)}
           placeholder="Catatan singkat untuk memperbaiki NaLI"
@@ -596,10 +569,10 @@ function FeedbackCard({
       </label>
       {message ? (
         <p
-          className={`mt-3 rounded-lg border p-3 text-sm leading-6 ${
+          className={`mt-3 rounded-xl border p-3 text-sm leading-6 ${
             status === "error"
-              ? "border-amber-500/20 bg-[#FFF7DF] text-[#7A520F]"
-              : "border-emerald-500/20 bg-emerald-50 text-emerald-800"
+              ? "border-amber-400/20 bg-amber-400/10 text-amber-200"
+              : "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
           }`}
         >
           {message}
