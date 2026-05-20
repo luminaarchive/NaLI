@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { ArrowLeft, ClipboardList, Eye, ShieldAlert } from "lucide-react";
 import { listFounderOrders, type FounderOrderRow } from "@/lib/system/adminOrders";
+import { listManualFulfillmentJobs } from "@/lib/manualFulfillment/jobs";
+import type { ManualFulfillmentJob } from "@/lib/manualFulfillment/jobs";
 
 export const dynamic = "force-dynamic";
 
 export default async function FounderOrdersPage() {
   const result = await listFounderOrders();
+  const fulfillmentJobs = result.ready ? await listManualFulfillmentJobs() : null;
 
   return (
     <div className="min-h-screen bg-[#f7f3ea] px-4 py-8 text-[#111814] sm:px-6 lg:px-8">
@@ -23,9 +26,71 @@ export default async function FounderOrdersPage() {
           </p>
         </header>
 
-        {!result.ready ? <DisabledState reason={result.reason} /> : <OrdersTable orders={result.orders} />}
+        {!result.ready ? (
+          <DisabledState reason={result.reason} />
+        ) : (
+          <>
+            <OrdersTable orders={result.orders} />
+            <FulfillmentJobsSection jobs={fulfillmentJobs || []} />
+          </>
+        )}
       </main>
     </div>
+  );
+}
+
+function FulfillmentJobsSection({ jobs }: { jobs: ManualFulfillmentJob[] }) {
+  return (
+    <section className="mt-12">
+      <header className="border-b border-[#ddd5c7] pb-4">
+        <h2 className="text-xl font-semibold">Manual Fulfillment Queue</h2>
+        <p className="mt-1 text-sm text-[#5f6b62]">
+          Queue of reports flagged for manual human review or specialized custom writing.
+        </p>
+      </header>
+
+      <div className="mt-4 overflow-hidden rounded-lg border border-[#ddd5c7] bg-white">
+        <div className="hidden grid-cols-[1.5fr_1.5fr_0.8fr_0.8fr_1fr_auto] gap-3 border-b border-[#ddd5c7] bg-[#fcfaf4] px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#6f8057] lg:grid">
+          <span>Job ID</span>
+          <span>Report ID</span>
+          <span>Complexity</span>
+          <span>Status</span>
+          <span>Created</span>
+          <span>Details</span>
+        </div>
+        <div className="divide-y divide-[#eee7db]">
+          {jobs.map((job) => (
+            <article key={job.id} className="grid gap-3 px-4 py-4 text-sm lg:grid-cols-[1.5fr_1.5fr_0.8fr_0.8fr_1fr_auto] lg:items-center">
+              <div>
+                <p className="font-mono text-xs text-[#5f6b62]">{job.id}</p>
+              </div>
+              <div>
+                <p className="font-mono text-xs text-[#5f6b62]">{job.report_id}</p>
+              </div>
+              <Meta label="Complexity" value={`${job.complexity_score} / 100`} />
+              <Meta label="Status" value={job.status} />
+              <Meta label="Created" value={job.created_at ? new Date(job.created_at).toLocaleString("id-ID") : "-"} />
+              <details className="rounded-md border border-[#ddd5c7] bg-[#fcfaf4] px-3 py-2">
+                <summary className="inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-[#173d2b]">
+                  <Eye className="h-4 w-4" aria-hidden="true" />
+                  Details
+                </summary>
+                <div className="mt-3 space-y-2 text-xs leading-5 text-[#5f6b62]">
+                  <p>Reason: {job.reason ?? "none"}</p>
+                  <p>User Scope Note: {job.user_scope_note ?? "none"}</p>
+                  <p>Founder Note: {job.founder_note ?? "none"}</p>
+                  <p>Turnaround Hours: {job.estimated_turnaround_hours ?? "not set"}</p>
+                  <p>Revisions: {job.revision_count}</p>
+                </div>
+              </details>
+            </article>
+          ))}
+          {jobs.length === 0 && (
+            <p className="px-4 py-8 text-center text-sm text-[#5f6b62]">No active manual fulfillment jobs.</p>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
 
