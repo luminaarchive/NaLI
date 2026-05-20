@@ -338,14 +338,27 @@ export function CreateReportForm() {
         report_access_key?: string;
       };
 
-      const reportId = payload.id || payload.report?.id;
+      const rawPayload = payload as any;
+      const reportId = rawPayload.report_id || rawPayload.id || rawPayload.report?.id;
+      const accessKey = rawPayload.report_access_token ||
+                        rawPayload.reportAccessToken ||
+                        rawPayload.report_access_key ||
+                        rawPayload.accessKey ||
+                        rawPayload.access_key ||
+                        rawPayload.report?.report_access_token ||
+                        rawPayload.report?.accessKey;
+
+      if (process.env.NODE_ENV !== "production") {
+        console.debug("[NaLI DEV] reportId exists:", !!reportId);
+        console.debug("[NaLI DEV] accessKey exists:", !!accessKey);
+      }
+
       if (!response.ok || !payload.report || !reportId) {
         setError(payload.error ?? "NaLI belum bisa melanjutkan. Periksa input dan coba lagi.");
         return;
       }
 
       window.localStorage.setItem(`nali-report:${reportId}`, JSON.stringify(payload.report));
-      const accessKey = payload.report_access_key || (payload as any).report_access_token || (payload as any).reportAccessToken || (payload as any).accessKey;
       if (accessKey) {
         window.localStorage.setItem(`nali-report-access:${reportId}`, accessKey);
         window.localStorage.setItem(`nali-report-access-token:${reportId}`, accessKey);

@@ -62,7 +62,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       ? input.report_access_key
       : typeof input.report_access_token === "string"
         ? input.report_access_token
-        : "";
+        : typeof input.access_key === "string"
+          ? input.access_key
+          : "";
 
   const persisted = await getPersistedReport({
     reportAccessToken: reportAccessKey,

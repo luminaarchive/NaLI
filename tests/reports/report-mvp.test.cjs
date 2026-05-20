@@ -1235,17 +1235,32 @@ test("persisted report access key handoff, localStorage keys, and safety", () =>
   assert.ok(formSource.includes("nali-report-access-token:") || formSource.includes("to\" + \"ken") || formSource.includes("to' + 'ken"));
   assert.match(formSource, /nali-report-key:/);
   assert.match(formSource, /nali-report-access-key:/);
+  assert.match(formSource, /console\.debug\("\[NaLI DEV\]/);
 
   // 2. ReportResultClient and CreateReportForm use the same localStorage key nali-report-access:<reportId>
   assert.match(clientSource, /nali-report-access:/);
   assert.ok(clientSource.includes("nali-report-access-token:") || clientSource.includes("to\" + \"ken") || clientSource.includes("to' + 'ken"));
   assert.match(clientSource, /nali-report-key:/);
   assert.match(clientSource, /nali-report-access-key:/);
+  
+  // 3. ReportResultClient helper reads all aliases and URL parameters
+  assert.match(clientSource, /getStoredReportAccessKey/);
+  assert.match(clientSource, /params\.get\(tkParam\)/);
+  assert.match(clientSource, /params\.get\("access_key"\)/);
+  assert.match(clientSource, /params\.get\("key"\)/);
 
-  // 3. Generate response field report_access_key is returned
+  // 4. Feedback route accepts all three access key aliases
+  assert.match(feedbackRouteSource, /input\.report_access_key === "string"/);
+  assert.match(feedbackRouteSource, /input\.report_access_token === "string"/);
+  assert.match(feedbackRouteSource, /input\.access_key === "string"/);
+
+  // 5. Missing key returns clear access message
+  assert.match(clientSource, /"Feedback membutuhkan akses laporan dari sesi ini."/);
+
+  // 6. Generate response field report_access_key is returned
   assert.match(generateRouteSource, /report_access_key: persistence\.persisted \?/);
 
-  // 4. No response/client source exposes raw hashes
+  // 7. No response/client source exposes raw hashes
   const allUiAndRouteSources = [formSource, clientSource, generateRouteSource, feedbackRouteSource].join("\n");
   assert.doesNotMatch(allUiAndRouteSources, /report_access_token_hash|guest_session_id_hash/);
 });

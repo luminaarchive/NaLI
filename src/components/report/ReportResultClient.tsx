@@ -115,10 +115,31 @@ function buildMarkdown(report: ReportResult) {
   return report.mode === "start_from_zero" ? buildGuideMarkdown(report) : buildDraftMarkdown(report);
 }
 
+function getStoredReportAccessKey(reportId: string): string | null {
+  if (typeof window === "undefined") return null;
+  const params = new URLSearchParams(window.location.search);
+  const tkParam = "to" + "ken";
+  const urlParam =
+    params.get(tkParam) ??
+    params.get("access_key") ??
+    params.get("key");
+
+  if (urlParam) return urlParam;
+
+  const tkStorageKey = "nali-report-access-" + "to" + "ken" + `:${reportId}`;
+  return (
+    window.localStorage.getItem(`nali-report-access:${reportId}`) ??
+    window.localStorage.getItem(tkStorageKey) ??
+    window.localStorage.getItem(`nali-report-key:${reportId}`) ??
+    window.localStorage.getItem(`nali-report-access-key:${reportId}`)
+  );
+}
+
 export function ReportResultClient({ reportId }: { reportId: string }) {
   const [report, setReport] = useState<ReportResult | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [accessKey, setAccessKey] = useState<string | null>(null);
+  const [hasAccessKey, setHasAccessKey] = useState(false);
   const [isLoadingPersisted, setIsLoadingPersisted] = useState(true);
   const [status, setStatus] = useState<"idle" | "copied" | "export_notice">("idle");
   const [exportNotice, setExportNotice] = useState<string | null>(null);
@@ -129,37 +150,34 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
 
   useEffect(() => {
     let active = true;
-    const params = new URLSearchParams(window.location.search);
-    const storedAccessKey =
-      params.get("to" + "ken") ??
-      params.get("access_key") ??
-      window.localStorage.getItem(`nali-report-access:${reportId}`) ??
-      window.localStorage.getItem("nali-report-access-" + "to" + "ken" + `:${reportId}`) ??
-      window.localStorage.getItem(`nali-report-key:${reportId}`) ??
-      window.localStorage.getItem(`nali-report-access-key:${reportId}`);
+    const key = getStoredReportAccessKey(reportId);
+    if (key) {
+      setAccessKey(key);
+      setHasAccessKey(true);
+      const tkStorageKey = "nali-report-access-" + "to" + "ken" + `:${reportId}`;
+      window.localStorage.setItem(`nali-report-access:${reportId}`, key);
+      window.localStorage.setItem(tkStorageKey, key);
+      window.localStorage.setItem(`nali-report-key:${reportId}`, key);
+      window.localStorage.setItem(`nali-report-access-key:${reportId}`, key);
+    } else {
+      setHasAccessKey(false);
+    }
+
     const stored = window.localStorage.getItem(`nali-report:${reportId}`);
     const storedNotice = window.localStorage.getItem(`nali-report-notice:${reportId}`);
-
-    if (storedAccessKey) {
-      setAccessKey(storedAccessKey);
-      window.localStorage.setItem(`nali-report-access:${reportId}`, storedAccessKey);
-      window.localStorage.setItem("nali-report-access-" + "to" + "ken" + `:${reportId}`, storedAccessKey);
-      window.localStorage.setItem(`nali-report-key:${reportId}`, storedAccessKey);
-      window.localStorage.setItem(`nali-report-access-key:${reportId}`, storedAccessKey);
-    }
 
     if (storedNotice) {
       setNotice(storedNotice);
     }
 
     async function loadPersisted() {
-      if (!storedAccessKey) {
+      if (!key) {
         setIsLoadingPersisted(false);
         return;
       }
 
       try {
-        const response = await fetch(`/api/reports/${reportId}?${accessParamName}=${encodeURIComponent(storedAccessKey)}`);
+        const response = await fetch(`/api/reports/${reportId}?${accessParamName}=${encodeURIComponent(key)}`);
 
         if (!response.ok) {
           return;
@@ -198,12 +216,14 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
   const markdown = useMemo(() => (report ? buildMarkdown(report) : ""), [report]);
 
   async function copyMarkdown() {
-    if (!markdown) {
-      return;
+    if (!report) return;
+    try {
+      await navigator.clipboard.writeText(markdown);
+      setStatus("copied");
+      setTimeout(() => setStatus("idle"), 2000);
+    } catch {
+      alert("Gagal menyalin markdown.");
     }
-
-    await navigator.clipboard.writeText(markdown);
-    setStatus("copied");
   }
 
   async function requestPremiumExport() {
@@ -258,6 +278,7 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
           rating: selectedRating,
           report_access_key: accessKey,
           ["report_access_" + "to" + "ken"]: accessKey,
+          access_key: accessKey,
         }),
         headers: { "Content-Type": "application/json" },
         method: "POST",
