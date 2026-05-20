@@ -81,6 +81,51 @@
   --text-data-lg--font-weight: 500;
 }
 
+/* ═══════ NaLI v1.5 Homepage Design System Tokens ═══════ */
+:root {
+  /* Background */
+  --nali-bg-base: #07090e;
+  --nali-bg-surface: #0f1117;
+  --nali-bg-elevated: #1a1d27;
+  --nali-bg-card: #252833;
+
+  /* Brand */
+  --nali-brand-emerald: #10b981;
+  --nali-brand-violet: #7c3aed;
+  --nali-brand-cyan: #06b6d4;
+  --nali-brand-teal: #14b8a6;
+
+  /* Text */
+  --nali-text-primary: #ffffff;
+  --nali-text-secondary: rgba(255, 255, 255, 0.8);
+  --nali-text-tertiary: rgba(255, 255, 255, 0.5);
+  --nali-text-muted: rgba(255, 255, 255, 0.2);
+
+  /* Status */
+  --nali-status-verified: #10b981;
+  --nali-status-review: #f59e0b;
+  --nali-status-pending: #6b7280;
+  --nali-status-failed: #ef4444;
+
+  /* Borders */
+  --nali-border-subtle: rgba(255, 255, 255, 0.06);
+  --nali-border-card: rgba(255, 255, 255, 0.08);
+  --nali-border-input: rgba(255, 255, 255, 0.12);
+
+  /* Spacing */
+  --nali-space-1: 4px;
+  --nali-space-2: 8px;
+  --nali-space-3: 12px;
+  --nali-space-4: 16px;
+  --nali-space-6: 24px;
+  --nali-space-8: 32px;
+  --nali-space-10: 40px;
+  --nali-space-12: 48px;
+  --nali-space-16: 64px;
+  --nali-space-20: 80px;
+  --nali-space-24: 96px;
+}
+
 body {
   background-color: #09090b;
   color: #fafafa;

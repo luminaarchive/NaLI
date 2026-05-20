@@ -47,7 +47,7 @@ function FeatureUploadDraft() {
   return (
     <div
       ref={ref}
-      className="mx-auto grid max-w-[1200px] items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1fr_1.15fr] lg:gap-16 lg:px-8 lg:py-28"
+      className="mx-auto grid max-w-[1180px] items-center gap-12 px-5 py-16 sm:px-6 lg:grid-cols-[1fr_1.15fr] lg:gap-16 lg:px-10 lg:py-24"
     >
       {/* Text side */}
       <div
@@ -172,7 +172,7 @@ function FeatureEvidenceEngine() {
   return (
     <div
       ref={ref}
-      className="mx-auto grid max-w-[1200px] items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:gap-16 lg:px-8 lg:py-28"
+      className="mx-auto grid max-w-[1180px] items-center gap-12 px-5 py-16 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:gap-16 lg:px-10 lg:py-24"
     >
       {/* Mockup side (left on desktop) */}
       <div
@@ -334,7 +334,7 @@ function FeatureReviewExport() {
   return (
     <div
       ref={ref}
-      className="mx-auto grid max-w-[1200px] items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1fr_1.15fr] lg:gap-16 lg:px-8 lg:py-28"
+      className="mx-auto grid max-w-[1180px] items-center gap-12 px-5 py-16 sm:px-6 lg:grid-cols-[1fr_1.15fr] lg:gap-16 lg:px-10 lg:py-24"
     >
       {/* Text side */}
       <div
