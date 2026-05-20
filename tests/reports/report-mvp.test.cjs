@@ -1263,6 +1263,20 @@ test("persisted report access key handoff, localStorage keys, and safety", () =>
   // 7. No response/client source exposes raw hashes
   const allUiAndRouteSources = [formSource, clientSource, generateRouteSource, feedbackRouteSource].join("\n");
   assert.doesNotMatch(allUiAndRouteSources, /report_access_token_hash|guest_session_id_hash/);
+
+  // 8. Saved local report and access key use the same reportId
+  assert.match(formSource, /`nali-report:\${reportId}`/);
+  assert.match(formSource, /`nali-report-access:\${reportId}`/);
+
+  // 9. Fallback mode in client doesn't crash on invalid JSON and reads fallback report_access_key
+  assert.match(clientSource, /JSON\.parse\(storedReport\)/);
+  assert.match(clientSource, /try \{/);
+  assert.match(clientSource, /\} catch/);
+  assert.match(clientSource, /parsed\?\.(report_access_key|access_key)/);
+
+  // 10. Generate response includes both report_id and report_access_key
+  assert.match(generateRouteSource, /report_id: report\.id/);
+  assert.match(generateRouteSource, /report_access_key: persistence\.persisted \?/);
 });
 
 

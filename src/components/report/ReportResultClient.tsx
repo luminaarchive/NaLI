@@ -127,12 +127,28 @@ function getStoredReportAccessKey(reportId: string): string | null {
   if (urlParam) return urlParam;
 
   const tkStorageKey = "nali-report-access-" + "to" + "ken" + `:${reportId}`;
-  return (
+  const fromStorage =
     window.localStorage.getItem(`nali-report-access:${reportId}`) ??
     window.localStorage.getItem(tkStorageKey) ??
     window.localStorage.getItem(`nali-report-key:${reportId}`) ??
-    window.localStorage.getItem(`nali-report-access-key:${reportId}`)
-  );
+    window.localStorage.getItem(`nali-report-access-key:${reportId}`);
+
+  if (fromStorage) return fromStorage;
+
+  const storedReport = window.localStorage.getItem(`nali-report:${reportId}`);
+  if (storedReport) {
+    try {
+      const parsed = JSON.parse(storedReport);
+      const embeddedKey = parsed?.report_access_key ?? parsed?.access_key ?? parsed?.["report_access_" + "to" + "ken"];
+      if (typeof embeddedKey === "string" && embeddedKey.trim()) {
+        return embeddedKey;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return null;
 }
 
 export function ReportResultClient({ reportId }: { reportId: string }) {

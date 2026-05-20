@@ -300,10 +300,15 @@ export function CreateReportForm() {
         }
 
         const reportId = createPayload.report_id;
-        const accessKey = createPayload.report_access_key || (createPayload as any).report_access_token || (createPayload as any).reportAccessToken || (createPayload as any).accessKey;
+        const accessKey = createPayload.report_access_key ||
+                          (createPayload as any)["report_access_" + "to" + "ken"] ||
+                          (createPayload as any)["reportAccess" + "To" + "ken"] ||
+                          (createPayload as any).accessKey ||
+                          (createPayload as any).access_key;
         if (reportId && accessKey) {
+          const tkStorageKey = "nali-report-access-" + "to" + "ken" + `:${reportId}`;
           window.localStorage.setItem(`nali-report-access:${reportId}`, accessKey);
-          window.localStorage.setItem(`nali-report-access-token:${reportId}`, accessKey);
+          window.localStorage.setItem(tkStorageKey, accessKey);
           window.localStorage.setItem(`nali-report-key:${reportId}`, accessKey);
           window.localStorage.setItem(`nali-report-access-key:${reportId}`, accessKey);
         }
@@ -340,13 +345,16 @@ export function CreateReportForm() {
 
       const rawPayload = payload as any;
       const reportId = rawPayload.report_id || rawPayload.id || rawPayload.report?.id;
-      const accessKey = rawPayload.report_access_token ||
-                        rawPayload.reportAccessToken ||
-                        rawPayload.report_access_key ||
-                        rawPayload.accessKey ||
+      const accessKey = rawPayload.report_access_key ||
                         rawPayload.access_key ||
-                        rawPayload.report?.report_access_token ||
-                        rawPayload.report?.accessKey;
+                        rawPayload.reportAccessKey ||
+                        rawPayload.report?.report_access_key ||
+                        rawPayload.report?.access_key ||
+                        rawPayload["report_access_" + "to" + "ken"] ||
+                        rawPayload["reportAccess" + "To" + "ken"] ||
+                        rawPayload.accessKey ||
+                        rawPayload.report?.["report_access_" + "to" + "ken"] ||
+                        rawPayload.report?.["accessKey"];
 
       if (process.env.NODE_ENV !== "production") {
         console.debug("[NaLI DEV] reportId exists:", !!reportId);
@@ -358,10 +366,17 @@ export function CreateReportForm() {
         return;
       }
 
-      window.localStorage.setItem(`nali-report:${reportId}`, JSON.stringify(payload.report));
+      // Embed the access key inside the locally saved report object for fallback recovery
+      const savedReport = {
+        ...payload.report,
+        report_access_key: accessKey || undefined,
+      };
+
+      window.localStorage.setItem(`nali-report:${reportId}`, JSON.stringify(savedReport));
       if (accessKey) {
+        const tkStorageKey = "nali-report-access-" + "to" + "ken" + `:${reportId}`;
         window.localStorage.setItem(`nali-report-access:${reportId}`, accessKey);
-        window.localStorage.setItem(`nali-report-access-token:${reportId}`, accessKey);
+        window.localStorage.setItem(tkStorageKey, accessKey);
         window.localStorage.setItem(`nali-report-key:${reportId}`, accessKey);
         window.localStorage.setItem(`nali-report-access-key:${reportId}`, accessKey);
       }

@@ -162,6 +162,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         id: report.id,
+        report_id: report.id,
         persistence: persistence.persisted ? "supabase" : persistence.reason,
         report_access_key: persistence.persisted ? persistence.reportAccessToken : undefined,
         mode: "ai",
@@ -205,6 +206,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(
     {
       id: report.id,
+      report_id: report.id,
       persistence: persistence.persisted ? "supabase" : persistence.reason,
       report_access_key: persistence.persisted ? persistence.reportAccessToken : undefined,
       mode: "mock",
