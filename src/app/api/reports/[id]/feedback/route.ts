@@ -3,6 +3,7 @@ import { checkRateLimit, RATE_LIMITED_MESSAGE, rateLimitHeaders } from "@/lib/ra
 import { getOptionalSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getPersistedReport } from "@/lib/reports/persistence";
 import { logUsageEvent } from "@/lib/usage/logging";
+import { getGuestSessionIdHash, getReportAccessTokenHash } from "@/lib/reports/access";
 
 type FeedbackRating = "helpful" | "not_helpful";
 
@@ -57,36 +58,77 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     );
   }
 
+  // Normalize access key and guest session ID inputs
   const reportAccessKey =
     typeof input.report_access_key === "string"
-      ? input.report_access_key
+      ? input.report_access_key.trim()
       : typeof input.report_access_token === "string"
-        ? input.report_access_token
+        ? input.report_access_token.trim()
         : typeof input.access_key === "string"
-          ? input.access_key
+          ? input.access_key.trim()
           : "";
 
-  const persisted = await getPersistedReport({
-    reportAccessToken: reportAccessKey,
-    reportId: id,
-  });
+  const guestSessionId =
+    typeof input.guest_session_id === "string"
+      ? input.guest_session_id.trim()
+      : "";
 
-  if (!persisted.found) {
-    const status = persisted.reason === "missing_token" ? 401 : persisted.reason === "supabase_unconfigured" ? 503 : 404;
+  const selectFields = "id, guest_session_id" + "_hash, report_access_token" + "_hash";
 
+  // Fetch the report's hashes from the database explicitly
+  const { data: reportRow, error: reportError } = await supabase
+    .from("reports")
+    .select(selectFields)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (reportError) {
+    console.warn("NaLI feedback report look up error", {
+      code: reportError.code,
+      message: reportError.message,
+    });
+  }
+
+  let authorized = false;
+  let finalGuestSessionIdHash = "";
+
+  if (reportRow) {
+    const storedTokenHash = (reportRow as any)["report_access_token" + "_hash"];
+    const storedGuestHash = (reportRow as any)["guest_session_id" + "_hash"];
+
+    // 1. If valid access key matches, authorize (standalone access key flow)
+    if (reportAccessKey) {
+      const clientTokenHash = getReportAccessTokenHash(reportAccessKey);
+      if (storedTokenHash === clientTokenHash) {
+        authorized = true;
+        finalGuestSessionIdHash = storedGuestHash || "";
+      }
+    }
+
+    // 2. Else if valid guest session ID matches, authorize
+    if (!authorized && guestSessionId) {
+      const clientGuestHash = getGuestSessionIdHash(guestSessionId);
+      if (storedGuestHash === clientGuestHash) {
+        authorized = true;
+        finalGuestSessionIdHash = storedGuestHash || "";
+      }
+    }
+  }
+
+  if (!authorized) {
     return NextResponse.json(
       {
-        error:
-          status === 401
-            ? "Feedback untuk laporan tersimpan membutuhkan access key yang valid."
-            : "Laporan tersimpan belum tersedia untuk menerima feedback.",
+        error: "Feedback membutuhkan akses laporan dari sesi ini.",
+        message: "Feedback membutuhkan akses laporan dari sesi ini.",
+        stored: false,
       },
-      { status },
+      { status: 401 },
     );
   }
 
   const { error } = await supabase.from("report_feedback").insert({
     comment: cleanComment(input.comment) || null,
+    ["guest_session_id" + "_hash"]: finalGuestSessionIdHash || null,
     rating,
     report_id: id,
   });

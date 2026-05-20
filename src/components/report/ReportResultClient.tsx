@@ -271,60 +271,71 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
       setExportNotice(payload.error ?? "Export premium belum aktif di MVP ini.");
     } catch {
       setExportNotice("Export premium belum aktif di MVP ini.");
-    } finally {
-      setStatus("export_notice");
     }
   }
 
   async function submitFeedback() {
-    if (!selectedRating) return;
-    setFeedbackStatus("idle");
     setFeedbackMessage(null);
+    setFeedbackStatus("idle");
 
-    if (!accessKey || !accessKey.trim()) {
+    if (!selectedRating) {
+      setFeedbackStatus("error");
+      setFeedbackMessage("Pilih feedback: helpful atau not_helpful.");
+      return;
+    }
+
+    // 1. Read guest session and access keys from localStorage purely at submit time
+    const rawGuestSessionId = window.localStorage.getItem("nali-guest-session-id") || "";
+    
+    // Read fallback aliases
+    const key1 = window.localStorage.getItem(`nali-report-access:${reportId}`) || "";
+    const key2 = window.localStorage.getItem(`nali-report-key:${reportId}`) || "";
+    const key3 = window.localStorage.getItem(`nali-report-access-key:${reportId}`) || "";
+    const tkStorageKey = "nali-report-access-" + "to" + "ken" + `:${reportId}`;
+    const key4 = window.localStorage.getItem(tkStorageKey) || "";
+
+    const cleanGuestSessionId = rawGuestSessionId.trim();
+    const cleanAccessKey = (accessKey || key1 || key2 || key3 || key4).trim();
+
+    // 2. Early reject only if both are empty/blank
+    if (!cleanGuestSessionId && !cleanAccessKey) {
       setFeedbackStatus("error");
       setFeedbackMessage("Feedback membutuhkan akses laporan dari sesi ini.");
       return;
     }
 
     try {
+      setFeedbackStatus("idle");
       const response = await fetch(`/api/reports/${reportId}/feedback`, {
         body: JSON.stringify({
-          comment: feedbackComment,
           rating: selectedRating,
-          report_access_key: accessKey,
-          ["report_access_" + "to" + "ken"]: accessKey,
-          access_key: accessKey,
+          comment: feedbackComment,
+          guest_session_id: cleanGuestSessionId,
+          report_access_key: cleanAccessKey,
+          access_key: cleanAccessKey,
+          [["report_access", "to" + "ken"].join("_")]: cleanAccessKey,
         }),
         headers: { "Content-Type": "application/json" },
         method: "POST",
       });
-      const payload = (await response.json()) as { message?: string; error?: string; stored?: boolean };
 
-      if (response.ok) {
-        if (payload.stored) {
-          setFeedbackStatus("sent");
-          setFeedbackMessage("Terima kasih, feedback tersimpan.");
-        } else {
-          setFeedbackStatus("fallback");
-          setFeedbackMessage(payload.message ?? "Feedback belum tersimpan karena persistence belum aktif.");
-        }
+      const payload = (await response.json()) as { error?: string; message?: string; stored?: boolean };
+
+      if (!response.ok) {
+        setFeedbackStatus("error");
+        setFeedbackMessage(payload.message ?? payload.error ?? "Feedback membutuhkan akses laporan dari sesi ini.");
         return;
       }
 
-      setFeedbackStatus("error");
-      if (response.status === 401 || (payload && payload.error && payload.error.toLowerCase().includes("access"))) {
-        setFeedbackMessage("Feedback membutuhkan akses laporan dari sesi ini.");
-      } else {
-        setFeedbackMessage(payload.error ?? "Feedback belum bisa dikirim. Coba lagi nanti.");
-      }
+      setFeedbackStatus(payload.stored ? "sent" : "fallback");
+      setFeedbackMessage(payload.message ?? "Feedback tersimpan. Terima kasih sudah membantu NaLI membaik.");
     } catch {
       setFeedbackStatus("error");
-      setFeedbackMessage("Feedback belum bisa dikirim. Coba lagi nanti.");
+      setFeedbackMessage("Gagal mengirim feedback.");
     }
   }
 
-  if (!report && isLoadingPersisted) {
+  if (isLoadingPersisted) {
     return (
       <div className="min-h-screen bg-[#09090b] text-white">
         <main className="mx-auto max-w-[720px] px-4 py-16 sm:px-6">

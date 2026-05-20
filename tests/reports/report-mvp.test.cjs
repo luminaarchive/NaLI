@@ -1175,7 +1175,7 @@ test("Feedback route accepts tokens, validates ratings, and does not leak secret
     );
     const payloadNoToken = await resNoToken.json();
     assert.equal(resNoToken.status, 401);
-    assert.match(payloadNoToken.error, /requires a valid access key|access key yang valid/i);
+    assert.match(payloadNoToken.error, /requires a valid access key|access key yang valid|Feedback membutuhkan akses laporan/i);
 
     // 4. Invalid rating still returns 400
     const resInvalidRating = await postFeedback(
