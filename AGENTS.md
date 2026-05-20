@@ -100,6 +100,21 @@ Build the smallest working Learn & Report flow:
 - Do not redesign public UI without explicit founder approval.
 - Only bugfixes, overlap fixes, copy typo fixes, and backend work are allowed.
 
+## NaLI Local Workspace Safety Rules
+
+- Public visual lock is absolute.
+- Keep app routes in `src/app`.
+- Keep UI components in `src/components`.
+- Keep report-specific components in `src/components/report`.
+- Keep backend/domain logic in `src/lib`.
+- Keep test files in `tests`.
+- Keep operational scripts in `scripts`.
+- Keep docs in `docs`.
+- Keep temporary one-off artifacts in `scratch`.
+- Do not move files unless import paths are updated and tests pass.
+- Never commit secrets.
+- Never print raw `guest_session_id`, access keys, hashes, service role, or Midtrans secrets.
+
 ## Definition Of Done
 
 - Home page clearly shows Learn & Report and Field Intelligence.
