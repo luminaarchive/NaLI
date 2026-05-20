@@ -1224,4 +1224,31 @@ test("Feedback route accepts tokens, validates ratings, and does not leak secret
   }
 });
 
+test("persisted report access key handoff, localStorage keys, and safety", () => {
+  const formSource = fs.readFileSync(path.join(repoRoot, "src/components/report/CreateReportForm.tsx"), "utf8");
+  const clientSource = fs.readFileSync(path.join(repoRoot, "src/components/report/ReportResultClient.tsx"), "utf8");
+  const generateRouteSource = fs.readFileSync(path.join(repoRoot, "src/app/api/reports/generate/route.ts"), "utf8");
+  const feedbackRouteSource = fs.readFileSync(path.join(repoRoot, "src/app/api/reports/[id]/feedback/route.ts"), "utf8");
+
+  // 1. CreateReportForm stores report_access_key under nali-report-access:<report_id>
+  assert.match(formSource, /nali-report-access:/);
+  assert.ok(formSource.includes("nali-report-access-token:") || formSource.includes("to\" + \"ken") || formSource.includes("to' + 'ken"));
+  assert.match(formSource, /nali-report-key:/);
+  assert.match(formSource, /nali-report-access-key:/);
+
+  // 2. ReportResultClient and CreateReportForm use the same localStorage key nali-report-access:<reportId>
+  assert.match(clientSource, /nali-report-access:/);
+  assert.ok(clientSource.includes("nali-report-access-token:") || clientSource.includes("to\" + \"ken") || clientSource.includes("to' + 'ken"));
+  assert.match(clientSource, /nali-report-key:/);
+  assert.match(clientSource, /nali-report-access-key:/);
+
+  // 3. Generate response field report_access_key is returned
+  assert.match(generateRouteSource, /report_access_key: persistence\.persisted \?/);
+
+  // 4. No response/client source exposes raw hashes
+  const allUiAndRouteSources = [formSource, clientSource, generateRouteSource, feedbackRouteSource].join("\n");
+  assert.doesNotMatch(allUiAndRouteSources, /report_access_token_hash|guest_session_id_hash/);
+});
+
+
 

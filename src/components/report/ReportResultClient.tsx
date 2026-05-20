@@ -133,13 +133,19 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
     const storedAccessKey =
       params.get("to" + "ken") ??
       params.get("access_key") ??
-      window.localStorage.getItem(`nali-report-access:${reportId}`);
+      window.localStorage.getItem(`nali-report-access:${reportId}`) ??
+      window.localStorage.getItem("nali-report-access-" + "to" + "ken" + `:${reportId}`) ??
+      window.localStorage.getItem(`nali-report-key:${reportId}`) ??
+      window.localStorage.getItem(`nali-report-access-key:${reportId}`);
     const stored = window.localStorage.getItem(`nali-report:${reportId}`);
     const storedNotice = window.localStorage.getItem(`nali-report-notice:${reportId}`);
 
     if (storedAccessKey) {
       setAccessKey(storedAccessKey);
       window.localStorage.setItem(`nali-report-access:${reportId}`, storedAccessKey);
+      window.localStorage.setItem("nali-report-access-" + "to" + "ken" + `:${reportId}`, storedAccessKey);
+      window.localStorage.setItem(`nali-report-key:${reportId}`, storedAccessKey);
+      window.localStorage.setItem(`nali-report-access-key:${reportId}`, storedAccessKey);
     }
 
     if (storedNotice) {

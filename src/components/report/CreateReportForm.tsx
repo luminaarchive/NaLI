@@ -299,7 +299,14 @@ export function CreateReportForm() {
           return;
         }
 
-        window.localStorage.setItem(`nali-report-access:${createPayload.report_id}`, createPayload.report_access_key);
+        const reportId = createPayload.report_id;
+        const accessKey = createPayload.report_access_key || (createPayload as any).report_access_token || (createPayload as any).reportAccessToken || (createPayload as any).accessKey;
+        if (reportId && accessKey) {
+          window.localStorage.setItem(`nali-report-access:${reportId}`, accessKey);
+          window.localStorage.setItem(`nali-report-access-token:${reportId}`, accessKey);
+          window.localStorage.setItem(`nali-report-key:${reportId}`, accessKey);
+          window.localStorage.setItem(`nali-report-access-key:${reportId}`, accessKey);
+        }
         window.localStorage.setItem(
           `nali-report-upload:${createPayload.report_id}`,
           JSON.stringify({
@@ -331,23 +338,28 @@ export function CreateReportForm() {
         report_access_key?: string;
       };
 
-      if (!response.ok || !payload.report || !payload.id) {
+      const reportId = payload.id || payload.report?.id;
+      if (!response.ok || !payload.report || !reportId) {
         setError(payload.error ?? "NaLI belum bisa melanjutkan. Periksa input dan coba lagi.");
         return;
       }
 
-      window.localStorage.setItem(`nali-report:${payload.id}`, JSON.stringify(payload.report));
-      if (payload.report_access_key) {
-        window.localStorage.setItem(`nali-report-access:${payload.id}`, payload.report_access_key);
+      window.localStorage.setItem(`nali-report:${reportId}`, JSON.stringify(payload.report));
+      const accessKey = payload.report_access_key || (payload as any).report_access_token || (payload as any).reportAccessToken || (payload as any).accessKey;
+      if (accessKey) {
+        window.localStorage.setItem(`nali-report-access:${reportId}`, accessKey);
+        window.localStorage.setItem(`nali-report-access-token:${reportId}`, accessKey);
+        window.localStorage.setItem(`nali-report-key:${reportId}`, accessKey);
+        window.localStorage.setItem(`nali-report-access-key:${reportId}`, accessKey);
       }
       if (payload.notice) {
-        window.localStorage.setItem(`nali-report-notice:${payload.id}`, payload.notice);
+        window.localStorage.setItem(`nali-report-notice:${reportId}`, payload.notice);
       }
       const accessParamName = "to" + "ken";
-      const accessQuery = payload.report_access_key
-        ? `?${accessParamName}=${encodeURIComponent(payload.report_access_key)}`
+      const accessQuery = accessKey
+        ? `?${accessParamName}=${encodeURIComponent(accessKey)}`
         : "";
-      router.push(`/report/${payload.id}${accessQuery}`);
+      router.push(`/report/${reportId}${accessQuery}`);
     } catch {
       setError("Koneksi ke server gagal. Coba lagi setelah jaringan stabil.");
     } finally {
