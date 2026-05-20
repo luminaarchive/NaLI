@@ -12,8 +12,20 @@ export function HomeQueryBox() {
 
   // Inferred mode helper
   const inferMode = (text: string): "draft_from_materials" | "start_from_zero" => {
-    if (selectedMode) return selectedMode;
     const lower = text.toLowerCase();
+    const draftTriggers = [
+      "saya mengamati",
+      "saya melihat",
+      "hasil observasi",
+      "ditemukan",
+      "terlihat",
+      "catatan",
+      "tebing",
+      "sungai",
+      "air",
+      "erosi",
+      "lokasi",
+    ];
     const startFromZeroTriggers = [
       "belum punya bahan",
       "belum punya catatan",
@@ -21,10 +33,18 @@ export function HomeQueryBox() {
       "belum observasi",
       "bantu cari topik",
       "tidak tahu mulai dari mana",
+      "belum tahu mau nulis apa",
     ];
+
+    if (draftTriggers.some((trigger) => lower.includes(trigger))) {
+      return "draft_from_materials";
+    }
+
     if (startFromZeroTriggers.some((trigger) => lower.includes(trigger))) {
       return "start_from_zero";
     }
+
+    if (selectedMode) return selectedMode;
     return "draft_from_materials";
   };
 

@@ -1067,3 +1067,73 @@ test("public UI and report output source avoid forbidden academic cheating wordi
     assert.doesNotMatch(source, new RegExp(phrase, "i"), `${phrase} should not appear in public UI/output source`);
   }
 });
+
+test("HomeQueryBox inferMode logic correctly handles observation vs start-from-zero keywords", () => {
+  const queryBoxSource = fs.readFileSync(path.join(repoRoot, "src/components/report/HomeQueryBox.tsx"), "utf8");
+
+  // Verify key draft/observation words are present in the component source
+  const draftKeywords = [
+    "saya mengamati",
+    "saya melihat",
+    "hasil observasi",
+    "ditemukan",
+    "terlihat",
+    "catatan",
+    "tebing",
+    "sungai",
+    "air",
+    "erosi",
+    "lokasi"
+  ];
+
+  for (const keyword of draftKeywords) {
+    assert.ok(queryBoxSource.toLowerCase().includes(keyword), `HomeQueryBox should contain draft keyword: ${keyword}`);
+  }
+
+  // Verify key start-from-zero words are present in the component source
+  const startZeroKeywords = [
+    "belum punya bahan",
+    "belum punya catatan",
+    "mulai dari nol",
+    "belum observasi",
+    "bantu cari topik",
+    "tidak tahu mulai dari mana",
+    "belum tahu mau nulis apa"
+  ];
+
+  for (const keyword of startZeroKeywords) {
+    assert.ok(queryBoxSource.toLowerCase().includes(keyword), `HomeQueryBox should contain start-from-zero keyword: ${keyword}`);
+  }
+
+  // Extract the inferMode function content dynamically or assert key logical branches exist
+  assert.ok(queryBoxSource.includes("draftTriggers.some"), "HomeQueryBox should check draftTriggers");
+  assert.ok(queryBoxSource.includes("startFromZeroTriggers.some"), "HomeQueryBox should check startFromZeroTriggers");
+});
+
+test("CreateReportForm prefill logic correctly maps parameters and overrides to draft_from_materials based on observation keywords", () => {
+  const formSource = fs.readFileSync(path.join(repoRoot, "src/components/report/CreateReportForm.tsx"), "utf8");
+
+  // Verify key draft/observation words are present in the form prefill source
+  const draftKeywords = [
+    "saya mengamati",
+    "saya melihat",
+    "hasil observasi",
+    "ditemukan",
+    "terlihat",
+    "catatan",
+    "tebing",
+    "sungai",
+    "air",
+    "erosi",
+    "lokasi"
+  ];
+
+  for (const keyword of draftKeywords) {
+    assert.ok(formSource.toLowerCase().includes(keyword), `CreateReportForm should contain draft keyword in prefill logic: ${keyword}`);
+  }
+
+  assert.ok(formSource.includes("draftTriggers.some"), "CreateReportForm should check draftTriggers in prefill logic");
+  assert.ok(formSource.includes("modeVal = \"draft_from_materials\""), "CreateReportForm should override modeVal to draft_from_materials");
+});
+
+

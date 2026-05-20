@@ -86,31 +86,64 @@ export function CreateReportForm() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const mode = params.get("mode");
-    const q = params.get("q");
+    const modeParam = params.get("mode") as ReportMode | null;
+    const qParam = params.get("q");
     const stored = window.localStorage.getItem("nali-create-report-prefill");
+
+    let mainTextVal = "";
+    let modeVal: ReportMode = "draft_from_materials";
+    let reportTemplateVal = "Laporan Observasi Lingkungan";
 
     if (stored) {
       try {
         const parsed = JSON.parse(stored) as Partial<FormState>;
-        setForm((current) => ({
-          ...current,
-          mainText: parsed.mainText ?? current.mainText,
-          mode: parsed.mode === "start_from_zero" ? "start_from_zero" : current.mode,
-          reportTemplate: parsed.reportTemplate ?? current.reportTemplate,
-        }));
+        if (parsed.mainText) mainTextVal = parsed.mainText;
+        if (parsed.mode === "start_from_zero" || parsed.mode === "draft_from_materials") {
+          modeVal = parsed.mode;
+        }
+        if (parsed.reportTemplate) reportTemplateVal = parsed.reportTemplate;
       } catch {
         // Ignore invalid local prefill data.
       } finally {
         window.localStorage.removeItem("nali-create-report-prefill");
       }
-    } else if (q) {
-      setForm((current) => ({ ...current, mainText: q }));
     }
 
-    if (mode === "start_from_zero" || mode === "draft_from_materials") {
-      setForm((current) => ({ ...current, mode }));
+    if (qParam) {
+      mainTextVal = qParam;
     }
+
+    if (modeParam === "start_from_zero" || modeParam === "draft_from_materials") {
+      modeVal = modeParam;
+    }
+
+    // Integrity: Do not default to start_from_zero when mainText/q contains concrete observation material
+    if (mainTextVal) {
+      const lower = mainTextVal.toLowerCase();
+      const draftTriggers = [
+        "saya mengamati",
+        "saya melihat",
+        "hasil observasi",
+        "ditemukan",
+        "terlihat",
+        "catatan",
+        "tebing",
+        "sungai",
+        "air",
+        "erosi",
+        "lokasi",
+      ];
+      if (draftTriggers.some((trigger) => lower.includes(trigger))) {
+        modeVal = "draft_from_materials";
+      }
+    }
+
+    setForm((current) => ({
+      ...current,
+      mainText: mainTextVal || current.mainText,
+      mode: modeVal,
+      reportTemplate: reportTemplateVal || current.reportTemplate,
+    }));
   }, []);
 
   useEffect(() => {
