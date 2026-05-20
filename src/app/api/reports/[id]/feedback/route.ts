@@ -66,10 +66,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       rating,
       comment: cleanComment(input.comment) || "(empty)",
     });
-    return NextResponse.json({
-      message: "Terima kasih, feedback tersimpan.",
-      stored: true,
-    });
+    return NextResponse.json(
+      {
+        message: "Feedback belum tersimpan karena persistence belum aktif (local fallback).",
+        stored: false,
+      },
+      { status: 202 }
+    );
   }
 
   // Normalize access key and guest session ID inputs
@@ -166,19 +169,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   });
 
   if (error) {
-    console.warn("NaLI feedback capture skipped", {
+    console.error("NaLI feedback capture failed", {
       code: error.code,
       message: error.message,
     });
-    console.info("NaLI local feedback (persist failed):", {
-      reportId: id,
-      rating,
-      comment: cleanComment(input.comment) || "(empty)",
-    });
-    return NextResponse.json({
-      message: "Terima kasih, feedback tersimpan.",
-      stored: true,
-    });
+    return NextResponse.json(
+      {
+        message: "Gagal menyimpan feedback ke database.",
+        stored: false,
+        error: error.message || "Unknown database error",
+      },
+      { status: 500 }
+    );
   }
 
   void logUsageEvent({

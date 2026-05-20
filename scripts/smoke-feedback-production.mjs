@@ -108,7 +108,11 @@ async function runSmokeTest() {
 
     const reportId = page.url().split('/report/')[1]?.split('?')[0];
     console.log(`- Redirected to report page! ID: ${reportId}`);
-    console.log(`- apiPersistenceStatus: ${apiResponseJson?.persistence}`);
+    const persistenceStatus = apiResponseJson?.persistence;
+    console.log(`- apiPersistenceStatus: ${persistenceStatus}`);
+    if (persistenceStatus !== 'supabase') {
+      throw new Error(`Report persistence failed! Expected "supabase", but got "${persistenceStatus}". Check Supabase database connectivity, credentials, and schema.`);
+    }
 
     // Verify localStorage after generation
     const postLocalStorage = await page.evaluate((rId) => {
