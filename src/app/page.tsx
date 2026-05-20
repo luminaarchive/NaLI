@@ -15,52 +15,56 @@ export default function HomePage() {
 
       <main className="relative z-10">
         {/* ═══════ HERO SECTION ═══════ */}
-        <section className="relative isolate min-h-[100svh] px-4 pt-[11vh] sm:px-6 sm:pt-[18vh] lg:px-8 lg:pt-[20vh]">
-          {/* Hero content — above product preview */}
-          <div className="relative z-20 mx-auto flex w-full max-w-[760px] flex-col items-center text-center">
+        <section className="relative isolate px-5 sm:px-6 lg:px-8">
+          {/* Hero content — max-width 680px, centered, strict spacing */}
+          <div
+            className="relative z-20 mx-auto flex w-full max-w-[680px] flex-col items-center text-center"
+            style={{ paddingTop: "calc(72px + 96px)" }} /* nav height + 96px gap */
+          >
             <NaLIIconTile />
 
             <h1
-              className="text-5xl font-semibold tracking-normal text-white sm:text-6xl lg:text-[78px]"
-              style={{ lineHeight: 1.02 }}
+              className="text-[56px] font-bold tracking-normal text-white sm:text-[68px] lg:text-[80px]"
+              style={{ lineHeight: 1.05 }}
             >
               NaLI
             </h1>
 
-            <p className="mt-4 max-w-[650px] text-[17px] leading-8 text-balance text-white/85 sm:text-xl sm:leading-8 sm:mt-6">
+            <p className="mt-3 max-w-[560px] text-[17px] leading-[1.6] text-white/80 sm:text-[19px] lg:text-[22px] lg:leading-[1.5]">
               Evidence-based AI for reports, learning, and field intelligence.
             </p>
 
-            <p className="mt-2 text-sm text-balance text-white/55 sm:text-[15px] sm:mt-3">
+            <p className="mt-2 max-w-[480px] text-[14px] text-white/50 sm:text-[15px] lg:text-[16px]">
               Turn notes, files, sources, and observations into structured drafts.
             </p>
 
-            {/* Evidence Micro-details Chips */}
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 max-w-[640px] sm:mt-6">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 text-[10px] sm:text-[11.5px] font-mono text-emerald-400">
+            {/* Evidence Micro-detail Chips — 20px gap from supporting text */}
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2 max-w-[600px]">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 text-[10px] sm:text-[11px] font-mono text-emerald-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span>Evidence Hash: SHA-256</span>
               </div>
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-3 py-1 text-[10px] sm:text-[11.5px] font-mono text-cyan-400">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-3 py-1 text-[10px] sm:text-[11px] font-mono text-cyan-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" style={{ animationDelay: "0.2s" }} />
                 <span>Source Coverage: Verified</span>
               </div>
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/25 bg-indigo-500/5 px-3 py-1 text-[10px] sm:text-[11.5px] font-mono text-indigo-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" style={{ animationDelay: "0.4s" }} />
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/20 bg-violet-500/5 px-3 py-1 text-[10px] sm:text-[11px] font-mono text-violet-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-pulse" style={{ animationDelay: "0.4s" }} />
                 <span>Review: Required</span>
               </div>
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] sm:text-[11.5px] font-mono text-white/50">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] sm:text-[11px] font-mono text-white/50">
                 <span>Export Gate: Active</span>
               </div>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:mt-8">
+            {/* CTA Buttons — 24px gap from chips */}
+            <div className="mt-6 flex w-full max-w-[420px] flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link
                 href="/create-report"
-                className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-7 text-sm font-semibold text-[#1a1040] transition-all duration-200 hover:-translate-y-px hover:shadow-xl hover:shadow-white/20"
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl text-[15px] font-semibold text-white transition-all duration-200 hover:-translate-y-px hover:brightness-110 sm:w-auto sm:px-8"
                 style={{
-                  boxShadow: "0 12px 30px rgba(255,255,255,0.15), 0 4px 12px rgba(0,0,0,0.1)",
+                  background: "linear-gradient(135deg, #10b981, #7c3aed)",
+                  boxShadow: "0 12px 30px rgba(16,185,129,0.2), 0 4px 12px rgba(0,0,0,0.2)",
                 }}
               >
                 Start a report
@@ -68,32 +72,34 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/field-intelligence"
-                className="inline-flex h-11 items-center gap-2 rounded-full border border-white/15 bg-white/10 px-7 text-sm font-semibold text-white/90 backdrop-blur-sm transition-all duration-200 hover:-translate-y-px hover:bg-white/18"
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/[0.06] text-[15px] font-semibold text-white/90 backdrop-blur-sm transition-all duration-200 hover:-translate-y-px hover:bg-white/[0.1] sm:w-auto sm:px-8"
               >
                 Explore NaLI for work
               </Link>
             </div>
-
-            <p className="mt-4 text-xs text-white/45 sm:text-[13px] sm:mt-6">
-              Public reports. Professional field intelligence. One evidence engine.
-            </p>
           </div>
 
-          {/* Product preview — rising from the bottom of the viewport */}
+          {/* ═══════ MANDATORY 80px GAP ═══════ */}
+          <div className="h-12 sm:h-16 lg:h-20" aria-hidden="true" />
+
+          {/* Product preview — NORMAL FLOW, below hero, no overlap */}
           <CodexProductPreview />
+
+          {/* Bottom spacing */}
+          <div className="h-8 sm:h-12" aria-hidden="true" />
         </section>
 
         {/* ═══════ ATMOSPHERIC → DARK BASE TRANSITION ═══════ */}
         <div
-          className="relative z-20 h-10 sm:h-16"
+          className="relative z-20 h-16 sm:h-24"
           style={{
             background:
-              "linear-gradient(180deg, transparent 0%, rgba(7,9,14,0.4) 25%, rgba(7,9,14,0.75) 50%, rgba(7,9,14,0.93) 75%, #07090e 100%)",
+              "linear-gradient(180deg, transparent 0%, rgba(7,9,14,0.5) 30%, rgba(7,9,14,0.85) 60%, #07090e 100%)",
           }}
         />
 
         {/* ═══════ SECTION HEADER ═══════ */}
-        <section className="relative z-20 bg-[#07090e] px-4 pt-8 pb-4 sm:px-6 lg:px-8">
+        <section className="relative z-20 bg-[#07090e] px-5 pt-8 pb-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[960px] text-center">
             <p
               className="text-xs font-semibold tracking-[0.2em] uppercase text-white/40"
@@ -101,13 +107,13 @@ export default function HomePage() {
               Cara terbaik untuk
             </p>
             <h2
-              className="mt-4 text-3xl font-semibold tracking-[-0.02em] text-white sm:text-4xl lg:text-[44px]"
+              className="mt-4 text-[28px] font-semibold tracking-[-0.02em] text-white sm:text-[36px] lg:text-[44px]"
               style={{ lineHeight: 1.15 }}
             >
               Review first. Export when ready.
             </h2>
             <p
-              className="mx-auto mt-4 max-w-[560px] text-[16px] leading-7 text-white/60"
+              className="mx-auto mt-4 max-w-[560px] text-[15px] leading-7 text-white/60 sm:text-[16px]"
             >
               Dari upload hingga export, setiap langkah dilacak, setiap sumber
               tercatat, dan setiap draft siap direview.
@@ -115,13 +121,13 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ═══════ FEATURE SHOWCASES (Codex-style with mockups) ═══════ */}
+        {/* ═══════ FEATURE SHOWCASES ═══════ */}
         <section className="relative z-20 bg-[#07090e]">
           <CodexFeatureShowcase />
         </section>
 
         {/* ═══════ DISCLAIMER ═══════ */}
-        <section className="relative z-20 bg-[#07090e] px-4 pb-20 sm:px-6 lg:px-8">
+        <section className="relative z-20 bg-[#07090e] px-5 pb-20 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[680px]">
             <div
               className="rounded-xl p-6 text-center"
@@ -140,7 +146,7 @@ export default function HomePage() {
 
         {/* ═══════ FOOTER ═══════ */}
         <footer
-          className="relative z-20 bg-[#07090e] px-4 py-10 sm:px-6 lg:px-8"
+          className="relative z-20 bg-[#07090e] px-5 py-10 sm:px-6 lg:px-8"
           style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
         >
           <div className="mx-auto flex max-w-[1200px] flex-col gap-6 text-sm md:flex-row md:items-center md:justify-between">

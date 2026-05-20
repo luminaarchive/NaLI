@@ -64,8 +64,7 @@ function FeatureUploadDraft() {
         </h2>
         <p className="mt-5 text-[16px] leading-[1.7] text-white/60 sm:text-[17px]">
           Dari catatan lapangan, file PDF, hingga observasi mentah, NaLI
-          mengubahnya menjadi draft berbasis evidensi yang siap direview. Setiap
-          draft dilengkapi sumber, batasan, dan catatan ketidakpastian.
+          mengubah bahan menjadi draft berbasis evidensi yang siap direview.
         </p>
         <div className="mt-6 flex items-center gap-2 text-[#34d399] font-semibold text-[14px]">
           <span>Mulai draft sekarang</span>
@@ -314,9 +313,8 @@ function FeatureEvidenceEngine() {
           Setiap sumber terlihat.
         </h2>
         <p className="mt-5 text-[16px] leading-[1.7] text-white/60 sm:text-[17px]">
-          Evidence Engine NaLI melacak setiap klaim ke sumbernya, menandai data
-          yang perlu verifikasi manual, dan memastikan transparansi penuh
-          sebelum draft siap diekspor.
+          Evidence Engine NaLI menautkan klaim ke sumber, menandai data
+          yang perlu verifikasi manual, dan menjaga transparansi sebelum export.
         </p>
         <div className="mt-6 flex items-center gap-2 text-cyan-400 font-semibold text-[14px]">
           <span>Lihat evidence engine</span>
@@ -352,12 +350,11 @@ function FeatureReviewExport() {
           Export saat siap.
         </h2>
         <p className="mt-5 text-[16px] leading-[1.7] text-white/60 sm:text-[17px]">
-          Tidak ada draft yang langsung diekspor. Setiap laporan melalui
-          checklist review, memastikan integritas akademis, verifikasi sumber,
-          dan persetujuan eksplisit sebelum finalisasi.
+          Preview tetap terbuka untuk diperiksa. Export PDF atau DOCX rapi
+          menggunakan NaLI Energy setelah pengguna siap.
         </p>
-        <div className="mt-6 flex items-center gap-2 text-indigo-400 font-semibold text-[14px]">
-          <span>Pelajari review workflow</span>
+        <div className="mt-6 flex items-center gap-2 text-cyan-400 font-semibold text-[14px]">
+          <span>Pelajari export gate</span>
           <ArrowRight className="h-4 w-4" />
         </div>
       </div>

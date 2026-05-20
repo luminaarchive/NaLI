@@ -1,93 +1,83 @@
 "use client";
 
 /**
- * NaLIIconTile — Redesigned modern, professional Natural Intelligence mark.
- * Concept: A premium dark glass tile with an underlying emerald/cyan/indigo glow,
- * hosting an organic evidence-leaf pulse forming a geometric, professional "N".
+ * NaLIIconTile — Option C: Nature Intelligence Mark.
+ * Abstract terrain/topography contour lines subtly forming the letter "N".
+ * 2-3 flowing strokes with emerald #10b981 to violet #7c3aed gradient.
+ * Dark glass tile: 80x80 desktop, 72x72 mobile.
  */
 export function NaLIIconTile() {
   return (
-    <div className="relative mx-auto mb-8 sm:mb-9">
+    <div className="relative mx-auto mb-4 sm:mb-5">
       {/* Underlying premium glow */}
-      <div className="absolute -inset-2 rounded-[34px] bg-gradient-to-tr from-emerald-500/20 via-cyan-500/25 to-indigo-600/30 opacity-90 blur-lg" />
-      
-      {/* Main glass tile container */}
+      <div className="absolute -inset-3 rounded-[28px] opacity-70 blur-xl bg-gradient-to-tr from-emerald-500/20 via-cyan-500/15 to-violet-600/20" />
+
+      {/* Main glass tile */}
       <div
-        className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-[28px] sm:h-[112px] sm:w-[112px] sm:rounded-[32px] backdrop-blur-md"
+        className="relative flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-2xl sm:h-[80px] sm:w-[80px] sm:rounded-[20px] backdrop-blur-md"
         style={{
           background:
-            "linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.03) 100%)",
-          border: "1px solid rgba(255, 255, 255, 0.14)",
+            "linear-gradient(135deg, rgba(18, 20, 28, 0.95) 0%, rgba(10, 12, 20, 0.98) 100%)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
           boxShadow:
-            "0 32px 64px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
+            "0 24px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
         }}
       >
-        {/* Inner atmospheric micro-glow */}
-        <div className="absolute inset-0 overflow-hidden rounded-[28px] sm:rounded-[32px]">
+        {/* Inner atmospheric glow */}
+        <div className="absolute inset-0 overflow-hidden rounded-2xl sm:rounded-[20px]">
           <div
-            className="absolute -inset-8 opacity-50 bg-gradient-to-tr from-emerald-500/25 via-cyan-500/25 to-indigo-500/35"
-            style={{
-              filter: "blur(14px)",
-            }}
+            className="absolute -inset-6 opacity-40 bg-gradient-to-tr from-emerald-500/25 via-cyan-500/15 to-violet-500/25"
+            style={{ filter: "blur(12px)" }}
           />
         </div>
 
-        {/* Inner emerald/cyan glow borders */}
-        <div className="absolute inset-0 rounded-[28px] sm:rounded-[32px] border border-emerald-500/20 pointer-events-none" />
-        <div className="absolute inset-px rounded-[27px] sm:rounded-[31px] bg-gradient-to-tr from-emerald-500/5 via-cyan-500/8 to-transparent pointer-events-none" />
+        {/* Inner glow border */}
+        <div className="absolute inset-px rounded-[15px] sm:rounded-[19px] bg-gradient-to-tr from-emerald-500/5 via-transparent to-violet-500/5 pointer-events-none" />
 
-        {/* Subtle glass reflection overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none" />
-
-        {/* NaLI organic N mark */}
+        {/* Nature Intelligence Mark — Option C */}
         <svg
-          viewBox="0 0 80 80"
+          viewBox="0 0 512 512"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="relative z-10 h-14 w-14 sm:h-[68px] sm:w-[68px]"
+          className="relative z-10 h-10 w-10 sm:h-12 sm:w-12"
           aria-hidden="true"
         >
           <defs>
-            <linearGradient id="gradient-emerald-teal" x1="20" y1="20" x2="34" y2="58" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#34d399" />
-              <stop offset="100%" stopColor="#059669" />
-            </linearGradient>
-            <linearGradient id="gradient-cyan-indigo" x1="44" y1="20" x2="58" y2="58" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#22d3ee" />
-              <stop offset="100%" stopColor="#4f46e5" />
-            </linearGradient>
-            <linearGradient id="gradient-pulse" x1="24" y1="22" x2="56" y2="58" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#34d399" />
+            <linearGradient id="nali-tile-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#10b981" />
               <stop offset="50%" stopColor="#06b6d4" />
-              <stop offset="100%" stopColor="#6366f1" />
+              <stop offset="100%" stopColor="#7c3aed" />
             </linearGradient>
           </defs>
-          
-          {/* Left leaf stem (Nature) */}
+          {/* Stroke 1: Left vertical rise */}
           <path
-            d="M24 58 C21 45 21 33 24 22 C29 22 30 38 30 58 Z"
-            fill="url(#gradient-emerald-teal)"
-            opacity="0.95"
-          />
-          
-          {/* Right leaf stem (Intelligence) */}
-          <path
-            d="M50 58 C50 38 51 22 56 22 C59 33 59 45 56 58 Z"
-            fill="url(#gradient-cyan-indigo)"
-            opacity="0.95"
-          />
-          
-          {/* Diagonal connecting pulse line (Evidence Link) representing the middle of N */}
-          <path
-            d="M27 24 L53 56"
-            stroke="url(#gradient-pulse)"
-            strokeWidth="5"
+            d="M 144 400 C 144 400, 128 300, 136 240 C 144 180, 152 160, 156 128 C 160 108, 156 96, 160 88"
+            stroke="url(#nali-tile-grad)"
+            strokeWidth="36"
             strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
           />
-
-          {/* Glowing pulse indicator dot (Evidence node) */}
-          <circle cx="53" cy="22" r="3.5" fill="#22d3ee" className="animate-pulse" />
-          <circle cx="53" cy="22" r="7.5" stroke="#22d3ee" strokeOpacity="0.35" strokeWidth="1.5" />
+          {/* Stroke 2: Diagonal connector */}
+          <path
+            d="M 168 112 C 192 160, 228 240, 264 296 C 300 352, 332 380, 348 400"
+            stroke="url(#nali-tile-grad)"
+            strokeWidth="32"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+          {/* Stroke 3: Right vertical rise */}
+          <path
+            d="M 352 400 C 352 392, 356 340, 360 280 C 364 220, 368 160, 364 120 C 362 100, 358 92, 356 84"
+            stroke="url(#nali-tile-grad)"
+            strokeWidth="36"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+          {/* Intelligence node dot */}
+          <circle cx="356" cy="76" r="10" fill="url(#nali-tile-grad)" />
         </svg>
       </div>
     </div>
