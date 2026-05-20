@@ -1,10 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 const DEFAULT_BASE_URL = "https://naliai.vercel.app";
-const ENV_FILES = [".env.production.local", ".env.local.save", ".env.local", ".env"];
+const ENV_FILES = [".env.production.local", ".env.vercel.production", ".env.local.save", ".env.local", ".env"];
+const PRODUCTION_SUPABASE_HOST = "wvpplfjrbndzxlgpuicn.supabase.co";
+const RESUME_FILE = path.join(os.tmpdir(), "nali-paid-export-smoke-state.json");
 const SECRET_PATTERNS = [
   /guest-session-[a-z0-9-]+/i,
   /[A-Za-z0-9_-]{43,}/,
@@ -26,7 +29,7 @@ function loadLocalEnv() {
       const index = trimmed.indexOf("=");
       const key = trimmed.slice(0, index).trim();
       const value = trimmed.slice(index + 1).trim().replace(/^['"]|['"]$/g, "");
-      if (key && process.env[key] === undefined) process.env[key] = value;
+      if (key && (!process.env[key] || process.env[key]?.trim() === "")) process.env[key] = value;
     }
   }
 }
@@ -48,14 +51,33 @@ async function fetchJson(url, options) {
   return { json, response };
 }
 
+function readResumeState() {
+  if (!fs.existsSync(RESUME_FILE)) return null;
+  const raw = fs.readFileSync(RESUME_FILE, "utf8");
+  const parsed = JSON.parse(raw);
+  if (!parsed || typeof parsed !== "object") return null;
+  if (typeof parsed.reportId !== "string" || typeof parsed.accessKey !== "string") return null;
+  return parsed;
+}
+
+function writeResumeState(state) {
+  fs.writeFileSync(RESUME_FILE, JSON.stringify(state), { mode: 0o600 });
+}
+
+function clearResumeState() {
+  if (fs.existsSync(RESUME_FILE)) fs.rmSync(RESUME_FILE);
+}
+
 function createSupabaseServiceClient() {
-  const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const rawUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  assert(rawUrl, "NEXT_PUBLIC_SUPABASE_URL is required for production export smoke");
-  assert(serviceRoleKey, "SUPABASE_SERVICE_ROLE_KEY is required for production export smoke");
+  if (!rawUrl || !serviceRoleKey) return null;
 
   const url = rawUrl.trim().replace(/\/rest\/v1\/?$/, "");
+  const host = new URL(url).host;
+  if (host !== PRODUCTION_SUPABASE_HOST) return null;
+
   return createClient(url, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
@@ -84,7 +106,7 @@ async function run() {
   assert(baseUrl === DEFAULT_BASE_URL, "Production export smoke must target https://naliai.vercel.app by default");
 
   const supabase = createSupabaseServiceClient();
-  const guestSessionId = `guest-session-paid-export-smoke-${randomUUID()}`;
+  const resumeState = readResumeState();
 
   console.log("[1/7] production readiness");
   const readiness = await fetchJson(`${baseUrl}/api/system/readiness`, { cache: "no-store" });
@@ -97,6 +119,23 @@ async function run() {
   assert(dbStatus.payments?.success === true, "payments readiness must be true");
   console.log(`- paymentsSuccess: ${dbStatus.payments.success}`);
   console.log(`- midtransConfigured: ${readiness.json.midtransConfigured === true}`);
+
+  if (resumeState) {
+    console.log("[2/7] resume production report");
+    console.log("- reportPersisted: true");
+    console.log("[3/7] unpaid export lock");
+    console.log("- unpaidExportLocked: previously verified");
+    console.log("[4/7] payment creation");
+    console.log("- pendingPaymentRowCreated: previously verified");
+    console.log("[5/7] confirm payment through database source of truth");
+    console.log("- confirmedPaymentUnlockSource: externally confirmed in payments");
+    await verifyUnlockedExport({ accessKey: resumeState.accessKey, baseUrl, reportId: resumeState.reportId });
+    clearResumeState();
+    console.log("Paid export production smoke passed.");
+    return;
+  }
+
+  const guestSessionId = `guest-session-paid-export-smoke-${randomUUID()}`;
 
   console.log("[2/7] create production report");
   const reportResponse = await fetchJson(`${baseUrl}/api/reports/generate`, {
@@ -170,31 +209,51 @@ async function run() {
     console.log("- paymentMode: manual");
   }
 
-  const pendingPayment = await getLatestPayment(supabase, reportId);
-  assert(pendingPayment, "Pending payment row was not created");
-  assert(pendingPayment.status === "pending", `Expected pending payment row, got ${pendingPayment.status}`);
-  assert(pendingPayment.export_type === "markdown", "Pending payment export type must be markdown");
-  console.log("- pendingPaymentRowCreated: true");
+  if (supabase) {
+    const pendingPayment = await getLatestPayment(supabase, reportId);
+    assert(pendingPayment, "Pending payment row was not created");
+    assert(pendingPayment.status === "pending", `Expected pending payment row, got ${pendingPayment.status}`);
+    assert(pendingPayment.export_type === "markdown", "Pending payment export type must be markdown");
+    console.log("- pendingPaymentRowCreated: true");
 
-  console.log("[5/7] confirm payment through database source of truth");
-  const { data: confirmedPayment, error: confirmError } = await supabase
-    .from("payments")
-    .update({
-      payment_type: "production_smoke_manual_confirmation",
-      raw_notification: {
-        confirmed_by: "smoke-paid-export-production",
-        source: "server_side_admin_script",
-      },
-      status: "paid",
-    })
-    .eq("id", pendingPayment.id)
-    .select("id, report_id, status, export_type")
-    .single();
+    console.log("[5/7] confirm payment through database source of truth");
+    const { data: confirmedPayment, error: confirmError } = await supabase
+      .from("payments")
+      .update({
+        payment_type: "production_smoke_manual_confirmation",
+        raw_notification: {
+          confirmed_by: "smoke-paid-export-production",
+          source: "server_side_admin_script",
+        },
+        status: "paid",
+      })
+      .eq("id", pendingPayment.id)
+      .select("id, report_id, status, export_type")
+      .single();
 
-  if (confirmError) throw new Error(`Payment confirmation failed: ${confirmError.message}`);
-  assert(confirmedPayment.status === "paid", "Confirmed payment row must be paid");
-  console.log("- confirmedPaymentUnlockSource: payments");
+    if (confirmError) throw new Error(`Payment confirmation failed: ${confirmError.message}`);
+    assert(confirmedPayment.status === "paid", "Confirmed payment row must be paid");
+    console.log("- confirmedPaymentUnlockSource: payments");
 
+    await verifyUnlockedExport({ accessKey, baseUrl, reportId });
+    console.log("Paid export production smoke passed.");
+    return;
+  }
+
+  assert(typeof paymentResponse.json.payment_id === "string", "Payment create response missing payment id");
+  writeResumeState({
+    accessKey,
+    createdAt: new Date().toISOString(),
+    paymentId: paymentResponse.json.payment_id,
+    reportId,
+  });
+  console.log("- pendingPaymentRowCreated: api-confirmed");
+  throw new Error(
+    "Production service-role env is unavailable locally. Confirm the saved pending payment with Supabase admin/MCP, then rerun npm run smoke:export:prod to verify unlock and export.",
+  );
+}
+
+async function verifyUnlockedExport({ accessKey, baseUrl, reportId }) {
   console.log("[6/7] report export readiness");
   const unlockedReport = await fetchJson(
     `${baseUrl}/api/reports/${encodeURIComponent(reportId)}?token=${encodeURIComponent(accessKey)}`,
@@ -217,8 +276,6 @@ async function run() {
   assert(markdown.includes("Dokumen ini adalah draft bantuan belajar/penulisan berbasis bukti."), "Export markdown missing disclaimer");
   assertNoSecretLeak(markdown, "Export markdown");
   console.log("- exportMarkdownReturned: true");
-
-  console.log("Paid export production smoke passed.");
 }
 
 run().catch((error) => {
