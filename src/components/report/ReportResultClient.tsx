@@ -125,6 +125,7 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
   const [feedbackComment, setFeedbackComment] = useState("");
   const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "sent" | "fallback" | "error">("idle");
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [selectedRating, setSelectedRating] = useState<"helpful" | "not_helpful" | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -227,7 +228,8 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
     }
   }
 
-  async function submitFeedback(rating: "helpful" | "not_helpful") {
+  async function submitFeedback() {
+    if (!selectedRating) return;
     setFeedbackStatus("idle");
     setFeedbackMessage(null);
 
@@ -235,7 +237,7 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
       const response = await fetch(`/api/reports/${reportId}/feedback`, {
         body: JSON.stringify({
           comment: feedbackComment,
-          rating,
+          rating: selectedRating,
           report_access_key: accessKey,
         }),
         headers: { "Content-Type": "application/json" },
@@ -244,16 +246,21 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
       const payload = (await response.json()) as { message?: string; error?: string; stored?: boolean };
 
       if (response.ok) {
-        setFeedbackStatus(payload.stored ? "sent" : "fallback");
-        setFeedbackMessage(payload.message ?? "Feedback diterima.");
+        if (payload.stored) {
+          setFeedbackStatus("sent");
+          setFeedbackMessage("Terima kasih, feedback tersimpan.");
+        } else {
+          setFeedbackStatus("fallback");
+          setFeedbackMessage(payload.message ?? "Feedback belum tersimpan karena persistence belum aktif.");
+        }
         return;
       }
 
       setFeedbackStatus("error");
-      setFeedbackMessage(payload.error ?? "Feedback belum bisa dikirim.");
+      setFeedbackMessage("Feedback belum bisa dikirim. Coba lagi nanti.");
     } catch {
       setFeedbackStatus("error");
-      setFeedbackMessage("Feedback belum bisa dikirim.");
+      setFeedbackMessage("Feedback belum bisa dikirim. Coba lagi nanti.");
     }
   }
 
@@ -314,9 +321,19 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
           </div>
         </div>
       </header>
-
       <main className="mx-auto grid max-w-[1160px] gap-5 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_280px] lg:px-8">
-        {isGuide ? <GuideContent report={report} notice={notice} /> : <DraftContent report={report} notice={notice} />}
+        <div className="space-y-6">
+          {isGuide ? <GuideContent report={report} notice={notice} /> : <DraftContent report={report} notice={notice} />}
+          <FeedbackBlock
+            comment={feedbackComment}
+            message={feedbackMessage}
+            onCommentChange={setFeedbackComment}
+            onRatingSelect={setSelectedRating}
+            onSubmit={submitFeedback}
+            rating={selectedRating}
+            status={feedbackStatus}
+          />
+        </div>
 
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           <SidebarCard title="Status">
@@ -358,14 +375,6 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
               <p className="mt-2 text-xs leading-5 text-white/30">Export membutuhkan laporan tersimpan dari sesi ini.</p>
             ) : null}
           </SidebarCard>
-
-          <FeedbackCard
-            comment={feedbackComment}
-            message={feedbackMessage}
-            onCommentChange={setFeedbackComment}
-            onSubmit={submitFeedback}
-            status={feedbackStatus}
-          />
 
           {status !== "idle" ? (
             <p className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm text-emerald-300">
@@ -533,43 +542,64 @@ function SidebarCard({ children, title }: { children: ReactNode; title: string }
   );
 }
 
-function FeedbackCard({
+function FeedbackBlock({
   comment,
   message,
   onCommentChange,
+  onRatingSelect,
   onSubmit,
+  rating,
   status,
 }: {
   comment: string;
   message: string | null;
   onCommentChange: (value: string) => void;
-  onSubmit: (rating: "helpful" | "not_helpful") => void;
+  onRatingSelect: (value: "helpful" | "not_helpful" | null) => void;
+  onSubmit: () => void;
+  rating: "helpful" | "not_helpful" | null;
   status: "idle" | "sent" | "fallback" | "error";
 }) {
   return (
-    <SidebarCard title="Feedback">
-      <p className="text-sm font-semibold text-white">Apakah hasil ini membantu?</p>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <Button type="button" variant="outline" onClick={() => onSubmit("helpful")}>
+    <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-sm">
+      <h2 className="text-xl font-semibold text-white">Apakah preview ini membantu?</h2>
+      <div className="mt-4 flex gap-3">
+        <Button
+          type="button"
+          variant={rating === "helpful" ? "default" : "outline"}
+          onClick={() => onRatingSelect("helpful")}
+        >
           Membantu
         </Button>
-        <Button type="button" variant="outline" onClick={() => onSubmit("not_helpful")}>
+        <Button
+          type="button"
+          variant={rating === "not_helpful" ? "default" : "outline"}
+          onClick={() => onRatingSelect("not_helpful")}
+        >
           Kurang membantu
         </Button>
       </div>
-      <label className="mt-3 block">
-        <span className="sr-only">Catatan singkat untuk memperbaiki NaLI</span>
-        <textarea
-          className="min-h-20 w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm leading-6 text-white outline-none transition focus:border-white/20"
-          maxLength={1000}
-          onChange={(event) => onCommentChange(event.target.value)}
-          placeholder="Catatan singkat untuk memperbaiki NaLI"
-          value={comment}
-        />
-      </label>
+
+      {rating && status !== "sent" && status !== "fallback" ? (
+        <div className="mt-4 space-y-3">
+          <label className="block">
+            <span className="sr-only">Catatan singkat opsional...</span>
+            <textarea
+              className="min-h-20 w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm leading-6 text-white outline-none transition focus:border-white/20"
+              maxLength={1000}
+              onChange={(event) => onCommentChange(event.target.value)}
+              placeholder="Catatan singkat opsional..."
+              value={comment}
+            />
+          </label>
+          <Button type="button" variant="default" onClick={onSubmit}>
+            Kirim feedback
+          </Button>
+        </div>
+      ) : null}
+
       {message ? (
         <p
-          className={`mt-3 rounded-xl border p-3 text-sm leading-6 ${
+          className={`mt-4 rounded-xl border p-3 text-sm leading-6 ${
             status === "error"
               ? "border-amber-400/20 bg-amber-400/10 text-amber-200"
               : "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
@@ -578,6 +608,6 @@ function FeedbackCard({
           {message}
         </p>
       ) : null}
-    </SidebarCard>
+    </section>
   );
 }

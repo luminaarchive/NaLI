@@ -1136,4 +1136,14 @@ test("CreateReportForm prefill logic correctly maps parameters and overrides to 
   assert.ok(formSource.includes("modeVal = \"draft_from_materials\""), "CreateReportForm should override modeVal to draft_from_materials");
 });
 
+test("ReportResultClient contains the correct feedback UI copy according to specifications", () => {
+  const resultClientSource = fs.readFileSync(path.join(repoRoot, "src/components/report/ReportResultClient.tsx"), "utf8");
+
+  assert.ok(resultClientSource.includes("Apakah preview ini membantu?"), "Result client should contain: Apakah preview ini membantu?");
+  assert.ok(resultClientSource.includes("Membantu"), "Result client should contain: Membantu");
+  assert.ok(resultClientSource.includes("Kurang membantu"), "Result client should contain: Kurang membantu");
+  assert.ok(resultClientSource.includes("Catatan singkat opsional..."), "Result client should contain: Catatan singkat opsional...");
+  assert.ok(resultClientSource.includes("Kirim feedback"), "Result client should contain: Kirim feedback");
+});
+
 
