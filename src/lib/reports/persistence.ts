@@ -37,6 +37,18 @@ export function calculateEnergyBalance(entries: Array<{ amount: number }>) {
   return entries.reduce((sum, entry) => sum + entry.amount, 0);
 }
 
+async function withTimeout<T>(promise: PromiseLike<T>, ms: number = 3000): Promise<T> {
+  let timeoutId: NodeJS.Timeout | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error("Timeout"));
+    }, ms);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timeoutId) clearTimeout(timeoutId);
+  });
+}
+
 export function estimatePreviewEnergy(report: ReportResult) {
   return report.mode === "start_from_zero" ? 2 : 5;
 }
@@ -64,19 +76,24 @@ export async function persistGeneratedReport({
   const guestSessionIdHash = getGuestSessionIdHash(guestSessionId);
   const reportAccessTokenHash = getReportAccessTokenHash(reportAccessToken);
 
-  const { error } = await supabase.from("reports").insert({
-    guest_session_id_hash: guestSessionIdHash,
-    id: report.id,
-    input,
-    mode: report.mode,
-    output: report,
-    processing_metadata: {
-      source_verification: "inactive_mvp",
-      sprint: "zero",
-      step: "preview_generated",
-    },
-    report_access_token_hash: reportAccessTokenHash,
-    status: getReportMacroStatus(report),
+  const { error } = await withTimeout(
+    supabase.from("reports").insert({
+      guest_session_id_hash: guestSessionIdHash,
+      id: report.id,
+      input,
+      mode: report.mode,
+      output: report,
+      processing_metadata: {
+        source_verification: "inactive_mvp",
+        sprint: "zero",
+        step: "preview_generated",
+      },
+      report_access_token_hash: reportAccessTokenHash,
+      status: getReportMacroStatus(report),
+    }),
+    3000
+  ).catch((err) => {
+    return { error: { code: "TIMEOUT", message: err.message } };
   });
 
   if (error) {
@@ -121,12 +138,17 @@ export async function recordEnergyLedgerEntry({
     return { recorded: false as const, reason: "supabase_unconfigured" as const };
   }
 
-  const { error } = await supabase.from("energy_ledger").insert({
-    amount,
-    guest_session_id_hash: guestSessionIdHash,
-    reason,
-    report_id: reportId ?? null,
-    type,
+  const { error } = await withTimeout(
+    supabase.from("energy_ledger").insert({
+      amount,
+      guest_session_id_hash: guestSessionIdHash,
+      reason,
+      report_id: reportId ?? null,
+      type,
+    }),
+    3000
+  ).catch((err) => {
+    return { error: { code: "TIMEOUT", message: err.message } };
   });
 
   if (error) {
@@ -157,12 +179,17 @@ export async function getPersistedReport({
     return { found: false as const, reason: "supabase_unconfigured" as const };
   }
 
-  const { data, error } = await supabase
-    .from("reports")
-    .select("id, status, output, mode, created_at")
-    .eq("id", reportId)
-    .eq("report_access_token_hash", getReportAccessTokenHash(reportAccessToken))
-    .maybeSingle();
+  const { data, error } = await withTimeout(
+    supabase
+      .from("reports")
+      .select("id, status, output, mode, created_at")
+      .eq("id", reportId)
+      .eq("report_access_token_hash", getReportAccessTokenHash(reportAccessToken))
+      .maybeSingle(),
+    3000
+  ).catch((err) => {
+    return { data: null, error: { code: "TIMEOUT", message: err.message } };
+  });
 
   if (error) {
     console.warn("NaLI report lookup failed", {

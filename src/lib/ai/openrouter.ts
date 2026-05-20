@@ -72,7 +72,7 @@ export async function requestOpenRouterJson({
 
   for (const model of getOpenRouterModels()) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25_000);
+    const timeout = setTimeout(() => controller.abort(), 6_500);
 
     try {
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {

@@ -19,6 +19,18 @@ function cleanComment(value: unknown) {
   return typeof value === "string" ? value.trim().slice(0, 1000) : "";
 }
 
+async function withTimeout<T>(promise: PromiseLike<T>, ms: number = 3000): Promise<T> {
+  let timeoutId: NodeJS.Timeout | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error("Timeout"));
+    }, ms);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timeoutId) clearTimeout(timeoutId);
+  });
+}
+
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   let body: unknown;
@@ -78,11 +90,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const selectFields = "id, guest_session_id" + "_hash, report_access_token" + "_hash";
 
   // Fetch the report's hashes from the database explicitly
-  const { data: reportRow, error: reportError } = await supabase
-    .from("reports")
-    .select(selectFields)
-    .eq("id", id)
-    .maybeSingle();
+  const { data: reportRow, error: reportError } = await withTimeout(
+    supabase
+      .from("reports")
+      .select(selectFields)
+      .eq("id", id)
+      .maybeSingle(),
+    3000
+  ).catch((err) => {
+    return { data: null, error: { code: "TIMEOUT", message: err.message } };
+  });
 
   if (reportError) {
     console.warn("NaLI feedback report look up error", {
@@ -136,11 +153,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     );
   }
 
-  const { error } = await supabase.from("report_feedback").insert({
-    comment: cleanComment(input.comment) || null,
-    ["guest_session_id" + "_hash"]: finalGuestSessionIdHash || null,
-    rating,
-    report_id: id,
+  const { error } = await withTimeout(
+    supabase.from("report_feedback").insert({
+      comment: cleanComment(input.comment) || null,
+      ["guest_session_id" + "_hash"]: finalGuestSessionIdHash || null,
+      rating,
+      report_id: id,
+    }),
+    3000
+  ).catch((err) => {
+    return { error: { code: "TIMEOUT", message: err.message } };
   });
 
   if (error) {
