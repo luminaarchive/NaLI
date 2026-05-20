@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { NaLIMark } from "@/components/ui/NaLIIconTile";
+import Image from "next/image";
 
 const links = [
   { href: "/learn-report", label: "Learn & Report" },
@@ -52,7 +52,15 @@ export function CodexNav() {
             href="/"
             onClick={() => setMobileOpen(false)}
           >
-            <NaLIMark className="h-5 w-5 md:h-6 md:w-6" gradientId="nali-nav-mark-gradient" />
+            <div className="relative h-5 w-5 md:h-6 md:w-6 overflow-hidden rounded-md">
+              <Image
+                src="/images/nali-logo-mark.png"
+                alt="NaLI"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
             <span className="text-[16px] font-semibold tracking-normal md:text-[18px]">
               NaLI
             </span>

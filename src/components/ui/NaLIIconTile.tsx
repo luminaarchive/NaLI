@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 interface NaLIMarkProps {
   size?: number;
   className?: string;
@@ -94,9 +96,13 @@ export function NaLIIconTile() {
             "radial-gradient(circle at 28% 78%, rgba(16,185,129,0.16), transparent 38%), radial-gradient(circle at 78% 20%, rgba(124,58,237,0.14), transparent 42%)",
         }}
       />
-      <NaLIMark
-        className="relative h-[42px] w-[42px] md:h-12 md:w-12"
-        gradientId="nali-hero-mark-gradient"
+      <Image
+        src="/images/nali-logo-mark.png"
+        alt="NaLI"
+        fill
+        className="object-cover p-1.5"
+        sizes="80px"
+        unoptimized
       />
     </div>
   );

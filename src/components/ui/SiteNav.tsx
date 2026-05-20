@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Menu, X } from "lucide-react";
+import Image from "next/image";
 
 const links = [
   { href: "/learn-report", label: "Learn & Report" },
@@ -18,8 +19,17 @@ export function SiteNav() {
     <>
       <header className="fixed top-0 right-0 left-0 z-50 border-b border-white/[0.06] bg-[#09090b]/60 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-          {/* Logo — text only, no image */}
-          <Link className="flex items-center gap-1.5" href="/">
+          {/* Logo with image */}
+          <Link className="flex items-center gap-2" href="/">
+            <div className="relative h-5 w-5 overflow-hidden rounded-md">
+              <Image
+                src="/images/nali-logo-mark.png"
+                alt="NaLI"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
             <span className="text-[15px] font-semibold tracking-tight text-white">NaLI</span>
           </Link>
 
