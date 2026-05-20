@@ -8,8 +8,11 @@ export async function proxy(request: NextRequest) {
     },
   });
 
+  const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://dummy.supabase.co";
+  const cleanedUrl = rawUrl.trim().replace(/\/rest\/v1\/?$/, "");
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://dummy.supabase.co",
+    cleanedUrl,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "dummy",
     {
       cookies: {
