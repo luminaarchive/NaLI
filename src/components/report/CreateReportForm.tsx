@@ -87,17 +87,15 @@ export function CreateReportForm() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const mode = params.get("mode");
+    const queryText = params.get("q");
+    const queryTemplate = params.get("template");
     const stored = window.localStorage.getItem("nali-create-report-prefill");
+
+    let storedPrefill: Partial<FormState> | null = null;
 
     if (stored) {
       try {
-        const parsed = JSON.parse(stored) as Partial<FormState>;
-        setForm((current) => ({
-          ...current,
-          mainText: parsed.mainText ?? current.mainText,
-          mode: parsed.mode === "start_from_zero" ? "start_from_zero" : current.mode,
-          reportTemplate: parsed.reportTemplate ?? current.reportTemplate,
-        }));
+        storedPrefill = JSON.parse(stored) as Partial<FormState>;
       } catch {
         // Ignore invalid local prefill data.
       } finally {
@@ -105,9 +103,17 @@ export function CreateReportForm() {
       }
     }
 
-    if (mode === "start_from_zero" || mode === "draft_from_materials") {
-      setForm((current) => ({ ...current, mode }));
-    }
+    setForm((current) => ({
+      ...current,
+      mainText: queryText ?? storedPrefill?.mainText ?? current.mainText,
+      mode:
+        mode === "start_from_zero" || mode === "draft_from_materials"
+          ? mode
+          : storedPrefill?.mode === "start_from_zero" || storedPrefill?.mode === "draft_from_materials"
+            ? storedPrefill.mode
+            : current.mode,
+      reportTemplate: queryTemplate ?? storedPrefill?.reportTemplate ?? current.reportTemplate,
+    }));
   }, []);
 
   useEffect(() => {
@@ -324,18 +330,20 @@ export function CreateReportForm() {
   const uploadDisabled = !isDraft || !uploadConfigured || isSubmitting;
   const uploadStatusText =
     uploadState === "preparing"
-      ? "Menyiapkan URL upload..."
+      ? "Menyiapkan upload PDF..."
       : uploadState === "uploading"
-        ? "Mengunggah langsung ke Supabase Storage..."
+        ? "Mengunggah PDF..."
         : uploadState === "verifying"
           ? "Memeriksa metadata dan integritas PDF..."
           : selectedPdf
             ? selectedPdf.name
-            : "Belum ada PDF dipilih.";
+            : uploadConfigured
+              ? "Upload PDF opsional · maksimal 10MB"
+              : "Upload PDF belum aktif di environment ini.";
 
   return (
     <form className="safe-bottom" onSubmit={handleSubmit}>
-      <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-3 shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-4">
+      <section className="rounded-lg border border-[#DDD5C7] bg-[#FCFAF4] p-3 shadow-[0_20px_60px_rgba(17,24,20,0.1)] sm:p-4">
         <div>
           <div className="grid grid-cols-2 gap-2 sm:gap-3">
             <ModeButton
@@ -358,45 +366,45 @@ export function CreateReportForm() {
           </div>
 
           <label className="mt-3 block">
-            <span className="mb-1 block text-sm font-semibold text-white/80">
+            <span className="mb-1 block text-sm font-semibold text-[#111814]">
               {isDraft ? "Bahan utama" : "Topik atau tugas awal"}
             </span>
             <textarea
-              className="command-input min-h-[124px] p-4 text-base leading-7 sm:min-h-[240px]"
+              className="report-command-input min-h-[124px] p-4 text-base leading-7 sm:min-h-[200px]"
               value={form.mainText}
               onChange={(event) => updateField("mainText", event.target.value)}
               placeholder={
                 isDraft
-                  ? "Tulis catatan, lokasi, atau sumber yang ingin disusun...\n\nContoh: Saya mengamati erosi di Banjir Kanal Semarang. Tebing sungai terlihat terkikis, air cukup deras, dan ada bagian tanah longsor kecil di sisi kanan sungai."
-                  : "Tulis topik atau tugas yang ingin kamu mulai...\n\nContoh: Aku mau bikin laporan observasi lingkungan tentang sungai, tapi belum punya catatan."
+                  ? "Saya mengamati erosi di Banjir Kanal Semarang. Tebing sungai terlihat terkikis dan air cukup deras..."
+                  : "Aku mau bikin laporan observasi lingkungan tentang sungai, tapi belum punya catatan."
               }
             />
           </label>
 
-          <label className="mt-3 flex gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2 sm:p-3">
+          <label className="mt-3 flex gap-3 rounded-lg border border-[#DDD5C7] bg-white/70 p-3">
             <input
               checked={form.integrityConsent}
-              className="mt-1 h-4 w-4 accent-indigo-500"
+              className="mt-1 h-4 w-4 accent-[#173D2B]"
               type="checkbox"
               onChange={(event) => updateField("integrityConsent", event.target.checked)}
             />
-            <span className="text-sm leading-6 text-white/50">
-              Saya paham output NaLI adalah draft/panduan berbasis bahan, bukan karya final.
+            <span className="text-sm leading-6 text-[#5F6B62]">
+              Saya paham output NaLI adalah draf/panduan berbasis bahan, bukan karya final.
             </span>
           </label>
 
           <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-end">
             <label className="block">
-              <span className="sr-only text-xs font-semibold uppercase tracking-[0.08em] text-white/40 sm:not-sr-only sm:mb-2 sm:block">
+              <span className="sr-only text-xs font-semibold uppercase tracking-[0.08em] text-[#5F6B62] sm:not-sr-only sm:mb-2 sm:block">
                 Template
               </span>
               <select
-                className="field-input"
+                className="report-field-input"
                 value={form.reportTemplate}
                 onChange={(event) => updateField("reportTemplate", event.target.value)}
               >
                 {reportTemplates.map((template) => (
-                  <option key={template} value={template} className="bg-[#18181b] text-white">
+                  <option key={template} value={template} className="bg-white text-[#111814]">
                     {template}
                   </option>
                 ))}
@@ -404,7 +412,7 @@ export function CreateReportForm() {
             </label>
 
             <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#09090b] transition-all hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:pointer-events-none disabled:opacity-60 sm:min-h-12"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#173D2B] px-5 text-sm font-semibold text-white transition-all hover:bg-[#102F20] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6F8057] disabled:pointer-events-none disabled:opacity-60 sm:min-h-12"
               disabled={isSubmitting}
               type="submit"
             >
@@ -415,26 +423,30 @@ export function CreateReportForm() {
               ) : (
                 <Compass className="h-4 w-4" aria-hidden="true" />
               )}
-              {isDraft ? "Buat Draf Berbasis Bahan" : "Buat Panduan Mulai"}
+              {isDraft ? "Buat Draf" : "Buat Panduan"}
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
 
-          <p className="mt-3 text-sm text-white/40">
-            {isDraft ? `${materialCount} bahan terisi.` : "Panduan awal, bukan draft final."} Evidence table,
-            uncertainty note, dan human review tetap disertakan.
+          <p className="mt-3 text-sm leading-6 text-[#5F6B62]">
+            {isDraft && materialCount === 0
+              ? "Belum ada bahan. Tulis catatan, topik, lokasi, atau sumber untuk mulai."
+              : isDraft
+                ? `${materialCount} bahan siap disusun.`
+                : "Panduan awal — belum menjadi draft laporan berbasis bukti."}{" "}
+            Evidence table, uncertainty note, dan review manusia tetap disertakan.
           </p>
 
-          <details className="group mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02]">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-white/80">
+          <details className="group mt-4 rounded-lg border border-[#DDD5C7] bg-white/60">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-[#111814]">
               Tambahkan detail opsional
-              <ChevronDown className="h-4 w-4 text-white/40 transition group-open:rotate-180" aria-hidden="true" />
+              <ChevronDown className="h-4 w-4 text-[#5F6B62] transition group-open:rotate-180" aria-hidden="true" />
             </summary>
-            <div className="grid gap-4 border-t border-white/[0.06] p-4 lg:grid-cols-2">
+            <div className="grid gap-4 border-t border-[#DDD5C7] p-4 lg:grid-cols-2">
               <label className="block">
-                <span className="text-sm font-semibold text-white/80">Judul laporan</span>
+                <span className="text-sm font-semibold text-[#111814]">Judul</span>
                 <input
-                  className="field-input mt-2"
+                  className="report-field-input mt-2"
                   placeholder="Boleh kosong, NaLI akan membuat judul aman"
                   value={form.title}
                   onChange={(event) => updateField("title", event.target.value)}
@@ -442,14 +454,14 @@ export function CreateReportForm() {
               </label>
 
               <label className="block">
-                <span className="text-sm font-semibold text-white/80">Peran pengguna</span>
+                <span className="text-sm font-semibold text-[#111814]">Peran</span>
                 <select
-                  className="field-input mt-2"
+                  className="report-field-input mt-2"
                   value={form.userRole}
                   onChange={(event) => updateField("userRole", event.target.value)}
                 >
                   {userRoles.map((role) => (
-                    <option key={role} value={role} className="bg-[#18181b] text-white">
+                    <option key={role} value={role} className="bg-white text-[#111814]">
                       {role}
                     </option>
                   ))}
@@ -457,12 +469,12 @@ export function CreateReportForm() {
               </label>
 
               <label className="block lg:col-span-2">
-                <span className="flex items-center gap-2 text-sm font-semibold text-white/80">
-                  <LinkIcon className="h-4 w-4 text-indigo-400/60" aria-hidden="true" />
+                <span className="flex items-center gap-2 text-sm font-semibold text-[#111814]">
+                  <LinkIcon className="h-4 w-4 text-[#6F8057]" aria-hidden="true" />
                   URL sumber
                 </span>
                 <textarea
-                  className="field-input mt-2 min-h-24 resize-y"
+                  className="report-field-input mt-2 min-h-24 resize-y"
                   placeholder="Satu URL per baris. URL akan dicatat sebagai bahan pengguna dan belum diverifikasi otomatis."
                   value={form.sourceUrls}
                   onChange={(event) => updateField("sourceUrls", event.target.value)}
@@ -470,12 +482,12 @@ export function CreateReportForm() {
               </label>
 
               <label className="block">
-                <span className="flex items-center gap-2 text-sm font-semibold text-white/80">
-                  <MapPin className="h-4 w-4 text-indigo-400/60" aria-hidden="true" />
-                  Lokasi opsional
+                <span className="flex items-center gap-2 text-sm font-semibold text-[#111814]">
+                  <MapPin className="h-4 w-4 text-[#6F8057]" aria-hidden="true" />
+                  Lokasi
                 </span>
                 <input
-                  className="field-input mt-2"
+                  className="report-field-input mt-2"
                   placeholder="Contoh: Banjir Kanal Semarang"
                   value={form.location}
                   onChange={(event) => updateField("location", event.target.value)}
@@ -483,12 +495,12 @@ export function CreateReportForm() {
               </label>
 
               <label className="block">
-                <span className="flex items-center gap-2 text-sm font-semibold text-white/80">
-                  <Paperclip className="h-4 w-4 text-indigo-400/60" aria-hidden="true" />
+                <span className="flex items-center gap-2 text-sm font-semibold text-[#111814]">
+                  <Paperclip className="h-4 w-4 text-[#6F8057]" aria-hidden="true" />
                   Keterangan file/lampiran
                 </span>
                 <input
-                  className="field-input mt-2"
+                  className="report-field-input mt-2"
                   placeholder="Upload belum aktif. Tulis ringkasan file jika perlu."
                   value={form.fileDescription}
                   onChange={(event) => updateField("fileDescription", event.target.value)}
@@ -496,23 +508,23 @@ export function CreateReportForm() {
               </label>
 
               <div className="lg:col-span-2">
-                <div className="flex flex-col gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 rounded-lg border border-[#DDD5C7] bg-[#FCFAF4] p-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="flex items-center gap-2 text-sm font-semibold text-white/80">
-                      <UploadCloud className="h-4 w-4 text-indigo-400/60" aria-hidden="true" />
+                    <p className="flex items-center gap-2 text-sm font-semibold text-[#111814]">
+                      <UploadCloud className="h-4 w-4 text-[#6F8057]" aria-hidden="true" />
                       Upload PDF opsional
                     </p>
-                    <p className="mt-1 text-xs leading-5 text-white/40">
-                      Maksimal 10MB. Upload belum aktif jika Supabase Storage belum dikonfigurasi.
+                    <p className="mt-1 text-xs leading-5 text-[#5F6B62]">
+                      Upload PDF opsional · maksimal 10MB.
                     </p>
-                    <p className="mt-1 text-xs leading-5 text-white/30">{uploadStatusText}</p>
+                    <p className="mt-1 text-xs leading-5 text-[#7A520F]">{uploadStatusText}</p>
                   </div>
                   <label
                     className={cn(
-                      "inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-full border px-4 text-sm font-semibold transition",
+                      "inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-md border px-4 text-sm font-semibold transition",
                       uploadDisabled
-                        ? "cursor-not-allowed border-white/[0.05] text-white/30"
-                        : "border-white/[0.12] text-white/75 hover:bg-white/[0.06]",
+                        ? "cursor-not-allowed border-[#DDD5C7] text-[#9D9482]"
+                        : "border-[#6F8057] text-[#173D2B] hover:bg-white",
                     )}
                   >
                     <UploadCloud className="h-4 w-4" aria-hidden="true" />
@@ -533,16 +545,16 @@ export function CreateReportForm() {
       </section>
 
       {error || notice ? (
-        <section className="mt-4 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 shadow-lg backdrop-blur-xl">
+        <section className="mt-4 rounded-lg border border-[#DDD5C7] bg-white/75 p-4 shadow-lg">
           {error ? (
-            <div className="flex gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm leading-6 text-red-300">
+            <div className="flex gap-3 rounded-lg border border-red-500/20 bg-red-50 p-3 text-sm leading-6 text-red-700">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
               <p>{error}</p>
             </div>
           ) : null}
 
           {notice ? (
-            <div className="flex gap-3 rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm leading-6 text-emerald-300">
+            <div className="flex gap-3 rounded-lg border border-emerald-500/20 bg-emerald-50 p-3 text-sm leading-6 text-emerald-800">
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
               <p>{notice}</p>
             </div>
@@ -569,19 +581,19 @@ function ModeButton({
   return (
     <button
       className={cn(
-        "rounded-xl border p-2 text-left transition-all duration-200 sm:p-4",
+        "rounded-lg border p-2 text-left transition-all duration-200 sm:p-4",
         active
-          ? "border-white/[0.15] bg-white/[0.08] text-white"
-          : "border-white/[0.06] bg-white/[0.02] text-white/50 hover:bg-white/[0.05]",
+          ? "border-[#6F8057] bg-[#E8EFE4] text-[#173D2B]"
+          : "border-[#DDD5C7] bg-white/60 text-[#5F6B62] hover:bg-white hover:text-[#111814]",
       )}
       type="button"
       onClick={onClick}
     >
       <span className="flex items-center gap-2 text-sm font-semibold">
-        <Icon className="h-4 w-4 text-indigo-400/60" aria-hidden="true" />
+        <Icon className="h-4 w-4 text-[#6F8057]" aria-hidden="true" />
         {label}
       </span>
-      <span className="mt-2 hidden text-xs leading-5 text-white/30 sm:block">{description}</span>
+      <span className="mt-2 hidden text-xs leading-5 text-[#5F6B62] sm:block">{description}</span>
     </button>
   );
 }

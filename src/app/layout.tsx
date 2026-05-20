@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   applicationName: "NaLI",
   title: {
-    default: "NaLI - Evidence-Based Reports and Field Intelligence",
+    default: "NaLI — Asisten Laporan Berbasis Bukti",
     template: "%s | NaLI",
   },
   description: siteDescription,
@@ -18,27 +18,27 @@ export const metadata: Metadata = {
   },
   category: "conservation technology",
   openGraph: {
-    title: "NaLI - Evidence-Based Reports and Field Intelligence",
+    title: "NaLI — Asisten Laporan Berbasis Bukti",
     description: siteDescription,
     url: siteUrl,
     siteName: "NaLI",
     images: [
       {
-        url: "/icon.svg",
+        url: "/icon.png",
         width: 512,
-        height: 512,
-        alt: "NaLI wildlife field intelligence logo",
+        height: 388,
+        alt: "Logo NaLI",
       },
     ],
-    locale: "en_US",
-    alternateLocale: ["id_ID"],
+    locale: "id_ID",
+    alternateLocale: ["en_US"],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "NaLI - Evidence-Based Reports and Field Intelligence",
+    title: "NaLI — Asisten Laporan Berbasis Bukti",
     description: siteDescription,
-    images: ["/icon.svg"],
+    images: ["/icon.png"],
   },
   robots: {
     index: true,
@@ -64,8 +64,8 @@ export default async function RootLayout({
     <html data-scroll-behavior="smooth" lang={language}>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <meta name="theme-color" content="#09090b" />
+        <link rel="icon" href="/icon.png" type="image/png" />
+        <meta name="theme-color" content="#F7F3EA" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>

@@ -1,213 +1,136 @@
-import {
-  ArrowRight,
-  CheckCircle2,
-  ClipboardList,
-  Compass,
-  FileText,
-  ShieldCheck,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
+import { ArrowRight, CheckCircle2, ClipboardList, Compass, ShieldCheck, type LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { ButtonLink } from "@/components/ui/Button";
 import { SiteFooter } from "@/components/ui/SiteNav";
 import { LearnReportShell } from "@/components/ui/LearnReportShell";
 
-const users = ["siswa SMP/SMA", "mahasiswa", "guru/dosen muda", "pekerja lapangan", "NGO/CSR junior", "peneliti junior", "komunitas alam"];
+const users = ["Siswa", "Mahasiswa", "Guru", "Komunitas alam", "Staf lapangan", "NGO/CSR junior"];
 
-const templates = [
-  "Laporan Praktikum Biologi",
-  "Laporan Observasi Lingkungan",
-  "Laporan Kegiatan / KKN Lingkungan",
-];
-
-const outputs = [
-  "laporan praktikum",
-  "laporan observasi lingkungan",
-  "laporan field trip",
-  "laporan kegiatan proyek",
-  "panduan observasi awal",
-  "evidence checklist",
-  "draft berbasis bahan",
+const helps = [
+  "Laporan observasi",
+  "Laporan praktikum",
+  "Field trip",
+  "KKN lingkungan",
+  "Survei flora/fauna dasar",
+  "Panduan mulai",
 ];
 
 export default function LearnReportPage() {
   return (
     <LearnReportShell>
       <main className="relative z-10">
-        {/* Hero */}
-        <section className="px-4 pt-28 pb-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[800px] text-center">
-            <Badge tone="green">Public Mode</Badge>
-            <h1 className="mt-5 text-4xl font-bold tracking-tight text-white sm:text-5xl">
+        <section className="px-4 pt-28 pb-14 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[860px] text-center">
+            <Badge tone="green">NaLI Learn & Report</Badge>
+            <h1 className="mt-5 text-4xl font-semibold tracking-normal text-[#111814] sm:text-5xl">
               NaLI Learn & Report
             </h1>
-            <p className="mx-auto mt-5 max-w-[560px] text-base leading-7 text-white/50 sm:text-lg">
-              Build evidence-based reports from your materials, or get guided when starting from scratch.
+            <p className="mx-auto mt-5 max-w-[640px] text-base leading-7 text-[#5F6B62] sm:text-lg">
+              Untuk menyusun laporan sains, lingkungan, praktikum, field trip, dan observasi dari bahan yang kamu punya.
             </p>
-            <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <PathCard
-                cta="Build Draft"
-                href="/create-report"
-                icon={ClipboardList}
-                title="I have materials"
-                text="Enter notes, URLs, locations, lab results, or field notes. NaLI builds a draft from your materials."
-              />
-              <PathCard
-                cta="Start from Scratch"
-                href="/create-report?mode=start_from_zero"
-                icon={Compass}
-                title="Starting from scratch"
-                text="NaLI creates an observation guide, evidence checklist, source search checklist, and initial outline."
-              />
+            <p className="mx-auto mt-2 max-w-[640px] text-sm leading-6 text-[#5F6B62]">
+              Kalau belum punya bahan, NaLI membantu membuat panduan mulai.
+            </p>
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+              <ButtonLink href="/create-report">
+                Mulai Laporan
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </ButtonLink>
+              <ButtonLink href="/create-report?mode=start_from_zero" variant="glass">
+                Buat Panduan
+              </ButtonLink>
             </div>
           </div>
         </section>
 
-        {/* Report templates */}
-        <section className="border-t border-white/[0.06] px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[800px]">
-            <p className="text-center text-xs font-medium tracking-widest text-white/30 uppercase">
-              Report Templates
-            </p>
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              {templates.map((t) => (
-                <div
-                  key={t}
-                  className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 text-center backdrop-blur-sm"
-                >
-                  <FileText className="mx-auto h-5 w-5 text-indigo-400/60" aria-hidden="true" />
-                  <p className="mt-3 text-sm font-semibold text-white/80">{t}</p>
-                </div>
-              ))}
-            </div>
+        <ShortSection title="Untuk siapa">
+          <div className="flex flex-wrap gap-2">
+            {users.map((user) => (
+              <Badge className="min-h-9 px-4 text-sm" key={user} tone="glass">
+                {user}
+              </Badge>
+            ))}
           </div>
-        </section>
+        </ShortSection>
 
-        {/* Workflow */}
-        <section className="px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[800px]">
-            <p className="text-center text-xs font-medium tracking-widest text-white/30 uppercase">
-              Workflow
-            </p>
-            <h2 className="mt-4 text-center text-2xl font-semibold text-white sm:text-3xl">
-              From notes to structured report
-            </h2>
-            <div className="mt-10 grid gap-6 md:grid-cols-3">
-              {[
-                ["Bring notes, sources, files, or context", "Upload your raw materials or start with a topic."],
-                ["NaLI structures the evidence", "Evidence tables, uncertainty notes, and structured sections."],
-                ["Review, verify, and export", "Check the draft, mark confidence, then export."],
-              ].map(([title, text], i) => (
-                <div key={title} className="text-center">
-                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-sm font-semibold text-white/60">
-                    {i + 1}
-                  </div>
-                  <h3 className="mt-4 text-sm font-semibold text-white">{title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-white/40">{text}</p>
-                </div>
-              ))}
-            </div>
+        <ShortSection title="Bisa membantu apa">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {helps.map((item) => (
+              <p className="flex gap-2 rounded-lg border border-[#DDD5C7] bg-white p-4 text-sm font-semibold leading-6 text-[#5F6B62]" key={item}>
+                <ClipboardList className="mt-0.5 h-4 w-4 shrink-0 text-[#6F8057]" aria-hidden="true" />
+                <span>{item}</span>
+              </p>
+            ))}
           </div>
-        </section>
+        </ShortSection>
 
-        {/* NaLI Energy & Export Gate */}
-        <section className="px-4 py-12 sm:px-6 lg:px-8">
-          <div className="mx-auto flex max-w-[600px] flex-wrap justify-center gap-3">
-            <Badge tone="cyan" className="px-4 py-2 text-sm">
-              NaLI Energy
-            </Badge>
-            <Badge tone="amber" className="px-4 py-2 text-sm">
-              Export Gate
-            </Badge>
+        <ShortSection title="Dua cara mulai">
+          <div className="grid gap-4 md:grid-cols-2">
+            <PathCard
+              cta="Buat Draf"
+              href="/create-report?mode=draft_from_materials"
+              icon={ClipboardList}
+              text="Tempel catatan, hasil praktikum, lokasi, URL, atau ringkasan file."
+              title="Saya sudah punya bahan"
+            />
+            <PathCard
+              cta="Buat Panduan"
+              href="/create-report?mode=start_from_zero"
+              icon={Compass}
+              text="NaLI bantu membuat outline, pertanyaan observasi, dan checklist bukti."
+              title="Saya belum punya bahan"
+            />
           </div>
-        </section>
+        </ShortSection>
 
-        {/* Who it's for */}
-        <section className="border-t border-white/[0.06] px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[800px] text-center">
-            <p className="text-xs font-medium tracking-widest text-white/30 uppercase">
-              Built for
-            </p>
-            <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
-              Users who need structured, reviewable reports.
-            </h2>
-            <div className="mt-8 flex flex-wrap justify-center gap-2">
-              {users.map((user) => (
-                <Badge className="min-h-9 px-4 text-sm" key={user} tone="glass">
-                  {user}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Outputs */}
-        <section className="border-t border-white/[0.06] px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1000px]">
-            <p className="text-center text-xs font-medium tracking-widest text-white/30 uppercase">
-              Outputs
-            </p>
-            <h2 className="mt-3 text-center text-2xl font-semibold text-white sm:text-3xl">
-              What NaLI can build without exceeding the evidence.
-            </h2>
-            <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {outputs.map((item) => (
-                <div
-                  className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 backdrop-blur-sm"
-                  key={item}
-                >
-                  <FileText className="h-5 w-5 text-white/30" aria-hidden="true" />
-                  <p className="mt-3 text-sm font-semibold leading-6 text-white/70">{item}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Academic Integrity */}
-        <section className="px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[800px]">
-            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-8 backdrop-blur-xl">
-              <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-                <div>
-                  <ShieldCheck className="h-6 w-6 text-indigo-400/60" aria-hidden="true" />
-                  <h2 className="mt-4 text-2xl font-semibold text-white">
-                    Academic integrity stays upfront.
-                  </h2>
-                  <p className="mt-3 text-sm leading-7 text-white/40">
-                    NaLI creates evidence-based drafts. Users remain responsible for final review,
-                    verification, and submission.
+        <section className="bg-[#07100B] px-4 py-14 text-white sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[900px]">
+            <div className="grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">
+              <div>
+                <ShieldCheck className="h-6 w-6 text-[#B9CBAA]" aria-hidden="true" />
+                <h2 className="mt-4 text-2xl font-semibold">Batasan integritas</h2>
+                <p className="mt-3 text-sm leading-7 text-white/70">
+                  NaLI tidak membuat data palsu, tidak membuat sitasi palsu, dan tidak menggantikan tanggung jawab akademik.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {["Bukan karya final", "Tidak membuat sitasi palsu", "Tidak membuat data palsu", "Review manusia wajib"].map((item) => (
+                  <p className="flex gap-2 rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm leading-6 text-white/80" key={item}>
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#B9CBAA]" aria-hidden="true" />
+                    <span>{item}</span>
                   </p>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {["Not final work", "No fake citations", "No fabricated data", "Human review required"].map(
-                    (item) => (
-                      <p
-                        className="flex gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-sm font-semibold leading-6 text-white/70"
-                        key={item}
-                      >
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400/60" aria-hidden="true" />
-                        <span>{item}</span>
-                      </p>
-                    ),
-                  )}
-                </div>
+                ))}
               </div>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <ButtonLink href="/create-report">
-                  Build Draft
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </ButtonLink>
-                <ButtonLink href="/create-report?mode=start_from_zero" variant="glass">
-                  Start from Scratch
-                </ButtonLink>
-              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="px-4 py-14 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[720px] text-center">
+            <h2 className="text-3xl font-semibold text-[#111814]">Mulai dari bahan yang kamu punya.</h2>
+            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+              <ButtonLink href="/create-report">Mulai Laporan</ButtonLink>
+              <ButtonLink href="/create-report?mode=start_from_zero" variant="glass">
+                Buat Panduan
+              </ButtonLink>
             </div>
           </div>
         </section>
       </main>
       <SiteFooter />
     </LearnReportShell>
+  );
+}
+
+function ShortSection({ children, title }: { children: ReactNode; title: string }) {
+  return (
+    <section className="border-t border-[#DDD5C7] px-4 py-14 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[900px]">
+        <h2 className="mb-6 text-2xl font-semibold text-[#111814]">{title}</h2>
+        {children}
+      </div>
+    </section>
   );
 }
 
@@ -225,16 +148,16 @@ function PathCard({
   title: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 text-left backdrop-blur-sm transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.05]">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.04]">
-        <Icon className="h-5 w-5 text-white/60" aria-hidden="true" />
+    <article className="rounded-lg border border-[#DDD5C7] bg-white p-5">
+      <div className="flex h-10 w-10 items-center justify-center rounded-md border border-[#DDD5C7] bg-[#FCFAF4]">
+        <Icon className="h-5 w-5 text-[#6F8057]" aria-hidden="true" />
       </div>
-      <h2 className="mt-4 text-xl font-semibold text-white">{title}</h2>
-      <p className="mt-3 text-sm leading-7 text-white/40">{text}</p>
+      <h3 className="mt-4 text-xl font-semibold text-[#111814]">{title}</h3>
+      <p className="mt-3 text-sm leading-7 text-[#5F6B62]">{text}</p>
       <ButtonLink className="mt-5" href={href}>
         {cta}
         <ArrowRight className="h-4 w-4" aria-hidden="true" />
       </ButtonLink>
-    </div>
+    </article>
   );
 }

@@ -68,10 +68,10 @@ interface ButtonLinkProps {
 }
 
 export function ButtonLink({ href, variant = "primary", children, className }: ButtonLinkProps) {
-  const base = "inline-flex h-11 items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold transition-all duration-200";
+  const base = "inline-flex h-11 items-center justify-center gap-2 rounded-md px-6 text-sm font-semibold transition-all duration-200";
   const variants = {
-    primary: "bg-indigo-500 text-white hover:bg-indigo-400 shadow-lg shadow-indigo-500/25",
-    glass: "border border-white/[0.12] bg-white/[0.06] text-white/80 backdrop-blur-sm hover:bg-white/[0.1] hover:text-white",
+    primary: "bg-[#173D2B] text-white hover:bg-[#102F20] shadow-[0_14px_30px_rgba(23,61,43,0.16)]",
+    glass: "border border-[#DDD5C7] bg-white/70 text-[#173D2B] hover:bg-white hover:text-[#111814]",
   };
   return (
     <Link href={href} className={cn(base, variants[variant], className)}>
@@ -79,4 +79,3 @@ export function ButtonLink({ href, variant = "primary", children, className }: B
     </Link>
   );
 }
-
