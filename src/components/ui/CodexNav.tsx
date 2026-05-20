@@ -40,21 +40,20 @@ export function CodexNav() {
       <header
         className="fixed top-0 right-0 left-0 z-50 transition-all duration-500"
         style={{
-          backgroundColor: scrolled ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.08)",
+          backgroundColor: scrolled ? "rgba(7,9,14,0.88)" : "rgba(255,255,255,0.04)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
           borderBottom: scrolled
-            ? "1px solid rgba(15,23,42,0.08)"
-            : "1px solid rgba(255,255,255,0.06)",
-          boxShadow: scrolled ? "0 1px 3px rgba(0,0,0,0.04)" : "none",
+            ? "1px solid rgba(255,255,255,0.08)"
+            : "1px solid rgba(255,255,255,0.05)",
+          boxShadow: scrolled ? "0 4px 30px rgba(0,0,0,0.25)" : "none",
         }}
       >
         <div className="mx-auto flex h-[56px] max-w-[1200px] items-center justify-between px-5 sm:px-6 lg:px-8">
           {/* Wordmark */}
           <Link
             href="/"
-            className="text-[15px] font-semibold tracking-[-0.01em] transition-colors duration-500"
-            style={{ color: scrolled ? "#0f172a" : "rgba(255,255,255,0.95)" }}
+            className="text-[15px] font-semibold tracking-[-0.01em] text-white transition-colors duration-500"
           >
             NaLI
           </Link>
@@ -65,16 +64,7 @@ export function CodexNav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-[13px] font-medium transition-colors duration-500"
-                style={{
-                  color: scrolled ? "#64748b" : "rgba(255,255,255,0.65)",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.color = scrolled ? "#0f172a" : "rgba(255,255,255,0.95)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = scrolled ? "#64748b" : "rgba(255,255,255,0.65)")
-                }
+                className="text-[13px] font-medium text-white/65 transition-colors duration-300 hover:text-white"
               >
                 {link.label}
               </Link>
@@ -85,11 +75,11 @@ export function CodexNav() {
           <div className="hidden items-center gap-3 md:flex">
             <Link
               href="/create-report"
-              className="inline-flex h-[34px] items-center gap-1.5 rounded-full px-4 text-[13px] font-semibold transition-all duration-500"
+              className="inline-flex h-[34px] items-center gap-1.5 rounded-full px-4 text-[13px] font-semibold transition-all duration-300"
               style={{
-                background: scrolled ? "#0f172a" : "rgba(255,255,255,0.12)",
-                color: scrolled ? "#ffffff" : "rgba(255,255,255,0.9)",
-                border: scrolled ? "1px solid #0f172a" : "1px solid rgba(255,255,255,0.15)",
+                background: scrolled ? "#ffffff" : "rgba(255,255,255,0.1)",
+                color: scrolled ? "#07090e" : "rgba(255,255,255,0.9)",
+                border: scrolled ? "1px solid #ffffff" : "1px solid rgba(255,255,255,0.15)",
               }}
             >
               Start
@@ -99,8 +89,7 @@ export function CodexNav() {
 
           {/* Mobile menu toggle */}
           <button
-            className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors duration-500 md:hidden"
-            style={{ color: scrolled ? "#0f172a" : "rgba(255,255,255,0.8)" }}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-white/80 transition-colors duration-500 md:hidden"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >

@@ -821,6 +821,59 @@ html {
       transform: rotate(-5deg) scale(0.9);
     }
   }
+
+  --animate-fluid-1: fluid-movement-1 14s infinite alternate ease-in-out;
+  --animate-fluid-2: fluid-movement-2 18s infinite alternate ease-in-out;
+  --animate-fluid-3: fluid-movement-3 16s infinite alternate ease-in-out;
+  --animate-fluid-breathe: fluid-breathe 20s infinite alternate ease-in-out;
+
+  @keyframes fluid-movement-1 {
+    0%, 100% {
+      transform: translate3d(0, 15%, 0) scale(1);
+      opacity: 0.45;
+    }
+    33% {
+      transform: translate3d(15%, -10%, 0) scale(1.2);
+      opacity: 0.6;
+    }
+    66% {
+      transform: translate3d(-10%, -5%, 0) scale(0.9);
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes fluid-movement-2 {
+    0%, 100% {
+      transform: translate3d(0, 0, 0) scale(1.1);
+      opacity: 0.5;
+    }
+    50% {
+      transform: translate3d(-15%, -20%, 0) scale(0.85);
+      opacity: 0.35;
+    }
+  }
+
+  @keyframes fluid-movement-3 {
+    0%, 100% {
+      transform: translate3d(0, 0, 0) scale(0.9);
+      opacity: 0.25;
+    }
+    50% {
+      transform: translate3d(20%, -10%, 0) scale(1.25);
+      opacity: 0.45;
+    }
+  }
+
+  @keyframes fluid-breathe {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.3;
+    }
+    50% {
+      transform: scale(1.15);
+      opacity: 0.45;
+    }
+  }
 }
 
 :root {

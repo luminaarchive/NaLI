@@ -20,7 +20,13 @@ const evidenceChips = ["Notes", "Source", "File", "Review"];
  */
 export function CodexProductPreview() {
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-[-360px] z-0 flex justify-center px-3 sm:bottom-[-340px] sm:px-4 lg:bottom-[-320px]">
+    <div className="pointer-events-none absolute inset-x-0 bottom-[-270px] z-0 flex justify-center px-3 sm:bottom-[-240px] sm:px-4 lg:bottom-[-220px]">
+      {/* Soft cyan/indigo glow haze behind the card */}
+      <div
+        className="absolute bottom-[200px] left-[50%] h-[350px] w-[min(900px,80vw)] -translate-x-[50%] rounded-full bg-gradient-to-r from-cyan-500/22 via-indigo-500/28 to-purple-500/18 blur-[90px] mix-blend-screen transform-gpu pointer-events-none opacity-90"
+        style={{ willChange: "transform, opacity" }}
+      />
+
       <div
         className="relative h-[420px] w-[min(1280px,calc(100vw-24px))] overflow-hidden rounded-t-[20px] sm:h-[520px] sm:w-[min(1280px,calc(100vw-48px))] sm:rounded-t-[24px]"
         style={{

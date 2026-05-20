@@ -47,7 +47,7 @@ export function ScrollDarkenOverlay() {
       className="pointer-events-none fixed inset-0 z-[1] transform-gpu"
       style={{
         background:
-          "linear-gradient(180deg, transparent 0%, transparent 20%, rgba(15,10,40,0.15) 45%, rgba(15,10,40,0.5) 70%, rgba(15,10,40,0.8) 90%, rgba(15,10,40,0.95) 100%)",
+          "linear-gradient(180deg, transparent 0%, transparent 20%, rgba(7,9,14,0.15) 45%, rgba(7,9,14,0.5) 70%, rgba(7,9,14,0.8) 90%, rgba(7,9,14,0.95) 100%)",
         opacity: 0,
         willChange: "opacity",
       }}
