@@ -18,6 +18,14 @@ Never expose `SUPABASE_SERVICE_ROLE_KEY` in client code.
 Keep `CRON_SECRET=` and `MAINTENANCE_SECRET=` empty until the cleanup route is intentionally activated.
 Keep `NALI_DAILY_ENERGY_LIMIT=` empty until usage logging is intentionally configured.
 
+### Supabase URL Formatting Rules
+
+> [!IMPORTANT]
+> The environment variables `SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_URL` must point to the **base URL only**. Do not append any sub-path such as `/rest/v1`.
+> * **Correct:** `https://wvpplfjrbndzxlgpuicn.supabase.co`
+> * **Wrong:** `https://wvpplfjrbndzxlgpuicn.supabase.co/rest/v1`
+> * **Security Warning:** Never write, document, or commit raw keys (e.g., anon keys, service role keys, or API tokens) in the documentation or code files. Always configure them as Vercel environment variables or local `.env.local` variables.
+
 ## Optional Provider Env
 
 | Env var | Source | Signup/docs URL | Free/paid status | Scope needed | Safe fallback |
