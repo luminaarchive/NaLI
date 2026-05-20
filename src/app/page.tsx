@@ -4,6 +4,7 @@ import { HomepageShell } from "@/components/ui/HomepageShell";
 import { NaLIIconTile } from "@/components/ui/NaLIIconTile";
 import { CodexProductPreview } from "@/components/ui/CodexProductPreview";
 import { CodexFeatureShowcase } from "@/components/ui/CodexFeatureShowcase";
+import { HomeQueryBox } from "@/components/report/HomeQueryBox";
 
 const chips = [
   { label: "Evidence Hash: SHA-256", color: "#10b981" },
@@ -54,6 +55,8 @@ export default function HomePage() {
                 </span>
               ))}
             </div>
+
+            <HomeQueryBox />
 
             <div className="mt-6 flex w-full max-w-[350px] flex-col items-center gap-3 sm:max-w-none sm:flex-row sm:justify-center sm:gap-4">
               <Link

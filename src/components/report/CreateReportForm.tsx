@@ -87,6 +87,7 @@ export function CreateReportForm() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const mode = params.get("mode");
+    const q = params.get("q");
     const stored = window.localStorage.getItem("nali-create-report-prefill");
 
     if (stored) {
@@ -103,6 +104,8 @@ export function CreateReportForm() {
       } finally {
         window.localStorage.removeItem("nali-create-report-prefill");
       }
+    } else if (q) {
+      setForm((current) => ({ ...current, mainText: q }));
     }
 
     if (mode === "start_from_zero" || mode === "draft_from_materials") {
