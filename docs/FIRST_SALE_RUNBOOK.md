@@ -4,11 +4,13 @@ Status date: 2026-05-21.
 
 ## Scope
 
-This runbook is for the first real paid NaLI export during Sprint 0.5.
+This runbook is for the first real paid NaLI export during Sprint 0.6.
 
-Primary June flow: free preview -> one-time paid export -> Midtrans one-time checkout -> Midtrans webhook confirmation -> markdown/PDF export unlock.
+Primary June flow after env activation: free preview -> one-time paid export -> Midtrans one-time checkout -> Midtrans webhook confirmation -> markdown/PDF export unlock.
 
 Manual confirmation is fallback only. Use it only when Midtrans env is missing/unavailable or a payment needs trusted founder/admin recovery. Export must stay locked until the `payments` table has a confirmed successful row.
+
+Current production automatic checkout is not active until Vercel has the required Midtrans env values, production is redeployed, the Midtrans Payment Notification URL is configured, and `npm run smoke:export:prod` passes. Use `docs/MIDTRANS_ENV_SETUP.md` for the secure setup checklist.
 
 Do not use this runbook to change public UI, pricing copy, homepage copy, Field Intelligence copy, or product claims.
 

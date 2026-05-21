@@ -1,6 +1,6 @@
 import { env } from "@/lib/config/env";
 import { getPurgeReadiness } from "@/lib/maintenance/purge";
-import { isMidtransConfigured } from "@/lib/payments/midtrans";
+import { isMidtransConfigured, isMidtransProduction } from "@/lib/payments/midtrans";
 import { getReportUploadReadiness } from "@/lib/reports/uploads";
 import { getCostProtectionReadiness, getCostProtectionStatus } from "@/lib/usage/costProtection";
 
@@ -14,6 +14,7 @@ export type SystemReadiness = {
   fileUploadActive: false;
   maintenanceSecretConfigured: boolean;
   midtransConfigured: boolean;
+  midtransProductionMode: boolean;
   naliLockPrepared: true;
   openRouterConfigured: boolean;
   professionalFieldIntelligence: "positioning_only";
@@ -34,11 +35,12 @@ function hasValue(value: string | undefined) {
 export function getSystemReadiness(): SystemReadiness {
   const supabaseConfigured = Boolean(
     hasValue(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
-      hasValue(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) &&
-      hasValue(process.env.SUPABASE_SERVICE_ROLE_KEY),
+    hasValue(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) &&
+    hasValue(process.env.SUPABASE_SERVICE_ROLE_KEY),
   );
   const openRouterConfigured = hasValue(process.env.OPENROUTER_API_KEY);
   const midtransConfigured = isMidtransConfigured();
+  const midtransProductionMode = isMidtransProduction();
   const upload = getReportUploadReadiness();
   const purge = getPurgeReadiness();
   const costProtection = getCostProtectionReadiness();
@@ -53,6 +55,7 @@ export function getSystemReadiness(): SystemReadiness {
     fileUploadActive: false,
     maintenanceSecretConfigured: purge.maintenanceSecretConfigured,
     midtransConfigured,
+    midtransProductionMode,
     naliLockPrepared: true,
     openRouterConfigured,
     professionalFieldIntelligence: "positioning_only",

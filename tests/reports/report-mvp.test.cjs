@@ -44,6 +44,7 @@ const {
   createMidtransSignature,
   getMidtransSnapEndpoint,
   isMidtransConfigured,
+  isMidtransProduction,
   isSafeMidtransCheckoutUrl,
   isSuccessfulPaymentStatus,
   mapMidtransTransactionStatus,
@@ -800,16 +801,16 @@ test("upload verification is not coupled to the AI report generation route", () 
 });
 
 test("Sprint 0 migration keeps persistence, payments, energy, and rate limits in the expected shape", () => {
-  const sql = fs.readFileSync(
-    path.join(repoRoot, "supabase/migrations/023_nali_zero_sprint0_foundation.sql"),
-    "utf8",
-  );
+  const sql = fs.readFileSync(path.join(repoRoot, "supabase/migrations/023_nali_zero_sprint0_foundation.sql"), "utf8");
   const reportsTable = sql.match(/CREATE TABLE IF NOT EXISTS public\.reports \([\s\S]*?\n\);/)?.[0] ?? "";
   const paymentsTable = sql.match(/CREATE TABLE IF NOT EXISTS public\.payments \([\s\S]*?\n\);/)?.[0] ?? "";
 
   assert.match(reportsTable, /guest_session_id_hash TEXT NOT NULL/);
   assert.match(reportsTable, /report_access_token_hash TEXT NOT NULL/);
-  assert.match(reportsTable, /status IN \('pending_upload', 'verifying', 'pending_payment', 'processing', 'export_ready', 'failed'\)/);
+  assert.match(
+    reportsTable,
+    /status IN \('pending_upload', 'verifying', 'pending_payment', 'processing', 'export_ready', 'failed'\)/,
+  );
   assert.match(reportsTable, /input JSONB/);
   assert.match(reportsTable, /output JSONB/);
   assert.match(reportsTable, /failure_reason TEXT/);
@@ -896,13 +897,21 @@ test("Midtrans env and checkout URL helpers stay server-only and safe", () => {
     delete process.env.MIDTRANS_SNAP_BASE_URL;
 
     assert.equal(isMidtransConfigured(), false);
+    assert.equal(isMidtransProduction(), false);
 
     process.env.MIDTRANS_SERVER_KEY = "server-key-for-test";
     process.env.MIDTRANS_MERCHANT_ID = "merchant-id-for-test";
     assert.equal(isMidtransConfigured(), true);
+    assert.equal(isMidtransProduction(), false);
     assert.equal(getMidtransSnapEndpoint(), "https://app.sandbox.midtrans.com/snap/v1/transactions");
 
     process.env.MIDTRANS_IS_PRODUCTION = "true";
+    assert.equal(isMidtransProduction(), true);
+    assert.equal(getMidtransSnapEndpoint(), "https://app.midtrans.com/snap/v1/transactions");
+
+    delete process.env.MIDTRANS_IS_PRODUCTION;
+    process.env.MIDTRANS_ENVIRONMENT = "production";
+    assert.equal(isMidtransProduction(), true);
     assert.equal(getMidtransSnapEndpoint(), "https://app.midtrans.com/snap/v1/transactions");
 
     process.env.MIDTRANS_SNAP_BASE_URL = "https://app.sandbox.midtrans.com/snap/v1";
@@ -938,10 +947,12 @@ test("Midtrans webhook confirmation unlock policy allows only successful statuse
     true,
   );
   assert.equal(
-    isSuccessfulPaymentStatus(mapMidtransTransactionStatus({ fraud_status: "challenge", transaction_status: "capture" })),
+    isSuccessfulPaymentStatus(
+      mapMidtransTransactionStatus({ fraud_status: "challenge", transaction_status: "capture" }),
+    ),
     false,
   );
-  for (const transaction_status of ["deny", "cancel", "expire", "failure"]) {
+  for (const transaction_status of ["deny", "cancel", "expire", "failure", "challenge"]) {
     assert.equal(isSuccessfulPaymentStatus(mapMidtransTransactionStatus({ transaction_status })), false);
   }
   assert.equal("signature_key" in sanitized, false);
@@ -950,9 +961,16 @@ test("Midtrans webhook confirmation unlock policy allows only successful statuse
 
 test("system readiness reports booleans without exposing secret values", async () => {
   const original = {
+    merchantId: process.env.MIDTRANS_MERCHANT_ID,
+    midtransEnvironment: process.env.MIDTRANS_ENVIRONMENT,
+    midtransIsProduction: process.env.MIDTRANS_IS_PRODUCTION,
+    midtransServerKey: process.env.MIDTRANS_SERVER_KEY,
     openrouter: process.env.OPENROUTER_API_KEY,
     serviceRole: process.env.SUPABASE_SERVICE_ROLE_KEY,
   };
+  process.env.MIDTRANS_MERCHANT_ID = "merchant-id-value-should-not-appear";
+  process.env.MIDTRANS_ENVIRONMENT = "production";
+  process.env.MIDTRANS_SERVER_KEY = "midtrans-server-key-value-should-not-appear";
   process.env.OPENROUTER_API_KEY = "sk-test-secret-value-should-not-appear";
   process.env.SUPABASE_SERVICE_ROLE_KEY = "supabase-secret-value-should-not-appear";
 
@@ -963,6 +981,10 @@ test("system readiness reports booleans without exposing secret values", async (
 
     assert.equal(typeof payload.openRouterConfigured, "boolean");
     assert.equal(typeof payload.supabaseConfigured, "boolean");
+    assert.equal(typeof payload.midtransConfigured, "boolean");
+    assert.equal(typeof payload.midtransProductionMode, "boolean");
+    assert.equal(payload.midtransConfigured, true);
+    assert.equal(payload.midtransProductionMode, true);
     assert.equal(payload.uploadPrepared, true);
     assert.equal(typeof payload.uploadConfigured, "boolean");
     assert.equal(payload.naliLockPrepared, true);
@@ -970,8 +992,21 @@ test("system readiness reports booleans without exposing secret values", async (
     assert.equal(payload.costProtectionPrepared, true);
     assert.equal(typeof payload.costProtectionConfigured, "boolean");
     assert.equal(typeof payload.costProtectionActive, "boolean");
-    assert.doesNotMatch(serialized, /sk-test-secret-value-should-not-appear|supabase-secret-value-should-not-appear/);
+    assert.equal("anonKeyProjectRef" in (payload.envVerification ?? {}), false);
+    assert.equal("serviceKeyProjectRef" in (payload.envVerification ?? {}), false);
+    assert.doesNotMatch(
+      serialized,
+      /sk-test-secret-value-should-not-appear|supabase-secret-value-should-not-appear|midtrans-server-key-value-should-not-appear|merchant-id-value-should-not-appear/,
+    );
   } finally {
+    if (original.merchantId === undefined) delete process.env.MIDTRANS_MERCHANT_ID;
+    else process.env.MIDTRANS_MERCHANT_ID = original.merchantId;
+    if (original.midtransEnvironment === undefined) delete process.env.MIDTRANS_ENVIRONMENT;
+    else process.env.MIDTRANS_ENVIRONMENT = original.midtransEnvironment;
+    if (original.midtransIsProduction === undefined) delete process.env.MIDTRANS_IS_PRODUCTION;
+    else process.env.MIDTRANS_IS_PRODUCTION = original.midtransIsProduction;
+    if (original.midtransServerKey === undefined) delete process.env.MIDTRANS_SERVER_KEY;
+    else process.env.MIDTRANS_SERVER_KEY = original.midtransServerKey;
     process.env.OPENROUTER_API_KEY = original.openrouter;
     process.env.SUPABASE_SERVICE_ROLE_KEY = original.serviceRole;
   }
@@ -980,9 +1015,17 @@ test("system readiness reports booleans without exposing secret values", async (
 test("missing env does not crash readiness or usage logging", async () => {
   const original = {
     anon: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    merchantId: process.env.MIDTRANS_MERCHANT_ID,
+    midtransEnvironment: process.env.MIDTRANS_ENVIRONMENT,
+    midtransIsProduction: process.env.MIDTRANS_IS_PRODUCTION,
+    midtransServerKey: process.env.MIDTRANS_SERVER_KEY,
     serviceRole: process.env.SUPABASE_SERVICE_ROLE_KEY,
     url: process.env.NEXT_PUBLIC_SUPABASE_URL,
   };
+  delete process.env.MIDTRANS_MERCHANT_ID;
+  delete process.env.MIDTRANS_ENVIRONMENT;
+  delete process.env.MIDTRANS_IS_PRODUCTION;
+  delete process.env.MIDTRANS_SERVER_KEY;
   delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   delete process.env.NEXT_PUBLIC_SUPABASE_URL;
   delete process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -997,6 +1040,8 @@ test("missing env does not crash readiness or usage logging", async () => {
     });
 
     assert.equal(readiness.supabaseConfigured, false);
+    assert.equal(readiness.midtransConfigured, false);
+    assert.equal(readiness.midtransProductionMode, false);
     assert.equal(readiness.uploadPrepared, true);
     assert.equal(readiness.uploadConfigured, false);
     assert.equal(readiness.rateLimitPrepared, true);
@@ -1005,6 +1050,14 @@ test("missing env does not crash readiness or usage logging", async () => {
     assert.equal(usage.logged, false);
     assert.equal(usage.reason, "supabase_unconfigured");
   } finally {
+    if (original.merchantId === undefined) delete process.env.MIDTRANS_MERCHANT_ID;
+    else process.env.MIDTRANS_MERCHANT_ID = original.merchantId;
+    if (original.midtransEnvironment === undefined) delete process.env.MIDTRANS_ENVIRONMENT;
+    else process.env.MIDTRANS_ENVIRONMENT = original.midtransEnvironment;
+    if (original.midtransIsProduction === undefined) delete process.env.MIDTRANS_IS_PRODUCTION;
+    else process.env.MIDTRANS_IS_PRODUCTION = original.midtransIsProduction;
+    if (original.midtransServerKey === undefined) delete process.env.MIDTRANS_SERVER_KEY;
+    else process.env.MIDTRANS_SERVER_KEY = original.midtransServerKey;
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = original.anon;
     process.env.NEXT_PUBLIC_SUPABASE_URL = original.url;
     process.env.SUPABASE_SERVICE_ROLE_KEY = original.serviceRole;
@@ -1150,7 +1203,9 @@ test("export and payment routes enforce Sprint 0 gatekeeping in source", () => {
 
   assert.match(reportIdRoute, /getReportExportEligibility/);
   assert.match(reportIdRoute, /export_readiness:\s*eligibility\.state/);
-  assert.match(readinessRoute, /\.from\("payments"\)/);
+  assert.match(readinessRoute, /countTable\(supabase, "payments"\)/);
+  assert.match(readinessRoute, /midtransProductionMode/);
+  assert.doesNotMatch(readinessRoute, /anonKeyProjectRef|serviceKeyProjectRef/);
   assert.match(resultClient, /exportReadiness/);
   assert.match(resultClient, /Download Markdown/);
   assert.match(resultClient, /Download PDF/);
@@ -1204,7 +1259,10 @@ test("paid markdown export has NaLI structure, metadata, disclaimer, and redacti
   assert.match(markdown, /## Batasan & Disclaimer/);
   assert.match(markdown, /## Rekomendasi Tindak Lanjut/);
   assert.match(markdown, /## Catatan Sumber \/ Evidence/);
-  assert.match(markdown, /Draft ini adalah bantuan awal berbasis informasi yang diberikan, bukan pengganti validasi ahli\/lapangan\./);
+  assert.match(
+    markdown,
+    /Draft ini adalah bantuan awal berbasis informasi yang diberikan, bukan pengganti validasi ahli\/lapangan\./,
+  );
 
   assert.doesNotMatch(markdown, /guest-session-release-check/i);
   assert.doesNotMatch(markdown, /report_access_key:\s*[A-Za-z0-9_-]{20,}/);
@@ -1218,7 +1276,8 @@ test("paid PDF export bytes are downloadable and redacted", async () => {
   const validated = validateReportRequest({
     integrityConsent: true,
     location: "Semarang",
-    mainText: "Catatan observasi menyebut air keruh, sampah ringan, dan kebutuhan foto pembanding sebelum validasi akhir.",
+    mainText:
+      "Catatan observasi menyebut air keruh, sampah ringan, dan kebutuhan foto pembanding sebelum validasi akhir.",
     mode: "draft_from_materials",
     reportTemplate: "Laporan Observasi Lingkungan",
     title: "Observasi Kualitas Air",
@@ -1289,6 +1348,40 @@ test("payment first-sale operations stay server-side and honest", () => {
   assert.doesNotMatch(confirmScript, /console\.(?:log|error)\([^)]*process\.env/s);
 });
 
+test("CP1 Midtrans activation docs and founder admin view stay honest and redacted", () => {
+  const cp1AuditPath = path.join(repoRoot, "docs/CP1_GAP_AUDIT.md");
+  const envSetupPath = path.join(repoRoot, "docs/MIDTRANS_ENV_SETUP.md");
+  const cp1Audit = fs.readFileSync(cp1AuditPath, "utf8");
+  const envSetup = fs.readFileSync(envSetupPath, "utf8");
+  const paymentStatus = fs.readFileSync(path.join(repoRoot, "docs/PAYMENT_MODE_STATUS.md"), "utf8");
+  const smokeScript = fs.readFileSync(path.join(repoRoot, "scripts/smoke-paid-export-production.mjs"), "utf8");
+  const adminUi = [
+    "src/app/(app)/system/page.tsx",
+    "src/app/(app)/system/orders/page.tsx",
+    "src/lib/system/adminOrders.ts",
+  ]
+    .map((file) => fs.readFileSync(path.join(repoRoot, file), "utf8"))
+    .join("\n");
+
+  assert.match(cp1Audit, /Midtrans one-time automatic payment\s+\|\s+BLOCKED BY ENV/i);
+  assert.match(cp1Audit, /Minimal founder admin view\s+\|\s+DONE/i);
+  assert.match(cp1Audit, /`payments` table source of truth|payments` table source of truth/i);
+  assert.match(envSetup, /MIDTRANS_SERVER_KEY/);
+  assert.match(envSetup, /MIDTRANS_MERCHANT_ID/);
+  assert.match(envSetup, /https:\/\/naliai\.vercel\.app\/api\/payments\/midtrans-webhook/);
+  assert.match(paymentStatus, /midtransProductionMode/);
+  assert.match(smokeScript, /midtransProductionMode/);
+  assert.doesNotMatch(smokeScript, /console\.log\([^)]*snap_token/s);
+  assert.doesNotMatch(
+    adminUi,
+    /snap_token|signature_key|MIDTRANS_SERVER_KEY|SUPABASE_SERVICE_ROLE_KEY|report_access_key/i,
+  );
+  assert.doesNotMatch(
+    cp1Audit + envSetup + paymentStatus,
+    /sk-[A-Za-z0-9]|service_role_[A-Za-z0-9]|server-key-for-test/i,
+  );
+});
+
 test("public UI and report output source avoid forbidden academic cheating wording", () => {
   const files = [
     "src/app/page.tsx",
@@ -1333,7 +1426,7 @@ test("HomeQueryBox inferMode logic correctly handles observation vs start-from-z
     "sungai",
     "air",
     "erosi",
-    "lokasi"
+    "lokasi",
   ];
 
   for (const keyword of draftKeywords) {
@@ -1348,11 +1441,14 @@ test("HomeQueryBox inferMode logic correctly handles observation vs start-from-z
     "belum observasi",
     "bantu cari topik",
     "tidak tahu mulai dari mana",
-    "belum tahu mau nulis apa"
+    "belum tahu mau nulis apa",
   ];
 
   for (const keyword of startZeroKeywords) {
-    assert.ok(queryBoxSource.toLowerCase().includes(keyword), `HomeQueryBox should contain start-from-zero keyword: ${keyword}`);
+    assert.ok(
+      queryBoxSource.toLowerCase().includes(keyword),
+      `HomeQueryBox should contain start-from-zero keyword: ${keyword}`,
+    );
   }
 
   // Extract the inferMode function content dynamically or assert key logical branches exist
@@ -1375,32 +1471,47 @@ test("CreateReportForm prefill logic correctly maps parameters and overrides to 
     "sungai",
     "air",
     "erosi",
-    "lokasi"
+    "lokasi",
   ];
 
   for (const keyword of draftKeywords) {
-    assert.ok(formSource.toLowerCase().includes(keyword), `CreateReportForm should contain draft keyword in prefill logic: ${keyword}`);
+    assert.ok(
+      formSource.toLowerCase().includes(keyword),
+      `CreateReportForm should contain draft keyword in prefill logic: ${keyword}`,
+    );
   }
 
   assert.ok(formSource.includes("draftTriggers.some"), "CreateReportForm should check draftTriggers in prefill logic");
-  assert.ok(formSource.includes("modeVal = \"draft_from_materials\""), "CreateReportForm should override modeVal to draft_from_materials");
+  assert.ok(
+    formSource.includes('modeVal = "draft_from_materials"'),
+    "CreateReportForm should override modeVal to draft_from_materials",
+  );
 });
 
 test("ReportResultClient contains the correct feedback UI copy and localStorage access fallback", () => {
-  const resultClientSource = fs.readFileSync(path.join(repoRoot, "src/components/report/ReportResultClient.tsx"), "utf8");
+  const resultClientSource = fs.readFileSync(
+    path.join(repoRoot, "src/components/report/ReportResultClient.tsx"),
+    "utf8",
+  );
 
-  assert.ok(resultClientSource.includes("Apakah preview ini membantu?"), "Result client should contain: Apakah preview ini membantu?");
+  assert.ok(
+    resultClientSource.includes("Apakah preview ini membantu?"),
+    "Result client should contain: Apakah preview ini membantu?",
+  );
   assert.ok(resultClientSource.includes("Membantu"), "Result client should contain: Membantu");
   assert.ok(resultClientSource.includes("Kurang membantu"), "Result client should contain: Kurang membantu");
-  assert.ok(resultClientSource.includes("Catatan singkat opsional..."), "Result client should contain: Catatan singkat opsional...");
+  assert.ok(
+    resultClientSource.includes("Catatan singkat opsional..."),
+    "Result client should contain: Catatan singkat opsional...",
+  );
   assert.ok(resultClientSource.includes("Kirim feedback"), "Result client should contain: Kirim feedback");
-  
+
   // 6. ReportResultClient source includes localStorage access fallback for report id
   assert.ok(
     resultClientSource.includes("window.localStorage.getItem(`nali-report-access:${reportId}`)") ||
-    resultClientSource.includes('window.localStorage.getItem("nali-report-access:" + reportId)') ||
-    resultClientSource.includes("window.localStorage.getItem(`nali-report-access:${reportId}`)"),
-    "ReportResultClient should check localStorage fallback nali-report-access:<report_id>"
+      resultClientSource.includes('window.localStorage.getItem("nali-report-access:" + reportId)') ||
+      resultClientSource.includes("window.localStorage.getItem(`nali-report-access:${reportId}`)"),
+    "ReportResultClient should check localStorage fallback nali-report-access:<report_id>",
   );
 });
 
@@ -1409,7 +1520,7 @@ test("Feedback route accepts tokens, validates ratings, and does not leak secret
     serviceRole: process.env.SUPABASE_SERVICE_ROLE_KEY,
     url: process.env.NEXT_PUBLIC_SUPABASE_URL,
   };
-  
+
   // Configure mock env to bypass unconfigured check and run token verification
   process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
   process.env.SUPABASE_SERVICE_ROLE_KEY = "dummy-service-role-key";
@@ -1421,11 +1532,14 @@ test("Feedback route accepts tokens, validates ratings, and does not leak secret
         body: JSON.stringify({ rating: "helpful" }),
         method: "POST",
       }),
-      { params: Promise.resolve({ id: "test-report" }) }
+      { params: Promise.resolve({ id: "test-report" }) },
     );
     const payloadNoToken = await resNoToken.json();
     assert.equal(resNoToken.status, 401);
-    assert.match(payloadNoToken.error, /requires a valid access key|access key yang valid|Feedback membutuhkan akses laporan/i);
+    assert.match(
+      payloadNoToken.error,
+      /requires a valid access key|access key yang valid|Feedback membutuhkan akses laporan/i,
+    );
 
     // 4. Invalid rating still returns 400
     const resInvalidRating = await postFeedback(
@@ -1433,7 +1547,7 @@ test("Feedback route accepts tokens, validates ratings, and does not leak secret
         body: JSON.stringify({ rating: "invalid-rating" }),
         method: "POST",
       }),
-      { params: Promise.resolve({ id: "test-report" }) }
+      { params: Promise.resolve({ id: "test-report" }) },
     );
     assert.equal(resInvalidRating.status, 400);
 
@@ -1447,7 +1561,7 @@ test("Feedback route accepts tokens, validates ratings, and does not leak secret
         body: JSON.stringify({ rating: "helpful", report_access_token: "test-token" }),
         method: "POST",
       }),
-      { params: Promise.resolve({ id: "test-report" }) }
+      { params: Promise.resolve({ id: "test-report" }) },
     );
     assert.equal(resTokenParam.status, 202);
     const payloadTokenParam = await resTokenParam.json();
@@ -1459,7 +1573,7 @@ test("Feedback route accepts tokens, validates ratings, and does not leak secret
         body: JSON.stringify({ rating: "helpful", report_access_key: "test-key" }),
         method: "POST",
       }),
-      { params: Promise.resolve({ id: "test-report" }) }
+      { params: Promise.resolve({ id: "test-report" }) },
     );
     assert.equal(resKeyParam.status, 202);
     const payloadKeyParam = await resKeyParam.json();
@@ -1478,21 +1592,32 @@ test("persisted report access key handoff, localStorage keys, and safety", () =>
   const formSource = fs.readFileSync(path.join(repoRoot, "src/components/report/CreateReportForm.tsx"), "utf8");
   const clientSource = fs.readFileSync(path.join(repoRoot, "src/components/report/ReportResultClient.tsx"), "utf8");
   const generateRouteSource = fs.readFileSync(path.join(repoRoot, "src/app/api/reports/generate/route.ts"), "utf8");
-  const feedbackRouteSource = fs.readFileSync(path.join(repoRoot, "src/app/api/reports/[id]/feedback/route.ts"), "utf8");
+  const feedbackRouteSource = fs.readFileSync(
+    path.join(repoRoot, "src/app/api/reports/[id]/feedback/route.ts"),
+    "utf8",
+  );
 
   // 1. CreateReportForm stores report_access_key under nali-report-access:<report_id>
   assert.match(formSource, /nali-report-access:/);
-  assert.ok(formSource.includes("nali-report-access-token:") || formSource.includes("to\" + \"ken") || formSource.includes("to' + 'ken"));
+  assert.ok(
+    formSource.includes("nali-report-access-token:") ||
+      formSource.includes('to" + "ken') ||
+      formSource.includes("to' + 'ken"),
+  );
   assert.match(formSource, /nali-report-key:/);
   assert.match(formSource, /nali-report-access-key:/);
   assert.match(formSource, /console\.debug\("\[NaLI DEV\]/);
 
   // 2. ReportResultClient and CreateReportForm use the same localStorage key nali-report-access:<reportId>
   assert.match(clientSource, /nali-report-access:/);
-  assert.ok(clientSource.includes("nali-report-access-token:") || clientSource.includes("to\" + \"ken") || clientSource.includes("to' + 'ken"));
+  assert.ok(
+    clientSource.includes("nali-report-access-token:") ||
+      clientSource.includes('to" + "ken') ||
+      clientSource.includes("to' + 'ken"),
+  );
   assert.match(clientSource, /nali-report-key:/);
   assert.match(clientSource, /nali-report-access-key:/);
-  
+
   // 3. ReportResultClient helper reads all aliases and URL parameters
   assert.match(clientSource, /getStoredReportAccessKey/);
   assert.match(clientSource, /params\.get\(tkParam\)/);

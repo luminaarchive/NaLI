@@ -1,24 +1,29 @@
 import Link from "next/link";
 import { ArrowLeft, ClipboardList, Eye, ShieldAlert } from "lucide-react";
-import { listFounderOrders, type FounderOrderRow } from "@/lib/system/adminOrders";
+import { listFounderOrders, type FounderOrderRow, type FounderOrderSummary } from "@/lib/system/adminOrders";
 import { listManualFulfillmentJobs } from "@/lib/manualFulfillment/jobs";
 import type { ManualFulfillmentJob } from "@/lib/manualFulfillment/jobs";
+import { getSystemReadiness } from "@/lib/system/readiness";
 
 export const dynamic = "force-dynamic";
 
 export default async function FounderOrdersPage() {
   const result = await listFounderOrders();
   const fulfillmentJobs = result.ready ? await listManualFulfillmentJobs() : null;
+  const readiness = getSystemReadiness();
 
   return (
     <div className="min-h-screen bg-[#f7f3ea] px-4 py-8 text-[#111814] sm:px-6 lg:px-8">
       <main className="mx-auto max-w-6xl">
         <header className="border-b border-[#ddd5c7] pb-6">
-          <Link className="inline-flex items-center gap-2 text-sm font-semibold text-[#5f6b62] hover:text-[#173d2b]" href="/system">
+          <Link
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#5f6b62] hover:text-[#173d2b]"
+            href="/system"
+          >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             System Readiness
           </Link>
-          <p className="mt-5 text-xs font-semibold uppercase tracking-[0.08em] text-[#6f8057]">Internal founder view</p>
+          <p className="mt-5 text-xs font-semibold tracking-[0.08em] text-[#6f8057] uppercase">Internal founder view</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Report Orders</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5f6b62]">
             Foundation view for Sprint 0 operations. It shows metadata only and never exposes raw guest session values
@@ -30,12 +35,48 @@ export default async function FounderOrdersPage() {
           <DisabledState reason={result.reason} />
         ) : (
           <>
+            <OperationalSummary
+              midtransConfigured={readiness.midtransConfigured}
+              midtransProductionMode={readiness.midtransProductionMode}
+              summary={result.summary}
+            />
             <OrdersTable orders={result.orders} />
             <FulfillmentJobsSection jobs={fulfillmentJobs || []} />
           </>
         )}
       </main>
     </div>
+  );
+}
+
+function OperationalSummary({
+  midtransConfigured,
+  midtransProductionMode,
+  summary,
+}: {
+  midtransConfigured: boolean;
+  midtransProductionMode: boolean;
+  summary: FounderOrderSummary;
+}) {
+  return (
+    <section className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <SummaryMetric label="Reports" value={summary.reportCount == null ? "unknown" : String(summary.reportCount)} />
+      <SummaryMetric
+        label="Feedback"
+        value={summary.feedbackCount == null ? "unknown" : String(summary.feedbackCount)}
+      />
+      <SummaryMetric label="Payments" value={summary.paymentCount == null ? "unknown" : String(summary.paymentCount)} />
+      <SummaryMetric label="Manual pending" value={String(summary.manualPendingPaymentCount)} />
+      <SummaryMetric label="Export ready" value={String(summary.exportReadyCount)} />
+      <SummaryMetric label="Export locked" value={String(summary.exportLockedCount)} />
+      <SummaryMetric label="Recent reports" value={String(summary.recentReportCount)} />
+      <SummaryMetric
+        label="Midtrans"
+        value={midtransConfigured ? (midtransProductionMode ? "configured/prod" : "configured/sandbox") : "missing env"}
+      />
+      <StatusSummary label="Report status" values={summary.reportStatusCounts} />
+      <StatusSummary label="Payment status" values={summary.paymentStatusCounts} />
+    </section>
   );
 }
 
@@ -50,7 +91,7 @@ function FulfillmentJobsSection({ jobs }: { jobs: ManualFulfillmentJob[] }) {
       </header>
 
       <div className="mt-4 overflow-hidden rounded-lg border border-[#ddd5c7] bg-white">
-        <div className="hidden grid-cols-[1.5fr_1.5fr_0.8fr_0.8fr_1fr_auto] gap-3 border-b border-[#ddd5c7] bg-[#fcfaf4] px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#6f8057] lg:grid">
+        <div className="hidden grid-cols-[1.5fr_1.5fr_0.8fr_0.8fr_1fr_auto] gap-3 border-b border-[#ddd5c7] bg-[#fcfaf4] px-4 py-3 text-xs font-semibold tracking-[0.08em] text-[#6f8057] uppercase lg:grid">
           <span>Job ID</span>
           <span>Report ID</span>
           <span>Complexity</span>
@@ -60,7 +101,10 @@ function FulfillmentJobsSection({ jobs }: { jobs: ManualFulfillmentJob[] }) {
         </div>
         <div className="divide-y divide-[#eee7db]">
           {jobs.map((job) => (
-            <article key={job.id} className="grid gap-3 px-4 py-4 text-sm lg:grid-cols-[1.5fr_1.5fr_0.8fr_0.8fr_1fr_auto] lg:items-center">
+            <article
+              key={job.id}
+              className="grid gap-3 px-4 py-4 text-sm lg:grid-cols-[1.5fr_1.5fr_0.8fr_0.8fr_1fr_auto] lg:items-center"
+            >
               <div>
                 <p className="font-mono text-xs text-[#5f6b62]">{job.id}</p>
               </div>
@@ -97,7 +141,8 @@ function FulfillmentJobsSection({ jobs }: { jobs: ManualFulfillmentJob[] }) {
 function DisabledState({ reason }: { reason: "admin_view_disabled" | "lookup_failed" | "supabase_unconfigured" }) {
   const copy = {
     admin_view_disabled: {
-      detail: "Set ADMIN_VIEW_ENABLED=true later when you intentionally want this internal view to read report metadata.",
+      detail:
+        "Set ADMIN_VIEW_ENABLED=true later when you intentionally want this internal view to read report metadata.",
       title: "Admin order view is disabled.",
     },
     lookup_failed: {
@@ -134,7 +179,7 @@ function OrdersTable({ orders }: { orders: FounderOrderRow[] }) {
 
   return (
     <section className="mt-6 overflow-hidden rounded-lg border border-[#ddd5c7] bg-white">
-      <div className="hidden grid-cols-[1.2fr_0.9fr_0.8fr_0.8fr_0.8fr_1fr_auto] gap-3 border-b border-[#ddd5c7] bg-[#fcfaf4] px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#6f8057] lg:grid">
+      <div className="hidden grid-cols-[1.2fr_0.9fr_0.8fr_0.8fr_0.8fr_1fr_auto] gap-3 border-b border-[#ddd5c7] bg-[#fcfaf4] px-4 py-3 text-xs font-semibold tracking-[0.08em] text-[#6f8057] uppercase lg:grid">
         <span>Report</span>
         <span>Created</span>
         <span>Mode</span>
@@ -149,6 +194,28 @@ function OrdersTable({ orders }: { orders: FounderOrderRow[] }) {
         ))}
       </div>
     </section>
+  );
+}
+
+function SummaryMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-[#ddd5c7] bg-white p-4">
+      <p className="text-xs font-semibold tracking-[0.08em] text-[#6f8057] uppercase">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-[#111814]">{value}</p>
+    </div>
+  );
+}
+
+function StatusSummary({ label, values }: { label: string; values: Record<string, number> }) {
+  const entries = Object.entries(values);
+
+  return (
+    <div className="rounded-lg border border-[#ddd5c7] bg-white p-4 md:col-span-2">
+      <p className="text-xs font-semibold tracking-[0.08em] text-[#6f8057] uppercase">{label}</p>
+      <p className="mt-2 text-sm leading-6 text-[#5f6b62]">
+        {entries.length === 0 ? "No recent rows." : entries.map(([status, count]) => `${status}: ${count}`).join(" · ")}
+      </p>
+    </div>
   );
 }
 
@@ -182,7 +249,7 @@ function OrderRow({ order }: { order: FounderOrderRow }) {
 function Meta({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#8a8174] lg:hidden">{label}</p>
+      <p className="text-xs font-semibold tracking-[0.08em] text-[#8a8174] uppercase lg:hidden">{label}</p>
       <p className="mt-1 text-[#111814] lg:mt-0">{value}</p>
     </div>
   );

@@ -4,7 +4,7 @@ Status date: 2026-05-21.
 
 ## Current Mode
 
-NaLI Sprint 0.5 target mode is automatic Midtrans one-time payment for paid report export.
+NaLI Sprint 0.6 target mode is automatic Midtrans one-time payment for paid report export.
 
 When Midtrans server env is configured, `/api/payments/create` creates a Midtrans Snap one-time transaction, stores a pending row in the `payments` table, and returns only safe checkout data (`checkout_url`/`snap_url` and `snap_token`) to the client. Export remains locked while the payment row is pending.
 
@@ -13,6 +13,8 @@ Manual fallback exists only when Midtrans env is missing or unavailable. In fall
 ## Midtrans Status
 
 The code path for automatic Midtrans checkout is active when server-only Midtrans env is configured. Production readiness must be checked through `/api/system/readiness`; do not infer readiness from local fallback behavior.
+
+Current Vercel Production env audit found no Midtrans env names, so production automatic checkout remains blocked by env. Manual pending payment is fallback only and must stay honest until env setup, redeploy, webhook configuration, and production smoke verification pass.
 
 Current server-only env names:
 
@@ -23,6 +25,11 @@ Current server-only env names:
 - `MIDTRANS_SNAP_BASE_URL` (optional, must point to `https://app.midtrans.com` or `https://app.sandbox.midtrans.com`)
 
 `MIDTRANS_CLIENT_KEY` is not required by the current server-created Snap redirect flow and must not be exposed through `NEXT_PUBLIC_`.
+
+Readiness may expose only safe booleans for Midtrans:
+
+- `midtransConfigured`
+- `midtransProductionMode`
 
 Expected behavior while Midtrans is absent:
 
@@ -56,13 +63,18 @@ Before claiming automatic checkout is live in production:
 
 1. Configure production `MIDTRANS_SERVER_KEY`, `MIDTRANS_MERCHANT_ID`, and either `MIDTRANS_ENVIRONMENT=production` or `MIDTRANS_IS_PRODUCTION=true` in Vercel.
 2. Confirm server-only storage of Midtrans secrets. Do not add `NEXT_PUBLIC_` Midtrans secret variables.
-3. Verify `/api/system/readiness` reports `midtransConfigured = true`.
-4. Create a real or sandbox transaction through the production route, depending on the chosen activation stage.
-5. Verify a safe Snap checkout URL/token is returned only when Midtrans is configured.
-6. Verify the Midtrans webhook signature before updating any payment row.
-7. Confirm webhook updates the matching `payments` row by Midtrans order id.
-8. Confirm markdown and PDF export unlock only after the `payments` row reaches a successful status.
-9. Run `npm run smoke:export:prod`.
-10. Update founder runbooks and public copy only after verification passes.
+3. Configure the Midtrans dashboard Payment Notification URL to `https://naliai.vercel.app/api/payments/midtrans-webhook`.
+4. Redeploy production after env changes.
+5. Verify `/api/system/readiness` reports `midtransConfigured = true`.
+6. Verify `midtransProductionMode = true` only when production payment keys/mode are intentionally active.
+7. Create a real or sandbox transaction through the production route, depending on the chosen activation stage.
+8. Verify a safe Snap checkout URL/token is returned only when Midtrans is configured.
+9. Verify the Midtrans webhook signature before updating any payment row.
+10. Confirm webhook updates the matching `payments` row by Midtrans order id.
+11. Confirm markdown and PDF export unlock only after the `payments` row reaches a successful status.
+12. Run `npm run smoke:export:prod`.
+13. Update founder runbooks and public copy only after verification passes.
 
 Until those checks pass in production, keep public wording conservative and do not promise instant checkout.
+
+See `docs/MIDTRANS_ENV_SETUP.md` for the secure env and webhook checklist. Do not store raw keys in docs.

@@ -37,6 +37,7 @@ Production readiness must show:
 Current payment expectation:
 
 - `midtransConfigured` is false until Midtrans env is configured.
+- `midtransProductionMode` is a boolean and is true only when production payment mode is intentionally enabled.
 - Manual pending payment mode is acceptable only when it is clearly reported as manual, not fake success.
 
 ## Feedback Smoke Expectations
@@ -55,11 +56,15 @@ Fallback responses are useful resilience behavior, but fallback must not be coun
 `npm run smoke:export:prod` must verify:
 
 - Payments readiness success is true.
-- Unpaid export is locked, normally HTTP `402`.
+- Unpaid markdown export is locked, normally HTTP `402`.
+- Unpaid PDF export is locked, normally HTTP `402`.
 - `/api/payments/create` creates a pending payment row.
+- If Midtrans is not configured, payment creation returns honest manual pending mode.
+- If Midtrans is configured, payment creation returns safe checkout data without printing token values.
 - Payment creation does not fake paid success.
-- Confirmed payment unlocks export through the `payments` table source of truth.
-- Markdown export content is returned only after confirmed payment.
+- Pending payment does not unlock markdown or PDF export.
+- Confirmed payment unlocks markdown and PDF export through the `payments` table source of truth.
+- Markdown and PDF export content is returned only after confirmed payment.
 - No secrets are printed.
 
 If production service-role env is not available locally, the export smoke may pause after creating a pending payment row. Confirm the saved pending payment with trusted Supabase admin/MCP access, then rerun:
@@ -68,7 +73,7 @@ If production service-role env is not available locally, the export smoke may pa
 npm run smoke:export:prod
 ```
 
-The rerun must verify `export_readiness = export_ready` and successful markdown export.
+The rerun must verify `export_readiness = export_ready` and successful markdown/PDF export.
 
 ## Manual Payment Confirmation Check
 

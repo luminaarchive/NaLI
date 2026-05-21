@@ -4,89 +4,75 @@ import { getOptionalSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
-function parseJwtRef(token: string | undefined): string | null {
-  if (!token) return null;
-  const parts = token.split(".");
-  if (parts.length < 2) return null;
-  try {
-    const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf8"));
-    return payload.ref || null;
-  } catch {
-    return null;
-  }
+type TableReadiness = {
+  count: number | null;
+  error: { code?: string; details?: string | null; message: string } | null;
+  success: boolean;
+};
+
+async function countTable(supabase: NonNullable<ReturnType<typeof getOptionalSupabaseAdminClient>>, table: string) {
+  const { count, error } = await supabase.from(table).select("id", { count: "exact", head: true });
+
+  return {
+    count: count ?? null,
+    error: error ? { code: error.code, details: error.details, message: error.message } : null,
+    success: !error,
+  } satisfies TableReadiness;
 }
 
 export async function GET() {
   const readiness = await getRuntimeSystemReadiness();
-  
-  // Environment variable validation checks (without printing raw secrets)
+
   const envSupabaseUrl = process.env.SUPABASE_URL;
   const envNextPublicSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const envServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const envAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   const envVerification = {
-    supabaseUrlExists: !!envSupabaseUrl,
-    supabaseUrlHostMatches: envSupabaseUrl ? envSupabaseUrl.includes("wvpplfjrbndzxlgpuicn.supabase.co") : false,
-    supabaseUrlNoRestV1: envSupabaseUrl ? !envSupabaseUrl.includes("/rest/v1") : true,
-    supabaseUrlNotPostgres: envSupabaseUrl ? !(envSupabaseUrl.startsWith("postgres://") || envSupabaseUrl.startsWith("postgresql://")) : true,
-    
-    supabaseServiceRoleKeyExists: !!envServiceRoleKey,
-    
+    nextPublicSupabaseAnonKeyExists: !!envAnonKey,
     nextPublicSupabaseUrlExists: !!envNextPublicSupabaseUrl,
-    nextPublicSupabaseUrlHostMatches: envNextPublicSupabaseUrl ? envNextPublicSupabaseUrl.includes("wvpplfjrbndzxlgpuicn.supabase.co") : false,
     nextPublicSupabaseUrlNoRestV1: envNextPublicSupabaseUrl ? !envNextPublicSupabaseUrl.includes("/rest/v1") : true,
-    
-    anonKeyProjectRef: parseJwtRef(envAnonKey),
-    serviceKeyProjectRef: parseJwtRef(envServiceRoleKey),
-    projectRefsMatch: parseJwtRef(envAnonKey) === parseJwtRef(envServiceRoleKey) && parseJwtRef(envServiceRoleKey) !== null
+    supabaseServiceRoleKeyExists: !!envServiceRoleKey,
+    supabaseUrlExists: !!envSupabaseUrl,
+    supabaseUrlNoRestV1: envSupabaseUrl ? !envSupabaseUrl.includes("/rest/v1") : true,
+    supabaseUrlNotPostgres: envSupabaseUrl
+      ? !(envSupabaseUrl.startsWith("postgres://") || envSupabaseUrl.startsWith("postgresql://"))
+      : true,
   };
 
   const supabase = getOptionalSupabaseAdminClient();
-  let dbStatus: any = { status: "not_attempted" };
+  let dbStatus:
+    | {
+        feedback: TableReadiness;
+        payments: TableReadiness;
+        reports: TableReadiness;
+        status: "attempted";
+        usageEvents: TableReadiness;
+      }
+    | { message: string; status: "error" }
+    | { status: "supabase_unconfigured" };
+
   if (supabase) {
     try {
-      const { error: reportsError, count: reportsCount } = await supabase
-        .from("reports")
-        .select("id", { count: "exact", head: true });
-        
-      const { error: feedbackError, count: feedbackCount } = await supabase
-        .from("report_feedback")
-        .select("id", { count: "exact", head: true });
-        
-      const { error: usageError, count: usageCount } = await supabase
-        .from("usage_events")
-        .select("id", { count: "exact", head: true });
+      const [reports, feedback, usageEvents, payments] = await Promise.all([
+        countTable(supabase, "reports"),
+        countTable(supabase, "report_feedback"),
+        countTable(supabase, "usage_events"),
+        countTable(supabase, "payments"),
+      ]);
 
-      const { error: paymentsError, count: paymentsCount } = await supabase
-        .from("payments")
-        .select("id", { count: "exact", head: true });
-      
       dbStatus = {
+        feedback,
+        payments,
+        reports,
         status: "attempted",
-        reports: {
-          success: !reportsError,
-          count: reportsCount ?? null,
-          error: reportsError ? { code: reportsError.code, message: reportsError.message, details: reportsError.details } : null
-        },
-        feedback: {
-          success: !feedbackError,
-          count: feedbackCount ?? null,
-          error: feedbackError ? { code: feedbackError.code, message: feedbackError.message, details: feedbackError.details } : null
-        },
-        usageEvents: {
-          success: !usageError,
-          count: usageCount ?? null,
-          error: usageError ? { code: usageError.code, message: usageError.message, details: usageError.details } : null
-        },
-        payments: {
-          success: !paymentsError,
-          count: paymentsCount ?? null,
-          error: paymentsError ? { code: paymentsError.code, message: paymentsError.message, details: paymentsError.details } : null
-        }
+        usageEvents,
       };
-    } catch (err: any) {
-      dbStatus = { status: "error", message: err.message };
+    } catch (error) {
+      dbStatus = {
+        message: error instanceof Error ? error.message : "unknown_error",
+        status: "error",
+      };
     }
   } else {
     dbStatus = { status: "supabase_unconfigured" };
@@ -94,6 +80,8 @@ export async function GET() {
 
   return NextResponse.json({
     ...readiness,
+    midtransConfigured: readiness.midtransConfigured,
+    midtransProductionMode: readiness.midtransProductionMode,
     envVerification,
     dbStatus,
   });

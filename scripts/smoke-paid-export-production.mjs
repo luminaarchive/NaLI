@@ -28,7 +28,10 @@ function loadLocalEnv() {
       if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) continue;
       const index = trimmed.indexOf("=");
       const key = trimmed.slice(0, index).trim();
-      const value = trimmed.slice(index + 1).trim().replace(/^['"]|['"]$/g, "");
+      const value = trimmed
+        .slice(index + 1)
+        .trim()
+        .replace(/^['"]|['"]$/g, "");
       if (key && (!process.env[key] || process.env[key]?.trim() === "")) process.env[key] = value;
     }
   }
@@ -135,8 +138,17 @@ async function run() {
   assert(dbStatus.feedback?.success === true, "report_feedback readiness must be true");
   assert(dbStatus.usageEvents?.success === true, "usage_events readiness must be true");
   assert(dbStatus.payments?.success === true, "payments readiness must be true");
+  const midtransProductionMode =
+    typeof readiness.json.midtransProductionMode === "boolean" ? readiness.json.midtransProductionMode : false;
+
+  assert(typeof readiness.json.midtransConfigured === "boolean", "midtransConfigured readiness must be boolean");
+  assert(
+    readiness.json.midtransProductionMode === undefined || typeof readiness.json.midtransProductionMode === "boolean",
+    "midtransProductionMode readiness must be boolean when deployed",
+  );
   console.log(`- paymentsSuccess: ${dbStatus.payments.success}`);
   console.log(`- midtransConfigured: ${readiness.json.midtransConfigured === true}`);
+  console.log(`- midtransProductionMode: ${midtransProductionMode}`);
 
   if (resumeState) {
     console.log("[2/8] resume production report");
@@ -173,7 +185,10 @@ async function run() {
   });
 
   assert(reportResponse.response.status === 200, `Report generation returned HTTP ${reportResponse.response.status}`);
-  assert(reportResponse.json.persistence === "supabase", `Expected Supabase persistence, got ${reportResponse.json.persistence}`);
+  assert(
+    reportResponse.json.persistence === "supabase",
+    `Expected Supabase persistence, got ${reportResponse.json.persistence}`,
+  );
   const reportId = reportResponse.json.report_id;
   const accessKey = reportResponse.json.report_access_key;
   assert(typeof reportId === "string" && reportId.length > 0, "Report id missing");
@@ -187,7 +202,10 @@ async function run() {
   );
   assert(unpaidExport.response.status === 402, `Expected unpaid export HTTP 402, got ${unpaidExport.response.status}`);
   assert(unpaidExport.json.state === "export_locked", "Unpaid export state must be export_locked");
-  assert(/unlock|payment|pembayaran|diperlukan/i.test(unpaidExport.json.error || ""), "Unpaid export must say payment is required");
+  assert(
+    /unlock|payment|pembayaran|diperlukan/i.test(unpaidExport.json.error || ""),
+    "Unpaid export must say payment is required",
+  );
   assertNoSecretLeak(unpaidExport.json, "Unpaid export response");
   console.log("- unpaidExportLocked: true");
 
@@ -195,9 +213,15 @@ async function run() {
     `${baseUrl}/api/reports/${encodeURIComponent(reportId)}/export?token=${encodeURIComponent(accessKey)}&format=pdf`,
     { cache: "no-store" },
   );
-  assert(unpaidPdfExport.response.status === 402, `Expected unpaid PDF export HTTP 402, got ${unpaidPdfExport.response.status}`);
+  assert(
+    unpaidPdfExport.response.status === 402,
+    `Expected unpaid PDF export HTTP 402, got ${unpaidPdfExport.response.status}`,
+  );
   assert(unpaidPdfExport.json.state === "export_locked", "Unpaid PDF export state must be export_locked");
-  assert(/unlock|payment|pembayaran|diperlukan/i.test(unpaidPdfExport.json.error || ""), "Unpaid PDF export must say payment is required");
+  assert(
+    /unlock|payment|pembayaran|diperlukan/i.test(unpaidPdfExport.json.error || ""),
+    "Unpaid PDF export must say payment is required",
+  );
   assertNoSecretLeak(unpaidPdfExport.json, "Unpaid PDF export response");
   console.log("- unpaidPdfExportLocked: true");
 
@@ -224,18 +248,29 @@ async function run() {
     },
     "Payment create response",
   );
-  assert(paymentResponse.json.status === "pending" || paymentResponse.json.status === "manual_payment_pending", "Payment create must be pending");
+  assert(
+    paymentResponse.json.status === "pending" || paymentResponse.json.status === "manual_payment_pending",
+    "Payment create must be pending",
+  );
   assert(paymentResponse.json.status !== "paid", "Payment create must not fake paid success");
 
   if (readiness.json.midtransConfigured === true) {
     const checkoutUrl = paymentResponse.json.checkout_url || paymentResponse.json.snap_url;
     assert(typeof checkoutUrl === "string", "Midtrans configured but checkout URL missing");
-    assert(typeof paymentResponse.json.snap_token === "string" && paymentResponse.json.snap_token.length > 0, "Midtrans configured but Snap token missing");
+    assert(
+      typeof paymentResponse.json.snap_token === "string" && paymentResponse.json.snap_token.length > 0,
+      "Midtrans configured but Snap token missing",
+    );
     assert(/^https:\/\/app(\.sandbox)?\.midtrans\.com\//.test(checkoutUrl), "Checkout URL is not a safe Midtrans URL");
     console.log("- paymentMode: midtrans");
+    console.log("- checkoutUrlReturned: true");
+    console.log("- snapTokenReturned: true");
   } else {
     assert(paymentResponse.json.payment_mode === "manual", "Missing Midtrans must return manual payment mode");
-    assert(!paymentResponse.json.checkout_url && !paymentResponse.json.snap_url && !paymentResponse.json.snap_token, "Manual payment mode must not include Snap credentials");
+    assert(
+      !paymentResponse.json.checkout_url && !paymentResponse.json.snap_url && !paymentResponse.json.snap_token,
+      "Manual payment mode must not include Snap credentials",
+    );
     console.log("- paymentMode: manual");
   }
 
@@ -301,9 +336,15 @@ async function verifyUnlockedExport({ accessKey, baseUrl, reportId }) {
   );
   const markdown = await exportResponse.text();
   assert(exportResponse.status === 200, `Confirmed export returned HTTP ${exportResponse.status}`);
-  assert((exportResponse.headers.get("content-type") || "").includes("text/markdown"), "Export content-type must be markdown");
+  assert(
+    (exportResponse.headers.get("content-type") || "").includes("text/markdown"),
+    "Export content-type must be markdown",
+  );
   assert(markdown.includes("Draft bantuan belajar/penulisan berbasis bukti."), "Export markdown missing draft label");
-  assert(markdown.includes("Dokumen ini adalah draft bantuan belajar/penulisan berbasis bukti."), "Export markdown missing disclaimer");
+  assert(
+    markdown.includes("Dokumen ini adalah draft bantuan belajar/penulisan berbasis bukti."),
+    "Export markdown missing disclaimer",
+  );
   assertNoSecretLeak(markdown, "Export markdown");
   console.log("- exportMarkdownReturned: true");
 
@@ -315,7 +356,10 @@ async function verifyUnlockedExport({ accessKey, baseUrl, reportId }) {
   const pdfBuffer = Buffer.from(await pdfResponse.arrayBuffer());
   const pdfRaw = pdfBuffer.toString("latin1");
   assert(pdfResponse.status === 200, `Confirmed PDF export returned HTTP ${pdfResponse.status}`);
-  assert((pdfResponse.headers.get("content-type") || "").includes("application/pdf"), "PDF export content-type must be application/pdf");
+  assert(
+    (pdfResponse.headers.get("content-type") || "").includes("application/pdf"),
+    "PDF export content-type must be application/pdf",
+  );
   assert(pdfBuffer.subarray(0, 5).toString("latin1") === "%PDF-", "PDF export must return PDF bytes");
   assertNoPdfSecretLeak(pdfRaw, accessKey);
   console.log("- exportPdfReturned: true");

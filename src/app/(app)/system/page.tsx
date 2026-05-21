@@ -1,5 +1,14 @@
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, Database, FileText, LockKeyhole, RefreshCw, ShieldCheck, WifiOff } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Database,
+  FileText,
+  LockKeyhole,
+  RefreshCw,
+  ShieldCheck,
+  WifiOff,
+} from "lucide-react";
 import { purgeExpiredReports } from "@/lib/maintenance/purge";
 import { getDailyUsageSummary } from "@/lib/usage/logging";
 import { getSystemReadiness } from "@/lib/system/readiness";
@@ -62,7 +71,9 @@ export default async function SystemReadinessPage({
     },
     {
       detail: readiness.midtransConfigured
-        ? "Payment route can attempt one-time export creation."
+        ? readiness.midtransProductionMode
+          ? "Payment route can create Midtrans one-time export transactions in production mode."
+          : "Payment route can create Midtrans one-time export transactions in sandbox/default mode."
         : "Payment route remains honest and returns not-configured responses.",
       label: "Midtrans payment",
       status: readiness.midtransConfigured ? "configured" : "missing",
@@ -128,7 +139,7 @@ export default async function SystemReadinessPage({
     <div className="min-h-screen bg-[#f7f3ea] px-4 py-8 text-[#111814] sm:px-6 lg:px-8">
       <main className="mx-auto max-w-6xl">
         <header className="border-b border-[#ddd5c7] pb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#6f8057]">Internal Sprint 0</p>
+          <p className="text-xs font-semibold tracking-[0.08em] text-[#6f8057] uppercase">Internal Sprint 0</p>
           <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">System Readiness</h1>
@@ -160,8 +171,14 @@ export default async function SystemReadinessPage({
               <h2 className="text-lg font-semibold">Usage and Cost Protection</h2>
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <Metric label="NaLI Energy today" value={usage.ready ? String(usage.summary.estimatedEnergy) : "not active"} />
-              <Metric label="Usage events today" value={usage.ready ? String(usage.summary.eventCount) : "not active"} />
+              <Metric
+                label="NaLI Energy today"
+                value={usage.ready ? String(usage.summary.estimatedEnergy) : "not active"}
+              />
+              <Metric
+                label="Usage events today"
+                value={usage.ready ? String(usage.summary.eventCount) : "not active"}
+              />
               <Metric
                 label="Protection mode"
                 value={costProtection.active ? "active" : costProtection.configured ? "monitoring" : "prepared"}
@@ -205,10 +222,7 @@ export default async function SystemReadinessPage({
                   <dl className="grid grid-cols-2 gap-2">
                     <SystemMeta label="Scanned" value={String(purgeDryRun.scanned)} />
                     <SystemMeta label="Would delete reports" value={String(purgeDryRun.wouldDeleteReports)} />
-                    <SystemMeta
-                      label="Would delete storage"
-                      value={String(purgeDryRun.wouldDeleteStorageObjects)}
-                    />
+                    <SystemMeta label="Would delete storage" value={String(purgeDryRun.wouldDeleteStorageObjects)} />
                     <SystemMeta label="Would mark failed" value={String(purgeDryRun.wouldMarkFailed)} />
                     <SystemMeta label="Errors" value={String(purgeDryRun.errors.length)} />
                   </dl>
@@ -262,7 +276,7 @@ function ReadinessCard({ detail, label, status }: { detail: string; label: strin
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border border-[#ddd5c7] bg-white p-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#6f8057]">{label}</p>
+      <p className="text-xs font-semibold tracking-[0.08em] text-[#6f8057] uppercase">{label}</p>
       <p className="mt-2 text-xl font-semibold text-[#111814]">{value}</p>
     </div>
   );
@@ -271,7 +285,7 @@ function Metric({ label, value }: { label: string; value: string }) {
 function SystemMeta({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-[#6f8057]">{label}</dt>
+      <dt className="text-xs font-semibold tracking-[0.08em] text-[#6f8057] uppercase">{label}</dt>
       <dd className="mt-1 font-semibold text-[#111814]">{value}</dd>
     </div>
   );
