@@ -6,6 +6,7 @@ Status date: 2026-05-21.
 
 - Project: NaLI Sprint 0 / Sprint 0.2.
 - Production site: `https://naliai.vercel.app`.
+- Release checkpoint: `v0.1.0-first-sale`.
 - Public visual is locked.
 - Sprint 0 feedback persistence is locked and verified.
 - `reports`, `usage_events`, `report_feedback`, and `payments` are production verified.
@@ -20,7 +21,9 @@ Status date: 2026-05-21.
 
 ## Current Priority
 
-The next meaningful product checkpoint is Sprint 0.2 first sale readiness: founder-safe manual payment SOP, conservative payment claims, and repeatable production smoke checks. Do not expand into large Professional Layer, agentic, realtime, enterprise, SOS, or dashboard features during this pass.
+The next meaningful product phase is real user validation for `v0.1.0-first-sale`, not a new feature build. Use the first-user checklist, run the existing production smokes, watch the manual payment flow, and collect concrete buyer/tester feedback before expanding scope.
+
+Do not expand into large Professional Layer, agentic, realtime, enterprise, SOS, dashboard, or automated payment features during this validation phase.
 
 ## Production Verification Notes
 
