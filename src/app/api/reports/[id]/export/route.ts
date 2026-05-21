@@ -59,7 +59,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     );
   }
 
-  const markdown = buildReportMarkdown(persisted.report);
+  const markdown = buildReportMarkdown(persisted.report, { exportStatus: "export_ready" });
 
   return new NextResponse(markdown, {
     headers: {

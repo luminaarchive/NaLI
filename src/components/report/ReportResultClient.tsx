@@ -17,104 +17,9 @@ import {
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import type { DraftReport, ReportResult, StartFromZeroGuide } from "@/lib/reports/reportGenerator";
+import { buildReportMarkdown } from "@/lib/reports/markdown";
 
 const accessParamName = "to" + "ken";
-
-function lineList(title: string, items: string[]) {
-  return [`## ${title}`, ...items.map((item) => `- ${item}`), ""].join("\n");
-}
-
-function buildDraftMarkdown(report: DraftReport) {
-  const evidenceRows = report.evidence_table
-    .map(
-      (row) =>
-        `| ${row.id} | ${row.material_type} | ${row.summary.replace(/\|/g, "/")} | ${row.verification_status.replace(/\|/g, "/")} |`,
-    )
-    .join("\n");
-
-  return [
-    `# ${report.title}`,
-    "",
-    `**${report.draft_label}**`,
-    "",
-    `Jenis laporan: ${report.report_type}`,
-    `Dibuat: ${report.created_at}`,
-    `Status: ${report.status}`,
-    `Pemrosesan: ${report.model_used}`,
-    "",
-    "## Ringkasan",
-    report.executive_summary,
-    "",
-    "## Latar Belakang",
-    report.background,
-    "",
-    "## Tujuan",
-    report.objective,
-    "",
-    "## Metode atau Bahan",
-    report.method_or_materials,
-    "",
-    lineList("Temuan", report.findings),
-    "## Analisis Awal",
-    report.preliminary_analysis,
-    "",
-    "## Evidence Table",
-    "| ID | Tipe bahan | Ringkasan | Status verifikasi |",
-    "| --- | --- | --- | --- |",
-    evidenceRows,
-    "",
-    "## Source Verification",
-    report.source_verification_status,
-    "",
-    ...report.source_notes.map((item) => `- ${item}`),
-    "",
-    lineList("Kebutuhan Bukti Tambahan", report.additional_evidence_needed),
-    lineList("Checklist Review Pengguna", report.user_review_checklist),
-    "## Uncertainty Note",
-    report.uncertainty_note,
-    "",
-    "## Disclaimer",
-    report.disclaimer,
-    "",
-    lineList("Langkah Berikutnya", report.next_user_steps),
-  ].join("\n");
-}
-
-function buildGuideMarkdown(report: StartFromZeroGuide) {
-  return [
-    `# ${report.title}`,
-    "",
-    `**${report.label}**`,
-    "",
-    `Jenis laporan: ${report.report_type}`,
-    `Dibuat: ${report.created_at}`,
-    `Status: ${report.status}`,
-    `Pemrosesan: ${report.model_used}`,
-    "",
-    "## Kerangka Topik",
-    report.topic_framing,
-    "",
-    lineList("Outline Laporan", report.suggested_outline),
-    lineList("Pertanyaan Observasi", report.observation_questions),
-    lineList("Template Catatan Lapangan", report.field_note_template),
-    lineList("Checklist Bukti", report.evidence_checklist),
-    lineList("Checklist Pencarian Sumber", report.source_search_checklist),
-    "## Catatan Etika/Keamanan",
-    report.safety_or_ethics_note,
-    "",
-    "## Integritas Akademik",
-    report.integrity_note,
-    "",
-    "## Disclaimer",
-    report.disclaimer,
-    "",
-    lineList("Langkah Berikutnya", report.next_steps),
-  ].join("\n");
-}
-
-function buildMarkdown(report: ReportResult) {
-  return report.mode === "start_from_zero" ? buildGuideMarkdown(report) : buildDraftMarkdown(report);
-}
 
 function getStoredReportAccessKey(reportId: string): string | null {
   if (typeof window === "undefined") return null;
@@ -237,7 +142,15 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
     };
   }, [reportId]);
 
-  const markdown = useMemo(() => (report ? buildMarkdown(report) : ""), [report]);
+  const markdown = useMemo(
+    () =>
+      report
+        ? buildReportMarkdown(report, {
+            exportStatus: exportReadiness === "export_ready" ? "export_ready" : "preview_copy",
+          })
+        : "",
+    [exportReadiness, report],
+  );
 
   async function copyMarkdown() {
     if (!report) return;
@@ -501,19 +414,19 @@ function DraftContent({ notice, report }: { notice: string | null; report: Draft
   return (
     <article className="space-y-5">
       <Notice notice={notice} />
-      <ReportSection title="Ringkasan">{report.executive_summary}</ReportSection>
-      <ReportSection title="Latar Belakang">{report.background}</ReportSection>
-      <ReportSection title="Tujuan">{report.objective}</ReportSection>
-      <ReportSection title="Metode atau Bahan">{report.method_or_materials}</ReportSection>
-      <ListSection items={report.findings} title="Temuan" />
-      <ReportSection title="Analisis Awal">{report.preliminary_analysis}</ReportSection>
+      <ReportSection title="Ringkasan Singkat">{report.executive_summary}</ReportSection>
+      <ReportSection title="Konteks Observasi">{report.background}</ReportSection>
+      <ReportSection title="Tujuan Laporan">{report.objective}</ReportSection>
+      <ReportSection title="Bahan / Metode Singkat">{report.method_or_materials}</ReportSection>
+      <ListSection items={report.findings} title="Temuan Utama" />
+      <ReportSection title="Analisis Awal Berbasis Bukti">{report.preliminary_analysis}</ReportSection>
       <EvidenceTable report={report} />
-      <ListSection items={report.source_notes} title="Source Verification" note={report.source_verification_status} />
+      <ListSection items={report.source_notes} title="Catatan Sumber / Evidence" note={report.source_verification_status} />
       <ListSection items={report.additional_evidence_needed} title="Kebutuhan Bukti Tambahan" />
       <ListSection items={report.user_review_checklist} title="Checklist Review Pengguna" icon="check" />
-      <ReportSection title="Uncertainty Note">{report.uncertainty_note}</ReportSection>
+      <ReportSection title="Tingkat Keyakinan / Confidence Note">{report.uncertainty_note}</ReportSection>
       <Disclaimer tone="draft">{report.disclaimer}</Disclaimer>
-      <ListSection items={report.next_user_steps} title="Langkah Berikutnya" icon="check" />
+      <ListSection items={report.next_user_steps} title="Rekomendasi Tindak Lanjut" icon="check" />
     </article>
   );
 }
@@ -531,7 +444,7 @@ function GuideContent({ notice, report }: { notice: string | null; report: Start
       <ListSection items={report.source_search_checklist} title="Checklist Pencarian Sumber" />
       <ReportSection title="Catatan Etika/Keamanan">{report.safety_or_ethics_note}</ReportSection>
       <Disclaimer tone="guide">{report.disclaimer}</Disclaimer>
-      <ListSection items={report.next_steps} title="Langkah Berikutnya" icon="check" />
+      <ListSection items={report.next_steps} title="Rekomendasi Tindak Lanjut" icon="check" />
     </article>
   );
 }

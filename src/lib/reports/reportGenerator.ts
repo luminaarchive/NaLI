@@ -528,6 +528,14 @@ function findingsFromInput(input: ReportRequest) {
   return findings.length > 0 ? findings : ["Belum ada temuan faktual yang dapat disusun dari bahan pengguna."];
 }
 
+function confidenceNoteFor(input: ReportRequest, evidenceTable: EvidenceRow[]) {
+  const hasDirectNote = Boolean(input.mainText);
+  const hasSupportingContext = Boolean(input.location || input.fileDescription || input.sourceUrls.length > 0);
+  const level = hasDirectNote && hasSupportingContext && evidenceTable.length >= 2 ? "sedang-terbatas" : "rendah";
+
+  return `Tingkat keyakinan: ${level}. Penilaian ini hanya berdasarkan bahan yang diberikan pengguna. NaLI belum memverifikasi URL, lokasi, file, angka, atau klaim ilmiah, sehingga hasil perlu divalidasi dengan bukti tambahan dan pemeriksaan manusia.`;
+}
+
 export function buildMockDraftReport(input: ReportRequest, modelUsed = "NaLI Preview Engine"): DraftReport {
   const evidenceTable = buildEvidenceTable(input);
   const issue = detectIssue(`${input.mainText} ${input.title}`);
@@ -545,7 +553,7 @@ export function buildMockDraftReport(input: ReportRequest, modelUsed = "NaLI Pre
       "Pembahasan perlu menjaga batas bahan. NaLI dapat merapikan struktur dan menunjukkan kebutuhan bukti, tetapi tidak menyatakan penyebab, angka, atau validitas akademik tanpa data pendukung yang diperiksa pengguna.",
     draft_label: DRAFT_LABEL,
     evidence_table: evidenceTable,
-    executive_summary: `NaLI menyusun draft awal "${input.title}" dari ${evidenceTable.length} bahan pengguna. Draft ini membantu menyusun struktur laporan dan menandai bagian yang masih perlu bukti tambahan.`,
+    executive_summary: `NaLI menyusun ringkasan awal "${input.title}" dari ${evidenceTable.length} bahan pengguna. Nilai utama draft ini adalah merapikan konteks observasi, memisahkan temuan dari analisis, dan menandai bukti yang masih perlu dikumpulkan.`,
     findings: findingsFromInput(input),
     generated_at: new Date().toISOString(),
     human_review_reminder: "Validasi akhir tetap berada pada pengguna, guru, dosen, pembimbing, reviewer, atau ahli yang relevan.",
@@ -561,10 +569,10 @@ export function buildMockDraftReport(input: ReportRequest, modelUsed = "NaLI Pre
       "Buka dan cek setiap URL sebelum dipakai sebagai sumber.",
       "Edit bahasa dan format sesuai aturan sekolah, kampus, atau lembaga.",
     ],
-    objective: `Menyusun ${input.reportTemplate.toLowerCase()} berbasis bahan pengguna, dengan evidence table, uncertainty note, dan checklist review.`,
+    objective: `Menyusun ${input.reportTemplate.toLowerCase()} berbasis bahan pengguna, dengan ringkasan singkat, konteks observasi, temuan utama, analisis awal berbasis bukti, confidence note, dan rekomendasi tindak lanjut.`,
     preliminary_analysis: issue
-      ? `Berdasarkan catatan pengguna, isu utama yang dapat ditelusuri adalah ${issue.label.toLowerCase()}. Draft ini belum dapat menyimpulkan penyebab atau dampak karena bukti pendukung masih terbatas.`
-      : "Berdasarkan bahan pengguna, NaLI baru dapat menyusun struktur awal dan daftar kebutuhan bukti. Analisis harus diperkuat dengan catatan observasi, dokumentasi, dan sumber yang diperiksa.",
+      ? `Berdasarkan catatan pengguna, isu utama yang dapat ditelusuri adalah ${issue.label.toLowerCase()}. Analisis awal ini menghubungkan temuan hanya dengan bahan yang tersedia, sehingga belum boleh dipakai untuk menyimpulkan penyebab, skala dampak, atau klaim ilmiah final.`
+      : "Berdasarkan bahan pengguna, NaLI baru dapat menyusun struktur awal, memisahkan temuan dari dugaan, dan menulis daftar kebutuhan bukti. Analisis harus diperkuat dengan catatan observasi, dokumentasi, dan sumber yang diperiksa.",
     report_type: input.reportTemplate,
     source_notes:
       input.sourceUrls.length > 0
@@ -573,8 +581,7 @@ export function buildMockDraftReport(input: ReportRequest, modelUsed = "NaLI Pre
     source_verification_status: SOURCE_VERIFICATION_MVP_STATUS,
     status: "DEMO/MOCK - NaLI preview engine unavailable or not configured.",
     title: input.title,
-    uncertainty_note:
-      "Uncertainty note: draft ini bergantung pada bahan pengguna. NaLI belum memverifikasi URL, lokasi, file, angka, atau klaim ilmiah. Jangan menambahkan sitasi, statistik, atau kesimpulan final tanpa pemeriksaan manusia.",
+    uncertainty_note: confidenceNoteFor(input, evidenceTable),
     user_review_checklist: [
       "Apakah setiap temuan berasal dari catatan, URL, lokasi, atau lampiran yang benar-benar ada?",
       "Apakah ada klaim yang perlu dihapus karena belum punya bukti?",
@@ -725,6 +732,7 @@ export function buildReportPrompt(input: ReportRequest) {
     `draft_label must be exactly: ${DRAFT_LABEL}`,
     `disclaimer must be exactly: ${PUBLIC_REPORT_DISCLAIMER}`,
     "Use only user-provided materials for facts. You may structure, clarify, infer safe title/topic, and suggest missing evidence.",
+    "Structure the draft as: Judul laporan, Ringkasan singkat, Konteks observasi, Temuan utama, Analisis awal berbasis bukti, Tingkat keyakinan/confidence note, Batasan & disclaimer, Rekomendasi tindak lanjut, and Catatan sumber/evidence.",
     "Schema: { mode, title, report_type, created_at, status, model_used, draft_label, executive_summary, background, objective, method_or_materials, findings: string[], preliminary_analysis, evidence_table: { id, material_type, summary, user_provided, verification_status }[], source_notes: string[], source_verification_status, uncertainty_note, additional_evidence_needed: string[], user_review_checklist: string[], disclaimer, next_user_steps: string[] }",
     "",
     `Mode: ${input.mode}`,

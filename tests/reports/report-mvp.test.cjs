@@ -37,6 +37,8 @@ const {
   confirmReportUpload,
   verifyReportUpload,
 } = require("../../src/lib/reports/uploads");
+const { buildReportMarkdown } = require("../../src/lib/reports/markdown");
+const { getExportState } = require("../../src/lib/reports/exportGate");
 const { isValidEnergyLedgerAmount } = require("../../src/lib/energy/ledger");
 const {
   createMidtransSignature,
@@ -1052,6 +1054,61 @@ test("export and payment routes enforce Sprint 0 gatekeeping in source", () => {
   assert.match(resultClient, /Unlock Export/);
 });
 
+test("paid markdown export has NaLI structure, metadata, disclaimer, and redaction", () => {
+  const validated = validateReportRequest({
+    integrityConsent: true,
+    location: "Semarang",
+    mainText: "Saya mengamati erosi ringan di tepi saluran air setelah hujan. Air keruh dan tebing terlihat terkikis.",
+    mode: "draft_from_materials",
+    reportTemplate: "Laporan Observasi Lingkungan",
+    title: "Observasi Saluran Air",
+  });
+  assert.equal(validated.success, true);
+
+  const report = buildMockDraftReport(validated.data);
+  const supabaseSecretFixture = "SUPABASE_SERVICE_ROLE_" + "KEY=should-not-appear";
+  const midtransSecretFixture = "MIDTRANS_SERVER_" + "KEY=should-not-appear";
+  report.findings.push(
+    [
+      "Nilai sensitif uji:",
+      "guest-session-release-check-123456789",
+      "report_access_key: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890",
+      "hash 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      supabaseSecretFixture,
+      midtransSecretFixture,
+    ].join(" "),
+  );
+
+  const markdown = buildReportMarkdown(report, { exportStatus: "export_ready" });
+
+  assert.match(markdown, /^# NaLI Learn & Report/m);
+  assert.match(markdown, /## Judul Laporan/);
+  assert.match(markdown, /## Metadata Laporan/);
+  assert.match(markdown, new RegExp(`Report ID: ${report.id}`));
+  assert.match(markdown, /Mode: draft_from_materials/);
+  assert.match(markdown, /Status export: export_ready/);
+  assert.match(markdown, /## Ringkasan Singkat/);
+  assert.match(markdown, /## Konteks Observasi/);
+  assert.match(markdown, /## Temuan Utama/);
+  assert.match(markdown, /## Analisis Awal Berbasis Bukti/);
+  assert.match(markdown, /## Tingkat Keyakinan \/ Confidence Note/);
+  assert.match(markdown, /## Batasan & Disclaimer/);
+  assert.match(markdown, /## Rekomendasi Tindak Lanjut/);
+  assert.match(markdown, /## Catatan Sumber \/ Evidence/);
+  assert.match(markdown, /Draft ini adalah bantuan awal berbasis informasi yang diberikan, bukan pengganti validasi ahli\/lapangan\./);
+
+  assert.doesNotMatch(markdown, /guest-session-release-check/i);
+  assert.doesNotMatch(markdown, /report_access_key:\s*[A-Za-z0-9_-]{20,}/);
+  assert.doesNotMatch(markdown, /0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef/i);
+  assert.doesNotMatch(markdown, new RegExp(supabaseSecretFixture));
+  assert.doesNotMatch(markdown, new RegExp(midtransSecretFixture));
+});
+
+test("export gate state remains locked until successful payment", () => {
+  assert.equal(getExportState({ hasSuccessfulPayment: false }), "export_locked");
+  assert.equal(getExportState({ hasSuccessfulPayment: true }), "export_ready");
+});
+
 test("manual payment first-sale operations stay server-side and honest", () => {
   const paymentRoute = fs.readFileSync(path.join(repoRoot, "src/app/api/payments/create/route.ts"), "utf8");
   const statusDoc = fs.readFileSync(path.join(repoRoot, "docs/PAYMENT_MODE_STATUS.md"), "utf8");
@@ -1322,4 +1379,3 @@ test("persisted report access key handoff, localStorage keys, and safety", () =>
   assert.match(generateRouteSource, /report_id: report\.id/);
   assert.match(generateRouteSource, /report_access_key: persistence\.persisted \?/);
 });
-
