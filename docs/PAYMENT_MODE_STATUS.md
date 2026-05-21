@@ -4,13 +4,25 @@ Status date: 2026-05-21.
 
 ## Current Mode
 
-NaLI production is currently in manual pending payment mode.
+NaLI Sprint 0.5 target mode is automatic Midtrans one-time payment for paid report export.
 
-When a user requests a paid markdown export and Midtrans is not configured, `/api/payments/create` creates a pending row in the `payments` table and returns `payment_mode = manual`. Export remains locked until the founder confirms the payment.
+When Midtrans server env is configured, `/api/payments/create` creates a Midtrans Snap one-time transaction, stores a pending row in the `payments` table, and returns only safe checkout data (`checkout_url`/`snap_url` and `snap_token`) to the client. Export remains locked while the payment row is pending.
+
+Manual fallback exists only when Midtrans env is missing or unavailable. In fallback mode, `/api/payments/create` creates a real pending row in the `payments` table and returns `payment_mode = manual`; export remains locked until trusted founder/admin confirmation updates the row.
 
 ## Midtrans Status
 
-Midtrans is not configured in production.
+The code path for automatic Midtrans checkout is active when server-only Midtrans env is configured. Production readiness must be checked through `/api/system/readiness`; do not infer readiness from local fallback behavior.
+
+Current server-only env names:
+
+- `MIDTRANS_SERVER_KEY`
+- `MIDTRANS_MERCHANT_ID`
+- `MIDTRANS_ENVIRONMENT` (`production` enables production Snap)
+- `MIDTRANS_IS_PRODUCTION` (alias accepted for production mode)
+- `MIDTRANS_SNAP_BASE_URL` (optional, must point to `https://app.midtrans.com` or `https://app.sandbox.midtrans.com`)
+
+`MIDTRANS_CLIENT_KEY` is not required by the current server-created Snap redirect flow and must not be exposed through `NEXT_PUBLIC_`.
 
 Expected behavior while Midtrans is absent:
 
@@ -26,7 +38,9 @@ The `payments` table is the source of truth for confirmed payment and export unl
 
 The export gate checks successful payment state from `payments` joined by `report_id`. Do not copy payment order ids or paid status into `reports` as a second source of truth.
 
-Successful payment statuses currently recognized by the export gate are `paid` and `success`. Manual first-sale confirmation should set the intended pending payment row to `paid`.
+Successful payment statuses currently recognized by the export gate are `paid` and `success`. Midtrans webhook confirmation maps only `settlement` or `capture` with `fraud_status = accept` to `paid`.
+
+Denied, cancelled, expired, failed, challenge, or pending Midtrans states must not unlock export.
 
 ## No Fake Success Rule
 
@@ -36,19 +50,19 @@ The create-payment route may create a pending row, but it must not return `paid`
 
 If Midtrans is missing, the correct public state is manual pending payment, not automatic checkout.
 
-## Future Midtrans Activation Checklist
+## Midtrans Activation Checklist
 
-Before claiming automatic checkout is live:
+Before claiming automatic checkout is live in production:
 
-1. Configure production `MIDTRANS_SERVER_KEY`, `MIDTRANS_MERCHANT_ID`, and `MIDTRANS_ENVIRONMENT` in Vercel.
+1. Configure production `MIDTRANS_SERVER_KEY`, `MIDTRANS_MERCHANT_ID`, and either `MIDTRANS_ENVIRONMENT=production` or `MIDTRANS_IS_PRODUCTION=true` in Vercel.
 2. Confirm server-only storage of Midtrans secrets. Do not add `NEXT_PUBLIC_` Midtrans secret variables.
 3. Verify `/api/system/readiness` reports `midtransConfigured = true`.
 4. Create a real or sandbox transaction through the production route, depending on the chosen activation stage.
-5. Verify a safe Snap checkout URL is returned only when Midtrans is configured.
+5. Verify a safe Snap checkout URL/token is returned only when Midtrans is configured.
 6. Verify the Midtrans webhook signature before updating any payment row.
 7. Confirm webhook updates the matching `payments` row by Midtrans order id.
-8. Confirm markdown export unlocks only after the `payments` row reaches a successful status.
+8. Confirm markdown and PDF export unlock only after the `payments` row reaches a successful status.
 9. Run `npm run smoke:export:prod`.
 10. Update founder runbooks and public copy only after verification passes.
 
-Until those checks pass, keep public wording manual and conservative.
+Until those checks pass in production, keep public wording conservative and do not promise instant checkout.

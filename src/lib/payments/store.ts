@@ -1,6 +1,6 @@
 import { getOptionalSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { ExportType, MidtransNotification, PaymentStatus } from "@/lib/payments/midtrans";
-import { isSuccessfulPaymentStatus } from "@/lib/payments/midtrans";
+import { isSuccessfulPaymentStatus, sanitizeMidtransNotification } from "@/lib/payments/midtrans";
 
 export type PaymentRecord = {
   amount: number;
@@ -108,7 +108,7 @@ export async function updatePaymentFromNotification({
     .from("payments")
     .update({
       payment_type: typeof notification.payment_type === "string" ? notification.payment_type : null,
-      raw_notification: notification,
+      raw_notification: sanitizeMidtransNotification(notification),
       status,
     })
     .eq("midtrans_order_id", midtransOrderId)

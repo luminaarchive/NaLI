@@ -220,7 +220,6 @@ async function run() {
       export_type: paymentResponse.json.export_type,
       message: paymentResponse.json.message,
       payment_mode: paymentResponse.json.payment_mode,
-      snap_url: paymentResponse.json.snap_url,
       status: paymentResponse.json.status,
     },
     "Payment create response",
@@ -229,12 +228,14 @@ async function run() {
   assert(paymentResponse.json.status !== "paid", "Payment create must not fake paid success");
 
   if (readiness.json.midtransConfigured === true) {
-    assert(typeof paymentResponse.json.snap_url === "string", "Midtrans configured but Snap URL missing");
-    assert(/^https:\/\/app(\.sandbox)?\.midtrans\.com\//.test(paymentResponse.json.snap_url), "Snap URL is not a safe Midtrans URL");
+    const checkoutUrl = paymentResponse.json.checkout_url || paymentResponse.json.snap_url;
+    assert(typeof checkoutUrl === "string", "Midtrans configured but checkout URL missing");
+    assert(typeof paymentResponse.json.snap_token === "string" && paymentResponse.json.snap_token.length > 0, "Midtrans configured but Snap token missing");
+    assert(/^https:\/\/app(\.sandbox)?\.midtrans\.com\//.test(checkoutUrl), "Checkout URL is not a safe Midtrans URL");
     console.log("- paymentMode: midtrans");
   } else {
     assert(paymentResponse.json.payment_mode === "manual", "Missing Midtrans must return manual payment mode");
-    assert(!paymentResponse.json.snap_url && !paymentResponse.json.snap_token, "Manual payment mode must not include Snap credentials");
+    assert(!paymentResponse.json.checkout_url && !paymentResponse.json.snap_url && !paymentResponse.json.snap_token, "Manual payment mode must not include Snap credentials");
     console.log("- paymentMode: manual");
   }
 

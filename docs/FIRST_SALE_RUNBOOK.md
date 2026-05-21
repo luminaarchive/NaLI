@@ -4,7 +4,11 @@ Status date: 2026-05-21.
 
 ## Scope
 
-This runbook is for the first real paid NaLI export while production is in manual pending payment mode. Midtrans is not configured, so payment is not automatic and export must stay locked until the founder confirms a real payment in the `payments` table.
+This runbook is for the first real paid NaLI export during Sprint 0.5.
+
+Primary June flow: free preview -> one-time paid export -> Midtrans one-time checkout -> Midtrans webhook confirmation -> markdown/PDF export unlock.
+
+Manual confirmation is fallback only. Use it only when Midtrans env is missing/unavailable or a payment needs trusted founder/admin recovery. Export must stay locked until the `payments` table has a confirmed successful row.
 
 Do not use this runbook to change public UI, pricing copy, homepage copy, Field Intelligence copy, or product claims.
 
@@ -26,22 +30,32 @@ Do not screenshot or share raw access keys, guest session ids, hashes, service r
 
 ## 2. Unpaid Export Lock
 
-Before payment is confirmed, the markdown export endpoint must stay locked.
+Before payment is confirmed, markdown and PDF export endpoints must stay locked.
 
 Expected behavior:
 
 - `/api/reports/[id]/export` returns a locked response, normally HTTP `402`.
+- `/api/reports/[id]/export?format=pdf` returns a locked response, normally HTTP `402`.
 - The response says payment is required.
-- No export markdown is returned before payment confirmation.
+- No markdown or PDF export content is returned before payment confirmation.
 - No secret-like values appear in the response.
 
-This is intentional. A free preview is allowed; premium markdown export is not unlocked until the `payments` table has a successful payment row for the report.
+This is intentional. A free preview is allowed; premium export is not unlocked until the `payments` table has a successful payment row for the report.
 
 ## 3. Pending Payment Row Creation
 
 When the user requests export unlock, production calls `/api/payments/create`.
 
-Current expected behavior while Midtrans is not configured:
+Expected automatic behavior when Midtrans is configured:
+
+- The API validates the report id and report access key.
+- The API creates a Midtrans Snap one-time transaction.
+- The API creates a `payments` row with `status = pending`.
+- The API returns safe checkout data only: `checkout_url`/`snap_url` and `snap_token`.
+- The API does not mark the payment as paid.
+- Export remains locked while the payment row is pending.
+
+Fallback behavior while Midtrans is not configured:
 
 - The API creates a `payments` row with `status = pending`.
 - The API returns `payment_mode = manual`.
@@ -49,11 +63,22 @@ Current expected behavior while Midtrans is not configured:
 - The API does not return a Snap URL or Snap token.
 - The API does not mark the payment as paid.
 
-The pending row is the founder's operational cue that a real payment must be checked manually.
+The pending row is the operational cue. In automatic mode, Midtrans webhook should confirm it. In fallback mode, the founder must check real payment evidence manually.
 
-## 4. Founder Verifies Payment Manually
+## 4. Automatic Midtrans Confirmation
 
-Before confirming a payment, the founder should compare the user's proof against production records.
+When Midtrans sends a webhook:
+
+- Verify the Midtrans signature with the server key.
+- Accept success only for `settlement` or `capture` with `fraud_status = accept`.
+- Update the matching `payments` row to `paid`.
+- Do not copy payment order ids, expiry, or paid state into `reports`.
+- Deny, cancel, expire, failure, pending, or challenge states must not unlock export.
+- Never expose Midtrans secrets, service role keys, raw access keys, hashes, or guest session ids in logs or UI.
+
+## 5. Founder Verifies Payment Manually
+
+Manual verification is fallback only. Before confirming a fallback payment, the founder should compare the user's proof against production records.
 
 Check the user evidence:
 
@@ -67,13 +92,13 @@ Check the database evidence:
 
 - `payments.id` or `payments.report_id` matches the user request.
 - `payments.status` is still `pending`.
-- `payments.export_type` is `markdown`.
+- `payments.export_type` is `markdown` or `pdf` according to the requested export.
 - The row belongs to the intended report.
 - There is no existing successful payment row for a different order that is being confused with this sale.
 
 If evidence is unclear, do not confirm the payment yet. Ask the user for clearer proof or wait until the payment is visible in the founder's payment channel.
 
-## 5. Founder Confirms Payment Safely
+## 6. Founder Confirms Payment Safely
 
 Preferred local command when production service-role env is available locally:
 
@@ -97,31 +122,31 @@ Safety rules:
 
 If local production service-role env is protected or unavailable, use the Supabase dashboard or trusted admin/MCP access to perform the same operation: update the intended pending `payments` row to `status = paid`, with safe manual metadata. Do not update unrelated rows.
 
-## 6. User Downloads Markdown Export
+## 7. User Downloads Markdown/PDF Export
 
 After confirmation:
 
 1. The user reloads the existing `/report/[id]` page.
 2. `/api/reports/[id]` should return `export_readiness = export_ready`.
-3. The user uses the existing Download Markdown action.
+3. The user uses Download Markdown or Download PDF.
 4. `/api/reports/[id]/export` should return markdown content.
+5. `/api/reports/[id]/export?format=pdf` should return `application/pdf`.
 
 Safe evidence to capture:
 
 - Screenshot that export is ready after confirmation.
-- Screenshot of the successful markdown download or browser download entry.
+- Screenshot of the successful markdown/PDF download or browser download entry.
 - Safe database screenshot showing the payment id, report id, export type, status, and timestamps only.
 
-## 7. What Not To Claim Publicly Yet
+## 8. What Not To Claim Publicly Yet
 
-While Midtrans is not configured and production is in manual pending payment mode, do not claim:
+Until production readiness and smokes prove Midtrans automatic checkout, do not claim:
 
-- Automatic checkout is live.
 - Card, bank, e-wallet, or Midtrans payment is active.
 - Export unlock is instant without founder review.
 - Payment confirmation is fully automated.
 - Subscriptions or recurring billing are active.
-- PDF/DOCX premium exports are active if only markdown has been verified.
+- DOCX premium export is active.
 - Field Intelligence is a fully live operational system.
 
-The honest current claim is: first-sale markdown export can be unlocked manually after the founder verifies payment.
+The honest current claim is based on readiness: automatic one-time Midtrans checkout only when `midtransConfigured = true` and production smoke passes; otherwise manual fallback can unlock markdown/PDF after trusted payment confirmation.

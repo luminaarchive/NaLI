@@ -20,6 +20,17 @@ export type MidtransNotification = {
 
 export type PaymentStatus = "pending" | "paid" | "failed" | "expired" | "cancelled" | "denied";
 
+const MIDTRANS_PRODUCTION_SNAP_ENDPOINT = "https://app.midtrans.com/snap/v1/transactions";
+const MIDTRANS_SANDBOX_SNAP_ENDPOINT = "https://app.sandbox.midtrans.com/snap/v1/transactions";
+
+function hasValue(value: string | undefined) {
+  return Boolean(value?.trim());
+}
+
+function isMidtransAppHost(hostname: string) {
+  return hostname === "app.midtrans.com" || hostname === "app.sandbox.midtrans.com";
+}
+
 export function isSupportedExportType(value: unknown): value is ExportType {
   return typeof value === "string" && SUPPORTED_EXPORT_TYPES.includes(value as ExportType);
 }
@@ -36,13 +47,48 @@ export function getExportAmountIdr(exportType: ExportType) {
 }
 
 export function isMidtransConfigured() {
-  return Boolean(process.env.MIDTRANS_SERVER_KEY?.trim() && process.env.MIDTRANS_MERCHANT_ID?.trim());
+  return hasValue(process.env.MIDTRANS_SERVER_KEY) && hasValue(process.env.MIDTRANS_MERCHANT_ID);
+}
+
+export function isMidtransProduction() {
+  const productionFlag = process.env.MIDTRANS_IS_PRODUCTION?.trim().toLowerCase();
+  if (productionFlag) return ["1", "true", "yes", "production"].includes(productionFlag);
+
+  return process.env.MIDTRANS_ENVIRONMENT?.trim().toLowerCase() === "production";
 }
 
 export function getMidtransSnapEndpoint() {
-  return process.env.MIDTRANS_ENVIRONMENT === "production"
-    ? "https://app.midtrans.com/snap/v1/transactions"
-    : "https://app.sandbox.midtrans.com/snap/v1/transactions";
+  const configuredBaseUrl = process.env.MIDTRANS_SNAP_BASE_URL?.trim();
+
+  if (configuredBaseUrl) {
+    try {
+      const url = new URL(configuredBaseUrl);
+      if (url.protocol === "https:" && isMidtransAppHost(url.hostname)) {
+        if (!url.pathname.endsWith("/transactions")) {
+          const basePath = url.pathname.replace(/\/$/, "") || "/snap/v1";
+          url.pathname = `${basePath}/transactions`;
+        }
+        url.search = "";
+        url.hash = "";
+        return url.toString();
+      }
+    } catch {
+      // Fall through to the environment-derived safe endpoint.
+    }
+  }
+
+  return isMidtransProduction() ? MIDTRANS_PRODUCTION_SNAP_ENDPOINT : MIDTRANS_SANDBOX_SNAP_ENDPOINT;
+}
+
+export function isSafeMidtransCheckoutUrl(value: unknown) {
+  if (typeof value !== "string" || !value.trim()) return false;
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && isMidtransAppHost(url.hostname);
+  } catch {
+    return false;
+  }
 }
 
 export function getMidtransNotificationOrderId(notification: MidtransNotification) {
@@ -113,6 +159,11 @@ export function mapMidtransTransactionStatus(notification: MidtransNotification)
   }
 
   return "pending";
+}
+
+export function sanitizeMidtransNotification(notification: MidtransNotification) {
+  const { signature_key: _signatureKey, ...safeNotification } = notification;
+  return safeNotification;
 }
 
 export function isSuccessfulPaymentStatus(status: string | null | undefined) {

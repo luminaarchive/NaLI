@@ -18,6 +18,8 @@ const optionalProviderKeys = [
   "MIDTRANS_SERVER_KEY",
   "MIDTRANS_MERCHANT_ID",
   "MIDTRANS_ENVIRONMENT",
+  "MIDTRANS_IS_PRODUCTION",
+  "MIDTRANS_SNAP_BASE_URL",
   "NALI_EXPORT_PRICE_IDR",
   "IUCN_API_KEY",
   "EBIRD_API_KEY",
@@ -97,6 +99,8 @@ export const env = {
       merchantId: process.env.MIDTRANS_MERCHANT_ID ?? "",
       serverKey: process.env.MIDTRANS_SERVER_KEY ?? "",
       environment: process.env.MIDTRANS_ENVIRONMENT ?? "sandbox",
+      isProduction: process.env.MIDTRANS_IS_PRODUCTION ?? "",
+      snapBaseUrl: process.env.MIDTRANS_SNAP_BASE_URL ?? "",
       exportPriceIdr: process.env.NALI_EXPORT_PRICE_IDR ?? "19000",
     },
     iucn: {

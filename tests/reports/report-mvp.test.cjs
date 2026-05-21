@@ -42,7 +42,12 @@ const { getExportState } = require("../../src/lib/reports/exportGate");
 const { isValidEnergyLedgerAmount } = require("../../src/lib/energy/ledger");
 const {
   createMidtransSignature,
+  getMidtransSnapEndpoint,
+  isMidtransConfigured,
+  isSafeMidtransCheckoutUrl,
+  isSuccessfulPaymentStatus,
   mapMidtransTransactionStatus,
+  sanitizeMidtransNotification,
   verifyMidtransSignature,
 } = require("../../src/lib/payments/midtrans");
 const {
@@ -74,6 +79,29 @@ function restoreSupabaseEnv(snapshot) {
 
   if (snapshot.url === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
   else process.env.NEXT_PUBLIC_SUPABASE_URL = snapshot.url;
+}
+
+function snapshotMidtransEnv() {
+  return {
+    environment: process.env.MIDTRANS_ENVIRONMENT,
+    isProduction: process.env.MIDTRANS_IS_PRODUCTION,
+    merchantId: process.env.MIDTRANS_MERCHANT_ID,
+    serverKey: process.env.MIDTRANS_SERVER_KEY,
+    snapBaseUrl: process.env.MIDTRANS_SNAP_BASE_URL,
+  };
+}
+
+function restoreMidtransEnv(snapshot) {
+  for (const [key, envName] of [
+    ["environment", "MIDTRANS_ENVIRONMENT"],
+    ["isProduction", "MIDTRANS_IS_PRODUCTION"],
+    ["merchantId", "MIDTRANS_MERCHANT_ID"],
+    ["serverKey", "MIDTRANS_SERVER_KEY"],
+    ["snapBaseUrl", "MIDTRANS_SNAP_BASE_URL"],
+  ]) {
+    if (snapshot[key] === undefined) delete process.env[envName];
+    else process.env[envName] = snapshot[key];
+  }
 }
 
 function makeUploadStore(overrides = {}) {
@@ -857,6 +885,69 @@ test("Midtrans webhook status and signature mapping are conservative", () => {
   assert.equal(mapMidtransTransactionStatus({ transaction_status: "failure" }), "failed");
 });
 
+test("Midtrans env and checkout URL helpers stay server-only and safe", () => {
+  const original = snapshotMidtransEnv();
+
+  try {
+    delete process.env.MIDTRANS_SERVER_KEY;
+    delete process.env.MIDTRANS_MERCHANT_ID;
+    delete process.env.MIDTRANS_ENVIRONMENT;
+    delete process.env.MIDTRANS_IS_PRODUCTION;
+    delete process.env.MIDTRANS_SNAP_BASE_URL;
+
+    assert.equal(isMidtransConfigured(), false);
+
+    process.env.MIDTRANS_SERVER_KEY = "server-key-for-test";
+    process.env.MIDTRANS_MERCHANT_ID = "merchant-id-for-test";
+    assert.equal(isMidtransConfigured(), true);
+    assert.equal(getMidtransSnapEndpoint(), "https://app.sandbox.midtrans.com/snap/v1/transactions");
+
+    process.env.MIDTRANS_IS_PRODUCTION = "true";
+    assert.equal(getMidtransSnapEndpoint(), "https://app.midtrans.com/snap/v1/transactions");
+
+    process.env.MIDTRANS_SNAP_BASE_URL = "https://app.sandbox.midtrans.com/snap/v1";
+    assert.equal(getMidtransSnapEndpoint(), "https://app.sandbox.midtrans.com/snap/v1/transactions");
+
+    process.env.MIDTRANS_SNAP_BASE_URL = "https://evil.example/snap/v1";
+    assert.doesNotMatch(getMidtransSnapEndpoint(), /evil\.example/);
+
+    assert.equal(isSafeMidtransCheckoutUrl("https://app.midtrans.com/snap/v4/redirection/test"), true);
+    assert.equal(isSafeMidtransCheckoutUrl("https://app.sandbox.midtrans.com/snap/v4/redirection/test"), true);
+    assert.equal(isSafeMidtransCheckoutUrl("http://app.midtrans.com/snap/v4/redirection/test"), false);
+    assert.equal(isSafeMidtransCheckoutUrl("https://evil.example/snap/v4/redirection/test"), false);
+  } finally {
+    restoreMidtransEnv(original);
+  }
+});
+
+test("Midtrans webhook confirmation unlock policy allows only successful statuses", () => {
+  const signedNotification = {
+    fraud_status: "accept",
+    gross_amount: "19000.00",
+    order_id: "nali-test-order",
+    payment_type: "bank_transfer",
+    signature_key: "signature-value-should-not-be-stored",
+    status_code: "200",
+    transaction_status: "settlement",
+  };
+  const sanitized = sanitizeMidtransNotification(signedNotification);
+
+  assert.equal(isSuccessfulPaymentStatus(mapMidtransTransactionStatus({ transaction_status: "settlement" })), true);
+  assert.equal(
+    isSuccessfulPaymentStatus(mapMidtransTransactionStatus({ fraud_status: "accept", transaction_status: "capture" })),
+    true,
+  );
+  assert.equal(
+    isSuccessfulPaymentStatus(mapMidtransTransactionStatus({ fraud_status: "challenge", transaction_status: "capture" })),
+    false,
+  );
+  for (const transaction_status of ["deny", "cancel", "expire", "failure"]) {
+    assert.equal(isSuccessfulPaymentStatus(mapMidtransTransactionStatus({ transaction_status })), false);
+  }
+  assert.equal("signature_key" in sanitized, false);
+  assert.doesNotMatch(JSON.stringify(sanitized), /signature-value-should-not-be-stored/);
+});
+
 test("system readiness reports booleans without exposing secret values", async () => {
   const original = {
     openrouter: process.env.OPENROUTER_API_KEY,
@@ -1033,8 +1124,14 @@ test("export and payment routes enforce Sprint 0 gatekeeping in source", () => {
 
   assert.match(paymentRoute, /getPersistedReport/);
   assert.match(paymentRoute, /isMidtransConfigured/);
+  assert.match(paymentRoute, /isSafeMidtransCheckoutUrl/);
   assert.match(paymentRoute, /manual_payment_pending/);
+  assert.match(paymentRoute, /checkout_url/);
+  assert.match(paymentRoute, /snap_token/);
+  assert.match(paymentRoute, /snap_url/);
+  assert.match(paymentRoute, /createPaymentRecord/);
   assert.doesNotMatch(paymentRoute, /input\.amount|body\.amount/);
+  assert.doesNotMatch(paymentRoute, /NEXT_PUBLIC_MIDTRANS|MIDTRANS_CLIENT_KEY/);
   assert.match(exportRoute, /getReportExportEligibility/);
   assert.match(exportRoute, /402/);
   assert.match(exportRoute, /searchParams\.get\("format"\)/);
@@ -1043,6 +1140,8 @@ test("export and payment routes enforce Sprint 0 gatekeeping in source", () => {
   assert.match(exportRoute, /text\/markdown/);
   assert.match(webhookRoute, /verifyMidtransSignature/);
   assert.match(webhookRoute, /mapMidtransTransactionStatus/);
+  assert.match(webhookRoute, /updatePaymentFromNotification/);
+  assert.doesNotMatch(webhookRoute, /\.from\("reports"\)|payment_order_id|payment_expires_at/);
 
   // Sprint 0.1 Paid Export checks
   const reportIdRoute = fs.readFileSync(path.join(repoRoot, "src/app/api/reports/[id]/route.ts"), "utf8");
@@ -1060,6 +1159,7 @@ test("export and payment routes enforce Sprint 0 gatekeeping in source", () => {
   const exportSmoke = fs.readFileSync(path.join(repoRoot, "scripts/smoke-paid-export-production.mjs"), "utf8");
   assert.match(exportSmoke, /unpaidPdfExportLocked/);
   assert.match(exportSmoke, /exportPdfReturned/);
+  assert.match(exportSmoke, /checkout_url/);
   assert.match(exportSmoke, /application\/pdf/);
 });
 
@@ -1158,7 +1258,7 @@ test("export gate state remains locked until successful payment", () => {
   assert.equal(getExportState({ hasSuccessfulPayment: true }), "export_ready");
 });
 
-test("manual payment first-sale operations stay server-side and honest", () => {
+test("payment first-sale operations stay server-side and honest", () => {
   const paymentRoute = fs.readFileSync(path.join(repoRoot, "src/app/api/payments/create/route.ts"), "utf8");
   const statusDoc = fs.readFileSync(path.join(repoRoot, "docs/PAYMENT_MODE_STATUS.md"), "utf8");
   const runbookDoc = fs.readFileSync(path.join(repoRoot, "docs/FIRST_SALE_RUNBOOK.md"), "utf8");
@@ -1171,14 +1271,14 @@ test("manual payment first-sale operations stay server-side and honest", () => {
   assert.equal(confirmScriptPath.includes(`${path.sep}src${path.sep}app${path.sep}api${path.sep}`), false);
   assert.equal(packageJson.scripts["payment:confirm:manual"], "node scripts/confirm-manual-payment.mjs");
 
-  assert.match(statusDoc, /manual pending payment mode/i);
-  assert.match(statusDoc, /Midtrans is not configured/i);
+  assert.match(statusDoc, /automatic Midtrans one-time payment/i);
+  assert.match(statusDoc, /manual fallback/i);
   assert.match(statusDoc, /`payments` table is the source of truth/i);
   assert.match(runbookDoc + smokeDoc, /`payments` table (?:remains|is) the source of truth/i);
 
   assert.match(paymentRoute, /manual_payment_pending/);
   assert.doesNotMatch(paymentRoute, /status:\s*["']paid["']/);
-  assert.doesNotMatch(statusDoc + runbookDoc, /manual pending payment mode\s+is\s+(?:an?\s+)?automatic checkout/i);
+  assert.doesNotMatch(statusDoc + runbookDoc, /manual fallback\s+is\s+(?:an?\s+)?automatic checkout/i);
 
   assert.match(confirmScript, /SUPABASE_SERVICE_ROLE_KEY/);
   assert.match(confirmScript, /--confirm/);

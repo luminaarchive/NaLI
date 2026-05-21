@@ -6,6 +6,7 @@ import {
   getMidtransPaymentExpiry,
   getMidtransSnapEndpoint,
   isMidtransConfigured,
+  isSafeMidtransCheckoutUrl,
   normalizeExportType,
 } from "@/lib/payments/midtrans";
 import { createPaymentRecord, getSuccessfulPaymentForReport } from "@/lib/payments/store";
@@ -169,8 +170,9 @@ export async function POST(req: NextRequest) {
     redirect_url?: string;
     token?: string;
   };
+  const checkoutUrl = isSafeMidtransCheckoutUrl(snapPayload.redirect_url) ? snapPayload.redirect_url : null;
 
-  if (!midtransResponse.ok || !snapPayload.token) {
+  if (!midtransResponse.ok || !snapPayload.token || !checkoutUrl) {
     console.warn("Midtrans Snap create failed", {
       status: midtransResponse.status,
     });
@@ -203,10 +205,11 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     amount,
+    checkout_url: checkoutUrl,
     export_type: exportType,
     payment_id: payment.payment.id,
     snap_token: snapPayload.token,
-    snap_url: snapPayload.redirect_url,
+    snap_url: checkoutUrl,
     status: "pending",
   });
 }

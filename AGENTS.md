@@ -100,6 +100,17 @@ Build the smallest working Learn & Report flow:
 - Do not redesign public UI without explicit founder approval.
 - Only bugfixes, overlap fixes, copy typo fixes, and backend work are allowed.
 
+## Sprint 0.5 Payment Activation Notes
+
+- Latest controlling guideline: `NaLI Guidelines v1.5.3 COMPLETE 2.pdf`.
+- CP1 / BUILD NOW requires one-time Midtrans automatic payment for paid export.
+- Manual payment confirmation is fallback only, not the primary June payment flow.
+- Payment truth remains in `payments` joined by `report_id`; do not duplicate payment order ids, expiry, paid state, or banking transaction data into `reports`.
+- Export unlock must depend on confirmed payment status from `payments`, not preview state, session state, or fallback/local success.
+- Midtrans webhook success means only `settlement` or `capture` with `fraud_status = accept`.
+- Deny, cancel, expire, failure, pending, and challenge states must not unlock markdown or PDF export.
+- Do not expose Midtrans secrets, service role keys, access keys, guest session ids, hashes, provider/model names, or payment secrets in public UI/logs.
+
 ## NaLI Local Workspace Safety Rules
 
 - Public visual lock is absolute.
