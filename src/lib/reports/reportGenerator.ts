@@ -13,6 +13,7 @@ export const reportTemplates = [
   "Laporan Praktikum Biologi",
   "Laporan Kerja Lapangan Geografi",
   "Laporan Kegiatan Proyek Lingkungan",
+  "Laporan Kegiatan/KKN",
   "Laporan Field Trip Sekolah",
   "Laporan KKN Lingkungan",
   "Laporan Survei Flora/Fauna Dasar",

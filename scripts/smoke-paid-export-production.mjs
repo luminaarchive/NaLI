@@ -138,6 +138,8 @@ async function run() {
   assert(dbStatus.feedback?.success === true, "report_feedback readiness must be true");
   assert(dbStatus.usageEvents?.success === true, "usage_events readiness must be true");
   assert(dbStatus.payments?.success === true, "payments readiness must be true");
+  assert(dbStatus.reportEvents?.success === true, "report_events readiness must be true");
+  assert(dbStatus.apiUsageLogs?.success === true, "api_usage_logs readiness must be true");
   const midtransProductionMode =
     typeof readiness.json.midtransProductionMode === "boolean" ? readiness.json.midtransProductionMode : false;
 
@@ -147,6 +149,8 @@ async function run() {
     "midtransProductionMode readiness must be boolean when deployed",
   );
   console.log(`- paymentsSuccess: ${dbStatus.payments.success}`);
+  console.log(`- reportEventsSuccess: ${dbStatus.reportEvents.success}`);
+  console.log(`- apiUsageLogsSuccess: ${dbStatus.apiUsageLogs.success}`);
   console.log(`- midtransConfigured: ${readiness.json.midtransConfigured === true}`);
   console.log(`- midtransProductionMode: ${midtransProductionMode}`);
 

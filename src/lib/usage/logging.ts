@@ -1,6 +1,7 @@
 import { getOptionalSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getGuestSessionIdHash, isUsableGuestSessionId } from "@/lib/reports/access";
 import type { ReportMode } from "@/lib/reports/reportGenerator";
+import { logApiUsage, sanitizeOperationalMetadata } from "@/lib/operations/logging";
 
 export type ProcessingClass = "Peregrine" | "Obsidian" | "Zephyr";
 
@@ -67,6 +68,22 @@ export function estimateEnergyForAction(
   return { estimatedEnergy: 5, processingClass: "Peregrine" };
 }
 
+function getApiUsageStatus(input: UsageEventInput) {
+  const status = input.status?.toLowerCase() ?? "";
+  const resultKind = typeof input.metadata?.result_kind === "string" ? input.metadata.result_kind : "";
+
+  if (status.includes("fail") || status.includes("error")) return "failed" as const;
+  if (resultKind === "provider") return "success" as const;
+  return "skipped" as const;
+}
+
+function getApiUsageOperation(actionType: UsageActionType | string) {
+  if (actionType === "report_preview" || actionType === "start_from_zero_guidance") return "report_generation";
+  if (actionType === "premium_export_attempt") return "premium_export_gate";
+  if (actionType === "feedback_capture") return "feedback_capture";
+  return actionType;
+}
+
 export async function logUsageEvent(input: UsageEventInput) {
   const supabase = getOptionalSupabaseAdminClient();
 
@@ -75,15 +92,26 @@ export async function logUsageEvent(input: UsageEventInput) {
   }
 
   const estimate = estimateEnergyForAction(input.actionType, input.mode, input.inputSize);
+  const sanitizedMetadata = sanitizeOperationalMetadata(input.metadata);
   const { error } = await supabase.from("usage_events").insert({
     action_type: input.actionType,
     estimated_cost_idr: input.estimatedCostIdr ?? null,
     estimated_energy: estimate.estimatedEnergy,
     guest_session_id_hash: resolveGuestSessionHash(input),
-    metadata: input.metadata ?? {},
+    metadata: sanitizedMetadata,
     processing_class: estimate.processingClass,
     report_id: input.reportId ?? null,
     status: input.status ?? "recorded",
+  });
+
+  void logApiUsage({
+    estimatedCost: null,
+    estimatedInputTokens: input.inputSize ? Math.ceil(input.inputSize / 4) : null,
+    modelAlias: estimate.processingClass.toLowerCase(),
+    operation: getApiUsageOperation(input.actionType),
+    providerAlias: "nali_internal",
+    reportId: input.reportId,
+    status: getApiUsageStatus(input),
   });
 
   if (error) {

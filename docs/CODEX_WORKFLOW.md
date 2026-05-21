@@ -7,9 +7,10 @@ Status date: 2026-05-21.
 1. Run `git status` first.
 2. Read `AGENTS.md`.
 3. Read `docs/PROJECT_STATUS.md`.
-4. Check the affected files with `rg` or `rg --files` before editing.
-5. Read relevant local Next.js docs in `node_modules/next/dist/docs/` before coding against App Router APIs.
-6. Keep changes small, scoped, and verifiable.
+4. For CP1 work, treat `NaLI Guidelines v1.5.3 COMPLETE.pdf` as the final controlling guideline unless the founder announces a newer file.
+5. Check the affected files with `rg` or `rg --files` before editing.
+6. Read relevant local Next.js docs in `node_modules/next/dist/docs/` before coding against App Router APIs.
+7. Keep changes small, scoped, and verifiable.
 
 ## Absolute Safety Rules
 
@@ -20,6 +21,8 @@ Status date: 2026-05-21.
 - Never commit secrets.
 - Never print raw `guest_session_id`, access keys, token values, hashes, service role values, or Midtrans secrets.
 - Do not claim active payment, realtime field intelligence, institutional deployment, or production persistence unless the relevant production verification passed.
+- Do not call CP1 complete until Midtrans production env is configured and automatic checkout is smoke-verified.
+- Keep CP1 to Text/Form Report Flow only; upload pipeline and CP2+ surfaces remain dormant/future until explicit trigger.
 - Do not keep guessing after repeated failures.
 
 ## Three-Strike Debugging Rule
@@ -46,6 +49,7 @@ Production/readiness checks:
 
 - `npm run smoke:feedback:prod` checks production feedback persistence and must not print secrets.
 - `npm run smoke:export:prod` checks production paid export readiness, unpaid lock, pending payment creation, confirmed unlock, and markdown export.
+- Production readiness should include safe counts for `report_events` and `api_usage_logs`; never expose provider/model/cost details publicly.
 - `npm run check:readiness:prod` checks the production readiness endpoint.
 - `npm run validate:production` is broader and depends on configured production env vars.
 

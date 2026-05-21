@@ -15,13 +15,16 @@ export type FounderOrderRow = {
 };
 
 export type FounderOrderSummary = {
+  apiUsageLogCount: number | null;
   exportLockedCount: number;
   exportReadyCount: number;
+  failedOrSkippedOperationCount: number | null;
   feedbackCount: number | null;
   manualPendingPaymentCount: number;
   paymentCount: number | null;
   paymentStatusCounts: Record<string, number>;
   recentReportCount: number;
+  reportEventCount: number | null;
   reportCount: number | null;
   reportStatusCounts: Record<string, number>;
 };
@@ -74,10 +77,20 @@ export async function listFounderOrders(limit = 50) {
 
   const reportRows = (reports ?? []) as ReportRow[];
   const reportIds = reportRows.map((report) => report.id);
-  const [reportsCount, paymentsCount, feedbackCount] = await Promise.all([
+  const [
+    reportsCount,
+    paymentsCount,
+    feedbackCount,
+    reportEventCount,
+    apiUsageLogCount,
+    failedOrSkippedOperationCount,
+  ] = await Promise.all([
     countTableRows(supabase, "reports"),
     countTableRows(supabase, "payments"),
     countTableRows(supabase, "report_feedback"),
+    countTableRows(supabase, "report_events"),
+    countTableRows(supabase, "api_usage_logs"),
+    countApiUsageLogsByStatus(supabase, ["failed", "skipped"]),
   ]);
 
   if (reportIds.length === 0) {
@@ -86,9 +99,12 @@ export async function listFounderOrders(limit = 50) {
       ready: true as const,
       summary: summarizeFounderOrders({
         feedbackCount,
+        apiUsageLogCount,
+        failedOrSkippedOperationCount,
         orders: [],
         paymentRows: [],
         paymentsCount,
+        reportEventCount,
         reportRows,
         reportsCount,
       }),
@@ -133,9 +149,12 @@ export async function listFounderOrders(limit = 50) {
     ready: true as const,
     summary: summarizeFounderOrders({
       feedbackCount,
+      apiUsageLogCount,
+      failedOrSkippedOperationCount,
       orders,
       paymentRows: (payments ?? []) as PaymentRow[],
       paymentsCount,
+      reportEventCount,
       reportRows,
       reportsCount,
     }),
@@ -144,7 +163,7 @@ export async function listFounderOrders(limit = 50) {
 
 async function countTableRows(
   supabase: NonNullable<ReturnType<typeof getOptionalSupabaseAdminClient>>,
-  table: "payments" | "report_feedback" | "reports",
+  table: "api_usage_logs" | "payments" | "report_events" | "report_feedback" | "reports",
 ) {
   const { count, error } = await supabase.from(table).select("id", { count: "exact", head: true });
 
@@ -160,23 +179,49 @@ async function countTableRows(
   return count ?? null;
 }
 
+async function countApiUsageLogsByStatus(
+  supabase: NonNullable<ReturnType<typeof getOptionalSupabaseAdminClient>>,
+  statuses: Array<"failed" | "skipped" | "success">,
+) {
+  const { count, error } = await supabase
+    .from("api_usage_logs")
+    .select("id", { count: "exact", head: true })
+    .in("status", statuses);
+
+  if (error) {
+    console.warn("NaLI founder operation status count skipped", {
+      code: error.code,
+      message: error.message,
+    });
+    return null;
+  }
+
+  return count ?? null;
+}
+
 function increment(counts: Record<string, number>, status: string | null | undefined) {
   const key = status?.trim() || "unknown";
   counts[key] = (counts[key] ?? 0) + 1;
 }
 
 function summarizeFounderOrders({
+  apiUsageLogCount,
+  failedOrSkippedOperationCount,
   feedbackCount,
   orders,
   paymentRows,
   paymentsCount,
+  reportEventCount,
   reportRows,
   reportsCount,
 }: {
+  apiUsageLogCount: number | null;
+  failedOrSkippedOperationCount: number | null;
   feedbackCount: number | null;
   orders: FounderOrderRow[];
   paymentRows: PaymentRow[];
   paymentsCount: number | null;
+  reportEventCount: number | null;
   reportRows: ReportRow[];
   reportsCount: number | null;
 }): FounderOrderSummary {
@@ -187,8 +232,10 @@ function summarizeFounderOrders({
   for (const payment of paymentRows) increment(paymentStatusCounts, payment.status);
 
   return {
+    apiUsageLogCount,
     exportLockedCount: orders.filter((order) => order.exportReadiness === "export_locked").length,
     exportReadyCount: orders.filter((order) => order.exportReadiness === "export_ready").length,
+    failedOrSkippedOperationCount,
     feedbackCount,
     manualPendingPaymentCount: paymentRows.filter(
       (payment) => payment.status === "pending" && payment.midtrans_order_id?.startsWith("manual-"),
@@ -196,6 +243,7 @@ function summarizeFounderOrders({
     paymentCount: paymentsCount,
     paymentStatusCounts,
     recentReportCount: orders.length,
+    reportEventCount,
     reportCount: reportsCount,
     reportStatusCounts,
   };

@@ -102,7 +102,7 @@ Build the smallest working Learn & Report flow:
 
 ## Sprint 0.5 Payment Activation Notes
 
-- Latest controlling guideline: `NaLI Guidelines v1.5.3 COMPLETE 2.pdf`.
+- Latest controlling guideline: `NaLI Guidelines v1.5.3 COMPLETE.pdf`.
 - CP1 / BUILD NOW requires one-time Midtrans automatic payment for paid export.
 - Manual payment confirmation is fallback only, not the primary June payment flow.
 - Payment truth remains in `payments` joined by `report_id`; do not duplicate payment order ids, expiry, paid state, or banking transaction data into `reports`.
@@ -110,6 +110,17 @@ Build the smallest working Learn & Report flow:
 - Midtrans webhook success means only `settlement` or `capture` with `fraud_status = accept`.
 - Deny, cancel, expire, failure, pending, and challenge states must not unlock markdown or PDF export.
 - Do not expose Midtrans secrets, service role keys, access keys, guest session ids, hashes, provider/model names, or payment secrets in public UI/logs.
+
+## Sprint 0.7 Final CP1 Guideline Notes
+
+- Treat `NaLI Guidelines v1.5.3 COMPLETE.pdf` as final unless the founder explicitly announces a new update.
+- CP1 active flow is Text/Form Report Flow only.
+- Upload pipeline remains dormant/future and must not be hard-wired into CP1.
+- CP1 operational schema should center on `reports`, `payments`, `report_events`, and `api_usage_logs`.
+- Midtrans automatic payment is code-ready only until Vercel server-only env is configured and production smoke verifies checkout.
+- Manual payment remains fallback only and must never be described as automatic checkout.
+- Evidence Ladder is allowed only in simplified CP1-safe form: labels, evidence summary, missing evidence checklist, AI inference notice, and a simple integrity sheet. Do not build a full Evidence Graph.
+- Do not build CP2/CP3/CP4/CP5+ features, DOCX, subscription, NaLI Energy UI, Literature Matrix automation, source resolvers, upload pipeline, NASA/GFW, Darwin Core, Official Observation Hash, SOS, PostGIS/H3, Professional Dashboard, or full F1-F11 until explicit trigger.
 
 ## NaLI Local Workspace Safety Rules
 

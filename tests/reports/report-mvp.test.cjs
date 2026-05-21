@@ -14,6 +14,7 @@ const {
   buildMockDraftReport,
   buildMockStartGuide,
   containsForbiddenWording,
+  reportTemplates,
   validateReportRequest,
 } = require("../../src/lib/reports/reportGenerator");
 const { evaluateIntegrityPolicy } = require("../../src/lib/integrity/policy");
@@ -56,12 +57,33 @@ const {
   logUsageEvent,
   shouldEnterCostProtectionMode,
 } = require("../../src/lib/usage/logging");
+const {
+  REPORT_EVENT_TYPES,
+  logApiUsage,
+  logReportEvent,
+  sanitizeOperationalMetadata,
+} = require("../../src/lib/operations/logging");
 const { getSystemReadiness } = require("../../src/lib/system/readiness");
 const { GET: getReadiness } = require("../../src/app/api/system/readiness/route");
 const { POST: postFeedback } = require("../../src/app/api/reports/[id]/feedback/route");
 const { POST: postCreateUpload } = require("../../src/app/api/reports/create-upload/route");
 
 const repoRoot = path.join(__dirname, "../..");
+
+function readMigrationByName(partialName) {
+  const migrationDir = path.join(repoRoot, "supabase/migrations");
+  const filename = fs.readdirSync(migrationDir).find((entry) => entry.includes(partialName));
+  assert.ok(filename, `Missing migration matching ${partialName}`);
+  return fs.readFileSync(path.join(migrationDir, filename), "utf8");
+}
+
+function listFilesRecursive(dir) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  return entries.flatMap((entry) => {
+    const fullPath = path.join(dir, entry.name);
+    return entry.isDirectory() ? listFilesRecursive(fullPath) : [fullPath];
+  });
+}
 
 function snapshotSupabaseEnv() {
   return {
@@ -845,6 +867,112 @@ test("Sprint 0 operational migration adds usage and feedback tables safely", () 
   assert.match(sql, /usage_events_service_role_all/);
 });
 
+test("CP1 event and cost logging migration adds service-role-only tables safely", () => {
+  const sql = readMigrationByName("cp1_event_cost_logging");
+
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.report_events/);
+  assert.match(sql, /event_type TEXT NOT NULL CHECK/);
+  for (const eventType of REPORT_EVENT_TYPES) {
+    assert.match(sql, new RegExp(`'${eventType}'`));
+  }
+  assert.match(sql, /metadata JSONB NOT NULL DEFAULT '\{\}'::jsonb/);
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.api_usage_logs/);
+  assert.match(sql, /provider_alias TEXT/);
+  assert.match(sql, /model_alias TEXT/);
+  assert.match(sql, /estimated_input_tokens INTEGER/);
+  assert.match(sql, /estimated_output_tokens INTEGER/);
+  assert.match(sql, /estimated_cost NUMERIC\(12,6\)/);
+  assert.match(sql, /status TEXT NOT NULL DEFAULT 'skipped' CHECK \(status IN \('success', 'failed', 'skipped'\)\)/);
+  assert.match(sql, /report_events_service_role_all/);
+  assert.match(sql, /api_usage_logs_service_role_all/);
+  assert.doesNotMatch(sql, /GRANT\s+(?:SELECT|INSERT|UPDATE|DELETE)\s+ON\s+public\.(?:report_events|api_usage_logs)\s+TO\s+(?:anon|authenticated)/i);
+  assert.doesNotMatch(sql, /DROP TABLE|DROP COLUMN|DELETE FROM public\.reports/i);
+});
+
+test("CP1 operational logger sanitizes sensitive metadata and degrades safely", async () => {
+  const original = snapshotSupabaseEnv();
+  delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+  delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  try {
+    const sanitized = sanitizeOperationalMetadata({
+      access_key: "report-access-key-should-not-survive",
+      checkout_url: "https://app.midtrans.com/snap/v4/redirection/sensitive-token",
+      guest_session_id: "guest-session-secret-value",
+      nested: {
+        signature_key: "signature-secret-value",
+      },
+      raw_notification: { order_id: "nali-order" },
+      safe_status: "pending",
+      sha256_hash: "a".repeat(64),
+      snap_token: "snap-token-value",
+    });
+    const serialized = JSON.stringify(sanitized);
+
+    assert.equal(sanitized.safe_status, "pending");
+    assert.doesNotMatch(serialized, /guest-session-secret-value|report-access-key|signature-secret-value|snap-token-value|aaaaaaaa/);
+
+    const eventResult = await logReportEvent({
+      eventType: "REPORT_CREATED",
+      metadata: sanitized,
+      reportId: "11111111-1111-4111-8111-111111111111",
+      status: "success",
+    });
+    const apiUsageResult = await logApiUsage({
+      estimatedCost: null,
+      estimatedInputTokens: 120,
+      estimatedOutputTokens: null,
+      modelAlias: "GPT-secret-name",
+      operation: "report_generation",
+      providerAlias: "OpenRouter",
+      reportId: "11111111-1111-4111-8111-111111111111",
+      status: "skipped",
+    });
+
+    assert.equal(eventResult.logged, false);
+    assert.equal(eventResult.reason, "supabase_unconfigured");
+    assert.equal(apiUsageResult.logged, false);
+    assert.equal(apiUsageResult.reason, "supabase_unconfigured");
+  } finally {
+    restoreSupabaseEnv(original);
+  }
+});
+
+test("CP1 readiness and founder admin surfaces include only safe operational counts", () => {
+  const readinessSource = fs.readFileSync(path.join(repoRoot, "src/app/api/system/readiness/route.ts"), "utf8");
+  const adminOrdersSource = fs.readFileSync(path.join(repoRoot, "src/lib/system/adminOrders.ts"), "utf8");
+  const adminPageSource = fs.readFileSync(path.join(repoRoot, "src/app/(app)/system/orders/page.tsx"), "utf8");
+
+  assert.match(readinessSource, /countTable\(supabase, "report_events"\)/);
+  assert.match(readinessSource, /countTable\(supabase, "api_usage_logs"\)/);
+  assert.match(adminOrdersSource, /countTableRows\(supabase, "report_events"\)/);
+  assert.match(adminOrdersSource, /countTableRows\(supabase, "api_usage_logs"\)/);
+  assert.match(adminPageSource, /Report events/);
+  assert.match(adminPageSource, /API usage logs/);
+  assert.doesNotMatch(
+    adminPageSource,
+    /guest_session_id_hash|report_access_token_hash|snap_token|signature_key|MIDTRANS_SERVER_KEY|SUPABASE_SERVICE_ROLE_KEY/,
+  );
+  assert.doesNotMatch(adminPageSource, /provider_alias|model_alias|estimated_cost|estimated_input_tokens|estimated_output_tokens/);
+});
+
+test("CP1 basic public templates include the required minimum three templates", () => {
+  assert.ok(reportTemplates.length >= 3);
+  assert.ok(reportTemplates.includes("Laporan Praktikum Biologi"));
+  assert.ok(reportTemplates.includes("Laporan Observasi Lingkungan"));
+  assert.ok(reportTemplates.includes("Laporan Kegiatan/KKN"));
+});
+
+test("Sprint 0.7 does not add CP2 or later route surfaces", () => {
+  const appFiles = listFilesRecursive(path.join(repoRoot, "src/app")).map((file) => path.relative(repoRoot, file));
+  const serializedRoutes = appFiles.join("\n");
+
+  assert.doesNotMatch(
+    serializedRoutes,
+    /professional-dashboard|literature-matrix|crossref|pubmed|doi-resolver|source-resolver|postgis|h3|sos|docx|subscription/i,
+  );
+});
+
 test("presigned upload migration is additive and keeps upload states separate from report macro-statuses", () => {
   const sql = fs.readFileSync(
     path.join(repoRoot, "supabase/migrations/20260519090000_nali_zero_presigned_upload_foundation.sql"),
@@ -1363,8 +1491,12 @@ test("CP1 Midtrans activation docs and founder admin view stay honest and redact
     .map((file) => fs.readFileSync(path.join(repoRoot, file), "utf8"))
     .join("\n");
 
-  assert.match(cp1Audit, /Midtrans one-time automatic payment\s+\|\s+BLOCKED BY ENV/i);
+  assert.match(cp1Audit, /Midtrans automatic code path\s+\|\s+READY IN CODE/i);
+  assert.match(cp1Audit, /Midtrans production env\s+\|\s+BLOCKED BY ENV/i);
+  assert.match(cp1Audit, /Manual payment fallback\s+\|\s+DONE \/ FALLBACK ONLY/i);
   assert.match(cp1Audit, /Minimal founder admin view\s+\|\s+DONE/i);
+  assert.match(cp1Audit, /`report_events` audit logging\s+\|\s+DONE/i);
+  assert.match(cp1Audit, /`api_usage_logs` cost logging\s+\|\s+DONE/i);
   assert.match(cp1Audit, /`payments` table source of truth|payments` table source of truth/i);
   assert.match(envSetup, /MIDTRANS_SERVER_KEY/);
   assert.match(envSetup, /MIDTRANS_MERCHANT_ID/);

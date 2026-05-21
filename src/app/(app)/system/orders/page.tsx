@@ -66,6 +66,20 @@ function OperationalSummary({
         value={summary.feedbackCount == null ? "unknown" : String(summary.feedbackCount)}
       />
       <SummaryMetric label="Payments" value={summary.paymentCount == null ? "unknown" : String(summary.paymentCount)} />
+      <SummaryMetric
+        label="Report events"
+        value={summary.reportEventCount == null ? "unknown" : String(summary.reportEventCount)}
+      />
+      <SummaryMetric
+        label="API usage logs"
+        value={summary.apiUsageLogCount == null ? "unknown" : String(summary.apiUsageLogCount)}
+      />
+      <SummaryMetric
+        label="Failed/skipped ops"
+        value={
+          summary.failedOrSkippedOperationCount == null ? "unknown" : String(summary.failedOrSkippedOperationCount)
+        }
+      />
       <SummaryMetric label="Manual pending" value={String(summary.manualPendingPaymentCount)} />
       <SummaryMetric label="Export ready" value={String(summary.exportReadyCount)} />
       <SummaryMetric label="Export locked" value={String(summary.exportLockedCount)} />

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requestOpenRouterJson } from "@/lib/ai/openrouter";
 import { guardReportOutput } from "@/lib/integrity/outputGuard";
 import { evaluateIntegrityPolicy } from "@/lib/integrity/policy";
+import { logReportEvent } from "@/lib/operations/logging";
 import { checkRateLimit, RATE_LIMITED_MESSAGE, rateLimitHeaders } from "@/lib/rateLimit/limit";
 import { persistGeneratedReport } from "@/lib/reports/persistence";
 import {
@@ -146,6 +147,26 @@ export async function POST(req: NextRequest) {
       input: validated.data,
       report,
     });
+    void logReportEvent({
+      eventType: "REPORT_CREATED",
+      metadata: {
+        mode: validated.data.mode,
+        persistence: persistence.persisted ? "supabase" : persistence.reason,
+        template: validated.data.reportTemplate,
+      },
+      reportId: report.id,
+      status: persistence.persisted ? "success" : "skipped",
+    });
+    void logReportEvent({
+      eventType: "PREVIEW_GENERATED",
+      metadata: {
+        mode: validated.data.mode,
+        result_kind: "provider",
+        template: validated.data.reportTemplate,
+      },
+      reportId: report.id,
+      status: "success",
+    });
     void logUsageEvent({
       actionType: validated.data.mode === "start_from_zero" ? "start_from_zero_guidance" : "report_preview",
       guestSessionId: input.guestSessionId,
@@ -189,6 +210,26 @@ export async function POST(req: NextRequest) {
     guestSessionId: input.guestSessionId,
     input: validated.data,
     report,
+  });
+  void logReportEvent({
+    eventType: "REPORT_CREATED",
+    metadata: {
+      mode: validated.data.mode,
+      persistence: persistence.persisted ? "supabase" : persistence.reason,
+      template: validated.data.reportTemplate,
+    },
+    reportId: report.id,
+    status: persistence.persisted ? "success" : "skipped",
+  });
+  void logReportEvent({
+    eventType: "PREVIEW_GENERATED",
+    metadata: {
+      mode: validated.data.mode,
+      result_kind: "mock",
+      template: validated.data.reportTemplate,
+    },
+    reportId: report.id,
+    status: "success",
   });
   void logUsageEvent({
     actionType: validated.data.mode === "start_from_zero" ? "start_from_zero_guidance" : "report_preview",

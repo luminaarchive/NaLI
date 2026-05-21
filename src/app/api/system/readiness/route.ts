@@ -43,8 +43,10 @@ export async function GET() {
   const supabase = getOptionalSupabaseAdminClient();
   let dbStatus:
     | {
+        apiUsageLogs: TableReadiness;
         feedback: TableReadiness;
         payments: TableReadiness;
+        reportEvents: TableReadiness;
         reports: TableReadiness;
         status: "attempted";
         usageEvents: TableReadiness;
@@ -54,16 +56,20 @@ export async function GET() {
 
   if (supabase) {
     try {
-      const [reports, feedback, usageEvents, payments] = await Promise.all([
+      const [reports, feedback, usageEvents, payments, reportEvents, apiUsageLogs] = await Promise.all([
         countTable(supabase, "reports"),
         countTable(supabase, "report_feedback"),
         countTable(supabase, "usage_events"),
         countTable(supabase, "payments"),
+        countTable(supabase, "report_events"),
+        countTable(supabase, "api_usage_logs"),
       ]);
 
       dbStatus = {
+        apiUsageLogs,
         feedback,
         payments,
+        reportEvents,
         reports,
         status: "attempted",
         usageEvents,

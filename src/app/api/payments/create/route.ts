@@ -9,6 +9,7 @@ import {
   isSafeMidtransCheckoutUrl,
   normalizeExportType,
 } from "@/lib/payments/midtrans";
+import { logReportEvent } from "@/lib/operations/logging";
 import { createPaymentRecord, getSuccessfulPaymentForReport } from "@/lib/payments/store";
 import { checkRateLimit, RATE_LIMITED_MESSAGE, rateLimitHeaders } from "@/lib/rateLimit/limit";
 import { getPersistedReport } from "@/lib/reports/persistence";
@@ -107,6 +108,12 @@ export async function POST(req: NextRequest) {
       reportId,
       status: payment.created ? "manual_payment_pending" : payment.reason,
     });
+    void logReportEvent({
+      eventType: "PAYMENT_CREATED",
+      metadata: { export_type: exportType, payment_mode: "manual", payment_status: "pending" },
+      reportId,
+      status: payment.created ? "success" : "failed",
+    });
 
     if (!payment.created) {
       return NextResponse.json(
@@ -176,6 +183,12 @@ export async function POST(req: NextRequest) {
     console.warn("Midtrans Snap create failed", {
       status: midtransResponse.status,
     });
+    void logReportEvent({
+      eventType: "PAYMENT_CREATED",
+      metadata: { export_type: exportType, payment_mode: "midtrans", payment_status: "gateway_failed" },
+      reportId,
+      status: "failed",
+    });
     return NextResponse.json(
       {
         error: "Payment gateway belum bisa membuat transaksi. Coba lagi nanti.",
@@ -194,6 +207,12 @@ export async function POST(req: NextRequest) {
   });
 
   if (!payment.created) {
+    void logReportEvent({
+      eventType: "PAYMENT_CREATED",
+      metadata: { export_type: exportType, payment_mode: "midtrans", payment_status: payment.reason },
+      reportId,
+      status: "failed",
+    });
     return NextResponse.json(
       {
         error: "Pembayaran dibuat oleh gateway, tetapi belum bisa dicatat di database. Hubungi admin sebelum membayar.",
@@ -202,6 +221,13 @@ export async function POST(req: NextRequest) {
       { status: 503 },
     );
   }
+
+  void logReportEvent({
+    eventType: "PAYMENT_CREATED",
+    metadata: { export_type: exportType, payment_mode: "midtrans", payment_status: "pending" },
+    reportId,
+    status: "success",
+  });
 
   return NextResponse.json({
     amount,

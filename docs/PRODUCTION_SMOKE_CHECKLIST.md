@@ -33,6 +33,8 @@ Production readiness must show:
 - `report_feedback` success is true.
 - `usage_events` success is true.
 - `payments` success is true.
+- `report_events` success is true.
+- `api_usage_logs` success is true.
 
 Current payment expectation:
 
@@ -47,6 +49,8 @@ Current payment expectation:
 - Production report creation persists in Supabase.
 - Feedback persists in `report_feedback`.
 - Usage events persist in `usage_events`.
+- CP1 operational events can be counted through `report_events`.
+- CP1 internal API usage logs can be counted through `api_usage_logs`.
 - Redacted logs do not print raw access keys, guest session ids, hashes, service role values, or tokens.
 
 Fallback responses are useful resilience behavior, but fallback must not be counted as production persistence success.

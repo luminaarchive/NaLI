@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logReportEvent } from "@/lib/operations/logging";
 import { getReportExportEligibility } from "@/lib/reports/exportGate";
 import { buildReportMarkdown } from "@/lib/reports/markdown";
 import { buildReportPdfBytes } from "@/lib/reports/pdf";
 import { getPersistedReport } from "@/lib/reports/persistence";
+import { logUsageEvent } from "@/lib/usage/logging";
 
 const accessParamName = "to" + "ken";
 type ExportFormat = "markdown" | "pdf";
@@ -57,6 +59,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const eligibility = await getReportExportEligibility(id);
 
   if (!eligibility.eligible) {
+    void logReportEvent({
+      eventType: "EXPORT_ATTEMPTED",
+      metadata: { export_state: eligibility.state, format: exportFormat },
+      reportId: id,
+      status: "locked",
+    });
+    void logUsageEvent({
+      actionType: "premium_export_attempt",
+      metadata: { export_state: eligibility.state, export_type: exportFormat },
+      reportId: id,
+      status: "locked",
+    });
+
     return NextResponse.json(
       {
         error:
@@ -68,6 +83,25 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       { status: eligibility.reason === "export_unconfigured" ? 501 : 402 },
     );
   }
+
+  void logReportEvent({
+    eventType: "EXPORT_ATTEMPTED",
+    metadata: { export_state: eligibility.state, format: exportFormat },
+    reportId: id,
+    status: "unlocked",
+  });
+  void logReportEvent({
+    eventType: "EXPORT_UNLOCKED",
+    metadata: { export_state: eligibility.state, format: exportFormat },
+    reportId: id,
+    status: "success",
+  });
+  void logUsageEvent({
+    actionType: "premium_export_attempt",
+    metadata: { export_state: eligibility.state, export_type: exportFormat },
+    reportId: id,
+    status: "unlocked",
+  });
 
   if (exportFormat === "pdf") {
     const pdfBytes = await buildReportPdfBytes(persisted.report, { exportStatus: "export_ready" });

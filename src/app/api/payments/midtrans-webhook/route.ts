@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getMidtransNotificationOrderId,
   isMidtransConfigured,
+  isSuccessfulPaymentStatus,
   mapMidtransTransactionStatus,
   type MidtransNotification,
   verifyMidtransSignature,
 } from "@/lib/payments/midtrans";
+import { logReportEvent } from "@/lib/operations/logging";
 import { updatePaymentFromNotification } from "@/lib/payments/store";
 
 export async function POST(req: NextRequest) {
@@ -52,6 +54,13 @@ export async function POST(req: NextRequest) {
       { status: responseStatus },
     );
   }
+
+  void logReportEvent({
+    eventType: "PAYMENT_CONFIRMED",
+    metadata: { payment_status: status },
+    reportId: updated.payment.report_id,
+    status: isSuccessfulPaymentStatus(status) ? "success" : "skipped",
+  });
 
   return NextResponse.json({
     payment_id: updated.payment.id,

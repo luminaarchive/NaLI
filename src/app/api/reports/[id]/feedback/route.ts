@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logReportEvent } from "@/lib/operations/logging";
 import { checkRateLimit, RATE_LIMITED_MESSAGE, rateLimitHeaders } from "@/lib/rateLimit/limit";
 import { getOptionalSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getPersistedReport } from "@/lib/reports/persistence";
@@ -187,6 +188,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     actionType: "feedback_capture",
     reportId: id,
     status: "stored",
+  });
+  void logReportEvent({
+    eventType: "FEEDBACK_SUBMITTED",
+    metadata: { rating },
+    reportId: id,
+    status: "success",
   });
 
   return NextResponse.json({
