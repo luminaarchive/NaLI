@@ -1037,7 +1037,10 @@ test("export and payment routes enforce Sprint 0 gatekeeping in source", () => {
   assert.doesNotMatch(paymentRoute, /input\.amount|body\.amount/);
   assert.match(exportRoute, /getReportExportEligibility/);
   assert.match(exportRoute, /402/);
-  assert.match(exportRoute, /PDF\/DOCX export belum aktif/);
+  assert.match(exportRoute, /searchParams\.get\("format"\)/);
+  assert.match(exportRoute, /buildReportPdfBytes/);
+  assert.match(exportRoute, /application\/pdf/);
+  assert.match(exportRoute, /text\/markdown/);
   assert.match(webhookRoute, /verifyMidtransSignature/);
   assert.match(webhookRoute, /mapMidtransTransactionStatus/);
 
@@ -1051,7 +1054,13 @@ test("export and payment routes enforce Sprint 0 gatekeeping in source", () => {
   assert.match(readinessRoute, /\.from\("payments"\)/);
   assert.match(resultClient, /exportReadiness/);
   assert.match(resultClient, /Download Markdown/);
+  assert.match(resultClient, /Download PDF/);
   assert.match(resultClient, /Unlock Export/);
+
+  const exportSmoke = fs.readFileSync(path.join(repoRoot, "scripts/smoke-paid-export-production.mjs"), "utf8");
+  assert.match(exportSmoke, /unpaidPdfExportLocked/);
+  assert.match(exportSmoke, /exportPdfReturned/);
+  assert.match(exportSmoke, /application\/pdf/);
 });
 
 test("paid markdown export has NaLI structure, metadata, disclaimer, and redaction", () => {
@@ -1102,6 +1111,46 @@ test("paid markdown export has NaLI structure, metadata, disclaimer, and redacti
   assert.doesNotMatch(markdown, /0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef/i);
   assert.doesNotMatch(markdown, new RegExp(supabaseSecretFixture));
   assert.doesNotMatch(markdown, new RegExp(midtransSecretFixture));
+});
+
+test("paid PDF export bytes are downloadable and redacted", async () => {
+  const { buildReportPdfBytes } = require("../../src/lib/reports/pdf");
+  const validated = validateReportRequest({
+    integrityConsent: true,
+    location: "Semarang",
+    mainText: "Catatan observasi menyebut air keruh, sampah ringan, dan kebutuhan foto pembanding sebelum validasi akhir.",
+    mode: "draft_from_materials",
+    reportTemplate: "Laporan Observasi Lingkungan",
+    title: "Observasi Kualitas Air",
+  });
+  assert.equal(validated.success, true);
+
+  const report = buildMockDraftReport(validated.data);
+  const supabaseSecretFixture = "SUPABASE_SERVICE_ROLE_" + "KEY=should-not-appear";
+  const midtransSecretFixture = "MIDTRANS_SERVER_" + "KEY=should-not-appear";
+  report.findings.push(
+    [
+      "Nilai sensitif uji:",
+      "guest-session-pdf-release-check-123456789",
+      "report_access_key: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890",
+      "hash 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      supabaseSecretFixture,
+      midtransSecretFixture,
+    ].join(" "),
+  );
+
+  const pdfBytes = await buildReportPdfBytes(report, { exportStatus: "export_ready" });
+  const pdfBuffer = Buffer.from(pdfBytes);
+  const rawPdf = pdfBuffer.toString("latin1");
+  const parsedPdf = await PDFDocument.load(pdfBuffer);
+
+  assert.equal(pdfBuffer.subarray(0, 5).toString("latin1"), "%PDF-");
+  assert.ok(parsedPdf.getPageCount() >= 1);
+  assert.doesNotMatch(rawPdf, /guest-session-pdf-release-check/i);
+  assert.doesNotMatch(rawPdf, /report_access_key:\s*[A-Za-z0-9_-]{20,}/);
+  assert.doesNotMatch(rawPdf, /0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef/i);
+  assert.doesNotMatch(rawPdf, new RegExp(supabaseSecretFixture));
+  assert.doesNotMatch(rawPdf, new RegExp(midtransSecretFixture));
 });
 
 test("export gate state remains locked until successful payment", () => {

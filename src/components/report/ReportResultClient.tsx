@@ -195,6 +195,13 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
     }
   }
 
+  function openPremiumExport(format: "markdown" | "pdf") {
+    if (!accessKey) return;
+    const params = new URLSearchParams({ [accessParamName]: accessKey });
+    if (format === "pdf") params.set("format", "pdf");
+    window.open(`/api/reports/${reportId}/export?${params.toString()}`, "_blank");
+  }
+
   async function submitFeedback() {
     setFeedbackMessage(null);
     setFeedbackStatus("idle");
@@ -366,15 +373,20 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
                   disabled={!accessKey}
                   type="button"
                   variant="default"
-                  onClick={() => {
-                    window.open(
-                      `/api/reports/${reportId}/export?${accessParamName}=${encodeURIComponent(accessKey || "")}`,
-                      "_blank"
-                    );
-                  }}
+                  onClick={() => openPremiumExport("markdown")}
                 >
                   <Download className="h-4 w-4" aria-hidden="true" />
                   Download Markdown
+                </Button>
+                <Button
+                  className="mt-2 w-full"
+                  disabled={!accessKey}
+                  type="button"
+                  variant="outline"
+                  onClick={() => openPremiumExport("pdf")}
+                >
+                  <Download className="h-4 w-4" aria-hidden="true" />
+                  Download PDF
                 </Button>
               </>
             ) : (

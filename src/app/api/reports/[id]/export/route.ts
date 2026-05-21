@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getReportExportEligibility } from "@/lib/reports/exportGate";
 import { buildReportMarkdown } from "@/lib/reports/markdown";
+import { buildReportPdfBytes } from "@/lib/reports/pdf";
 import { getPersistedReport } from "@/lib/reports/persistence";
 
 const accessParamName = "to" + "ken";
+type ExportFormat = "markdown" | "pdf";
 
-function downloadFilename(title: string) {
+function normalizeExportFormat(value: string | null): ExportFormat | null {
+  if (!value || value === "markdown") return "markdown";
+  if (value === "pdf") return "pdf";
+  return null;
+}
+
+function downloadFilename(title: string, format: ExportFormat) {
   const slug =
     title
       .toLowerCase()
@@ -13,16 +21,18 @@ function downloadFilename(title: string) {
       .replace(/^-|-$/g, "")
       .slice(0, 80) || "nali-report";
 
-  return `${slug}.md`;
+  return `${slug}.${format === "pdf" ? "pdf" : "md"}`;
 }
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const reportAccessKey = req.nextUrl.searchParams.get(accessParamName);
-  const exportType = req.nextUrl.searchParams.get("type") ?? "markdown";
+  const exportFormat = normalizeExportFormat(
+    req.nextUrl.searchParams.get("format") ?? req.nextUrl.searchParams.get("type"),
+  );
 
-  if (exportType !== "markdown") {
-    return NextResponse.json({ error: "PDF/DOCX export belum aktif." }, { status: 501 });
+  if (!exportFormat) {
+    return NextResponse.json({ error: "Format export belum didukung." }, { status: 501 });
   }
 
   const persisted = await getPersistedReport({
@@ -59,11 +69,23 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     );
   }
 
+  if (exportFormat === "pdf") {
+    const pdfBytes = await buildReportPdfBytes(persisted.report, { exportStatus: "export_ready" });
+    const pdfBlob = new Blob([pdfBytes as BlobPart], { type: "application/pdf" });
+
+    return new NextResponse(pdfBlob, {
+      headers: {
+        "Content-Disposition": `attachment; filename="${downloadFilename(persisted.report.title, "pdf")}"`,
+        "Content-Type": "application/pdf",
+      },
+    });
+  }
+
   const markdown = buildReportMarkdown(persisted.report, { exportStatus: "export_ready" });
 
   return new NextResponse(markdown, {
     headers: {
-      "Content-Disposition": `attachment; filename="${downloadFilename(persisted.report.title)}"`,
+      "Content-Disposition": `attachment; filename="${downloadFilename(persisted.report.title, "markdown")}"`,
       "Content-Type": "text/markdown; charset=utf-8",
     },
   });

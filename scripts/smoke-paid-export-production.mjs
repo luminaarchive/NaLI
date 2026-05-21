@@ -108,7 +108,7 @@ async function run() {
   const supabase = createSupabaseServiceClient();
   const resumeState = readResumeState();
 
-  console.log("[1/7] production readiness");
+  console.log("[1/8] production readiness");
   const readiness = await fetchJson(`${baseUrl}/api/system/readiness`, { cache: "no-store" });
   assert(readiness.response.status === 200, `Readiness returned HTTP ${readiness.response.status}`);
 
@@ -121,13 +121,14 @@ async function run() {
   console.log(`- midtransConfigured: ${readiness.json.midtransConfigured === true}`);
 
   if (resumeState) {
-    console.log("[2/7] resume production report");
+    console.log("[2/8] resume production report");
     console.log("- reportPersisted: true");
-    console.log("[3/7] unpaid export lock");
+    console.log("[3/8] unpaid export lock");
     console.log("- unpaidExportLocked: previously verified");
-    console.log("[4/7] payment creation");
+    console.log("- unpaidPdfExportLocked: previously verified");
+    console.log("[4/8] payment creation");
     console.log("- pendingPaymentRowCreated: previously verified");
-    console.log("[5/7] confirm payment through database source of truth");
+    console.log("[5/8] confirm payment through database source of truth");
     console.log("- confirmedPaymentUnlockSource: externally confirmed in payments");
     await verifyUnlockedExport({ accessKey: resumeState.accessKey, baseUrl, reportId: resumeState.reportId });
     clearResumeState();
@@ -137,7 +138,7 @@ async function run() {
 
   const guestSessionId = `guest-session-paid-export-smoke-${randomUUID()}`;
 
-  console.log("[2/7] create production report");
+  console.log("[2/8] create production report");
   const reportResponse = await fetchJson(`${baseUrl}/api/reports/generate`, {
     body: JSON.stringify({
       guestSessionId,
@@ -161,7 +162,7 @@ async function run() {
   assert(typeof accessKey === "string" && accessKey.length >= 40, "Report access key missing");
   console.log("- reportPersisted: true");
 
-  console.log("[3/7] unpaid export lock");
+  console.log("[3/8] unpaid export lock");
   const unpaidExport = await fetchJson(
     `${baseUrl}/api/reports/${encodeURIComponent(reportId)}/export?token=${encodeURIComponent(accessKey)}`,
     { cache: "no-store" },
@@ -172,7 +173,17 @@ async function run() {
   assertNoSecretLeak(unpaidExport.json, "Unpaid export response");
   console.log("- unpaidExportLocked: true");
 
-  console.log("[4/7] payment creation");
+  const unpaidPdfExport = await fetchJson(
+    `${baseUrl}/api/reports/${encodeURIComponent(reportId)}/export?token=${encodeURIComponent(accessKey)}&format=pdf`,
+    { cache: "no-store" },
+  );
+  assert(unpaidPdfExport.response.status === 402, `Expected unpaid PDF export HTTP 402, got ${unpaidPdfExport.response.status}`);
+  assert(unpaidPdfExport.json.state === "export_locked", "Unpaid PDF export state must be export_locked");
+  assert(/unlock|payment|pembayaran|diperlukan/i.test(unpaidPdfExport.json.error || ""), "Unpaid PDF export must say payment is required");
+  assertNoSecretLeak(unpaidPdfExport.json, "Unpaid PDF export response");
+  console.log("- unpaidPdfExportLocked: true");
+
+  console.log("[4/8] payment creation");
   const paymentResponse = await fetchJson(`${baseUrl}/api/payments/create`, {
     body: JSON.stringify({
       export_type: "markdown",
@@ -216,7 +227,7 @@ async function run() {
     assert(pendingPayment.export_type === "markdown", "Pending payment export type must be markdown");
     console.log("- pendingPaymentRowCreated: true");
 
-    console.log("[5/7] confirm payment through database source of truth");
+    console.log("[5/8] confirm payment through database source of truth");
     const { data: confirmedPayment, error: confirmError } = await supabase
       .from("payments")
       .update({
@@ -254,7 +265,7 @@ async function run() {
 }
 
 async function verifyUnlockedExport({ accessKey, baseUrl, reportId }) {
-  console.log("[6/7] report export readiness");
+  console.log("[6/8] report export readiness");
   const unlockedReport = await fetchJson(
     `${baseUrl}/api/reports/${encodeURIComponent(reportId)}?token=${encodeURIComponent(accessKey)}`,
     { cache: "no-store" },
@@ -264,7 +275,7 @@ async function verifyUnlockedExport({ accessKey, baseUrl, reportId }) {
   assertNoSecretLeak(unlockedReport.json.export_readiness, "Report readiness response");
   console.log("- exportReadiness: export_ready");
 
-  console.log("[7/7] export markdown after confirmation");
+  console.log("[7/8] export markdown after confirmation");
   const exportResponse = await fetch(
     `${baseUrl}/api/reports/${encodeURIComponent(reportId)}/export?token=${encodeURIComponent(accessKey)}`,
     { cache: "no-store" },
@@ -276,6 +287,19 @@ async function verifyUnlockedExport({ accessKey, baseUrl, reportId }) {
   assert(markdown.includes("Dokumen ini adalah draft bantuan belajar/penulisan berbasis bukti."), "Export markdown missing disclaimer");
   assertNoSecretLeak(markdown, "Export markdown");
   console.log("- exportMarkdownReturned: true");
+
+  console.log("[8/8] export PDF after confirmation");
+  const pdfResponse = await fetch(
+    `${baseUrl}/api/reports/${encodeURIComponent(reportId)}/export?token=${encodeURIComponent(accessKey)}&format=pdf`,
+    { cache: "no-store" },
+  );
+  const pdfBuffer = Buffer.from(await pdfResponse.arrayBuffer());
+  const pdfRaw = pdfBuffer.toString("latin1");
+  assert(pdfResponse.status === 200, `Confirmed PDF export returned HTTP ${pdfResponse.status}`);
+  assert((pdfResponse.headers.get("content-type") || "").includes("application/pdf"), "PDF export content-type must be application/pdf");
+  assert(pdfBuffer.subarray(0, 5).toString("latin1") === "%PDF-", "PDF export must return PDF bytes");
+  assertNoSecretLeak(pdfRaw, "Export PDF");
+  console.log("- exportPdfReturned: true");
 }
 
 run().catch((error) => {
