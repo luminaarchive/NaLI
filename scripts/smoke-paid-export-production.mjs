@@ -45,6 +45,24 @@ function assertNoSecretLeak(value, label) {
   }
 }
 
+function assertNoPdfSecretLeak(pdfRaw, accessKey) {
+  const pdfSecretPatterns = [
+    /guest-session-/i,
+    /report[_-]?access[_-]?(?:key|token)/i,
+    /payment[_-]?(?:id|reference|status)/i,
+    /midtrans[_-]?order[_-]?id/i,
+    /service_role/i,
+    /MIDTRANS_SERVER_KEY/i,
+    /SUPABASE_SERVICE_ROLE_KEY/i,
+    /\b[a-f0-9]{64}\b/i,
+  ];
+
+  for (const pattern of pdfSecretPatterns) {
+    assert(!pattern.test(pdfRaw), "Export PDF appears to contain sensitive NaLI metadata");
+  }
+  assert(!pdfRaw.includes(accessKey), "Export PDF contains the report access key");
+}
+
 async function fetchJson(url, options) {
   const response = await fetch(url, options);
   const json = await response.json().catch(() => ({}));
@@ -298,7 +316,7 @@ async function verifyUnlockedExport({ accessKey, baseUrl, reportId }) {
   assert(pdfResponse.status === 200, `Confirmed PDF export returned HTTP ${pdfResponse.status}`);
   assert((pdfResponse.headers.get("content-type") || "").includes("application/pdf"), "PDF export content-type must be application/pdf");
   assert(pdfBuffer.subarray(0, 5).toString("latin1") === "%PDF-", "PDF export must return PDF bytes");
-  assertNoSecretLeak(pdfRaw, "Export PDF");
+  assertNoPdfSecretLeak(pdfRaw, accessKey);
   console.log("- exportPdfReturned: true");
 }
 
