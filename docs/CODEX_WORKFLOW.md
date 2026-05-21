@@ -45,6 +45,7 @@ Common local checks:
 Production/readiness checks:
 
 - `npm run smoke:feedback:prod` checks production feedback persistence and must not print secrets.
+- `npm run smoke:export:prod` checks production paid export readiness, unpaid lock, pending payment creation, confirmed unlock, and markdown export.
 - `npm run check:readiness:prod` checks the production readiness endpoint.
 - `npm run validate:production` is broader and depends on configured production env vars.
 
@@ -52,6 +53,7 @@ Operational notes:
 
 - If Supabase env vars are missing locally, local fallback behavior is expected, but it does not prove production persistence.
 - If Midtrans env vars are missing, paid export may be coded but not production verified.
+- `npm run payment:confirm:manual -- --payment-id <payment-id> --confirm` is founder/admin-only manual payment confirmation. Run it only after real payment evidence is verified.
 - Use production smoke tests for persistence/payment bugs before calling them fixed.
 
 ## Small Verified Feature Loop

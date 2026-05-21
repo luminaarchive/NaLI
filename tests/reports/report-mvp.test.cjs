@@ -1052,6 +1052,37 @@ test("export and payment routes enforce Sprint 0 gatekeeping in source", () => {
   assert.match(resultClient, /Unlock Export/);
 });
 
+test("manual payment first-sale operations stay server-side and honest", () => {
+  const paymentRoute = fs.readFileSync(path.join(repoRoot, "src/app/api/payments/create/route.ts"), "utf8");
+  const statusDoc = fs.readFileSync(path.join(repoRoot, "docs/PAYMENT_MODE_STATUS.md"), "utf8");
+  const runbookDoc = fs.readFileSync(path.join(repoRoot, "docs/FIRST_SALE_RUNBOOK.md"), "utf8");
+  const smokeDoc = fs.readFileSync(path.join(repoRoot, "docs/PRODUCTION_SMOKE_CHECKLIST.md"), "utf8");
+  const confirmScriptPath = path.join(repoRoot, "scripts/confirm-manual-payment.mjs");
+  const confirmScript = fs.readFileSync(confirmScriptPath, "utf8");
+  const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, "package.json"), "utf8"));
+
+  assert.equal(fs.existsSync(confirmScriptPath), true);
+  assert.equal(confirmScriptPath.includes(`${path.sep}src${path.sep}app${path.sep}api${path.sep}`), false);
+  assert.equal(packageJson.scripts["payment:confirm:manual"], "node scripts/confirm-manual-payment.mjs");
+
+  assert.match(statusDoc, /manual pending payment mode/i);
+  assert.match(statusDoc, /Midtrans is not configured/i);
+  assert.match(statusDoc, /`payments` table is the source of truth/i);
+  assert.match(runbookDoc + smokeDoc, /`payments` table (?:remains|is) the source of truth/i);
+
+  assert.match(paymentRoute, /manual_payment_pending/);
+  assert.doesNotMatch(paymentRoute, /status:\s*["']paid["']/);
+  assert.doesNotMatch(statusDoc + runbookDoc, /manual pending payment mode\s+is\s+(?:an?\s+)?automatic checkout/i);
+
+  assert.match(confirmScript, /SUPABASE_SERVICE_ROLE_KEY/);
+  assert.match(confirmScript, /--confirm/);
+  assert.match(confirmScript, /manual_founder_confirmation/);
+  assert.match(confirmScript, /PRODUCTION_SUPABASE_HOST/);
+  assert.match(confirmScript, /\.eq\("status", "pending"\)/);
+  assert.doesNotMatch(confirmScript, /src\/app\/api/);
+  assert.doesNotMatch(confirmScript, /console\.(?:log|error)\([^)]*process\.env/s);
+});
+
 test("public UI and report output source avoid forbidden academic cheating wording", () => {
   const files = [
     "src/app/page.tsx",
@@ -1291,5 +1322,4 @@ test("persisted report access key handoff, localStorage keys, and safety", () =>
   assert.match(generateRouteSource, /report_id: report\.id/);
   assert.match(generateRouteSource, /report_access_key: persistence\.persisted \?/);
 });
-
 

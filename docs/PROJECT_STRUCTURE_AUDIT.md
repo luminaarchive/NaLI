@@ -4,7 +4,7 @@ Status date: 2026-05-21.
 
 ## Current Scope
 
-This audit documents the local workspace organization for NaLI Sprint 0 / Sprint 0.1. It is not a refactor plan. Public visual work is locked, and this pass should only organize documentation, Codex workflow rules, and obvious temporary root artifacts.
+This audit documents the local workspace organization for NaLI Sprint 0 through Sprint 0.2. It is not a refactor plan. Public visual work is locked, and workspace organization should stay limited to documentation, Codex workflow rules, safe scripts, and obvious temporary artifacts.
 
 ## Important Folders
 
@@ -63,17 +63,20 @@ This audit documents the local workspace organization for NaLI Sprint 0 / Sprint
 - Sprint 0 feedback persistence is locked and verified.
 - Supabase URL variables must use the base URL only, without `/rest/v1`.
 - `reports`, `usage_events`, and `report_feedback` are production verified.
-- Sprint 0.1 paid export MVP code is implemented.
-- Paid export production verification is the next pending task.
+- Sprint 0.1 paid export MVP is production verified.
+- Unpaid export returns locked/HTTP `402` before payment.
+- Pending payment rows are created in production.
+- Confirmed payment unlocks markdown export through the `payments` table.
+- Midtrans is not configured in production, so manual pending payment mode is active.
 - Public visual is locked.
-- No big agentic features should be added until the monetization flow is production verified.
+- No big agentic features should be added while first-sale manual payment operations are being stabilized.
 
 ## Current Production Verification Status
 
 - Production site: `https://naliai.vercel.app`.
 - Feedback persistence is production verified for the Sprint 0 persistence path.
-- `reports`, `usage_events`, and `report_feedback` have been verified in production.
-- Paid export code exists, but production payment/export verification is still pending.
+- `reports`, `usage_events`, `report_feedback`, and `payments` have been verified in production.
+- Paid export production verification passed for readiness, unpaid export lock, pending payment creation, confirmed payment unlock, and markdown export after confirmation.
 - Fallback success must not be treated as production persistence success.
 - Persistence and payment bugs require production smoke/readiness checks, not only local tests.
 
