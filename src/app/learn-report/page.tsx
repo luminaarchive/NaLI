@@ -44,6 +44,9 @@ export default function LearnReportPage() {
             <p className="mx-auto mt-5 max-w-[560px] text-base leading-7 text-white/50 sm:text-lg">
               Build evidence-based reports from your materials, or get guided when starting from scratch.
             </p>
+            <p className="mx-auto mt-3 max-w-[560px] text-sm leading-6 text-white/40">
+              Mulai dari satu topik. NaLI akan memberi label jika bukti masih lemah.
+            </p>
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
               <PathCard
                 cta="Build Draft"
@@ -94,8 +97,8 @@ export default function LearnReportPage() {
             </h2>
             <div className="mt-10 grid gap-6 md:grid-cols-3">
               {[
-                ["Bring notes, sources, files, or context", "Upload your raw materials or start with a topic."],
-                ["NaLI structures the evidence", "Evidence tables, uncertainty notes, and structured sections."],
+                ["Bring notes, source URLs, location, or context", "Paste text materials or start with one topic."],
+                ["NaLI structures the evidence", "Evidence summary, uncertainty notes, and structured sections."],
                 ["Review, verify, and export", "Check the draft, mark confidence, then export."],
               ].map(([title, text], i) => (
                 <div key={title} className="text-center">
@@ -110,11 +113,11 @@ export default function LearnReportPage() {
           </div>
         </section>
 
-        {/* NaLI Energy & Export Gate */}
+        {/* Export Gate */}
         <section className="px-4 py-12 sm:px-6 lg:px-8">
           <div className="mx-auto flex max-w-[600px] flex-wrap justify-center gap-3">
             <Badge tone="cyan" className="px-4 py-2 text-sm">
-              NaLI Energy
+              Markdown/PDF Export
             </Badge>
             <Badge tone="amber" className="px-4 py-2 text-sm">
               Export Gate

@@ -1286,6 +1286,8 @@ test("provider names and payment-unit wording are absent from public UI source",
     "src/app/create-report/page.tsx",
     "src/app/field-intelligence/page.tsx",
     "src/app/pricing/page.tsx",
+    "src/components/ui/CodexFeatureShowcase.tsx",
+    "src/components/ui/CodexProductPreview.tsx",
     "src/components/report/HomeCommandBox.tsx",
     "src/components/report/ReportResultClient.tsx",
   ];
@@ -1296,6 +1298,55 @@ test("provider names and payment-unit wording are absent from public UI source",
   );
 
   assert.doesNotMatch(source, publicBrandingPattern);
+});
+
+test("public frontend copy aligns with CP1 backend state without overclaiming", () => {
+  const homepage = fs.readFileSync(path.join(repoRoot, "src/app/page.tsx"), "utf8");
+  const featureShowcase = fs.readFileSync(path.join(repoRoot, "src/components/ui/CodexFeatureShowcase.tsx"), "utf8");
+  const productPreview = fs.readFileSync(path.join(repoRoot, "src/components/ui/CodexProductPreview.tsx"), "utf8");
+  const learnReport = fs.readFileSync(path.join(repoRoot, "src/app/learn-report/page.tsx"), "utf8");
+  const createReport = fs.readFileSync(path.join(repoRoot, "src/components/report/CreateReportForm.tsx"), "utf8");
+  const pricing = fs.readFileSync(path.join(repoRoot, "src/app/pricing/page.tsx"), "utf8");
+  const fieldIntelligence = fs.readFileSync(path.join(repoRoot, "src/app/field-intelligence/page.tsx"), "utf8");
+  const resultClient = fs.readFileSync(path.join(repoRoot, "src/components/report/ReportResultClient.tsx"), "utf8");
+  const publicSource = [
+    homepage,
+    featureShowcase,
+    productPreview,
+    learnReport,
+    createReport,
+    pricing,
+    fieldIntelligence,
+    resultClient,
+  ].join("\n");
+
+  assert.match(homepage, /Source Notes: Labeled/);
+  assert.match(homepage, /Turn notes, source URLs, context, and observations/);
+  assert.match(featureShowcase, /Export Markdown\/PDF/);
+  assert.match(featureShowcase, /Source notes labeled/);
+  assert.match(learnReport, /Mulai dari satu topik/);
+  assert.match(learnReport, /Paste text materials or start with one topic/);
+  assert.match(createReport, /Upload PDF\/foto belum aktif di CP1/);
+  assert.match(createReport, /Belum aktif/);
+  assert.doesNotMatch(createReport, /type="file"|create-upload|confirm-upload|signed_upload_url|handlePdfChange/);
+  assert.match(pricing, /Paid export is active after confirmed payment/);
+  assert.match(pricing, /Manual confirmation remains the fallback/);
+  assert.match(pricing, /Automatic checkout is not claimed live yet/);
+  assert.match(resultClient, /Download Markdown/);
+  assert.match(resultClient, /Download PDF/);
+  assert.match(resultClient, /Unlock Export/);
+  assert.match(resultClient, /manual pending/);
+  assert.match(resultClient, /Idea Mode/);
+  assert.match(resultClient, /User-Evidence Report/);
+  assert.doesNotMatch(resultClient, /model_used/);
+  assert.match(fieldIntelligence, /roadmap\/manual inquiry only/);
+  assert.match(fieldIntelligence, /F1-F11 workflows/);
+  assert.match(fieldIntelligence, /Roadmap only in CP1/);
+
+  assert.doesNotMatch(
+    publicSource,
+    /Export PDF or DOCX|DOCX premium|Source Coverage: Verified|Sources verified|Evidence table complete|Seret file|Upload your raw materials|Payment gateway not active|Payment not active/i,
+  );
 });
 
 test("export and payment routes enforce Sprint 0 gatekeeping in source", () => {

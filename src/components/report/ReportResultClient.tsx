@@ -182,16 +182,32 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
         headers: { "Content-Type": "application/json" },
         method: "POST",
       });
-      const payload = (await response.json()) as { error?: string; snap_url?: string };
+      const payload = (await response.json()) as {
+        error?: string;
+        message?: string;
+        payment_mode?: "manual";
+        snap_url?: string;
+        status?: string;
+      };
 
       if (response.ok && payload.snap_url) {
         window.location.href = payload.snap_url;
         return;
       }
 
-      setExportNotice(payload.error ?? "Export premium belum aktif di MVP ini.");
+      if (response.ok && payload.payment_mode === "manual") {
+        setExportNotice(
+          "Permintaan unlock tercatat sebagai manual pending. Export tetap terkunci sampai pembayaran dikonfirmasi founder/admin.",
+        );
+        setStatus("export_notice");
+        return;
+      }
+
+      setExportNotice(payload.error ?? payload.message ?? "Export premium belum bisa diproses saat ini.");
+      setStatus("export_notice");
     } catch {
-      setExportNotice("Export premium belum aktif di MVP ini.");
+      setExportNotice("Export premium belum bisa diproses saat ini.");
+      setStatus("export_notice");
     }
   }
 
@@ -301,6 +317,11 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
   }
 
   const isGuide = report.mode === "start_from_zero";
+  const evidenceLabel = isGuide
+    ? "Idea Mode"
+    : report.evidence_table.length >= 2
+      ? "User-Evidence Report"
+      : "Instant Draft";
 
   return (
     <div className="min-h-screen bg-[#09090b] text-white">
@@ -314,6 +335,7 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge tone={report.is_mock ? "amber" : "green"}>{report.status}</Badge>
               <Badge tone="glass">{isGuide ? "Start From Zero" : "Draft From Materials"}</Badge>
+              <Badge tone="cyan">{evidenceLabel}</Badge>
             </div>
             <h1 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">{report.title}</h1>
             <p className="mt-2 text-sm leading-6 text-white/50">{isGuide ? report.label : report.draft_label}</p>
@@ -337,7 +359,7 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           <SidebarCard title="Status">
             <p className="text-sm font-semibold text-white">{report.status}</p>
-            <p className="mt-2 text-sm leading-6 text-white/40">Pemrosesan: {report.model_used}</p>
+            <p className="mt-2 text-sm leading-6 text-white/40">Pemrosesan: NaLI report flow</p>
             <p className="mt-2 text-sm leading-6 text-white/40">Dibuat: {report.created_at}</p>
           </SidebarCard>
 
@@ -391,7 +413,9 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
               </>
             ) : (
               <>
-                <p className="text-sm leading-6 text-white/40">Unduh dokumen berkualitas tinggi hasil analisis NaLI.</p>
+                <p className="text-sm leading-6 text-white/40">
+                  Download Markdown/PDF aktif setelah pembayaran dikonfirmasi.
+                </p>
                 <Button
                   className="mt-3 w-full"
                   disabled={!accessKey}

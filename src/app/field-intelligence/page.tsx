@@ -38,7 +38,7 @@ const capabilities = [
   {
     icon: FileCheck2,
     title: "Darwin Core Export",
-    text: "Biodiversity data export with coordinate obfuscation and clear review status.",
+    text: "Roadmap only in CP1: biodiversity export with coordinate obfuscation and clear review status.",
     accent: "from-emerald-500/15",
   },
   {
@@ -76,11 +76,11 @@ export default function FieldIntelligencePage() {
             </h1>
             <p className="mx-auto mt-5 max-w-[600px] text-base leading-7 text-white/50 sm:text-lg">
               Field intelligence for observations, conservation, data structuring, and evidence-based
-              decision support.
+              decision support. In CP1 this remains roadmap/manual inquiry only.
             </p>
             <div className="mt-6">
               <Badge tone="amber" className="px-4 py-2 text-sm">
-                Built incrementally. Public MVP focuses on Learn & Report.
+                Built incrementally. Public MVP focuses on Learn & Report text/form reports.
               </Badge>
             </div>
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
@@ -106,7 +106,7 @@ export default function FieldIntelligencePage() {
               </h2>
               <p className="mt-4 text-sm leading-7 text-white/40">
                 This page describes the Professional Layer direction. NaLI does not show maps,
-                alerts, or verified records as if an operational system is already running.
+                alerts, F1-F11 workflows, or verified records as if an operational system is already running.
               </p>
             </div>
             <div className="grid gap-3">
@@ -142,7 +142,7 @@ export default function FieldIntelligencePage() {
                   Built after product signal is sufficient.
                 </h2>
               </div>
-              <Badge tone="glass">Not yet fully active</Badge>
+              <Badge tone="glass">Roadmap/manual inquiry only</Badge>
             </div>
             <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {capabilities.map((item) => (

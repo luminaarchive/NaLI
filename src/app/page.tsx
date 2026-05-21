@@ -8,7 +8,7 @@ import { HomeQueryBox } from "@/components/report/HomeQueryBox";
 
 const chips = [
   { label: "Evidence Hash: SHA-256", color: "#10b981" },
-  { label: "Source Coverage: Verified", color: "#14b8a6" },
+  { label: "Source Notes: Labeled", color: "#14b8a6" },
   { label: "Review: Required", color: "#6366f1" },
   { label: "Export Gate: Active", color: "#7c3aed" },
 ];
@@ -37,7 +37,7 @@ export default function HomePage() {
             </p>
 
             <p className="mt-2 max-w-[560px] text-[15px] leading-6 text-white/50 lg:text-[16px]">
-              Turn notes, files, sources, and observations into structured drafts.
+              Turn notes, source URLs, context, and observations into structured drafts.
             </p>
 
             <div className="mt-5 flex max-w-[600px] flex-wrap items-center justify-center gap-2">

@@ -13,14 +13,14 @@ const tiers = [
     status: "Active for MVP",
   },
   {
-    access: ["Report drafts", "Markdown export", "Source coverage warning"],
+    access: ["Report drafts", "Markdown/PDF paid export", "Source review warning"],
     fit: "Students who frequently assemble short reports.",
     name: "Student",
     price: "Rp29.000-49.000/mo",
-    status: "Beta, payment not active",
+    status: "Beta, manual fallback",
   },
   {
-    access: ["Literature matrix", "Source verification", "Scholar field mode later"],
+    access: ["Deeper source review tools", "Literature matrix later", "Scholar field mode later"],
     fit: "Senior students, junior researchers, or teachers needing stronger source structure.",
     name: "Scholar",
     price: "Rp99.000-149.000/mo",
@@ -59,11 +59,12 @@ export default function PricingPage() {
               NaLI pricing structure
             </h1>
             <p className="mt-5 max-w-[720px] text-lg leading-8 text-white/50">
-              Beta pricing structure. Payment gateway is not yet active.
+              Paid export is active after confirmed payment. During beta, checkout may use manual confirmation until
+              production automatic checkout is enabled and verified.
             </p>
             <div className="mt-6">
               <Badge tone="amber" className="px-4 py-2 text-sm">
-                Payment gateway not active. These are initial beta structures.
+                Markdown/PDF export is active after confirmation. Automatic checkout is not claimed live yet.
               </Badge>
             </div>
           </div>
@@ -119,7 +120,8 @@ export default function PricingPage() {
               <Badge tone="glass">One-Time Report</Badge>
               <h2 className="mt-4 text-3xl font-semibold text-white">One-time options for beta validation.</h2>
               <p className="mt-4 text-sm leading-7 text-white/40">
-                Payment not active. These packages are initial structures to understand user needs.
+                Paid export can be unlocked after confirmed payment. Manual confirmation remains the fallback while
+                automatic checkout credentials are inactive.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">

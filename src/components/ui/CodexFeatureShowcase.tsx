@@ -8,9 +8,7 @@ import {
   CheckCircle2,
   Download,
   FileText,
-  Loader2,
   Table2,
-  Upload,
 } from "lucide-react";
 
 function useReveal(threshold = 0.15) {
@@ -83,9 +81,9 @@ function UploadDraftMockup() {
   return (
     <MockupShell>
       <div className="rounded-xl border-2 border-dashed border-white/10 bg-white/[0.02] px-4 py-8 text-center">
-        <Upload className="mx-auto h-8 w-8 text-white/40" />
+        <FileText className="mx-auto h-8 w-8 text-white/40" />
         <p className="mt-3 text-sm font-medium text-white/80">
-          Seret file atau klik untuk upload
+          Tempel catatan, URL sumber, atau konteks lokasi
         </p>
       </div>
 
@@ -94,12 +92,12 @@ function UploadDraftMockup() {
           <FileText className="h-4 w-4 shrink-0 text-cyan-400" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-[13px] font-medium text-white/90">
-              observasi_patrol.txt
+              Catatan observasi sungai
             </p>
-            <p className="text-[11px] text-white/40">148 KB</p>
+            <p className="text-[11px] text-white/40">Bahan teks pengguna</p>
           </div>
           <span className="rounded-full bg-emerald-500/15 px-2 py-1 text-[11px] font-medium text-emerald-300">
-            verified
+            labeled
           </span>
         </div>
 
@@ -107,13 +105,12 @@ function UploadDraftMockup() {
           <FileText className="h-4 w-4 shrink-0 text-cyan-400" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-[13px] font-medium text-white/90">
-              foto_evidence_07.jpg
+              URL sumber dari pengguna
             </p>
-            <p className="text-[11px] text-white/40">3.1 MB</p>
+            <p className="text-[11px] text-white/40">Belum diverifikasi otomatis</p>
           </div>
           <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/15 px-2 py-1 text-[11px] font-medium text-cyan-300">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            loading
+            review needed
           </span>
         </div>
       </div>
@@ -145,7 +142,7 @@ function EvidenceMockup() {
     {
       claim: "Populasi menurun 12%...",
       source: "Catatan patrol",
-      status: <StatusBadge tone="green">Verified</StatusBadge>,
+      status: <StatusBadge tone="green">Labeled</StatusBadge>,
     },
     {
       claim: "Habitat terfragmentasi...",
@@ -154,7 +151,7 @@ function EvidenceMockup() {
     },
     {
       claim: "Spesies endemik lokal...",
-      source: "Referensi PDF",
+      source: "URL pengguna",
       status: <StatusBadge tone="gray">Pending</StatusBadge>,
     },
   ];
@@ -163,7 +160,7 @@ function EvidenceMockup() {
     <MockupShell>
       <div className="mb-4 flex min-w-0 items-center gap-2">
         <Table2 className="h-5 w-5 shrink-0 text-cyan-400" />
-        <span className="text-[14px] font-semibold text-white/90">Source Coverage</span>
+        <span className="text-[14px] font-semibold text-white/90">Source Notes</span>
         <span className="ml-auto rounded border border-cyan-500/20 bg-cyan-500/10 px-2 py-1 font-mono text-[10px] text-cyan-300">
           Hash: 0x8f2a...9c
         </span>
@@ -201,8 +198,8 @@ function EvidenceMockup() {
 
 function ExportMockup() {
   const checklist = [
-    "Sources verified",
-    "Evidence table complete",
+    "Source notes labeled",
+    "Evidence summary included",
     "Academic integrity confirmed",
     "Review complete",
   ];
@@ -224,7 +221,7 @@ function ExportMockup() {
       <div className="my-5 h-px bg-white/[0.08]" />
       <button className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-violet-600 px-4 text-sm font-semibold text-white transition hover:brightness-110">
         <Download className="h-4 w-4" />
-        Export as PDF →
+        Export Markdown/PDF →
       </button>
     </MockupShell>
   );
@@ -281,11 +278,11 @@ export function CodexFeatureShowcase() {
   return (
     <div className="space-y-[72px] bg-[#07090e] md:space-y-24">
       <FeatureBlock
-        body="Dari catatan lapangan, file PDF, hingga observasi mentah, NaLI mengubah bahan menjadi draft berbasis evidensi yang siap direview."
+        body="Dari catatan teks, URL sumber, lokasi, dan ringkasan bahan, NaLI mengubah input pengguna menjadi draft berbasis evidensi yang siap direview."
         href="/create-report"
         link="Mulai draft sekarang"
         mockup={<UploadDraftMockup />}
-        title="Unggah catatan. Dapatkan draft otomatis."
+        title="Masukkan catatan. Dapatkan draft otomatis."
       />
 
       <FeatureBlock
@@ -298,7 +295,7 @@ export function CodexFeatureShowcase() {
       />
 
       <FeatureBlock
-        body="Preview tetap terbuka untuk diperiksa. Export PDF atau DOCX rapi menggunakan NaLI Energy setelah pengguna siap."
+        body="Preview tetap terbuka untuk diperiksa. Export Markdown atau PDF aktif setelah pembayaran dikonfirmasi."
         href="/pricing"
         link="Pelajari export gate"
         mockup={<ExportMockup />}

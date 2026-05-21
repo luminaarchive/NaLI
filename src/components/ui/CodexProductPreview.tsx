@@ -124,8 +124,8 @@ export function CodexProductPreview() {
                 </h3>
                 <p className="mt-1.5 text-[15px] leading-[1.7] text-white/60">
                   Metode transek line digunakan untuk merapikan catatan observasi,
-                  foto pendukung, dan batas sumber sebelum export.{" "}
-                  <CitationChip>foto_evidence_07.jpg</CitationChip>
+                  konteks lokasi, dan batas sumber sebelum export.{" "}
+                  <CitationChip>Catatan lokasi, 15 Mei</CitationChip>
                 </p>
               </div>
             </div>
