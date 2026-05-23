@@ -598,6 +598,6 @@ export const en = {
     optionalProviders: "Optional provider keys can remain unavailable until live provider integrations are enabled.",
     healthDegraded: "Health checks report degraded when Supabase tables or storage are unreachable from the runtime.",
     backgroundAnalysis:
-      "Observation analysis runs in background mode after field record creation; use /api/agent/analyze as a manual fallback if local background execution is interrupted.",
+      "Observation analysis runs in background mode after field record creation; use /api/agent/analyze as a retry endpoint if local background execution is interrupted.",
   },
 } as const;

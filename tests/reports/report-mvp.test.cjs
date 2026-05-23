@@ -1329,13 +1329,14 @@ test("public frontend copy aligns with CP1 backend state without overclaiming", 
   assert.match(createReport, /Upload PDF\/foto belum aktif di CP1/);
   assert.match(createReport, /Belum aktif/);
   assert.doesNotMatch(createReport, /type="file"|create-upload|confirm-upload|signed_upload_url|handlePdfChange/);
-  assert.match(pricing, /Paid export is active after confirmed payment/);
-  assert.match(pricing, /Manual confirmation remains the fallback/);
-  assert.match(pricing, /Automatic checkout is not claimed live yet/);
+  assert.match(pricing, /Export unlocks after confirmed payment/);
+  assert.match(pricing, /If confirmation is delayed, the order stays pending/);
+  assert.match(pricing, /until automated verification succeeds/);
   assert.match(resultClient, /Download Markdown/);
   assert.match(resultClient, /Download PDF/);
   assert.match(resultClient, /Unlock Export/);
-  assert.match(resultClient, /manual pending/);
+  assert.match(resultClient, /pending/);
+  assert.match(resultClient, /sistem memverifikasi/);
   assert.match(resultClient, /Idea Mode/);
   assert.match(resultClient, /User-Evidence Report/);
   assert.doesNotMatch(resultClient, /model_used/);

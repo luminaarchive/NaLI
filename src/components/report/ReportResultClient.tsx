@@ -197,7 +197,7 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
 
       if (response.ok && payload.payment_mode === "manual") {
         setExportNotice(
-          "Permintaan unlock tercatat sebagai manual pending. Export tetap terkunci sampai pembayaran dikonfirmasi founder/admin.",
+          "Permintaan unlock tercatat sebagai pending. Export tetap terkunci sampai sistem memverifikasi pembayaran.",
         );
         setStatus("export_notice");
         return;

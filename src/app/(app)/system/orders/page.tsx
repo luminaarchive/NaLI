@@ -98,9 +98,9 @@ function FulfillmentJobsSection({ jobs }: { jobs: ManualFulfillmentJob[] }) {
   return (
     <section className="mt-12">
       <header className="border-b border-[#ddd5c7] pb-4">
-        <h2 className="text-xl font-semibold">Manual Fulfillment Queue</h2>
+        <h2 className="text-xl font-semibold">Automated Processing Queue</h2>
         <p className="mt-1 text-sm text-[#5f6b62]">
-          Queue of reports flagged for manual human review or specialized custom writing.
+          Queue of reports flagged for automated review or specialized processing.
         </p>
       </header>
 
@@ -144,7 +144,7 @@ function FulfillmentJobsSection({ jobs }: { jobs: ManualFulfillmentJob[] }) {
             </article>
           ))}
           {jobs.length === 0 && (
-            <p className="px-4 py-8 text-center text-sm text-[#5f6b62]">No active manual fulfillment jobs.</p>
+            <p className="px-4 py-8 text-center text-sm text-[#5f6b62]">No active automated processing jobs.</p>
           )}
         </div>
       </div>
@@ -253,7 +253,7 @@ function OrderRow({ order }: { order: FounderOrderRow }) {
         <div className="mt-3 space-y-2 text-xs leading-5 text-[#5f6b62]">
           <p>Payment: {order.paymentStatus ?? "none"}</p>
           <p>Failure: {order.failureReason ?? "none"}</p>
-          <p>Manual review action: prepared later, not active.</p>
+          <p>Automated review action: prepared later, not active.</p>
         </div>
       </details>
     </article>

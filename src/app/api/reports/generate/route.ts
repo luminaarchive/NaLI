@@ -15,6 +15,7 @@ import {
 } from "@/lib/reports/reportGenerator";
 import { getCostProtectionStatus } from "@/lib/usage/costProtection";
 import { logUsageEvent } from "@/lib/usage/logging";
+import { getEnergyBalance } from "@/lib/energy/ledger";
 
 const systemPrompt = [
   "You are NaLI by NatIve.",
@@ -116,6 +117,21 @@ export async function POST(req: NextRequest) {
         status: "cost_protection_active",
       },
       { headers, status: 429 },
+    );
+  }
+
+  // Check balance before calling OpenRouter if energy ledger is ready
+  const cost = validated.data.mode === "start_from_zero" ? 10 : 20;
+  const balanceRes = await getEnergyBalance(input.guestSessionId);
+  if (balanceRes.ready && balanceRes.balance < cost) {
+    return NextResponse.json(
+      {
+        error: "insufficient_credits",
+        message: `Kredit tidak cukup untuk melakukan aksi ini. Diperlukan ${cost} kredit, sisa Anda ${balanceRes.balance} kredit.`,
+        requiredCredits: cost,
+        balance: balanceRes.balance,
+      },
+      { headers, status: 402 }
     );
   }
 

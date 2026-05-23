@@ -9,6 +9,10 @@ import {
 } from "@/lib/payments/midtrans";
 import { logReportEvent } from "@/lib/operations/logging";
 import { updatePaymentFromNotification } from "@/lib/payments/store";
+import { PLAN_CATALOG, TOP_UP_PACKS } from "@/lib/pricing/plans";
+import { recordEnergyLedgerEntry, UUID_NAMESPACE } from "@/lib/reports/persistence";
+import { getOptionalSupabaseAdminClient } from "@/lib/supabase/admin";
+import { v5 as uuidv5 } from "uuid";
 
 export async function POST(req: NextRequest) {
   if (!isMidtransConfigured()) {
@@ -53,6 +57,39 @@ export async function POST(req: NextRequest) {
       },
       { status: responseStatus },
     );
+  }
+
+  // Grant credits if payment is successful
+  if (isSuccessfulPaymentStatus(status)) {
+    const rawNotification = (updated.payment as any).raw_notification || {};
+    const metadata = rawNotification.metadata || {};
+
+    if (
+      metadata.product_type &&
+      (metadata.product_type === "plan" || metadata.product_type === "topup") &&
+      metadata.product_id &&
+      metadata.guest_session_id_hash &&
+      Number(metadata.credits_to_grant) > 0 &&
+      Number(metadata.gross_amount) === Number(updated.payment.amount)
+    ) {
+      const creditsToGrant = Number(metadata.credits_to_grant);
+      const grantDescription = `${metadata.product_type === "plan" ? "Plan" : "Top-up"} purchase: ${metadata.product_id}`;
+      const grantId = uuidv5(`payment_grant:${midtransOrderId}`, UUID_NAMESPACE);
+
+      await recordEnergyLedgerEntry({
+        id: grantId,
+        amount: creditsToGrant,
+        guestSessionIdHash: metadata.guest_session_id_hash,
+        reason: grantDescription,
+        reportId: updated.payment.report_id,
+        type: "credit",
+      });
+    } else {
+      console.warn("NaLI webhook: Invalid trusted metadata or gross amount mismatch. Credit grant skipped.", {
+        metadata,
+        paymentAmount: updated.payment.amount,
+      });
+    }
   }
 
   void logReportEvent({

@@ -1,0 +1,1374 @@
+"use client";
+
+import { FormEvent, useEffect, useRef, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  ChevronDown,
+  Clipboard,
+  Compass,
+  Download,
+  FileText,
+  LockKeyhole,
+  Loader2,
+  Menu,
+  Plus,
+  RotateCcw,
+  Send,
+  ShieldCheck,
+  Sparkles,
+  X,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { FluidVideoBackground } from "@/components/ui/FluidVideoBackground";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import type { ReportResult, DraftReport, StartFromZeroGuide } from "@/lib/reports/reportGenerator";
+import { buildReportMarkdown } from "@/lib/reports/markdown";
+import { UpgradeModal } from "./UpgradeModal";
+import { getEstimatedCreditCostFromQuery } from "@/lib/pricing/plans";
+
+// Types matching backend AgentMessage schema
+type AgentMessage = {
+  id: string;
+  role: "user" | "assistant" | "system";
+  type:
+    | "plain"
+    | "plan"
+    | "progress"
+    | "report_preview"
+    | "evidence_status"
+    | "quality_status"
+    | "error"
+    | "action";
+  content: string;
+  metadata?: {
+    run_id?: string;
+    step_id?: string;
+    evidence_strength?: "weak" | "medium" | "strong";
+    source_coverage?: "limited" | "adequate" | "strong";
+    academic_integrity?: "safe" | "warning" | "blocked";
+    credit_cost?: number;
+    mode_label?: "fast" | "advanced_report" | "deep_intelligence";
+    template_id?: string;
+    warning_codes?: string[];
+    new_report?: any;
+  };
+  created_at: string;
+};
+
+type LocalThread = {
+  id: string;
+  title: string;
+  mode: string;
+  created_at: string;
+  token?: string;
+};
+
+interface AgentWorkspaceProps {
+  initialReportId?: string;
+}
+
+const templates = [
+  "Laporan Observasi Lingkungan",
+  "Laporan Praktikum Biologi",
+  "Laporan Kerja Lapangan Geografi",
+  "Laporan KKN Lingkungan",
+] as const;
+
+export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
+  const router = useRouter();
+  const [messages, setMessages] = useState<AgentMessage[]>([]);
+  const [report, setReport] = useState<ReportResult | null>(null);
+  const [activeRunStatus, setActiveRunStatus] = useState<"idle" | "running" | "completed" | "failed" | "blocked">("idle");
+  
+  // Sidebar state
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [recentThreads, setRecentThreads] = useState<LocalThread[]>([]);
+  
+  // Form/Composer state
+  const [query, setQuery] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("Laporan Observasi Lingkungan");
+  const [selectedMode, setSelectedMode] = useState<"draft_from_materials" | "start_from_zero">("draft_from_materials");
+  const [integrityConsent, setIntegrityConsent] = useState(false);
+  
+  // App context
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [accessKey, setAccessKey] = useState<string | null>(null);
+  
+  // Credits & Monetization state
+  const [credits, setCredits] = useState<number | null>(null);
+  const [ledgerReady, setLedgerReady] = useState(false);
+  const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
+
+  const [exportReadiness, setExportReadiness] = useState<"export_ready" | "export_locked" | "unknown">("unknown");
+  const [exportNotice, setExportNotice] = useState<string | null>(null);
+  const [showExportStatus, setShowExportStatus] = useState(false);
+
+  // Progressive steps simulation state for optimistic UI
+  const [optimisticSteps, setOptimisticSteps] = useState<Array<{ label: string; status: "pending" | "in_progress" | "completed" }>>([]);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to bottom helper
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const loadRecentThreads = () => {
+    try {
+      const stored = window.localStorage.getItem("nali-threads");
+      if (stored) {
+        setRecentThreads(JSON.parse(stored) as LocalThread[]);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const saveRecentThread = (threadId: string, title: string, mode: string, token?: string) => {
+    try {
+      const stored = window.localStorage.getItem("nali-threads");
+      let list: LocalThread[] = stored ? JSON.parse(stored) : [];
+      
+      // Remove duplicate
+      list = list.filter((t) => t.id !== threadId);
+      
+      // Prepend latest
+      list.unshift({
+        id: threadId,
+        title,
+        mode,
+        created_at: new Date().toLocaleDateString("id-ID"),
+        token,
+      });
+
+      // Keep last 15
+      list = list.slice(0, 15);
+      window.localStorage.setItem("nali-threads", JSON.stringify(list));
+      setRecentThreads(list);
+    } catch {
+      // ignore
+    }
+  };
+
+  const loadReport = async (reportId: string) => {
+    setActiveRunStatus("running");
+    setError(null);
+    try {
+      // 1. Check localStorage first for instant load
+      const stored = window.localStorage.getItem(`nali-report:${reportId}`);
+      const storedNotice = window.localStorage.getItem(`nali-report-notice:${reportId}`);
+      const key = getStoredReportAccessKey(reportId);
+
+      if (storedNotice) {
+        setNotice(storedNotice);
+      }
+      if (key) {
+        setAccessKey(key);
+      }
+
+      let localReport: ReportResult | null = null;
+      if (stored) {
+        try {
+          localReport = JSON.parse(stored) as ReportResult;
+          setReport(localReport);
+          // Initialize message list from local storage or construct it
+          const localMessages = window.localStorage.getItem(`nali-messages:${reportId}`);
+          if (localMessages) {
+            setMessages(JSON.parse(localMessages));
+          } else {
+            // Reconstruct first turn
+            const initMessages: AgentMessage[] = [
+              {
+                id: "initial-user",
+                role: "user",
+                type: "plain",
+                content: localReport.mode === "start_from_zero" ? "Mulai panduan dari nol" : "Buat draf laporan berbasis bukti",
+                created_at: localReport.created_at,
+              },
+              {
+                id: "initial-assistant",
+                role: "assistant",
+                type: "report_preview",
+                content: "Berikut draf laporan yang telah disusun.",
+                metadata: { new_report: localReport },
+                created_at: localReport.created_at,
+              },
+            ];
+            setMessages(initMessages);
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      // 2. Fetch server updates (source of truth)
+      if (key) {
+        const response = await fetch(`/api/reports/${reportId}?token=${encodeURIComponent(key)}`);
+        if (response.ok) {
+          const payload = await response.json();
+          if (payload.report) {
+            setReport(payload.report);
+            window.localStorage.setItem(`nali-report:${reportId}`, JSON.stringify(payload.report));
+            
+            // Reconcile messages
+            const serverThread = payload.report.processing_metadata?.agent_thread;
+            if (serverThread && serverThread.messages) {
+              setMessages(serverThread.messages);
+              window.localStorage.setItem(`nali-messages:${reportId}`, JSON.stringify(serverThread.messages));
+            }
+          }
+          if (payload.export_readiness) {
+            setExportReadiness(payload.export_readiness);
+          }
+        }
+      }
+    } catch {
+      setError("Gagal menghubungi server untuk memuat laporan.");
+    } finally {
+      setActiveRunStatus("idle");
+    }
+  };
+
+  const getStoredReportAccessKey = (reportId: string): string | null => {
+    if (typeof window === "undefined") return null;
+    const tkStorageKey = "nali-report-access-token" + `:${reportId}`;
+    return (
+      window.localStorage.getItem(`nali-report-access:${reportId}`) ??
+      window.localStorage.getItem(tkStorageKey) ??
+      window.localStorage.getItem(`nali-report-key:${reportId}`) ??
+      window.localStorage.getItem(`nali-report-access-key:${reportId}`)
+    );
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, optimisticSteps, activeRunStatus]);
+
+  const fetchBalance = async () => {
+    try {
+      let guestSessionId = window.localStorage.getItem("nali-guest-session-id");
+      if (!guestSessionId) {
+        guestSessionId = typeof crypto !== "undefined" && "randomUUID" in crypto 
+          ? crypto.randomUUID() 
+          : `guest-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+        window.localStorage.setItem("nali-guest-session-id", guestSessionId);
+      }
+
+      const res = await fetch(`/api/energy/balance?guestSessionId=${encodeURIComponent(guestSessionId)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ready) {
+          setCredits(data.balance);
+          setLedgerReady(true);
+        } else {
+          setLedgerReady(false);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  // Load thread list on mount
+  useEffect(() => {
+    loadRecentThreads();
+    fetchBalance();
+
+    const params = new URLSearchParams(window.location.search);
+    const itemType = params.get("item_type");
+    const itemId = params.get("item_id");
+    if (itemType && itemId) {
+      setIsUpgradeOpen(true);
+      // Clear query params
+      const newUrl = window.location.pathname;
+      window.history.replaceState(null, "", newUrl);
+    }
+  }, []);
+
+  // Load existing report if ID provided
+  useEffect(() => {
+    if (initialReportId) {
+      loadReport(initialReportId);
+    } else {
+      setReport(null);
+      setMessages([]);
+      setAccessKey(null);
+    }
+    fetchBalance();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialReportId]);
+
+  // Run progress simulation for optimistic UI
+  const startProgressSimulation = () => {
+    const steps = [
+      { label: "Menganalisis Kueri", status: "in_progress" as const },
+      { label: "Memeriksa Bukti Pengguna", status: "pending" as const },
+      { label: "Menyusun Kerangka Draf", status: "pending" as const },
+      { label: "Menyiapkan Opsi Ekspor", status: "pending" as const },
+    ];
+    setOptimisticSteps(steps);
+
+    setTimeout(() => {
+      setOptimisticSteps((curr) => {
+        if (curr.length === 0) return [];
+        return [
+          { ...curr[0], status: "completed" },
+          { ...curr[1], status: "in_progress" },
+          curr[2],
+          curr[3],
+        ];
+      });
+    }, 800);
+
+    setTimeout(() => {
+      setOptimisticSteps((curr) => {
+        if (curr.length === 0) return [];
+        return [
+          curr[0],
+          { ...curr[1], status: "completed" },
+          { ...curr[2], status: "in_progress" },
+          curr[3],
+        ];
+      });
+    }, 1800);
+
+    setTimeout(() => {
+      setOptimisticSteps((curr) => {
+        if (curr.length === 0) return [];
+        return [
+          curr[0],
+          curr[1],
+          { ...curr[2], status: "completed" },
+          { ...curr[3], status: "in_progress" },
+        ];
+      });
+    }, 2800);
+  };
+
+  const handleInitialSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const trimmed = query.trim();
+    if (!trimmed) return;
+
+    if (!integrityConsent) {
+      setError("Centang pernyataan integritas akademik NaLI terlebih dahulu.");
+      return;
+    }
+
+    setError(null);
+    setNotice(null);
+    setActiveRunStatus("running");
+    
+    // Add optimistic user message
+    const tempUserMsg: AgentMessage = {
+      id: "opt-user",
+      role: "user",
+      type: "plain",
+      content: trimmed,
+      created_at: new Date().toISOString(),
+    };
+    setMessages([tempUserMsg]);
+    startProgressSimulation();
+
+    try {
+      const guestSessionKey = "nali-guest-session-id";
+      let guestSessionId = window.localStorage.getItem(guestSessionKey);
+      if (!guestSessionId) {
+        guestSessionId = typeof crypto !== "undefined" && "randomUUID" in crypto 
+          ? crypto.randomUUID() 
+          : `guest-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+        window.localStorage.setItem(guestSessionKey, guestSessionId);
+      }
+
+      const response = await fetch("/api/reports/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: selectedMode,
+          mainText: trimmed,
+          reportTemplate: selectedTemplate,
+          integrityConsent: true,
+          guestSessionId,
+        }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok || !payload.report || !payload.id) {
+        if (response.status === 402) {
+          setError(payload.message ?? "Kredit energi Anda tidak cukup.");
+          fetchBalance();
+          setMessages([]);
+          setActiveRunStatus("idle");
+          setOptimisticSteps([]);
+          return;
+        }
+        setError(payload.error ?? "NaLI gagal membuat draf laporan awal.");
+        setMessages([]);
+        setActiveRunStatus("failed");
+        return;
+      }
+
+      const reportId = payload.id;
+      const key = payload.report_access_key;
+      const generatedReport = payload.report;
+
+      setReport(generatedReport);
+      setAccessKey(key);
+      if (payload.notice) {
+        setNotice(payload.notice);
+      }
+
+      // Initialize server-side conversation metadata under the retrieved report key
+      const initialAssistantMsg: AgentMessage = {
+        id: "msg-init-assistant",
+        role: "assistant",
+        type: "report_preview",
+        content: `Draf awal untuk "${generatedReport.title}" berhasil disusun. Anda dapat mengetik pesan lanjutan di bawah untuk memperbarui draf.`,
+        metadata: { new_report: generatedReport },
+        created_at: new Date().toISOString(),
+      };
+
+      const initialThread = [tempUserMsg, initialAssistantMsg];
+      setMessages(initialThread);
+
+      // Save to localStorage cache
+      window.localStorage.setItem(`nali-report:${reportId}`, JSON.stringify(generatedReport));
+      window.localStorage.setItem(`nali-messages:${reportId}`, JSON.stringify(initialThread));
+      if (key) {
+        window.localStorage.setItem(`nali-report-access:${reportId}`, key);
+        window.localStorage.setItem(`nali-report-access-token:${reportId}`, key);
+      }
+
+      // Save to history sidebar list
+      saveRecentThread(reportId, generatedReport.title, generatedReport.mode, key);
+      
+      // Update DB to include this initial conversation history
+      await fetch("/api/reports/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reportId,
+          reportAccessKey: key,
+          newQuery: trimmed,
+        }),
+      }).catch(() => {}); // fire-and-forget sync to register thread in metadata
+
+      // Replace URL to point to this report
+      window.history.pushState(null, "", `/report/${reportId}`);
+      fetchBalance();
+    } catch {
+      setError("Koneksi gagal. Periksa jaringan Anda.");
+      setMessages([]);
+    } finally {
+      setOptimisticSteps([]);
+      setActiveRunStatus("idle");
+      setQuery("");
+    }
+  };
+
+  const handleFollowUpSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const trimmed = query.trim();
+    if (!trimmed || activeRunStatus === "running" || !report || !initialReportId) return;
+
+    setError(null);
+    setQuery("");
+    setActiveRunStatus("running");
+
+    // Add optimistic user message to local feed
+    const userMsgId = `opt-user-${Date.now()}`;
+    const newUserMsg: AgentMessage = {
+      id: userMsgId,
+      role: "user",
+      type: "plain",
+      content: trimmed,
+      created_at: new Date().toISOString(),
+    };
+    setMessages((curr) => [...curr, newUserMsg]);
+    startProgressSimulation();
+
+    try {
+      const response = await fetch("/api/reports/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reportId: initialReportId,
+          reportAccessKey: accessKey,
+          newQuery: trimmed,
+        }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        if (response.status === 402) {
+          setError(payload.message ?? "Kredit energi Anda tidak cukup.");
+          fetchBalance();
+          setMessages((curr) => curr.filter((msg) => msg.id !== userMsgId));
+          setActiveRunStatus("idle");
+          setOptimisticSteps([]);
+          return;
+        }
+        setError(payload.error ?? "NaLI gagal memproses kueri lanjutan Anda.");
+        setMessages((curr) => [
+          ...curr,
+          {
+            id: `err-${Date.now()}`,
+            role: "system",
+            type: "error",
+            content: payload.error ?? "Terjadi kesalahan sistem saat memproses.",
+            created_at: new Date().toISOString(),
+          },
+        ]);
+        setActiveRunStatus("failed");
+        return;
+      }
+
+      if (payload.messages) {
+        setMessages(payload.messages);
+        window.localStorage.setItem(`nali-messages:${initialReportId}`, JSON.stringify(payload.messages));
+        fetchBalance();
+      }
+    } catch {
+      setError("Gagal mengirim kueri. Periksa koneksi internet Anda.");
+    } finally {
+      setOptimisticSteps([]);
+      setActiveRunStatus("idle");
+    }
+  };
+
+  // Replace report preview with version from message
+  const handleApplyProposedReport = async (proposedReport: ReportResult) => {
+    if (!initialReportId || !accessKey) return;
+    setError(null);
+    
+    try {
+      const response = await fetch("/api/reports/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reportId: initialReportId,
+          reportAccessKey: accessKey,
+          action: "replace_preview",
+          newReport: proposedReport,
+        }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        setError(payload.error ?? "Gagal menyinkronkan draf baru di server.");
+        return;
+      }
+
+      setReport(proposedReport);
+      window.localStorage.setItem(`nali-report:${initialReportId}`, JSON.stringify(proposedReport));
+      setNotice("Draf preview berhasil diganti dengan versi saran ini.");
+      setTimeout(() => setNotice(null), 3500);
+    } catch {
+      setError("Koneksi gagal. Gagal memperbarui draf di server.");
+    }
+  };
+
+  // Quick Action Chips triggers
+  const handleQuickAction = (actionText: string) => {
+    setQuery(actionText);
+  };
+
+  // Premium export actions
+  const handleExportUnlock = async () => {
+    setExportNotice(null);
+    if (!initialReportId || !accessKey) return;
+
+    try {
+      const response = await fetch("/api/payments/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          export_type: "markdown",
+          report_access_key: accessKey,
+          report_id: initialReportId,
+        }),
+      });
+      const payload = await response.json();
+
+      if (response.ok && payload.snap_url) {
+        window.location.href = payload.snap_url;
+        return;
+      }
+
+      if (response.ok && payload.payment_mode === "manual") {
+        setExportNotice("Permintaan ekspor tercatat sebagai pending. Export akan terbuka setelah sistem memverifikasi pembayaran.");
+        setShowExportStatus(true);
+        return;
+      }
+
+      setExportNotice(payload.error ?? "Pembayaran ekspor premium belum dapat dihubungkan saat ini.");
+      setShowExportStatus(true);
+    } catch {
+      setExportNotice("Terjadi kesalahan. Gagal menghubungi gateway pembayaran.");
+      setShowExportStatus(true);
+    }
+  };
+
+  const handleDownloadExport = (format: "markdown" | "pdf") => {
+    if (!initialReportId || !accessKey) return;
+    const params = new URLSearchParams({ token: accessKey });
+    if (format === "pdf") params.set("format", "pdf");
+    window.open(`/api/reports/${initialReportId}/export?${params.toString()}`, "_blank");
+  };
+
+  // Local copy markdown
+  const [copyStatus, setCopyStatus] = useState(false);
+  const handleCopyMarkdown = async () => {
+    if (!report) return;
+    try {
+      const markdown = buildReportMarkdown(report, {
+        exportStatus: exportReadiness === "export_ready" ? "export_ready" : "preview_copy",
+      });
+      await navigator.clipboard.writeText(markdown);
+      setCopyStatus(true);
+      setTimeout(() => setCopyStatus(false), 2000);
+    } catch {
+      alert("Gagal menyalin markdown.");
+    }
+  };
+
+  // Heuristic cost calculation
+  const estCreditCost = useMemo(() => {
+    if (messages.length === 0) {
+      return selectedMode === "start_from_zero" ? 10 : 20;
+    }
+    return getEstimatedCreditCostFromQuery(query);
+  }, [messages.length, selectedMode, query]);
+
+  const isInsufficient = useMemo(() => {
+    if (!ledgerReady || credits === null) return false;
+    return credits < estCreditCost;
+  }, [ledgerReady, credits, estCreditCost]);
+
+  return (
+    <div className="relative flex min-h-screen w-screen overflow-hidden bg-[#07090e] text-white">
+      <FluidVideoBackground />
+
+      {/* --- Sidebar --- */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-white/[0.06] bg-[#07090e]/95 backdrop-blur-2xl transition-transform duration-300 md:static md:translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="flex h-14 items-center justify-between px-4 border-b border-white/[0.06]">
+          <Link href="/" className="flex items-center gap-2 font-semibold">
+            <span className="text-emerald-400">NaLI</span>
+            <span className="text-xs text-white/30">v1.5.3</span>
+          </Link>
+          <button onClick={() => setSidebarOpen(false)} className="p-1 text-white/40 hover:text-white md:hidden">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="p-3">
+          <Link
+            href="/create-report"
+            onClick={() => setSidebarOpen(false)}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/[0.04] border border-white/[0.06] px-4 py-3 text-sm font-semibold text-white/80 hover:bg-white/[0.08] hover:text-white transition duration-200"
+          >
+            <Plus className="h-4 w-4" />
+            Mulai Baru
+          </Link>
+        </div>
+
+        {/* Thread History list */}
+        <div className="flex-1 overflow-y-auto px-2 space-y-1">
+          <p className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white/20">Riwayat Percakapan</p>
+          {recentThreads.length === 0 ? (
+            <p className="px-3 py-4 text-xs text-white/30 italic">Belum ada percakapan</p>
+          ) : (
+            recentThreads.map((thread) => (
+              <button
+                key={thread.id}
+                onClick={() => {
+                  setSidebarOpen(false);
+                  router.push(`/report/${thread.id}?token=${encodeURIComponent(thread.token || "")}`);
+                }}
+                className={cn(
+                  "flex w-full flex-col gap-1 rounded-xl px-3 py-2.5 text-left text-xs transition duration-150 hover:bg-white/[0.04]",
+                  initialReportId === thread.id ? "bg-white/[0.06] border border-white/[0.04]" : ""
+                )}
+              >
+                <span className="font-semibold text-white/70 truncate">{thread.title}</span>
+                <div className="flex items-center justify-between text-white/40">
+                  <span>{thread.mode === "start_from_zero" ? "Panduan" : "Draf"}</span>
+                  <span>{thread.created_at}</span>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      </aside>
+
+      {/* --- Main Workspace Content --- */}
+      <div className="relative flex flex-1 flex-col overflow-hidden">
+        {/* Workspace Header */}
+        <header className="flex h-14 shrink-0 items-center justify-between px-4 border-b border-white/[0.06] bg-[#07090e]/60 backdrop-blur-md z-30">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 text-white/60 hover:text-white md:hidden"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/40 hover:text-white transition-colors">
+              <ArrowLeft className="h-4 w-4" />
+              Keluar
+            </Link>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {ledgerReady && credits !== null && (
+              <button
+                type="button"
+                onClick={() => setIsUpgradeOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 px-3 py-1 font-mono text-[11px] font-semibold text-emerald-400 cursor-pointer transition"
+              >
+                <span>⚡ {credits} Kredit</span>
+              </button>
+            )}
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 font-mono text-[11px] font-semibold text-white/60">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              {selectedMode === "start_from_zero" ? "Fast Mode" : "Advanced Report Mode"}
+            </span>
+          </div>
+        </header>
+
+        {/* Conversation flow viewport */}
+        <main className="flex-1 overflow-y-auto px-4 py-6 md:px-8 space-y-6 z-10">
+          <div className="mx-auto max-w-[760px] space-y-6 pb-28">
+            {messages.length === 0 ? (
+              /* --- Empty State / Hero Landing --- */
+              <div className="flex flex-col items-center text-center pt-16 md:pt-24">
+                <div className="relative h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-500 to-indigo-600 p-2.5 shadow-2xl">
+                  <Sparkles className="h-7 w-7 text-white animate-pulse" />
+                </div>
+                <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white md:text-5xl">
+                  NaLI Intelligence
+                </h1>
+                <p className="mt-3 max-w-[500px] text-base leading-6 text-white/60">
+                  Masukkan materi lapangan, tautan, lokasi, atau kueri untuk menyusun draf laporan terstruktur secara instan.
+                </p>
+                <div className="mt-2.5 inline-flex items-center gap-1 text-[11px] text-white/40">
+                  <span>Estimasi biaya:</span>
+                  <strong className="text-white/60 font-semibold">
+                    {selectedMode === "start_from_zero" ? "10 Kredit (Fast Mode)" : "20 Kredit (Advanced Mode)"}
+                  </strong>
+                </div>
+
+                {/* Initial Mode Toggle */}
+                <div className="mt-8 grid grid-cols-2 gap-2 w-full max-w-[500px]">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMode("draft_from_materials")}
+                    className={cn(
+                      "rounded-xl border p-3 text-left transition duration-200",
+                      selectedMode === "draft_from_materials"
+                        ? "border-[#10b981]/30 bg-[#10b981]/5 text-white"
+                        : "border-white/[0.06] bg-white/[0.02] text-white/50 hover:bg-white/[0.04]"
+                    )}
+                  >
+                    <span className="flex items-center gap-2 text-sm font-semibold">
+                      <FileText className="h-4 w-4 text-emerald-400" />
+                      Punya Bahan
+                    </span>
+                    <span className="mt-1 block text-[11px] leading-4 text-white/40">Gunakan catatan, URL, atau observasi.</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMode("start_from_zero")}
+                    className={cn(
+                      "rounded-xl border p-3 text-left transition duration-200",
+                      selectedMode === "start_from_zero"
+                        ? "border-[#7c3aed]/30 bg-[#7c3aed]/5 text-white"
+                        : "border-white/[0.06] bg-white/[0.02] text-white/50 hover:bg-white/[0.04]"
+                    )}
+                  >
+                    <span className="flex items-center gap-2 text-sm font-semibold">
+                      <Compass className="h-4 w-4 text-indigo-400" />
+                      Mulai dari Nol
+                    </span>
+                    <span className="mt-1 block text-[11px] leading-4 text-white/40">Minta panduan, outline, dan checklist bukti.</span>
+                  </button>
+                </div>
+
+                {/* Templates Selector */}
+                <div className="mt-5 w-full max-w-[500px] text-left">
+                  <label className="block text-xs font-semibold uppercase tracking-[0.08em] text-white/40 mb-1.5">Template Laporan</label>
+                  <select
+                    value={selectedTemplate}
+                    onChange={(e) => setSelectedTemplate(e.target.value)}
+                    className="w-full rounded-xl border border-white/[0.08] bg-[#07090e]/60 px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/20"
+                  >
+                    {templates.map((tpl) => (
+                      <option key={tpl} value={tpl} className="bg-[#09090b] text-white">
+                        {tpl}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            ) : (
+              /* --- Chat message feed --- */
+              messages.map((message) => {
+                const isUser = message.role === "user";
+                const isSystem = message.role === "system";
+
+                if (isSystem) {
+                  return (
+                    <div key={message.id} className="flex gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm leading-6 text-red-200">
+                      <AlertTriangle className="h-5 w-5 shrink-0 text-red-400" />
+                      <p>{message.content}</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={message.id} className={cn("flex flex-col space-y-2", isUser ? "items-end" : "items-start")}>
+                    <div className="text-white/30 text-[10px] px-2">{message.role === "user" ? "Anda" : "NaLI"}</div>
+                    
+                    <div
+                      className={cn(
+                        "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-xl",
+                        isUser
+                          ? "bg-gradient-to-r from-emerald-500/10 to-indigo-600/10 border border-white/[0.08] text-white"
+                          : "bg-white/[0.03] border border-white/[0.06] text-white/90"
+                      )}
+                    >
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                    </div>
+
+                    {/* Inline report preview updates (Proposed Drafts) */}
+                    {message.metadata?.new_report && (
+                      <div className="w-full mt-2">
+                        <ReportResultCard
+                          report={message.metadata.new_report}
+                          onApply={
+                            report?.id === message.metadata?.new_report?.id &&
+                            JSON.stringify(report) !== JSON.stringify(message.metadata?.new_report)
+                              ? () => handleApplyProposedReport(message.metadata?.new_report)
+                              : undefined
+                          }
+                          copyStatus={copyStatus}
+                          onCopy={handleCopyMarkdown}
+                          exportReadiness={exportReadiness}
+                          onUnlock={handleExportUnlock}
+                          onDownload={handleDownloadExport}
+                          showExport={showExportStatus}
+                          exportNotice={exportNotice}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+
+            {/* Simulated Progressive Task checklist (displayed only when running) */}
+            {activeRunStatus === "running" && optimisticSteps.length > 0 && (
+              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-md space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-emerald-400" />
+                    <span className="text-sm font-semibold">NaLI sedang memproses draf...</span>
+                  </div>
+                </div>
+                <ul className="space-y-2.5 text-xs text-white/50 pl-6">
+                  {optimisticSteps.map((step, idx) => (
+                    <li key={idx} className="flex items-center gap-2">
+                      {step.status === "completed" ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                      ) : step.status === "in_progress" ? (
+                        <span className="h-4 w-4 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin shrink-0" />
+                      ) : (
+                        <span className="h-1.5 w-1.5 rounded-full bg-white/20 shrink-0 ml-1.5 mr-1" />
+                      )}
+                      <span className={cn(step.status === "completed" ? "text-emerald-400/80" : step.status === "in_progress" ? "text-white font-medium" : "text-white/40")}>
+                        {step.label}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Error notifications */}
+            {error && (
+              <div className="flex gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm leading-6 text-red-200">
+                <AlertTriangle className="h-5 w-5 shrink-0 text-red-400" />
+                <p>{error}</p>
+              </div>
+            )}
+
+            {/* Notice notifications */}
+            {notice && (
+              <div className="flex gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm leading-6 text-emerald-200">
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-400" />
+                <p>{notice}</p>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+        </main>
+
+        {/* Bottom Composer and Control chips */}
+        <div className="absolute bottom-0 inset-x-0 z-20 bg-gradient-to-t from-[#07090e] via-[#07090e]/95 to-transparent pt-8 pb-4 px-4 md:px-8">
+          <div className="mx-auto max-w-[760px] space-y-3">
+            {/* Quick Action chips (only if messages exist and thread is idle) */}
+            {messages.length > 0 && activeRunStatus === "idle" && (
+              <div className="flex flex-wrap gap-1.5 py-1 justify-center md:justify-start">
+                <button
+                  onClick={() => handleQuickAction("Tulis kesimpulan lebih formal")}
+                  className="rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-xs text-white/50 hover:bg-white/[0.06] hover:text-white transition duration-200 cursor-pointer"
+                >
+                  Kesimpulan Formal (5)
+                </button>
+                <button
+                  onClick={() => handleQuickAction("Buat ringkasan draf di atas menjadi lebih pendek")}
+                  className="rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-xs text-white/50 hover:bg-white/[0.06] hover:text-white transition duration-200 cursor-pointer"
+                >
+                  Perpendek Ringkasan (5)
+                </button>
+                <button
+                  onClick={() => handleQuickAction("Perkuat analisis bagian temuan")}
+                  className="rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-xs text-white/50 hover:bg-white/[0.06] hover:text-white transition duration-200 cursor-pointer"
+                >
+                  Perkuat Temuan (10)
+                </button>
+                <button
+                  onClick={() => handleQuickAction("Tambahkan poin rekomendasi praktis")}
+                  className="rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-xs text-white/50 hover:bg-white/[0.06] hover:text-white transition duration-200 cursor-pointer"
+                >
+                  Tambahkan Rekomendasi (5)
+                </button>
+              </div>
+            )}
+
+            {/* Main Input Composer form */}
+            {/* Insufficient credits warning */}
+            {isInsufficient && (
+              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-5 text-amber-200/80 mb-3 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xl backdrop-blur-md">
+                <div>
+                  <p className="font-semibold text-amber-400">Kredit Energi Tidak Cukup</p>
+                  <p className="mt-0.5">
+                    Sisa kredit Anda ({credits} kredit) kurang dari estimasi biaya ({estCreditCost} kredit) untuk menjalankan instruksi ini.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => setIsUpgradeOpen(true)}
+                  className="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold self-start md:self-auto"
+                >
+                  Upgrade / Top-up Kredit
+                </Button>
+              </div>
+            )}
+
+            <form
+              onSubmit={messages.length === 0 ? handleInitialSubmit : handleFollowUpSubmit}
+              className="relative group"
+            >
+              <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-indigo-600/10 to-indigo-400/10 opacity-30 blur-md transition duration-500 group-hover:opacity-50 group-focus-within:opacity-60" />
+              
+              <div className="relative flex items-end gap-2 rounded-2xl border border-white/[0.08] bg-[#07090e]/80 p-2 shadow-2xl backdrop-blur-2xl transition duration-300 focus-within:border-white/[0.15] focus-within:bg-[#07090e]">
+                <div className="flex-1 px-3 py-1">
+                  <textarea
+                    rows={1}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={
+                      messages.length === 0
+                        ? "Ketik catatan, topik, lokasi atau ringkasan materi observasi..."
+                        : "Ketik instruksi penyuntingan draf lanjutan (misal: 'perpendek', 'tulis kesimpulan formal')..."
+                    }
+                    className="w-full bg-transparent text-[14px] leading-6 text-white placeholder-white/30 outline-none border-none py-1 resize-none max-h-32"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        e.currentTarget.form?.requestSubmit();
+                      }
+                    }}
+                  />
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0 px-1">
+                  {/* Est energy cost badge */}
+                  <span className="text-[10px] font-mono text-white/35 px-2">
+                    Est: {estCreditCost} Kredit
+                  </span>
+
+                  <button
+                    type="submit"
+                    disabled={activeRunStatus === "running" || !query.trim() || isInsufficient || (messages.length === 0 && !integrityConsent)}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-zinc-950 transition duration-200 hover:bg-white/90 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {activeRunStatus === "running" ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-zinc-950" />
+                    ) : (
+                      <Send className="h-4 w-4 text-zinc-950" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            {/* Academic Integrity consent checkbox (rendered only at start or when required) */}
+            {messages.length === 0 && (
+              <label className="flex gap-2.5 items-start justify-center text-[12px] leading-5 text-white/40 hover:text-white/60 cursor-pointer transition">
+                <input
+                  type="checkbox"
+                  checked={integrityConsent}
+                  onChange={(e) => setIntegrityConsent(e.target.checked)}
+                  className="mt-0.5 h-3.5 w-3.5 accent-emerald-500 rounded border-white/20 bg-transparent focus:ring-0 focus:ring-offset-0"
+                />
+                <span>
+                  Saya menyetujui pernyataan integritas akademik NaLI. Output adalah draf/panduan awal belajar, bukan plagiarisme atau karya akhir otomatis.
+                </span>
+              </label>
+            )}
+          </div>
+        </div>
+      </div>
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={isUpgradeOpen}
+        onClose={() => setIsUpgradeOpen(false)}
+        reportId={initialReportId || (report ? report.id : null)}
+        reportAccessKey={accessKey}
+      />
+    </div>
+  );
+}
+
+/* --- Inline Report preview renderer sub-component --- */
+interface ReportResultCardProps {
+  report: ReportResult;
+  onApply?: () => void;
+  copyStatus: boolean;
+  onCopy: () => void;
+  exportReadiness: "export_ready" | "export_locked" | "unknown";
+  onUnlock: () => void;
+  onDownload: (format: "markdown" | "pdf") => void;
+  showExport: boolean;
+  exportNotice: string | null;
+}
+
+function ReportResultCard({
+  report,
+  onApply,
+  copyStatus,
+  onCopy,
+  exportReadiness,
+  onUnlock,
+  onDownload,
+  showExport,
+  exportNotice,
+}: ReportResultCardProps) {
+  const [activeTab, setActiveTab] = useState<"preview" | "evidence" | "uncertainty">("preview");
+
+  const isGuide = report.mode === "start_from_zero";
+
+  const renderTabContent = () => {
+    if (isGuide) {
+      const guide = report as StartFromZeroGuide;
+      switch (activeTab) {
+        case "preview":
+          return (
+            <div className="space-y-4 text-sm leading-6 text-white/70">
+              <div>
+                <span className="block text-xs font-semibold text-indigo-400 uppercase tracking-wider">Panduan Awal</span>
+                <p className="mt-1">{guide.integrity_note}</p>
+              </div>
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold text-indigo-400 uppercase tracking-wider">Kerangka Topik</span>
+                <p className="mt-1">{guide.topic_framing}</p>
+              </div>
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold text-indigo-400 uppercase tracking-wider">Outline Laporan</span>
+                <ul className="mt-1.5 list-decimal pl-4 space-y-1">
+                  {guide.suggested_outline.map((item, i) => (
+                    <li key={i}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          );
+        case "evidence":
+          return (
+            <div className="space-y-4 text-sm leading-6 text-white/70">
+              <div>
+                <span className="block text-xs font-semibold text-indigo-400 uppercase tracking-wider">Checklist Bukti yang Diperlukan</span>
+                <ul className="mt-1.5 space-y-1.5">
+                  {guide.evidence_checklist.map((item, i) => (
+                    <li key={i} className="flex gap-2 items-start">
+                      <CheckCircle2 className="h-4 w-4 text-white/35 shrink-0 mt-1" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold text-indigo-400 uppercase tracking-wider">Pertanyaan Observasi</span>
+                <ul className="mt-1.5 space-y-1.5">
+                  {guide.observation_questions.map((item, i) => (
+                    <li key={i} className="flex gap-2 items-start">
+                      <span className="font-mono text-xs text-white/30 shrink-0 mt-0.5">{i+1}.</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          );
+        case "uncertainty":
+          return (
+            <div className="space-y-4 text-sm leading-6 text-white/70">
+              <div>
+                <span className="block text-xs font-semibold text-indigo-400 uppercase tracking-wider">Batasan Etika & Keamanan</span>
+                <p className="mt-1">{guide.safety_or_ethics_note}</p>
+              </div>
+              <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-6 text-amber-200/80">
+                <span className="flex items-center gap-1.5 font-semibold text-amber-400">
+                  <ShieldCheck className="h-4 w-4" />
+                  Disclaimer Panduan Mulai
+                </span>
+                <p className="mt-1.5 leading-5">{guide.disclaimer}</p>
+              </div>
+            </div>
+          );
+      }
+    } else {
+      const draft = report as DraftReport;
+      switch (activeTab) {
+        case "preview":
+          return (
+            <div className="space-y-4 text-sm leading-6 text-white/70">
+              <div>
+                <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">Ringkasan Singkat</span>
+                <p className="mt-1">{draft.executive_summary}</p>
+              </div>
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">Latar Belakang & Konteks</span>
+                <p className="mt-1">{draft.background}</p>
+              </div>
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">Metodologi & Bahan</span>
+                <p className="mt-1">{draft.method_or_materials}</p>
+              </div>
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">Temuan Utama</span>
+                <ul className="mt-1.5 space-y-1.5">
+                  {draft.findings.map((item, i) => (
+                    <li key={i} className="flex gap-2 items-start">
+                      <FileText className="h-4 w-4 text-white/30 shrink-0 mt-1" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {draft.conclusion && (
+                <div className="border-t border-white/[0.04] pt-3">
+                  <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">Kesimpulan Sementara</span>
+                  <p className="mt-1">{draft.conclusion}</p>
+                </div>
+              )}
+            </div>
+          );
+        case "evidence":
+          return (
+            <div className="space-y-4 text-sm leading-6 text-white/70">
+              <div>
+                <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2">Evidence Table</span>
+                <div className="overflow-x-auto rounded-lg border border-white/[0.05] bg-white/[0.01]">
+                  <table className="min-w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-white/[0.06] bg-white/[0.02]">
+                        <th className="px-3 py-2 text-white/40">ID</th>
+                        <th className="px-3 py-2 text-white/40">Tipe</th>
+                        <th className="px-3 py-2 text-white/40">Ringkasan</th>
+                        <th className="px-3 py-2 text-white/40">Verifikasi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {draft.evidence_table.map((row) => (
+                        <tr key={row.id} className="border-b border-white/[0.04] last:border-none">
+                          <td className="px-3 py-2.5 font-mono text-[10px] text-white/50">{row.id}</td>
+                          <td className="px-3 py-2.5 text-white/60">{row.material_type}</td>
+                          <td className="px-3 py-2.5 text-white/50 truncate max-w-[200px]">{row.summary}</td>
+                          <td className="px-3 py-2.5">
+                            <span className="inline-flex rounded bg-white/[0.04] border border-white/[0.06] px-1.5 py-0.5 text-[9px] text-white/45">
+                              {row.verification_status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">Catatan Sumber</span>
+                <ul className="mt-1.5 space-y-1 text-xs text-white/45">
+                  {draft.source_notes.map((item, i) => (
+                    <li key={i}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          );
+        case "uncertainty":
+          return (
+            <div className="space-y-4 text-sm leading-6 text-white/70">
+              <div>
+                <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">Confidence Note & Batasan</span>
+                <p className="mt-1">{draft.uncertainty_note}</p>
+              </div>
+              <div>
+                <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2">Checklist Review Mandiri</span>
+                <ul className="space-y-1.5">
+                  {draft.user_review_checklist.map((item, i) => (
+                    <li key={i} className="flex gap-2 items-start">
+                      <CheckCircle2 className="h-4 w-4 text-white/30 shrink-0 mt-1" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-6 text-amber-200/80">
+                <span className="flex items-center gap-1.5 font-semibold text-amber-400">
+                  <ShieldCheck className="h-4 w-4" />
+                  Disclaimer Integritas Akademik
+                </span>
+                <p className="mt-1.5 leading-5">{draft.disclaimer}</p>
+              </div>
+            </div>
+          );
+      }
+    }
+  };
+
+  return (
+    <div className="w-full rounded-2xl border border-white/[0.08] bg-[#07090e]/60 shadow-2xl backdrop-blur-xl overflow-hidden mt-3 z-10">
+      <div className="flex items-center justify-between px-4 py-3 bg-white/[0.02] border-b border-white/[0.06]">
+        <div className="flex flex-col">
+          <span className="text-xs text-white/40">{report.report_type}</span>
+          <span className="text-sm font-semibold text-white/80">{report.title}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {onApply && (
+            <Button
+              size="sm"
+              onClick={onApply}
+              className="bg-emerald-500 text-zinc-950 hover:bg-emerald-400 font-bold px-3 text-[11px] h-7 cursor-pointer"
+            >
+              Terapkan Perubahan
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-white/[0.04] px-4 text-xs bg-white/[0.01]">
+        <button
+          onClick={() => setActiveTab("preview")}
+          className={cn(
+            "px-4 py-2.5 font-medium border-b-2 transition-colors cursor-pointer",
+            activeTab === "preview" ? "border-emerald-400 text-white" : "border-transparent text-white/40 hover:text-white"
+          )}
+        >
+          Isi Draft
+        </button>
+        <button
+          onClick={() => setActiveTab("evidence")}
+          className={cn(
+            "px-4 py-2.5 font-medium border-b-2 transition-colors cursor-pointer",
+            activeTab === "evidence" ? "border-emerald-400 text-white" : "border-transparent text-white/40 hover:text-white"
+          )}
+        >
+          {isGuide ? "Checklist" : "Bukti / Sumber"}
+        </button>
+        <button
+          onClick={() => setActiveTab("uncertainty")}
+          className={cn(
+            "px-4 py-2.5 font-medium border-b-2 transition-colors cursor-pointer",
+            activeTab === "uncertainty" ? "border-emerald-400 text-white" : "border-transparent text-white/40 hover:text-white"
+          )}
+        >
+          Integritas & Batasan
+        </button>
+      </div>
+
+      {/* Tab content panel */}
+      <div className="p-5 max-h-[380px] overflow-y-auto bg-white/[0.01]">
+        {renderTabContent()}
+      </div>
+
+      {/* Actions footer bar */}
+      <div className="flex flex-wrap gap-2 px-4 py-3 bg-white/[0.02] border-t border-white/[0.06] text-xs">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onCopy}
+          className="h-8 border-white/[0.08] hover:bg-white/[0.04] text-white/60 hover:text-white cursor-pointer"
+        >
+          <Clipboard className="h-3.5 w-3.5 mr-1.5" />
+          {copyStatus ? "Tersalin!" : "Salin Markdown"}
+        </Button>
+
+        {exportReadiness === "export_ready" ? (
+          <>
+            <Button
+              size="sm"
+              variant="default"
+              onClick={() => onDownload("markdown")}
+              className="h-8 bg-white hover:bg-white/90 text-zinc-950 cursor-pointer"
+            >
+              <Download className="h-3.5 w-3.5 mr-1.5" />
+              Markdown
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onDownload("pdf")}
+              className="h-8 border-white/[0.08] hover:bg-white/[0.04] text-white/60 hover:text-white cursor-pointer"
+            >
+              <Download className="h-3.5 w-3.5 mr-1.5" />
+              PDF
+            </Button>
+          </>
+        ) : (
+          <Button
+            size="sm"
+            onClick={onUnlock}
+            className="h-8 bg-[#7c3aed] text-white hover:bg-[#6d28d9] cursor-pointer"
+          >
+            <LockKeyhole className="h-3.5 w-3.5 mr-1.5" />
+            Unlock PDF (15 Kredit / Bayar)
+          </Button>
+        )}
+
+        {showExport && exportNotice && (
+          <div className="w-full mt-2 rounded border border-amber-500/20 bg-amber-500/10 p-2 text-[11px] text-amber-200/80 leading-5">
+            {exportNotice}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

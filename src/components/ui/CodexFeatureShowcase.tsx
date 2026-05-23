@@ -147,7 +147,7 @@ function EvidenceMockup() {
     {
       claim: "Habitat terfragmentasi...",
       source: "Foto evidence",
-      status: <StatusBadge tone="amber">Manual review</StatusBadge>,
+      status: <StatusBadge tone="amber">User check</StatusBadge>,
     },
     {
       claim: "Spesies endemik lokal...",
@@ -286,7 +286,7 @@ export function CodexFeatureShowcase() {
       />
 
       <FeatureBlock
-        body="Evidence Engine NaLI menautkan klaim ke sumber, menandai data yang perlu verifikasi manual, dan menjaga transparansi sebelum export."
+        body="Evidence Engine NaLI menautkan klaim ke sumber, menandai data yang memerlukan verifikasi mandiri, dan menjaga transparansi sebelum export."
         href="/learn-report"
         link="Lihat evidence engine"
         mockup={<EvidenceMockup />}

@@ -51,6 +51,7 @@ export async function createPaymentRecord({
   paymentExpiresAt,
   reportId,
   status = "pending",
+  rawNotification,
 }: {
   amount: number;
   exportType: ExportType;
@@ -58,6 +59,7 @@ export async function createPaymentRecord({
   paymentExpiresAt: Date;
   reportId: string;
   status?: PaymentStatus;
+  rawNotification?: any;
 }) {
   const supabase = getOptionalSupabaseAdminClient();
 
@@ -74,8 +76,9 @@ export async function createPaymentRecord({
       payment_expires_at: paymentExpiresAt.toISOString(),
       report_id: reportId,
       status,
+      raw_notification: rawNotification ?? {},
     })
-    .select("id, report_id, midtrans_order_id, amount, status, payment_type, payment_expires_at, export_type")
+    .select("id, report_id, midtrans_order_id, amount, status, payment_type, payment_expires_at, export_type, raw_notification")
     .single();
 
   if (error) {
@@ -104,15 +107,31 @@ export async function updatePaymentFromNotification({
     return { updated: false as const, reason: "supabase_unconfigured" as const };
   }
 
+  // Retrieve existing raw_notification.metadata to prevent overwrite
+  const { data: existingRecord } = await supabase
+    .from("payments")
+    .select("raw_notification")
+    .eq("midtrans_order_id", midtransOrderId)
+    .maybeSingle();
+
+  const existingMeta = (existingRecord?.raw_notification as any)?.metadata || {};
+  const sanitized = sanitizeMidtransNotification(notification);
+  
+  // Merge Midtrans notification with existing metadata
+  const rawNotification = {
+    ...sanitized,
+    metadata: existingMeta,
+  };
+
   const { data, error } = await supabase
     .from("payments")
     .update({
       payment_type: typeof notification.payment_type === "string" ? notification.payment_type : null,
-      raw_notification: sanitizeMidtransNotification(notification),
+      raw_notification: rawNotification,
       status,
     })
     .eq("midtrans_order_id", midtransOrderId)
-    .select("id, report_id, midtrans_order_id, amount, status, payment_type, payment_expires_at, export_type")
+    .select("id, report_id, midtrans_order_id, amount, status, payment_type, payment_expires_at, export_type, raw_notification")
     .maybeSingle();
 
   if (error) {

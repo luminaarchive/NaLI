@@ -1,7 +1,7 @@
-import { ReportResultClient } from "@/components/report/ReportResultClient";
+import { AgentWorkspace } from "@/components/report/AgentWorkspace";
 
 export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  return <ReportResultClient reportId={id} />;
+  return <AgentWorkspace initialReportId={id} />;
 }
