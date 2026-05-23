@@ -13,11 +13,11 @@ import { cn } from "@/lib/utils";
 export function CodexMagicBackground() {
   return (
     <div
-      className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+      className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
       aria-hidden="true"
     >
       {/* Deep dark base */}
-      <div className="absolute inset-0 bg-[#09090b]" />
+      <div className="absolute inset-0 bg-[#07090e]" />
 
       {/* Magic UI Grid Pattern */}
       <GridPattern
@@ -87,7 +87,7 @@ export function CodexMagicBackground() {
       />
 
       {/* Top-edge fade for nav readability */}
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#09090b]/60 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#07090e]/60 to-transparent" />
     </div>
   );
 }
