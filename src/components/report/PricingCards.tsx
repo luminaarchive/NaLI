@@ -78,9 +78,9 @@ export function PricingCards({ reportId, reportAccessKey, onSuccess }: PricingCa
       {/* Plan Section */}
       <div>
         <div className="text-center mb-8">
-          <h3 className="text-xl font-semibold text-white">Pilih Paket Kredit Bulanan</h3>
+          <h3 className="text-xl font-semibold text-white">Pilih Paket Kredit</h3>
           <p className="text-xs text-white/50 mt-1.5">
-            Dapatkan jatah kredit tetap setiap bulan untuk analisis draf laporan Anda.
+            Beli kredit untuk menyusun draf laporan. Selama fase testing, semua paket bersifat pembelian satu kali.
           </p>
         </div>
 
@@ -152,9 +152,9 @@ export function PricingCards({ reportId, reportAccessKey, onSuccess }: PricingCa
       {/* Top Up Section */}
       <div className="border-t border-white/[0.06] pt-10">
         <div className="text-center mb-8">
-          <h3 className="text-xl font-semibold text-white">Top-Up Paket Kredit</h3>
+          <h3 className="text-xl font-semibold text-white">Top-Up Kredit Instan</h3>
           <p className="text-xs text-white/50 mt-1.5">
-            Kehabisan kredit sebelum akhir bulan? Beli paket tambahan instan tanpa mengubah status langganan.
+            Butuh kredit tambahan? Beli paket instan tanpa mengubah paket utama.
           </p>
         </div>
 
@@ -201,7 +201,7 @@ export function PricingCards({ reportId, reportAccessKey, onSuccess }: PricingCa
           * <strong>NaLI tidak menawarkan generasi tanpa batas (unlimited)</strong>. Kredit digunakan untuk pemrosesan draf laporan, perbaikan gaya bahasa, pemeriksaan bukti/sumber, dan tindakan ekspor (Markdown & PDF).
         </p>
         <p>
-          * Selama masa early release/uji coba, paket langganan Starter / Pro / Max dapat diproses sebagai pembelian kredit satu kali saja hingga sistem pembayaran berulang (recurring billing) resmi diaktifkan.
+          * Selama fase testing/early release, semua paket diproses sebagai pembelian kredit satu kali. Recurring billing (langganan bulanan) belum aktif.
         </p>
       </div>
     </div>

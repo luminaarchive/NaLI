@@ -1,3 +1,6 @@
+import type { TaskType, SuggestedAction } from "./taskClassifier";
+import { classifyTask, getReportSections, getDefaultSuggestedActions, estimateEvidenceStrength } from "./taskClassifier";
+
 export const PUBLIC_REPORT_DISCLAIMER =
   "Dokumen ini adalah draft bantuan belajar/penulisan berbasis bukti. Pengguna wajib memeriksa, mengedit, memverifikasi sumber, dan bertanggung jawab penuh atas dokumen akhir. NaLI tidak boleh digunakan untuk memalsukan data, mengarang referensi, melakukan plagiarisme, atau mengklaim karya AI sebagai karya final tanpa revisi.";
 
@@ -7,6 +10,22 @@ export const START_FROM_ZERO_DISCLAIMER =
 export const DRAFT_LABEL = "Draft bantuan belajar/penulisan berbasis bukti.";
 export const START_FROM_ZERO_LABEL = "Panduan awal, belum menjadi draft laporan berbasis bukti.";
 export const SOURCE_VERIFICATION_MVP_STATUS = "Source verification belum aktif di MVP ini.";
+
+// Re-export task classifier types for convenience
+export type { TaskType, SuggestedAction } from "./taskClassifier";
+export { classifyTask, getReportSections, getDefaultSuggestedActions, estimateEvidenceStrength } from "./taskClassifier";
+
+/** Optional agentic metadata attached to report results */
+export type AgenticFields = {
+  understanding?: string;
+  plan?: string[];
+  task_type?: TaskType;
+  evidence_strength?: "weak" | "medium" | "strong";
+  source_coverage?: "limited" | "adequate" | "strong";
+  missing_evidence?: string[];
+  evidence_warnings?: string[];
+  suggested_actions?: SuggestedAction[];
+};
 
 export const reportTemplates = [
   "Laporan Observasi Lingkungan",
@@ -102,6 +121,15 @@ export type DraftReport = {
   disclaimer: typeof PUBLIC_REPORT_DISCLAIMER;
   next_user_steps: string[];
   is_mock: boolean;
+  // Agentic fields (optional for backward compat)
+  understanding?: string;
+  plan?: string[];
+  task_type?: TaskType;
+  evidence_strength?: "weak" | "medium" | "strong";
+  source_coverage?: "limited" | "adequate" | "strong";
+  missing_evidence?: string[];
+  evidence_warnings?: string[];
+  suggested_actions?: SuggestedAction[];
 };
 
 export type StartFromZeroGuide = {
@@ -125,6 +153,15 @@ export type StartFromZeroGuide = {
   disclaimer: typeof START_FROM_ZERO_DISCLAIMER;
   next_steps: string[];
   is_mock: boolean;
+  // Agentic fields (optional for backward compat)
+  understanding?: string;
+  plan?: string[];
+  task_type?: TaskType;
+  evidence_strength?: "weak" | "medium" | "strong";
+  source_coverage?: "limited" | "adequate" | "strong";
+  missing_evidence?: string[];
+  evidence_warnings?: string[];
+  suggested_actions?: SuggestedAction[];
 };
 
 export type ReportResult = DraftReport | StartFromZeroGuide;
@@ -542,6 +579,9 @@ export function buildMockDraftReport(input: ReportRequest, modelUsed = "NaLI Pre
   const issue = detectIssue(`${input.mainText} ${input.title}`);
   const location = input.location || detectLocation(input.mainText);
   const createdAt = formatJakartaDate();
+  const taskType = classifyTask({ mainText: input.mainText, topic: input.topic, reportTemplate: input.reportTemplate });
+  const evStrength = estimateEvidenceStrength(input);
+  const shortInput = input.mainText.trim().length < 50;
 
   return {
     additional_evidence_needed: additionalEvidenceFor(input),
@@ -590,6 +630,22 @@ export function buildMockDraftReport(input: ReportRequest, modelUsed = "NaLI Pre
       "Apakah format laporan sesuai instruksi guru, dosen, atau lembaga?",
       "Apakah disclaimer tetap disertakan saat dokumen dipakai atau diekspor?",
     ],
+    // Agentic fields
+    understanding: `Saya memahami ini sebagai ${input.reportTemplate} berdasarkan ${evidenceTable.length} bahan yang diberikan.${shortInput ? " Input cukup pendek — draf akan terbatas." : ""}`,
+    plan: [
+      "Menyusun struktur laporan sesuai template.",
+      "Mempertahankan data dari catatan pengguna.",
+      "Menandai bukti yang masih lemah atau belum ada.",
+      "Membuat draf awal.",
+    ],
+    task_type: taskType,
+    evidence_strength: evStrength.strength,
+    source_coverage: evStrength.coverage,
+    missing_evidence: additionalEvidenceFor(input),
+    evidence_warnings: shortInput
+      ? ["Input sangat pendek. NaLI hanya bisa menyusun draf terbatas.", "Tambahkan tanggal, lokasi, metode, dan detail observasi."]
+      : [],
+    suggested_actions: getDefaultSuggestedActions(taskType),
   };
 }
 
@@ -694,6 +750,25 @@ export function buildMockStartGuide(input: ReportRequest, modelUsed = "NaLI Prev
     topic_framing: riverTopic
       ? "Topik dapat diarahkan pada kondisi fisik sungai, sampah, erosi, kualitas air visual, atau aktivitas manusia di sekitar bantaran. Ini masih panduan awal, bukan temuan lapangan."
       : "Topik perlu dipilih dari hal yang bisa diamati langsung dan dibuktikan. Mulai dari objek, tempat, kondisi, atau perubahan yang dapat kamu catat sendiri.",
+    // Agentic fields
+    understanding: `Saya memahami ini sebagai permintaan panduan awal untuk ${input.reportTemplate}. Bahan observasi belum tersedia.`,
+    plan: [
+      "Menyusun kerangka topik yang bisa diamati.",
+      "Membuat daftar pertanyaan observasi.",
+      "Menyiapkan template catatan lapangan.",
+      "Menyusun checklist bukti yang perlu dikumpulkan.",
+    ],
+    task_type: classifyTask({ mainText: input.mainText, topic: input.topic, reportTemplate: input.reportTemplate }),
+    evidence_strength: "weak" as const,
+    source_coverage: "limited" as const,
+    missing_evidence: [
+      "Catatan observasi langsung",
+      "Foto atau dokumentasi",
+      "Tanggal dan waktu pengamatan",
+      "Lokasi pengamatan",
+    ],
+    evidence_warnings: ["Bahan observasi belum tersedia. Panduan ini adalah langkah awal sebelum draft laporan."],
+    suggested_actions: getDefaultSuggestedActions("general"),
   };
 }
 
@@ -704,14 +779,42 @@ export function buildMockResult(input: ReportRequest, modelUsed = "NaLI Preview 
 }
 
 export function buildReportPrompt(input: ReportRequest) {
+  const taskType = classifyTask({ mainText: input.mainText, topic: input.topic, reportTemplate: input.reportTemplate });
+  const sections = getReportSections(taskType);
+
   const commonRules = [
-    "You are NaLI by NatIve.",
+    "You are NaLI by NatIve, an evidence-based report and learning assistant for Indonesian users.",
+    "You help users turn notes, observations, URLs, and rough materials into structured report drafts.",
     "Use Bahasa Indonesia.",
     "Return JSON only. No markdown fences. No prose outside JSON.",
-    "Do not invent citations, DOI, statistics, field observations, coordinates, source verification, authors, publishers, or timestamps.",
-    "If URLs are provided, label them as user-provided and not yet verified.",
-    `Source verification limitation: ${SOURCE_VERIFICATION_MVP_STATUS}`,
-    "Human review remains required.",
+    "",
+    "CRITICAL RULES:",
+    "- Do not invent citations, DOI, statistics, field observations, coordinates, source verification, authors, publishers, or timestamps.",
+    "- Do not fabricate data, fake references, or fake verification results.",
+    "- If URLs are provided, label them as user-provided and not yet verified.",
+    `- Source verification limitation: ${SOURCE_VERIFICATION_MVP_STATUS}`,
+    "- Human review remains required.",
+    "- Do not claim upload, image parsing, PDF extraction, NASA/GFW, Darwin Core, Professional Field Intelligence, or official observation hash is active.",
+    "- Do not help with academic cheating, plagiarism evasion, or final submission fraud.",
+    "",
+    "STRUCTURED OUTPUT REQUIRED:",
+    "For every report task, your JSON response MUST include these top-level fields:",
+    '- "understanding": string — 1-2 sentence summary of what you understood from user input.',
+    '- "plan": string[] — 3-5 brief steps you will take.',
+    '- "evidence_strength": "weak" | "medium" | "strong" — based on input quality.',
+    '- "source_coverage": "limited" | "adequate" | "strong" — based on input sources.',
+    '- "missing_evidence": string[] — what evidence is still needed.',
+    '- "evidence_warnings": string[] — warnings about weak claims or limited input.',
+    '- "suggested_actions": Array<{ label: string, prompt: string }> — 3-5 follow-up actions user can take.',
+    "",
+    "OUTPUT QUALITY RULES:",
+    "- Use clear headings and short paragraphs.",
+    "- Preserve user-provided facts exactly.",
+    "- Label uncertainty clearly.",
+    "- Avoid repetitive filler and generic AI essay style.",
+    "- Avoid overlong introductions.",
+    "- Include actionable next steps.",
+    "- If input is too thin, produce a limited draft only and clearly mark weak evidence.",
   ];
 
   if (input.mode === "start_from_zero") {
@@ -720,10 +823,11 @@ export function buildReportPrompt(input: ReportRequest) {
       `label must be exactly: ${START_FROM_ZERO_LABEL}`,
       `disclaimer must be exactly: ${START_FROM_ZERO_DISCLAIMER}`,
       "Generate guidance only, not report findings, not a final report draft.",
-      "Schema: { mode, title, report_type, created_at, status, model_used, label, topic_framing, suggested_outline: string[], observation_questions: string[], field_note_template: string[], evidence_checklist: string[], source_search_checklist: string[], safety_or_ethics_note, integrity_note, disclaimer, next_steps: string[] }",
+      "Schema: { mode, title, report_type, created_at, status, model_used, label, topic_framing, suggested_outline: string[], observation_questions: string[], field_note_template: string[], evidence_checklist: string[], source_search_checklist: string[], safety_or_ethics_note, integrity_note, disclaimer, next_steps: string[], understanding, plan, evidence_strength, source_coverage, missing_evidence, evidence_warnings, suggested_actions }",
       "",
       `Mode: ${input.mode}`,
       `Template: ${input.reportTemplate}`,
+      `Task type detected: ${taskType}`,
       `User request/topic: ${input.mainText || input.topic}`,
     ].join("\n");
   }
@@ -733,11 +837,14 @@ export function buildReportPrompt(input: ReportRequest) {
     `draft_label must be exactly: ${DRAFT_LABEL}`,
     `disclaimer must be exactly: ${PUBLIC_REPORT_DISCLAIMER}`,
     "Use only user-provided materials for facts. You may structure, clarify, infer safe title/topic, and suggest missing evidence.",
-    "Structure the draft as: Judul laporan, Ringkasan singkat, Konteks observasi, Temuan utama, Analisis awal berbasis bukti, Tingkat keyakinan/confidence note, Batasan & disclaimer, Rekomendasi tindak lanjut, and Catatan sumber/evidence.",
-    "Schema: { mode, title, report_type, created_at, status, model_used, draft_label, executive_summary, background, objective, method_or_materials, findings: string[], preliminary_analysis, evidence_table: { id, material_type, summary, user_provided, verification_status }[], source_notes: string[], source_verification_status, uncertainty_note, additional_evidence_needed: string[], user_review_checklist: string[], disclaimer, next_user_steps: string[] }",
+    `Use these section headings for the draft: ${sections.join(", ")}.`,
+    "Structure the draft as: Judul laporan, Ringkasan singkat, then the template sections above, then Batasan & disclaimer, Rekomendasi tindak lanjut, and Catatan sumber/evidence.",
+    "Schema: { mode, title, report_type, created_at, status, model_used, draft_label, executive_summary, background, objective, method_or_materials, findings: string[], preliminary_analysis, discussion, conclusion, evidence_table: { id, material_type, summary, user_provided, verification_status }[], source_notes: string[], source_verification_status, uncertainty_note, additional_evidence_needed: string[], user_review_checklist: string[], disclaimer, next_user_steps: string[], understanding, plan, evidence_strength, source_coverage, missing_evidence, evidence_warnings, suggested_actions }",
     "",
     `Mode: ${input.mode}`,
     `Template: ${input.reportTemplate}`,
+    `Task type detected: ${taskType}`,
+    `Expected sections: ${sections.join(", ")}`,
     `Title: ${input.title}`,
     `Role: ${input.role}`,
     `Main material: ${input.mainText || "(none)"}`,
@@ -751,6 +858,29 @@ function safeStringArray(value: unknown, fallback: string[]) {
   return Array.isArray(value) && value.every((item) => typeof item === "string") && value.length > 0 ? value : fallback;
 }
 
+function safeString(value: unknown, fallback: string): string {
+  return typeof value === "string" && value.trim().length > 0 ? value : fallback;
+}
+
+function safeEvidenceStrength(value: unknown, fallback: "weak" | "medium" | "strong"): "weak" | "medium" | "strong" {
+  if (value === "weak" || value === "medium" || value === "strong") return value;
+  return fallback;
+}
+
+function safeSourceCoverage(value: unknown, fallback: "limited" | "adequate" | "strong"): "limited" | "adequate" | "strong" {
+  if (value === "limited" || value === "adequate" || value === "strong") return value;
+  return fallback;
+}
+
+function safeSuggestedActions(value: unknown, fallback: SuggestedAction[]): SuggestedAction[] {
+  if (!Array.isArray(value) || value.length === 0) return fallback;
+  const validActions = value.filter(
+    (item) =>
+      item && typeof item === "object" && typeof (item as SuggestedAction).label === "string" && typeof (item as SuggestedAction).prompt === "string",
+  ) as SuggestedAction[];
+  return validActions.length > 0 ? validActions : fallback;
+}
+
 export function normalizeProviderResult(raw: Record<string, unknown>, input: ReportRequest, modelUsed: string): ReportResult {
   const fallback = buildMockResult(input, modelUsed);
   const rawText = JSON.stringify(raw);
@@ -758,6 +888,18 @@ export function normalizeProviderResult(raw: Record<string, unknown>, input: Rep
   if (containsForbiddenWording(rawText)) {
     return fallback;
   }
+
+  const agenticFallback = fallback as AgenticFields;
+  const agenticFields = {
+    understanding: safeString(raw.understanding, agenticFallback.understanding ?? ""),
+    plan: safeStringArray(raw.plan, agenticFallback.plan ?? []),
+    task_type: (agenticFallback.task_type ?? "general") as TaskType,
+    evidence_strength: safeEvidenceStrength(raw.evidence_strength, agenticFallback.evidence_strength ?? "weak"),
+    source_coverage: safeSourceCoverage(raw.source_coverage, agenticFallback.source_coverage ?? "limited"),
+    missing_evidence: safeStringArray(raw.missing_evidence, agenticFallback.missing_evidence ?? []),
+    evidence_warnings: safeStringArray(raw.evidence_warnings, agenticFallback.evidence_warnings ?? []),
+    suggested_actions: safeSuggestedActions(raw.suggested_actions, agenticFallback.suggested_actions ?? []),
+  };
 
   if (input.mode === "start_from_zero") {
     const guideFallback = fallback as StartFromZeroGuide;
@@ -776,6 +918,7 @@ export function normalizeProviderResult(raw: Record<string, unknown>, input: Rep
       next_steps: safeStringArray(guideRaw.next_steps, guideFallback.next_steps),
       status: "AI_GENERATED_NALI",
       suggested_outline: safeStringArray(guideRaw.suggested_outline, guideFallback.suggested_outline),
+      ...agenticFields,
     };
   }
 
@@ -810,5 +953,7 @@ export function normalizeProviderResult(raw: Record<string, unknown>, input: Rep
     source_verification_status: SOURCE_VERIFICATION_MVP_STATUS,
     status: "AI_GENERATED_NALI",
     user_review_checklist: safeStringArray(draftRaw.user_review_checklist, draftFallback.user_review_checklist),
+    ...agenticFields,
   };
 }
+

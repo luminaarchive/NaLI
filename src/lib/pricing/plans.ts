@@ -47,7 +47,7 @@ export const PLAN_CATALOG: Plan[] = [
   {
     id: "starter",
     name: "Starter",
-    priceLabel: "Rp49.000 / bln",
+    priceLabel: "Rp49.000",
     priceAmount: 49000,
     credits: 300,
     description: "Untuk laporan sederhana & tugas mahasiswa ringan",
@@ -64,7 +64,7 @@ export const PLAN_CATALOG: Plan[] = [
   {
     id: "pro",
     name: "Pro",
-    priceLabel: "Rp149.000 / bln",
+    priceLabel: "Rp149.000",
     priceAmount: 149000,
     credits: 1200,
     description: "Untuk laporan lebih kuat & alur kerja akademis",
@@ -83,7 +83,7 @@ export const PLAN_CATALOG: Plan[] = [
   {
     id: "max",
     name: "Max",
-    priceLabel: "Rp399.000 / bln",
+    priceLabel: "Rp399.000",
     priceAmount: 399000,
     credits: 4000,
     description: "Untuk laporan berat, catatan lapangan & riset mendalam",

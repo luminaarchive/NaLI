@@ -1320,8 +1320,41 @@ test("public frontend copy aligns with CP1 backend state without overclaiming", 
     resultClient,
   ].join("\n");
 
+  // Existing homepage assertions (kept)
   assert.match(homepage, /Source Notes: Labeled/);
   assert.match(homepage, /Turn notes, source URLs, context, and observations/);
+
+  // CP1 Conversion Polish: bilingual headline
+  assert.match(homepage, /Ubah catatan berantakan menjadi laporan berbasis bukti/);
+  assert.match(homepage, /Turn messy notes into structured evidence-based reports/);
+
+  // CP1 Conversion Polish: use-case cards
+  assert.match(homepage, /Yang bisa kamu lakukan sekarang/);
+  assert.match(homepage, /Laporan Observasi Lingkungan/);
+  assert.match(homepage, /Laporan Praktikum Biologi/);
+  assert.match(homepage, /Laporan Kegiatan \/ KKN/);
+  assert.match(homepage, /Cek Kualitas Bukti/);
+
+  // CP1 Conversion Polish: how NaLI works
+  assert.match(homepage, /Cara kerja NaLI/);
+  assert.match(homepage, /Masukkan bahan/);
+  assert.match(homepage, /NaLI menyusun draft/);
+  assert.match(homepage, /Periksa dan lanjutkan/);
+
+  // CP1 Conversion Polish: integrity section
+  assert.match(homepage, /Dibuat untuk membantu, bukan memalsukan/);
+  assert.match(homepage, /Tidak membuat data palsu/);
+  assert.match(homepage, /Tidak membuat sitasi palsu/);
+
+  // CP1 Conversion Polish: controlled testing CTA
+  assert.match(homepage, /Bantu uji NaLI CP1/);
+
+  // CP1 Conversion Polish: CTA links
+  assert.match(homepage, /Mulai buat laporan/);
+  assert.match(homepage, /Lihat paket kredit/);
+  assert.match(homepage, /href="\/create-report"/);
+  assert.match(homepage, /href="\/pricing"/);
+
   assert.match(featureShowcase, /Export Markdown\/PDF/);
   assert.match(featureShowcase, /Source notes labeled/);
   assert.match(learnReport, /Mulai dari satu topik/);
@@ -1332,9 +1365,13 @@ test("public frontend copy aligns with CP1 backend state without overclaiming", 
   assert.match(pricing, /Export unlocks after confirmed payment/);
   assert.match(pricing, /If confirmation is delayed, the order stays pending/);
   assert.match(pricing, /until automated verification succeeds/);
+
+  // CP1 Conversion Polish: pricing testing-phase note
+  assert.match(pricing, /Pembayaran otomatis belum aktif di fase testing ini/);
+
   assert.match(resultClient, /Download Markdown/);
   assert.match(resultClient, /Download PDF/);
-  assert.match(resultClient, /Unlock Export/);
+  assert.match(resultClient, /Export versi rapi/);
   assert.match(resultClient, /pending/);
   assert.match(resultClient, /sistem memverifikasi/);
   assert.match(resultClient, /Idea Mode/);
@@ -1349,6 +1386,60 @@ test("public frontend copy aligns with CP1 backend state without overclaiming", 
     /Export PDF or DOCX|DOCX premium|Source Coverage: Verified|Sources verified|Evidence table complete|Seret file|Upload your raw materials|Payment gateway not active|Payment not active/i,
   );
 });
+
+test("CP1 payment interest optimization: pricing uses credit-pack framing, no subscription implication", () => {
+  const plans = fs.readFileSync(path.join(repoRoot, "src/lib/pricing/plans.ts"), "utf8");
+  const pricing = fs.readFileSync(path.join(repoRoot, "src/app/pricing/page.tsx"), "utf8");
+  const pricingCards = fs.readFileSync(path.join(repoRoot, "src/components/report/PricingCards.tsx"), "utf8");
+  const resultClient = fs.readFileSync(path.join(repoRoot, "src/components/report/ReportResultClient.tsx"), "utf8");
+  const workspace = fs.readFileSync(path.join(repoRoot, "src/components/report/AgentWorkspace.tsx"), "utf8");
+
+  // Plans must NOT show '/ bln' (subscription framing)
+  assert.doesNotMatch(plans, /\/ bln/);
+
+  // Pricing page must have one-time value anchors section
+  assert.match(pricing, /Mulai dari pembayaran kecil/);
+  assert.match(pricing, /Target harga rilis berbayar/);
+  assert.match(pricing, /Rp5\.000/);
+  assert.match(pricing, /Rp9\.000/);
+  assert.match(pricing, /Rp19\.000/);
+  assert.match(pricing, /Rp29\.000/);
+  assert.match(pricing, /Rencana harga CP1/);
+
+  // Pricing page must have segment copy
+  assert.match(pricing, /Cocok untuk/);
+  assert.match(pricing, /praktikum/);
+  assert.match(pricing, /geografi/);
+  assert.match(pricing, /NGO\/CSR/);
+
+  // PricingCards must use credit-pack framing not subscription
+  assert.match(pricingCards, /Pilih Paket Kredit/);
+  assert.doesNotMatch(pricingCards, /Kredit Bulanan/);
+  assert.match(pricingCards, /Selama fase testing/);
+  assert.match(pricingCards, /Recurring billing.*belum aktif/);
+
+  // Pricing header must not use 'langganan' subscription language
+  assert.doesNotMatch(pricing, /langganan kredit bulanan/);
+  assert.match(pricing, /Paket kredit dan top-up instan/);
+
+  // Export CTA must use Indonesian and include price framing
+  assert.match(resultClient, /Export versi rapi/);
+  assert.match(resultClient, /Mulai Rp9\.000/);
+  assert.match(resultClient, /Pembayaran belum aktif di fase testing ini/);
+  assert.doesNotMatch(resultClient, /Unlock Export/);
+  assert.doesNotMatch(resultClient, /Buy now|Pay now|Subscribe now/i);
+
+  // AgentWorkspace must have paid intent prompt (UI-only, no fake payment)
+  assert.match(workspace, /paid_intent/);
+  assert.match(workspace, /Ya, tertarik/);
+  assert.match(workspace, /Mungkin/);
+  assert.match(workspace, /Rp9\.000/);
+  assert.doesNotMatch(workspace, /payment_success|unlock_export|create_payment/i);
+
+  // No unlimited claims in pricing plans (disclaimer mentions 'unlimited' to deny it, which is fine)
+  assert.doesNotMatch(plans, /unlimited/i);
+});
+
 
 test("export and payment routes enforce Sprint 0 gatekeeping in source", () => {
   const paymentRoute = fs.readFileSync(path.join(repoRoot, "src/app/api/payments/create/route.ts"), "utf8");
@@ -1389,7 +1480,7 @@ test("export and payment routes enforce Sprint 0 gatekeeping in source", () => {
   assert.match(resultClient, /exportReadiness/);
   assert.match(resultClient, /Download Markdown/);
   assert.match(resultClient, /Download PDF/);
-  assert.match(resultClient, /Unlock Export/);
+  assert.match(resultClient, /Export versi rapi/);
 
   const exportSmoke = fs.readFileSync(path.join(repoRoot, "scripts/smoke-paid-export-production.mjs"), "utf8");
   assert.match(exportSmoke, /unpaidPdfExportLocked/);
@@ -1836,4 +1927,120 @@ test("persisted report access key handoff, localStorage keys, and safety", () =>
   // 10. Generate response includes both report_id and report_access_key
   assert.match(generateRouteSource, /report_id: report\.id/);
   assert.match(generateRouteSource, /report_access_key: persistence\.persisted \?/);
+});
+
+test("agentic answer quality, classifier, and mobile responsiveness in UI", () => {
+  const repoRoot = path.join(__dirname, "../..");
+  
+  // 1. Load the task classifier functions
+  const {
+    classifyTask,
+    classifyChatAction,
+    getReportSections,
+    getDefaultSuggestedActions,
+    estimateEvidenceStrength,
+  } = require("../../src/lib/reports/taskClassifier");
+
+  // Assertion 1: Environmental Observation Classification
+  const envType = classifyTask({ mainText: "Ada erosi parah di tebing sungai Ciliwung dengan tumpukan sampah." });
+  assert.equal(envType, "environmental_observation_report");
+
+  // Assertion 2: Biology Practicum Classification
+  const bioType = classifyTask({ mainText: "Hasil pengamatan sel bawang merah dengan mikroskop cahaya." });
+  assert.equal(bioType, "biology_practicum_report");
+
+  // Assertion 3: Activity/KKN Report Classification
+  const actType = classifyTask({ mainText: "Sosialisasi program KKN kelompok 12 di Balai Desa." });
+  assert.equal(actType, "activity_report");
+
+  // Assertion 4: Evidence Check Classification
+  const checkType = classifyChatAction("Tolong periksa kualitas bukti dan klaim lemah pada draf di atas.");
+  assert.equal(checkType, "evidence_check");
+
+  // Assertion 5: Rewrite Classification
+  const rwType = classifyChatAction("Tolong revisi dan buat kesimpulan lebih formal.");
+  assert.equal(rwType, "rewrite");
+
+  // Assertion 6: Summary Classification
+  const sumType = classifyChatAction("Tolong ringkas draf laporan ini agar menjadi lebih pendek.");
+  assert.equal(sumType, "summary");
+
+  // Assertion 7: Export Request Classification
+  const expType = classifyChatAction("Tolong unduh file PDF laporan ini.");
+  assert.equal(expType, "export_request");
+
+  // Assertion 8: General Fallback
+  const genType = classifyTask({ mainText: "Selamat pagi NaLI, apa kabar?" });
+  assert.equal(genType, "general");
+
+  // Assertion 9: Suggested actions for environmental observation task type
+  const envActions = getDefaultSuggestedActions("environmental_observation_report");
+  assert.ok(envActions.some(act => act.label === "Perkuat bukti"));
+
+  // Assertion 10: Sections template for biology practicum task type
+  const bioSections = getReportSections("biology_practicum_report");
+  assert.ok(bioSections.includes("Alat dan Bahan"));
+
+  // Assertion 11: Weak input audit strength estimation
+  const weakAudit = estimateEvidenceStrength({ mainText: "Sungai kotor.", sourceUrls: [], location: "", fileDescription: "" });
+  assert.equal(weakAudit.strength, "weak");
+  assert.equal(weakAudit.coverage, "limited");
+
+  // Assertion 12: Strong input audit strength estimation
+  const longText = "a".repeat(250);
+  const strongAudit = estimateEvidenceStrength({
+    mainText: longText,
+    sourceUrls: ["https://example.com/river-data"],
+    location: "Sungai Ciliwung",
+    fileDescription: "Foto kondisi sungai"
+  });
+  assert.equal(strongAudit.strength, "strong");
+  assert.equal(strongAudit.coverage, "strong");
+
+  // Assertion 13: Mock Draft Report contains agentic fields
+  const mockInput = {
+    mode: "draft_from_materials",
+    reportTemplate: "Laporan Observasi Lingkungan",
+    title: "Test Report",
+    role: "mahasiswa",
+    mainText: "a".repeat(100),
+    topic: "Sungai",
+    sourceUrls: [],
+    location: "",
+    fileDescription: "",
+    integrityConsent: true
+  };
+  const mockDraft = buildMockDraftReport(mockInput);
+  assert.ok(mockDraft.understanding);
+  assert.ok(mockDraft.plan && mockDraft.plan.length > 0);
+  assert.equal(mockDraft.task_type, "environmental_observation_report");
+  assert.ok(mockDraft.suggested_actions && mockDraft.suggested_actions.length > 0);
+
+  // Assertion 14: Short input warning check in mock draft report
+  const shortMockDraft = buildMockDraftReport({ ...mockInput, mainText: "sungai" });
+  assert.ok(shortMockDraft.evidence_warnings.some(w => w.includes("sangat pendek")));
+
+  // Assertion 15: Mock Start From Zero Guide contains agentic fields
+  const mockStartInput = {
+    ...mockInput,
+    mode: "start_from_zero"
+  };
+  const mockStart = buildMockStartGuide(mockStartInput);
+  assert.ok(mockStart.understanding);
+  assert.ok(mockStart.plan && mockStart.plan.length > 0);
+  assert.equal(mockStart.evidence_strength, "weak");
+  assert.equal(mockStart.source_coverage, "limited");
+
+  // 4. Client Static Analysis (AgentWorkspace.tsx code assets)
+  const workspaceSource = fs.readFileSync(path.join(repoRoot, "src/components/report/AgentWorkspace.tsx"), "utf8");
+
+  // Assertion 16: Overflow-x-hidden is applied for horizontal scroll elimination
+  assert.match(workspaceSource, /overflow-x-hidden/);
+
+  // Assertion 17: Mobile safe area inset bottom padding support
+  assert.match(workspaceSource, /safe-area-inset-bottom/);
+
+  // Assertion 18: Touch targets (min-h-[44px]) and break-words for content layout
+  assert.match(workspaceSource, /min-h-\[44px\]/);
+  assert.match(workspaceSource, /break-words/);
 });

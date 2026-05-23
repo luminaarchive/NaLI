@@ -113,6 +113,16 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   // Progressive steps simulation state for optimistic UI
   const [optimisticSteps, setOptimisticSteps] = useState<Array<{ label: string; status: "pending" | "in_progress" | "completed" }>>([]);
 
+  // Inline feedback state
+  const [inlineFeedbackSent, setInlineFeedbackSent] = useState(false);
+  const [inlineFeedbackExpanded, setInlineFeedbackExpanded] = useState(false);
+  const [inlineFeedbackComment, setInlineFeedbackComment] = useState("");
+  const [inlineFeedbackSending, setInlineFeedbackSending] = useState(false);
+
+  // Paid intent signal state (UI-only, uses feedback API)
+  const [paidIntentSent, setPaidIntentSent] = useState(false);
+  const [paidIntentSending, setPaidIntentSending] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom helper
@@ -747,9 +757,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           </div>
         </header>
 
-        {/* Conversation flow viewport */}
-        <main className="flex-1 overflow-y-auto px-4 py-6 md:px-8 space-y-6 z-10">
-          <div className="mx-auto max-w-[760px] space-y-6 pb-28">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 md:px-8 space-y-6 z-10">
+          <div className="mx-auto max-w-[760px] space-y-6 pb-[calc(8.5rem+env(safe-area-inset-bottom))]">
             {messages.length === 0 ? (
               /* --- Empty State / Hero Landing --- */
               <div className="flex flex-col items-center text-center pt-16 md:pt-24">
@@ -824,7 +833,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               </div>
             ) : (
               /* --- Chat message feed --- */
-              messages.map((message) => {
+              messages.map((message, index) => {
                 const isUser = message.role === "user";
                 const isSystem = message.role === "system";
 
@@ -843,13 +852,154 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     
                     <div
                       className={cn(
-                        "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-xl",
+                        "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-xl w-full sm:w-auto sm:max-w-[85%] break-words",
                         isUser
                           ? "bg-gradient-to-r from-emerald-500/10 to-indigo-600/10 border border-white/[0.08] text-white"
                           : "bg-white/[0.03] border border-white/[0.06] text-white/90"
                       )}
                     >
-                      <p className="whitespace-pre-wrap">{message.content}</p>
+                      {(() => {
+                        const reportData = message.metadata?.new_report;
+                        if (!isUser && reportData && (reportData.understanding || reportData.plan)) {
+                          const understanding = reportData.understanding;
+                          const plan = reportData.plan;
+                          const evidenceStrength = reportData.evidence_strength;
+                          const sourceCoverage = reportData.source_coverage;
+                          const missingEvidence = reportData.missing_evidence;
+                          const evidenceWarnings = reportData.evidence_warnings;
+                          const suggestedActions = reportData.suggested_actions;
+                          const isLastMessage = index === messages.length - 1;
+
+                          return (
+                            <div className="space-y-4">
+                              <p className="whitespace-pre-wrap text-white/80">{message.content}</p>
+                              
+                              {understanding && (
+                                <div className="rounded-xl border border-indigo-500/15 bg-indigo-500/5 p-3.5 shadow-md">
+                                  <div className="flex gap-2.5">
+                                    <Compass className="h-4 w-4 mt-0.5 text-indigo-400 shrink-0" />
+                                    <div>
+                                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-indigo-300/80">NaLI Understanding</h4>
+                                      <p className="mt-1 text-xs leading-relaxed text-white/80">{understanding}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {plan && plan.length > 0 && (
+                                <div className="rounded-xl border border-white/[0.06] bg-white/[0.01] p-3.5 shadow-md">
+                                  <div className="flex gap-2.5">
+                                    <Sparkles className="h-4 w-4 mt-0.5 text-emerald-400 shrink-0" />
+                                    <div className="w-full">
+                                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-emerald-300/80">Rencana Kerja Agensi</h4>
+                                      <div className="mt-2 space-y-1.5">
+                                        {plan.map((step: string, sIdx: number) => (
+                                          <div key={sIdx} className="flex items-center gap-2">
+                                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                                            <span className="text-xs text-white/70 font-medium leading-normal">{step}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {(evidenceStrength || sourceCoverage || (missingEvidence && missingEvidence.length > 0) || (evidenceWarnings && evidenceWarnings.length > 0)) && (
+                                <div className="rounded-xl border border-white/[0.06] bg-white/[0.01] p-3.5 shadow-md">
+                                  <div className="flex gap-2.5">
+                                    <ShieldCheck className="h-4 w-4 mt-0.5 text-amber-400 shrink-0" />
+                                    <div className="w-full">
+                                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-amber-300/80">NaLI Evidence Auditor</h4>
+                                      
+                                      <div className="mt-2 flex flex-wrap gap-2">
+                                        {evidenceStrength && (
+                                          <div className="inline-flex items-center gap-1 rounded-lg bg-white/[0.02] border border-white/[0.04] px-2 py-0.5 text-[10px] text-white/70">
+                                            <span className="text-white/40 font-semibold uppercase tracking-tight">Kekuatan:</span>
+                                            <span className={cn(
+                                              "font-bold ml-1",
+                                              evidenceStrength === "strong" && "text-emerald-400",
+                                              evidenceStrength === "medium" && "text-amber-400",
+                                              evidenceStrength === "weak" && "text-rose-400"
+                                            )}>
+                                              {evidenceStrength === "strong" ? "Kuat" : evidenceStrength === "medium" ? "Sedang" : "Lemah"}
+                                            </span>
+                                          </div>
+                                        )}
+                                        {sourceCoverage && (
+                                          <div className="inline-flex items-center gap-1 rounded-lg bg-white/[0.02] border border-white/[0.04] px-2 py-0.5 text-[10px] text-white/70">
+                                            <span className="text-white/40 font-semibold uppercase tracking-tight">Sumber:</span>
+                                            <span className={cn(
+                                              "font-bold ml-1",
+                                              sourceCoverage === "strong" && "text-emerald-400",
+                                              sourceCoverage === "adequate" && "text-amber-400",
+                                              sourceCoverage === "limited" && "text-rose-400"
+                                            )}>
+                                              {sourceCoverage === "strong" ? "Lengkap" : sourceCoverage === "adequate" ? "Cukup" : "Terbatas"}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      {evidenceWarnings && evidenceWarnings.length > 0 && (
+                                        <div className="mt-2.5 space-y-1 border-t border-white/[0.04] pt-2">
+                                          <span className="block text-[9px] font-bold text-rose-300/80 uppercase tracking-wider">Peringatan Integritas</span>
+                                          <ul className="list-disc pl-3.5 space-y-0.5 text-[11px] text-white/60 leading-relaxed">
+                                            {evidenceWarnings.map((warn: string, wIdx: number) => (
+                                              <li key={wIdx}>{warn}</li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+
+                                      {missingEvidence && missingEvidence.length > 0 && (
+                                        <div className="mt-2.5 space-y-1 border-t border-white/[0.04] pt-2">
+                                          <span className="block text-[9px] font-bold text-amber-300/80 uppercase tracking-wider">Rekomendasi Bukti Tambahan</span>
+                                          <ul className="list-disc pl-3.5 space-y-0.5 text-[11px] text-white/60 leading-relaxed">
+                                            {missingEvidence.map((me: string, mIdx: number) => (
+                                              <li key={mIdx}>{me}</li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {isLastMessage && suggestedActions && suggestedActions.length > 0 && activeRunStatus === "idle" && (
+                                <div className="mt-3 border-t border-white/[0.04] pt-2.5">
+                                  <span className="block text-[9px] font-bold text-white/40 uppercase tracking-wider mb-2">Tindakan Lanjutan Yang Disarankan</span>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {suggestedActions.map((act: { label: string; prompt: string }, aIdx: number) => {
+                                      const cost = getEstimatedCreditCostFromQuery(act.prompt);
+                                      return (
+                                        <button
+                                          key={aIdx}
+                                          type="button"
+                                          onClick={() => handleQuickAction(act.prompt)}
+                                          className="rounded-full border border-white/[0.06] bg-white/[0.02] px-2.5 py-1 text-xs text-white/50 hover:bg-white/[0.06] hover:text-white transition duration-200 cursor-pointer text-left"
+                                        >
+                                          {act.label} ({cost})
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+
+                              {isLastMessage && activeRunStatus === "idle" && (
+                                <div className="mt-2.5 flex items-center gap-1.5 text-xs text-white/35">
+                                  <ArrowRight className="h-3 w-3 shrink-0 animate-pulse text-indigo-400" />
+                                  <span>Ketik pesan lanjutan atau gunakan tombol di atas untuk merevisi.</span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        return <p className="whitespace-pre-wrap">{message.content}</p>;
+                      })()}
                     </div>
 
                     {/* Inline report preview updates (Proposed Drafts) */}
@@ -871,6 +1021,129 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                           showExport={showExportStatus}
                           exportNotice={exportNotice}
                         />
+
+                        {/* Inline feedback prompt — shows once after first report preview */}
+                        {message.type === "report_preview" && !inlineFeedbackSent && index === messages.findIndex(m => m.type === "report_preview") && (
+                          <div className="mt-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 backdrop-blur-sm">
+                            <p className="text-xs font-medium text-white/60">Apakah hasil ini membantu?</p>
+                            <div className="mt-2 flex items-center gap-2">
+                              <button
+                                type="button"
+                                disabled={inlineFeedbackSending}
+                                onClick={async () => {
+                                  setInlineFeedbackSending(true);
+                                  try {
+                                    const rid = report?.id || message.metadata?.new_report?.id;
+                                    if (rid) {
+                                      await fetch(`/api/reports/${rid}/feedback`, {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({
+                                          rating: "helpful",
+                                          comment: inlineFeedbackComment || "",
+                                          report_access_key: accessKey || "",
+                                        }),
+                                      });
+                                    }
+                                  } catch { /* silent */ }
+                                  setInlineFeedbackSent(true);
+                                  setInlineFeedbackSending(false);
+                                }}
+                                className="inline-flex h-7 items-center gap-1 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 text-[11px] font-medium text-emerald-300 transition hover:bg-emerald-500/15"
+                              >
+                                👍 Ya
+                              </button>
+                              <button
+                                type="button"
+                                disabled={inlineFeedbackSending}
+                                onClick={async () => {
+                                  setInlineFeedbackSending(true);
+                                  try {
+                                    const rid = report?.id || message.metadata?.new_report?.id;
+                                    if (rid) {
+                                      await fetch(`/api/reports/${rid}/feedback`, {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({
+                                          rating: "not_helpful",
+                                          comment: inlineFeedbackComment || "",
+                                          report_access_key: accessKey || "",
+                                        }),
+                                      });
+                                    }
+                                  } catch { /* silent */ }
+                                  setInlineFeedbackSent(true);
+                                  setInlineFeedbackSending(false);
+                                }}
+                                className="inline-flex h-7 items-center gap-1 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 text-[11px] font-medium text-white/50 transition hover:bg-white/[0.06]"
+                              >
+                                👎 Belum
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setInlineFeedbackExpanded(!inlineFeedbackExpanded)}
+                                className="text-[11px] text-white/35 transition hover:text-white/50"
+                              >
+                                Tulis feedback
+                              </button>
+                            </div>
+                            {inlineFeedbackExpanded && (
+                              <textarea
+                                value={inlineFeedbackComment}
+                                onChange={(e) => setInlineFeedbackComment(e.target.value)}
+                                placeholder="Bagian mana yang kurang jelas?"
+                                rows={2}
+                                className="mt-2 w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white/70 placeholder-white/25 outline-none resize-none"
+                              />
+                            )}
+                          </div>
+                        )}
+                        {/* Post-output paid intent prompt — shows after feedback sent */}
+                        {message.type === "report_preview" && inlineFeedbackSent && !paidIntentSent && index === messages.findIndex(m => m.type === "report_preview") && (
+                          <div className="mt-3 rounded-xl border border-emerald-500/10 bg-emerald-500/[0.03] p-3 backdrop-blur-sm">
+                            <p className="text-xs text-white/70">
+                              Draft awal sudah siap. NaLI bisa membantu merapikan struktur, memperkuat bukti, dan menyiapkan versi export.
+                            </p>
+                            <p className="mt-2 text-xs font-medium text-white/50">
+                              Jika fitur export rapi tersedia mulai Rp9.000–Rp29.000, apakah kamu tertarik?
+                            </p>
+                            <div className="mt-2 flex items-center gap-2">
+                              {(["Ya, tertarik", "Mungkin", "Belum"] as const).map((label) => (
+                                <button
+                                  key={label}
+                                  type="button"
+                                  disabled={paidIntentSending}
+                                  onClick={async () => {
+                                    setPaidIntentSending(true);
+                                    try {
+                                      const rid = report?.id || message.metadata?.new_report?.id;
+                                      if (rid) {
+                                        await fetch(`/api/reports/${rid}/feedback`, {
+                                          method: "POST",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({
+                                            rating: label === "Ya, tertarik" ? "helpful" : "not_helpful",
+                                            comment: `[paid_intent] ${label}`,
+                                            report_access_key: accessKey || "",
+                                          }),
+                                        });
+                                      }
+                                    } catch { /* silent */ }
+                                    setPaidIntentSent(true);
+                                    setPaidIntentSending(false);
+                                  }}
+                                  className={`inline-flex h-7 items-center rounded-lg px-3 text-[11px] font-medium transition ${
+                                    label === "Ya, tertarik"
+                                      ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/15"
+                                      : "border border-white/[0.08] bg-white/[0.03] text-white/50 hover:bg-white/[0.06]"
+                                  }`}
+                                >
+                                  {label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -927,37 +1200,36 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         </main>
 
         {/* Bottom Composer and Control chips */}
-        <div className="absolute bottom-0 inset-x-0 z-20 bg-gradient-to-t from-[#07090e] via-[#07090e]/95 to-transparent pt-8 pb-4 px-4 md:px-8">
+        <div className="absolute bottom-0 inset-x-0 z-20 bg-gradient-to-t from-[#07090e] via-[#07090e]/95 to-transparent pt-8 pb-[calc(1rem+env(safe-area-inset-bottom))] px-4 md:px-8">
           <div className="mx-auto max-w-[760px] space-y-3">
             {/* Quick Action chips (only if messages exist and thread is idle) */}
-            {messages.length > 0 && activeRunStatus === "idle" && (
-              <div className="flex flex-wrap gap-1.5 py-1 justify-center md:justify-start">
-                <button
-                  onClick={() => handleQuickAction("Tulis kesimpulan lebih formal")}
-                  className="rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-xs text-white/50 hover:bg-white/[0.06] hover:text-white transition duration-200 cursor-pointer"
-                >
-                  Kesimpulan Formal (5)
-                </button>
-                <button
-                  onClick={() => handleQuickAction("Buat ringkasan draf di atas menjadi lebih pendek")}
-                  className="rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-xs text-white/50 hover:bg-white/[0.06] hover:text-white transition duration-200 cursor-pointer"
-                >
-                  Perpendek Ringkasan (5)
-                </button>
-                <button
-                  onClick={() => handleQuickAction("Perkuat analisis bagian temuan")}
-                  className="rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-xs text-white/50 hover:bg-white/[0.06] hover:text-white transition duration-200 cursor-pointer"
-                >
-                  Perkuat Temuan (10)
-                </button>
-                <button
-                  onClick={() => handleQuickAction("Tambahkan poin rekomendasi praktis")}
-                  className="rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-xs text-white/50 hover:bg-white/[0.06] hover:text-white transition duration-200 cursor-pointer"
-                >
-                  Tambahkan Rekomendasi (5)
-                </button>
-              </div>
-            )}
+            {messages.length > 0 && activeRunStatus === "idle" && (() => {
+              const actions = report?.suggested_actions && report.suggested_actions.length > 0
+                ? report.suggested_actions
+                : [
+                    { label: "Kesimpulan Formal", prompt: "Tulis kesimpulan lebih formal" },
+                    { label: "Perpendek Ringkasan", prompt: "Buat ringkasan draf di atas menjadi lebih pendek" },
+                    { label: "Perkuat Temuan", prompt: "Perkuat analisis bagian temuan" },
+                    { label: "Tambahkan Rekomendasi", prompt: "Tambahkan poin rekomendasi praktis" }
+                  ];
+              return (
+                <div className="flex flex-wrap gap-1.5 py-1 justify-center md:justify-start">
+                  {actions.map((act, i) => {
+                    const cost = getEstimatedCreditCostFromQuery(act.prompt);
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleQuickAction(act.prompt)}
+                        className="rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-xs text-white/50 hover:bg-white/[0.06] hover:text-white transition duration-200 cursor-pointer"
+                      >
+                        {act.label} ({cost})
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })()}
 
             {/* Main Input Composer form */}
             {/* Insufficient credits warning */}
@@ -1284,29 +1556,32 @@ function ReportResultCard({
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-white/[0.04] px-4 text-xs bg-white/[0.01]">
+      <div className="flex border-b border-white/[0.04] px-1 sm:px-4 text-[11px] sm:text-xs bg-white/[0.01]">
         <button
+          type="button"
           onClick={() => setActiveTab("preview")}
           className={cn(
-            "px-4 py-2.5 font-medium border-b-2 transition-colors cursor-pointer",
+            "flex-1 sm:flex-initial px-2 py-3 sm:px-4 sm:py-2.5 font-medium border-b-2 transition-colors cursor-pointer min-h-[44px] flex items-center justify-center text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500",
             activeTab === "preview" ? "border-emerald-400 text-white" : "border-transparent text-white/40 hover:text-white"
           )}
         >
           Isi Draft
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab("evidence")}
           className={cn(
-            "px-4 py-2.5 font-medium border-b-2 transition-colors cursor-pointer",
+            "flex-1 sm:flex-initial px-2 py-3 sm:px-4 sm:py-2.5 font-medium border-b-2 transition-colors cursor-pointer min-h-[44px] flex items-center justify-center text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500",
             activeTab === "evidence" ? "border-emerald-400 text-white" : "border-transparent text-white/40 hover:text-white"
           )}
         >
           {isGuide ? "Checklist" : "Bukti / Sumber"}
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab("uncertainty")}
           className={cn(
-            "px-4 py-2.5 font-medium border-b-2 transition-colors cursor-pointer",
+            "flex-1 sm:flex-initial px-2 py-3 sm:px-4 sm:py-2.5 font-medium border-b-2 transition-colors cursor-pointer min-h-[44px] flex items-center justify-center text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500",
             activeTab === "uncertainty" ? "border-emerald-400 text-white" : "border-transparent text-white/40 hover:text-white"
           )}
         >

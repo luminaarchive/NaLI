@@ -414,7 +414,7 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
             ) : (
               <>
                 <p className="text-sm leading-6 text-white/40">
-                  Download Markdown/PDF aktif setelah pembayaran dikonfirmasi.
+                  Export versi rapi tersedia setelah pembayaran dikonfirmasi. Mulai Rp9.000 saat pembayaran aktif.
                 </p>
                 <Button
                   className="mt-3 w-full"
@@ -424,8 +424,11 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
                   onClick={requestPremiumExport}
                 >
                   <LockKeyhole className="h-4 w-4" aria-hidden="true" />
-                  Unlock Export
+                  Export versi rapi
                 </Button>
+                <p className="mt-2 text-[11px] text-white/25">
+                  Pembayaran belum aktif di fase testing ini.
+                </p>
                 {!accessKey ? (
                   <p className="mt-2 text-xs leading-5 text-white/30">
                     Export membutuhkan laporan tersimpan dari sesi ini.

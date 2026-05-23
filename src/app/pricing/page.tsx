@@ -19,11 +19,16 @@ export default function PricingPage() {
               NaLI Monetization
             </h1>
             <p className="mt-5 max-w-[720px] text-lg leading-8 text-white/50">
-              Paket langganan kredit bulanan dan top-up energi instan untuk menyusun draf laporan terstruktur secara akademis dan bebas plagiarisme.
+              Paket kredit dan top-up instan untuk menyusun draf laporan terstruktur secara akademis dan berbasis bukti.
             </p>
             <p className="mt-3 text-xs text-white/35 max-w-[720px]">
               Export unlocks after confirmed payment. If confirmation is delayed, the order stays pending until automated verification succeeds.
             </p>
+            <div className="mt-4 rounded-xl border border-amber-500/15 bg-amber-500/[0.04] p-3 max-w-[720px]">
+              <p className="text-xs leading-5 text-amber-300/70">
+                Pembayaran otomatis belum aktif di fase testing ini. Paket kredit ditampilkan untuk simulasi harga dan persiapan rilis berbayar.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -31,6 +36,54 @@ export default function PricingPage() {
         <section className="px-4 py-14 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[1160px]">
             <PricingCards />
+          </div>
+        </section>
+
+        {/* One-Time Value Anchors */}
+        <section className="border-t border-white/[0.06] px-4 py-14 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[720px]">
+            <h3 className="text-xl font-semibold text-white text-center">Mulai dari pembayaran kecil</h3>
+            <p className="mt-2 text-xs text-white/40 text-center">
+              Target harga rilis berbayar — belum aktif di fase testing ini.
+            </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {[
+                { label: "Export Markdown", price: "Rp5.000–9.000", credits: "5–10 kredit" },
+                { label: "Export PDF laporan pendek", price: "Rp9.000", credits: "15 kredit" },
+                { label: "Laporan praktikum / observasi rapi", price: "Rp19.000", credits: "~20 kredit" },
+                { label: "Report + evidence check", price: "Rp29.000", credits: "~30 kredit" },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-white/80">{item.label}</p>
+                    <p className="text-[11px] text-white/35 mt-0.5">{item.credits}</p>
+                  </div>
+                  <span className="text-sm font-bold text-emerald-400/80">{item.price}</span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 text-[11px] text-white/30 text-center">
+              Rencana harga CP1. Harga final dapat berubah sebelum rilis berbayar.
+            </p>
+          </div>
+        </section>
+
+        {/* Segment Copy */}
+        <section className="border-t border-white/[0.06] px-4 py-14 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[720px] text-center">
+            <h3 className="text-xl font-semibold text-white">Cocok untuk</h3>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {[
+                "Mahasiswa praktikum dan observasi lapangan",
+                "Mahasiswa lingkungan, geografi, biologi",
+                "Laporan KKN / kegiatan kampus",
+                "Staf NGO/CSR junior yang butuh draft laporan cepat",
+              ].map((segment) => (
+                <div key={segment} className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-sm text-white/60 text-left">
+                  {segment}
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 

@@ -9,13 +9,14 @@ import { getEnergyBalance } from "@/lib/energy/ledger";
 import { getEstimatedCreditCostFromQuery } from "@/lib/pricing/plans";
 import { getGuestSessionIdHash } from "@/lib/reports/access";
 import { v5 as uuidv5 } from "uuid";
+import { classifyChatAction } from "@/lib/reports/taskClassifier";
 
 const systemPrompt = [
-  "You are NaLI by NatIve.",
-  "You are helping a user refine an Indonesian evidence-based report draft or start-from-zero guidance.",
-  "Follow the user instructions to modify the previous report draft or guidance.",
-  "Do not invent citations, DOI, statistics, field observations, coordinates, source verification, or final scientific claims.",
-  "If URLs are provided, label them as user-provided and not yet verified.",
+  "You are NaLI (NatIve Learning & Intelligence) by NatIve, a professional AI field intelligence and evidence-based learning assistant.",
+  "You help users refine their Indonesian evidence-based report drafts or start-from-zero guidance iteratively.",
+  "Always follow user instructions to revise, refine, summarize, or verify sections of the previous report.",
+  "Maintain strict transparency. Do not fabricate citations, DOIs, statistics, coordinates, field observations, or final scientific claims.",
+  "Always supply all agentic fields in your JSON output to detail your updated understanding, execution plan, estimated evidence strength, source coverage, missing evidence, warnings, and dynamic suggested actions for follow-up.",
   "Return JSON only.",
 ].join(" ");
 
@@ -233,17 +234,29 @@ export async function POST(req: NextRequest) {
         .map((msg) => `${msg.role === "user" ? "Pengguna" : "NaLI"}: ${msg.content}`)
         .join("\n");
 
+      const chatAction = classifyChatAction(newQuery);
+
       const promptText = [
-        "Perbarui laporan draft atau panduan berikut.",
+        "Perbarui laporan draft atau panduan berikut berdasarkan kueri pengguna.",
         `Laporan Awal: ${JSON.stringify(currentReport)}`,
         thread.summary ? `Ringkasan Riwayat: ${thread.summary}` : "",
         recentHistory ? `Percakapan Terakhir:\n${recentHistory}` : "",
         `Instruksi Pengguna Baru: "${newQuery}"`,
+        `Kategori Tindakan Terdeteksi: ${chatAction}`,
         "",
-        "Kembalikan data dalam format JSON saja. Harus berupa drop-in pengganti untuk skema output laporan (Laporan Observasi Lingkungan / Laporan Praktikum dll).",
+        "Kembalikan data dalam format JSON saja. Harus berupa drop-in pengganti untuk skema output laporan (Laporan Observasi Lingkungan / Laporan Praktikum dll), lengkap dengan field pendukung AI Agentic Fields.",
+        "Harus menyertakan field agentic di tingkat atas JSON:",
+        '- "understanding": string — ringkasan pemahaman Anda terhadap instruksi baru pengguna.',
+        '- "plan": string[] — langkah-langkah singkat yang Anda lakukan untuk merevisi laporan.',
+        '- "evidence_strength": "weak" | "medium" | "strong" — kekuatan bukti terbaru.',
+        '- "source_coverage": "limited" | "adequate" | "strong" — cakupan sumber terbaru.',
+        '- "missing_evidence": string[] — bukti apa yang masih kurang.',
+        '- "evidence_warnings": string[] — peringatan/catatan khusus tentang klaim laporan.',
+        '- "suggested_actions": Array<{ label: string, prompt: string }> — 3-5 tindakan lanjutan yang disarankan kepada pengguna.',
+        "",
         currentReport.mode === "start_from_zero"
-          ? "Skema StartFromZeroGuide: { mode, title, report_type, created_at, status, model_used, label, topic_framing, suggested_outline: string[], observation_questions: string[], field_note_template: string[], evidence_checklist: string[], source_search_checklist: string[], safety_or_ethics_note, integrity_note, disclaimer, next_steps: string[] }"
-          : "Skema DraftReport: { mode, title, report_type, created_at, status, model_used, draft_label, executive_summary, background, objective, method_or_materials, findings: string[], preliminary_analysis, evidence_table: { id, material_type, summary, user_provided, verification_status }[], source_notes: string[], source_verification_status, uncertainty_note, additional_evidence_needed: string[], user_review_checklist: string[], disclaimer, next_user_steps: string[] }",
+          ? "Skema StartFromZeroGuide: { mode, title, report_type, created_at, status, model_used, label, topic_framing, suggested_outline: string[], observation_questions: string[], field_note_template: string[], evidence_checklist: string[], source_search_checklist: string[], safety_or_ethics_note, integrity_note, disclaimer, next_steps: string[], understanding, plan, evidence_strength, source_coverage, missing_evidence, evidence_warnings, suggested_actions }"
+          : "Skema DraftReport: { mode, title, report_type, created_at, status, model_used, draft_label, executive_summary, background, objective, method_or_materials, findings: string[], preliminary_analysis, discussion, conclusion, evidence_table: { id, material_type, summary, user_provided, verification_status }[], source_notes: string[], source_verification_status, uncertainty_note, additional_evidence_needed: string[], user_review_checklist: string[], disclaimer, next_user_steps: string[], understanding, plan, evidence_strength, source_coverage, missing_evidence, evidence_warnings, suggested_actions }",
       ].filter(Boolean).join("\n");
 
       // 9. Call OpenRouter
