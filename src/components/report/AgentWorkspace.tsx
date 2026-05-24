@@ -44,6 +44,8 @@ import {
   listGuestReportRecoveries,
   type GuestReportRecoverySnapshot
 } from "@/lib/reports/clientRecovery";
+import { validateComposerInput } from "@/lib/reports/inputValidation";
+import { useDebouncedComposerValidation } from "@/lib/reports/useDebouncedValidation";
 
 // Types matching backend AgentMessage schema
 type AgentMessage = {
@@ -107,6 +109,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   
   // Form/Composer state
   const [query, setQuery] = useState("");
+  const validationIssue = useDebouncedComposerValidation(query);
   const [isComposerFocused, setIsComposerFocused] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("Laporan Observasi Lingkungan");
   const [selectedMode, setSelectedMode] = useState<"draft_from_materials" | "start_from_zero">("draft_from_materials");
@@ -139,6 +142,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const [error, setError] = useState<{ message: string; code?: string; status?: number; retryAfterSeconds?: number } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [accessKey, setAccessKey] = useState<string | null>(null);
+  const showValidation = !error && query.trim().length > 0 && validationIssue.severity !== "none";
 
   useEffect(() => {
     if (!error || !error.retryAfterSeconds || error.retryAfterSeconds <= 0) return;
@@ -713,6 +717,15 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     if (e) e.preventDefault();
     const trimmed = (retryQuery !== undefined ? retryQuery : query).trim();
     if (!trimmed || activeRunStatus === "running" || !report || !initialReportId) return;
+
+    const issue = validateComposerInput(trimmed);
+    if (!issue.canSubmit) {
+      setError({
+        message: `${issue.title}: ${issue.message}`,
+        code: issue.code,
+      });
+      return;
+    }
 
     setError(null);
     setQuery("");
@@ -1459,6 +1472,32 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 </ul>
               </div>
             )}
+
+            {/* Validation notifications */}
+            {showValidation && (() => {
+              const variant = validationIssue.severity === "error" ? "error" : "warning";
+              const nextStep = validationIssue.suggestions.join(" ");
+              let actionLabel: string | undefined = undefined;
+              let onAction: (() => void) | undefined = undefined;
+
+              if (validationIssue.code === "TOO_SHORT" || validationIssue.code === "EMPTY_QUERY" || validationIssue.code === "QUERY_TOO_SHORT") {
+                actionLabel = "Ubah Pesan";
+                onAction = () => {
+                  composerRef.current?.focus();
+                };
+              }
+
+              return (
+                <NaliAlert
+                  variant={variant}
+                  title={validationIssue.title}
+                  explanation={validationIssue.message}
+                  nextStep={nextStep}
+                  actionLabel={actionLabel}
+                  onAction={onAction}
+                />
+              );
+            })()}
 
             {/* Error notifications */}
             {error && (() => {

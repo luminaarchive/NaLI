@@ -31,6 +31,8 @@ import {
   listGuestReportRecoveries,
   type GuestReportRecoverySnapshot
 } from "@/lib/reports/clientRecovery";
+import { validateReportInput } from "@/lib/reports/inputValidation";
+import { useDebouncedReportValidation } from "@/lib/reports/useDebouncedValidation";
 
 type FormState = {
   mode: ReportMode;
@@ -94,6 +96,8 @@ export function CreateReportForm() {
   const [notice, setNotice] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snapshots, setSnapshots] = useState<GuestReportRecoverySnapshot[]>([]);
+  const validationIssue = useDebouncedReportValidation(form);
+  const showValidation = !error && hasMaterial(form) && validationIssue.severity !== "none";
 
   const loadSnapshots = useCallback(() => {
     try {
@@ -317,18 +321,12 @@ export function CreateReportForm() {
     setError(null);
     setNotice(null);
 
-    if (form.mode === "draft_from_materials" && !hasMaterial(form)) {
-      setError({ message: "Masukkan minimal satu bahan dulu: catatan, lokasi, URL, atau ringkasan bahan." });
-      return;
-    }
-
-    if (form.mode === "start_from_zero" && !form.mainText.trim()) {
-      setError({ message: "Tulis dulu topik atau jenis laporan yang ingin kamu mulai." });
-      return;
-    }
-
-    if (!form.integrityConsent) {
-      setError({ message: "Centang pernyataan integritas dulu sebelum melanjutkan." });
+    const issue = validateReportInput(form);
+    if (!issue.canSubmit) {
+      setError({
+        message: `${issue.title}: ${issue.message}`,
+        code: issue.code,
+      });
       return;
     }
 
@@ -585,7 +583,7 @@ export function CreateReportForm() {
 
             <button
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#09090b] transition-all hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:pointer-events-none disabled:opacity-60"
-              disabled={isSubmitting || (error?.retryAfterSeconds !== undefined && error.retryAfterSeconds > 0)}
+              disabled={isSubmitting || (error?.retryAfterSeconds !== undefined && error.retryAfterSeconds > 0) || !validationIssue.canSubmit}
               type="submit"
             >
               {isSubmitting ? (
@@ -698,8 +696,33 @@ export function CreateReportForm() {
         </div>
       </section>
 
-      {error || notice ? (
+      {error || notice || showValidation ? (
         <section className="mt-4 space-y-3">
+          {showValidation && (() => {
+            const variant = validationIssue.severity === "error" ? "error" : "warning";
+            const nextStep = validationIssue.suggestions.join(" ");
+            let actionLabel: string | undefined = undefined;
+            let onAction: (() => void) | undefined = undefined;
+
+            if (validationIssue.code === "TOO_SHORT" || validationIssue.code === "WEAK_INPUT") {
+              actionLabel = "Tambah detail";
+              onAction = () => {
+                mainTextRef.current?.focus();
+              };
+            }
+
+            return (
+              <NaliAlert
+                variant={variant}
+                title={validationIssue.title}
+                explanation={validationIssue.message}
+                nextStep={nextStep}
+                actionLabel={actionLabel}
+                onAction={onAction}
+              />
+            );
+          })()}
+
           {error && (() => {
             const normalized = normalizePublicError({
               status: error.status,
