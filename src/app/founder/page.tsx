@@ -18,6 +18,7 @@ import {
   Info,
 } from "lucide-react";
 import { getFounderMonitoringData } from "@/lib/system/monitoring";
+import { computeReportQualityMemory } from "@/lib/quality/reportQualityMemory";
 
 export const dynamic = "force-dynamic";
 
@@ -122,6 +123,7 @@ export default async function FounderPage({
 
   // 3. Load data
   const data = await getFounderMonitoringData();
+  const qualityMemory = computeReportQualityMemory(data);
 
   return (
     <div className="min-h-screen bg-[#09090b] px-4 py-8 text-white/90 sm:px-6 lg:px-8">
@@ -303,6 +305,153 @@ export default async function FounderPage({
                   </div>
                 )}
               </div>
+            </section>
+
+            {/* REPORT QUALITY SNAPSHOT */}
+            <section className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 backdrop-blur-sm">
+              <div className="flex items-center gap-2 border-b border-white/[0.08] pb-3">
+                <ShieldCheck className="h-5 w-5 text-[#6f8057]" />
+                <h2 className="text-lg font-semibold">Report Quality Snapshot</h2>
+              </div>
+              {qualityMemory.qualityScore === -1 ? (
+                <p className="mt-4 text-sm text-white/40 p-4 border border-dashed border-white/[0.08] rounded-xl text-center">
+                  No quality memory signals collected yet.
+                </p>
+              ) : (
+                <div className="mt-4 space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {/* Score display */}
+                    <div className="rounded-xl border border-white/[0.06] bg-white/[0.01] p-4 flex flex-col justify-between">
+                      <div>
+                        <h3 className="text-xs font-semibold uppercase tracking-[0.08em] text-white/40">Report Quality Score</h3>
+                        <p className={`mt-2 text-4xl font-bold tracking-tight ${
+                          qualityMemory.qualityScore >= 80 ? "text-green-400" :
+                          qualityMemory.qualityScore >= 50 ? "text-amber-400" : "text-red-400"
+                        }`}>
+                          {qualityMemory.qualityScore}<span className="text-sm font-normal text-white/40">/100</span>
+                        </p>
+                      </div>
+                      <p className="text-xs text-white/50 mt-4 leading-relaxed">
+                        Deterministic composite score based on evidence quality (40%), failure rate (25%), feedback sentiment (20%), and friction absence (15%).
+                      </p>
+                    </div>
+
+                    {/* Risk & Evidence */}
+                    <div className="rounded-xl border border-white/[0.06] bg-white/[0.01] p-4 space-y-3">
+                      <div>
+                        <h3 className="text-xs font-semibold uppercase tracking-[0.08em] text-white/40">Risk Level</h3>
+                        <div className="mt-1 flex items-center gap-2">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
+                            qualityMemory.riskLevel === "P0" ? "bg-red-500/10 border-red-500/30 text-red-400" :
+                            qualityMemory.riskLevel === "P1" ? "bg-orange-500/10 border-orange-500/30 text-orange-400" :
+                            qualityMemory.riskLevel === "P2" ? "bg-amber-500/10 border-amber-500/30 text-amber-400" :
+                            qualityMemory.riskLevel === "P3" ? "bg-blue-500/10 border-blue-500/30 text-blue-400" :
+                            "bg-green-500/10 border-green-500/30 text-green-400"
+                          }`}>
+                            {qualityMemory.riskLevel === "none" ? "No Active Risk" : `Risk: ${qualityMemory.riskLevel}`}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="border-t border-white/[0.06] pt-3">
+                        <h3 className="text-xs font-semibold uppercase tracking-[0.08em] text-white/40 mb-2">Evidence Summary</h3>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-white/60">Strong/High Evidence:</span>
+                            <span className="font-semibold text-green-400">{qualityMemory.strongEvidenceCount}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-white/60">Weak/Missing Evidence:</span>
+                            <span className="font-semibold text-red-400">{qualityMemory.weakEvidenceCount}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-white/60">Total Evaluated:</span>
+                            <span className="font-semibold">{qualityMemory.totalReportsScored}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-[#6f8057]/20 bg-[#1e2a22]/10 p-4">
+                    <p className="text-xs text-white/85 leading-relaxed font-mono">
+                      {qualityMemory.safeSummary}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </section>
+
+            {/* Founder Attention Queue */}
+            <section className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 backdrop-blur-sm">
+              <div className="flex items-center gap-2 border-b border-white/[0.08] pb-3">
+                <AlertTriangle className="h-5 w-5 text-[#6f8057]" />
+                <h2 className="text-lg font-semibold">Founder Attention Queue</h2>
+              </div>
+              {qualityMemory.qualityScore === -1 || qualityMemory.attentionQueue.length === 0 ? (
+                <p className="mt-4 text-sm text-white/40 p-4 border border-dashed border-white/[0.08] rounded-xl text-center">
+                  All signals clear. No items in the attention queue.
+                </p>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {qualityMemory.attentionQueue.map((item, index) => (
+                    <div key={index} className="flex items-start justify-between gap-4 rounded-xl border border-white/[0.06] bg-white/[0.01] p-4 text-sm">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${
+                            item.severity === "P0" ? "bg-red-500/10 border-red-500/30 text-red-400" :
+                            item.severity === "P1" ? "bg-orange-500/10 border-orange-500/30 text-orange-400" :
+                            item.severity === "P2" ? "bg-amber-500/10 border-amber-500/30 text-amber-400" :
+                            item.severity === "P3" ? "bg-blue-500/10 border-blue-500/30 text-blue-400" :
+                            "bg-green-500/10 border-green-500/30 text-green-400"
+                          }`}>
+                            {item.severity}
+                          </span>
+                          <span className="font-semibold text-white/95">{item.title}</span>
+                        </div>
+                        <p className="text-xs text-white/60">{item.detail}</p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <span className="text-xs font-mono text-white/40">Metric:</span>
+                        <span className="block font-bold text-white/95">{item.metric}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* Suggested Next Fixes */}
+            <section className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 backdrop-blur-sm">
+              <div className="flex items-center gap-2 border-b border-white/[0.08] pb-3">
+                <Terminal className="h-5 w-5 text-[#6f8057]" />
+                <h2 className="text-lg font-semibold">Suggested Next Fixes</h2>
+              </div>
+              {qualityMemory.qualityScore === -1 || qualityMemory.suggestedFixes.length === 0 ? (
+                <p className="mt-4 text-sm text-white/40 p-4 border border-dashed border-white/[0.08] rounded-xl text-center">
+                  No suggested fixes compiled.
+                </p>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {qualityMemory.suggestedFixes.map((fix, index) => (
+                    <div key={index} className="rounded-xl border border-white/[0.06] bg-white/[0.01] p-4 text-sm">
+                      <div className="flex items-center justify-between gap-2 border-b border-white/[0.06] pb-2 mb-2">
+                        <span className="font-semibold text-white/90">{fix.title}</span>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${
+                          fix.priority === "P0" ? "bg-red-500/10 border-red-500/30 text-red-400" :
+                          fix.priority === "P1" ? "bg-orange-500/10 border-orange-500/30 text-orange-400" :
+                          fix.priority === "P2" ? "bg-amber-500/10 border-amber-500/30 text-amber-400" :
+                          fix.priority === "P3" ? "bg-blue-500/10 border-blue-500/30 text-blue-400" :
+                          "bg-green-500/10 border-green-500/30 text-green-400"
+                        }`}>
+                          {fix.priority}
+                        </span>
+                      </div>
+                      <p className="text-xs text-white/60 leading-relaxed">{fix.reason}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
           </div>
 
