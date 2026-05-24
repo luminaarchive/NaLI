@@ -4,7 +4,8 @@ This report documents the verification, file modifications, and current status o
 
 ## Summary Status
 
-- **Mobile Composer Optimization**: **GO**
+- **Mobile Composer Optimization**: **CONDITIONAL GO**
+  - *Reason*: Static/source regression tests passed, but live mobile browser keyboard behavior was not verified due to environment browser/viewport testing limitations.
 - **Human Testing**: **PAUSED**
 - **Midtrans**: **DEFERRED**
 - **Paid Launch**: **NO-GO**
@@ -53,10 +54,10 @@ Since visual browser automation viewport tools are unavailable in this environme
 
 ---
 
-## Known Limitations
+## Remaining Limitations
 
 - **Browser-less Layout Audits**: Unable to verify exact visual rendering in a live mobile layout engine. Visual regression checks were modeled statically by inspecting the CSS classes.
-- **Virtual Keyboards**: Viewport resizing behavior under virtual keyboards is handled by Next.js and Tailwind default flex bounds; actual testing of overlay behaviors remains deferred to human testers.
+- **Virtual Keyboards**: Viewport resizing behavior under virtual keyboards is handled by Next.js and Tailwind default flex bounds; actual mobile keyboard overlay behavior remains a known limitation until AI-run browser/device viewport testing is available. Human testing remains paused.
 
 ---
 
@@ -65,4 +66,4 @@ Since visual browser automation viewport tools are unavailable in this environme
 - **P0**: None
 - **P1**: None
 - **P2**: Midtrans Sandbox/Production activation (deferred by founder command)
-- **P3**: Darwin Core export, SOS, literature matrix integration (deferred to CP2/future sprints)
+- **P3**: Darwin Core export, literature matrix integration, dynamic SOS (deferred to CP2/future Sprints)
