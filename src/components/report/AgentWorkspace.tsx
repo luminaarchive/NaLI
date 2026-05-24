@@ -96,6 +96,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   
   // Form/Composer state
   const [query, setQuery] = useState("");
+  const [isComposerFocused, setIsComposerFocused] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("Laporan Observasi Lingkungan");
   const [selectedMode, setSelectedMode] = useState<"draft_from_materials" | "start_from_zero">("draft_from_materials");
   const [integrityConsent, setIntegrityConsent] = useState(false);
@@ -815,7 +816,12 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         </header>
 
         <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 md:px-8 space-y-6 z-10">
-          <div className="mx-auto max-w-[760px] space-y-6 pb-[calc(12rem+env(safe-area-inset-bottom))] sm:pb-[calc(8.5rem+env(safe-area-inset-bottom))]">
+          <div className={cn(
+            "mx-auto max-w-[760px] space-y-6",
+            isComposerFocused
+              ? "pb-[calc(18rem+env(safe-area-inset-bottom))] sm:pb-[calc(8.5rem+env(safe-area-inset-bottom))]"
+              : "pb-[calc(12rem+env(safe-area-inset-bottom))] sm:pb-[calc(8.5rem+env(safe-area-inset-bottom))]"
+          )}>
             {messages.length === 0 ? (
               /* --- Empty State / Hero Landing --- */
               <div className="flex flex-col items-center text-center pt-16 md:pt-24">
@@ -1337,6 +1343,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     rows={1}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
+                    onFocus={() => setIsComposerFocused(true)}
+                    onBlur={() => setIsComposerFocused(false)}
                     placeholder={
                       messages.length === 0
                         ? "Ketik catatan, topik, lokasi atau ringkasan materi observasi..."
