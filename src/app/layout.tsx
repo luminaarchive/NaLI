@@ -1,44 +1,45 @@
 import type { Metadata } from "next";
 import { getServerLanguage } from "@/lib/i18n/server";
 import { I18nProvider } from "@/lib/i18n/provider";
-import { seoKeywords, siteDescription, siteUrl } from "@/lib/seo/site";
+import { siteMetadata } from "@/lib/seo/siteMetadata";
+import { seoKeywords } from "@/lib/seo/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(siteMetadata.canonicalBase),
   applicationName: "NaLI",
   title: {
-    default: "NaLI - Evidence-Based Reports and Field Intelligence",
+    default: siteMetadata.defaultTitle,
     template: "%s | NaLI",
   },
-  description: siteDescription,
+  description: siteMetadata.defaultDescription,
   keywords: seoKeywords,
   alternates: {
-    canonical: siteUrl,
+    canonical: siteMetadata.canonicalBase,
   },
   category: "conservation technology",
   openGraph: {
-    title: "NaLI - Evidence-Based Reports and Field Intelligence",
-    description: siteDescription,
-    url: siteUrl,
+    title: siteMetadata.defaultTitle,
+    description: siteMetadata.defaultDescription,
+    url: siteMetadata.canonicalBase,
     siteName: "NaLI",
     images: [
       {
-        url: "/icon.svg",
-        width: 512,
-        height: 512,
-        alt: "NaLI wildlife field intelligence logo",
+        url: `${siteMetadata.canonicalBase}/opengraph-image`,
+        width: 1200,
+        height: 630,
+        alt: "NaLI — Nature & Evidence Intelligence OS logo",
       },
     ],
-    locale: "en_US",
-    alternateLocale: ["id_ID"],
+    locale: "id_ID",
+    alternateLocale: ["en_US"],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "NaLI - Evidence-Based Reports and Field Intelligence",
-    description: siteDescription,
-    images: ["/icon.svg"],
+    title: siteMetadata.defaultTitle,
+    description: siteMetadata.defaultDescription,
+    images: [`${siteMetadata.canonicalBase}/twitter-image`],
   },
   robots: {
     index: true,

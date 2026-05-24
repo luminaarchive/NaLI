@@ -33,6 +33,7 @@ import { UpgradeModal } from "./UpgradeModal";
 import { getEstimatedCreditCostFromQuery } from "@/lib/pricing/plans";
 import { NaliAlert } from "@/components/ui/NaliAlert";
 import { normalizePublicError } from "@/lib/errors/publicErrors";
+import { naliModels } from "@/lib/models/naliModels";
 
 // Types matching backend AgentMessage schema
 type AgentMessage = {
@@ -97,6 +98,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<string>("Laporan Observasi Lingkungan");
   const [selectedMode, setSelectedMode] = useState<"draft_from_materials" | "start_from_zero">("draft_from_materials");
   const [integrityConsent, setIntegrityConsent] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<"peregrine" | "obsidian" | "zephyr">("peregrine");
   
   // App context
   const [error, setError] = useState<{ message: string; code?: string; status?: number; retryAfterSeconds?: number } | null>(null);
@@ -428,6 +430,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           reportTemplate: selectedTemplate,
           integrityConsent: true,
           guestSessionId,
+          selectedModel,
         }),
       });
 
@@ -1371,6 +1374,41 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 </div>
               </div>
             </form>
+
+            {/* Model Selector */}
+            {messages.length === 0 && (
+              <div className="mt-3">
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-white/40">
+                  Profil Pemrosesan (Model)
+                </span>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  {naliModels.map((model) => {
+                    const isSelected = selectedModel === model.id;
+                    return (
+                      <button
+                        key={model.id}
+                        type="button"
+                        onClick={() => setSelectedModel(model.id)}
+                        className={cn(
+                          "rounded-xl border p-3 text-left transition-all duration-200 min-h-[56px] flex flex-col justify-between cursor-pointer",
+                          isSelected
+                            ? "border-[#6f8057] bg-[#6f8057]/10 text-white"
+                            : "border-white/[0.06] bg-[#07090e]/60 text-white/40 hover:bg-white/[0.04] hover:text-white/60"
+                        )}
+                        aria-pressed={isSelected}
+                      >
+                        <div>
+                          <span className="block text-sm font-bold">{model.label}</span>
+                          <span className="mt-1 block text-[10px] leading-4 text-white/35">
+                            {model.shortDescription}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Academic Integrity consent checkbox (rendered only at start or when required) */}
             {messages.length === 0 && (

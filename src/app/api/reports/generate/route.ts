@@ -115,6 +115,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const selectedModelId = validated.data.selectedModel || "peregrine";
+  const modelLabels: Record<string, string> = {
+    peregrine: "NaLI Peregrine",
+    obsidian: "NaLI Obsidian",
+    zephyr: "NaLI Zephyr",
+  };
+  const modelLabel = modelLabels[selectedModelId] || "NaLI Peregrine";
+
   const costProtection = await getCostProtectionStatus();
   if (costProtection.active) {
     return NextResponse.json(
@@ -151,7 +159,7 @@ export async function POST(req: NextRequest) {
       openRouterResult.json && typeof openRouterResult.json === "object"
         ? (openRouterResult.json as Record<string, unknown>)
         : {};
-    const guarded = guardOutput(normalizeProviderResult(rawReport, validated.data, "NaLI Preview Engine"));
+    const guarded = guardOutput(normalizeProviderResult(rawReport, validated.data, modelLabel));
 
     if (!guarded.allowed) {
       return NextResponse.json(
@@ -216,7 +224,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const guarded = guardOutput(buildMockResult(validated.data));
+  const guarded = guardOutput(buildMockResult(validated.data, modelLabel));
   if (!guarded.allowed) {
     return NextResponse.json(
       {

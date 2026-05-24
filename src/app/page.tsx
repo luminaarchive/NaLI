@@ -1,6 +1,16 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { siteMetadata } from "@/lib/seo/siteMetadata";
 import { buildJsonLdGraph } from "@/lib/seo/site";
 import { HomepageShell } from "@/components/ui/HomepageShell";
+
+export const metadata: Metadata = {
+  title: siteMetadata.routes.home.title,
+  description: siteMetadata.routes.home.description,
+  alternates: {
+    canonical: siteMetadata.canonicalBase,
+  },
+};
 import { NaLIIconTile } from "@/components/ui/NaLIIconTile";
 import { CodexProductPreview } from "@/components/ui/CodexProductPreview";
 import { CodexFeatureShowcase } from "@/components/ui/CodexFeatureShowcase";

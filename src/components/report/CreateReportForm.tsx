@@ -21,6 +21,7 @@ import { reportTemplates, userRoles, type ReportMode, type ReportResult } from "
 import { cn } from "@/lib/utils";
 import { NaliAlert } from "@/components/ui/NaliAlert";
 import { normalizePublicError } from "@/lib/errors/publicErrors";
+import { naliModels } from "@/lib/models/naliModels";
 
 type FormState = {
   mode: ReportMode;
@@ -32,6 +33,7 @@ type FormState = {
   location: string;
   fileDescription: string;
   integrityConsent: boolean;
+  selectedModel: "peregrine" | "obsidian" | "zephyr";
 };
 
 const initialForm: FormState = {
@@ -44,6 +46,7 @@ const initialForm: FormState = {
   sourceUrls: "",
   title: "",
   userRole: "pengguna",
+  selectedModel: "peregrine",
 };
 
 const guestSessionKey = "nali-guest-session-id";
@@ -323,6 +326,38 @@ export function CreateReportForm() {
               }
             />
           </label>
+
+          <div className="mt-3">
+            <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-white/40">
+              Pilih Profil Pemrosesan (Model)
+            </span>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              {naliModels.map((model) => {
+                const isSelected = form.selectedModel === model.id;
+                return (
+                  <button
+                    key={model.id}
+                    className={cn(
+                      "rounded-xl border p-3 text-left transition-all duration-200 min-h-[56px] flex flex-col justify-between cursor-pointer",
+                      isSelected
+                        ? "border-[#6f8057] bg-[#6f8057]/10 text-white"
+                        : "border-white/[0.06] bg-[#07090e]/60 text-white/50 hover:bg-white/[0.05]"
+                    )}
+                    type="button"
+                    onClick={() => updateField("selectedModel", model.id)}
+                    aria-pressed={isSelected}
+                  >
+                    <div>
+                      <span className="block text-sm font-bold">{model.label}</span>
+                      <span className="mt-1 block text-[10px] leading-4 text-white/35">
+                        {model.shortDescription}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           <label className="mt-3 flex gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 cursor-pointer items-start text-left">
             <input

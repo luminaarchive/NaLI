@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { siteUrl } from "@/lib/seo/site";
+import { siteMetadata } from "@/lib/seo/siteMetadata";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -7,20 +7,10 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: [
-          "/dashboard",
-          "/observe",
-          "/archive",
-          "/monitoring",
-          "/alerts",
-          "/cases",
-          "/review",
-          "/patrol-plan",
-          "/api",
-        ],
+        disallow: siteMetadata.noindexPatterns,
       },
     ],
-    sitemap: `${siteUrl}/sitemap.xml`,
-    host: siteUrl,
+    sitemap: `${siteMetadata.canonicalBase}/sitemap.xml`,
+    host: siteMetadata.canonicalBase,
   };
 }

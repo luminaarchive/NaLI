@@ -70,6 +70,7 @@ export type ReportRequestInput = {
   uploadedFileNote?: string;
   integrityConsent?: boolean;
   integrityAccepted?: boolean;
+  selectedModel?: string;
 };
 
 export type ReportRequest = {
@@ -83,6 +84,7 @@ export type ReportRequest = {
   location: string;
   fileDescription: string;
   integrityConsent: true;
+  selectedModel?: string;
 };
 
 export type EvidenceRow = {
@@ -430,6 +432,10 @@ export function validateReportRequest(input: ReportRequestInput): ValidationResu
     topic,
   });
 
+  const selectedModelInput = clean(input.selectedModel) || "peregrine";
+  const validModels = ["peregrine", "obsidian", "zephyr"];
+  const selectedModel = validModels.includes(selectedModelInput) ? selectedModelInput : "peregrine";
+
   if (!integrityConsent) {
     return {
       error: "Centang pernyataan integritas dulu sebelum melanjutkan.",
@@ -474,6 +480,7 @@ export function validateReportRequest(input: ReportRequestInput): ValidationResu
       sourceUrls,
       title,
       topic,
+      selectedModel,
     },
     success: true,
   };
@@ -782,11 +789,21 @@ export function buildReportPrompt(input: ReportRequest) {
   const taskType = classifyTask({ mainText: input.mainText, topic: input.topic, reportTemplate: input.reportTemplate });
   const sections = getReportSections(taskType);
 
+  const modelInstructions: Record<string, string> = {
+    peregrine: "MODEL PROFILE (Peregrine): Prioritize quick structure. Produce a clear and concise first draft. Strictly preserve all evidence labels and do not overclaim.",
+    obsidian: "MODEL PROFILE (Obsidian): Prioritize evidence boundaries. Explicitly separate user-provided evidence, public/context evidence, AI inference, and missing evidence. Emphasize uncertainty where needed, and strictly avoid unsupported claims.",
+    zephyr: "MODEL PROFILE (Zephyr): Prioritize clarity, flow, and readable refinement. Support safe personalization/adaptation directions (e.g. natural draft pass, academic clarity pass, context injection slots, evidence-safe rewrites). Never use Humanizer, Turnitin-safe, or detector-bypass wording. Strictly preserve all evidence boundaries.",
+  };
+  const activeModel = input.selectedModel || "peregrine";
+  const profileGuideline = modelInstructions[activeModel] || modelInstructions.peregrine;
+
   const commonRules = [
     "You are NaLI by NatIve, an evidence-based report and learning assistant for Indonesian users.",
     "You help users turn notes, observations, URLs, and rough materials into structured report drafts.",
     "Use Bahasa Indonesia.",
     "Return JSON only. No markdown fences. No prose outside JSON.",
+    "",
+    profileGuideline,
     "",
     "CRITICAL RULES:",
     "- Do not invent citations, DOI, statistics, field observations, coordinates, source verification, authors, publishers, or timestamps.",

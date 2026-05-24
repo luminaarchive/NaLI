@@ -1,7 +1,15 @@
-"use client";
-
+import type { Metadata } from "next";
+import { siteMetadata } from "@/lib/seo/siteMetadata";
 import { Badge } from "@/components/ui/Badge";
 import { ButtonLink } from "@/components/ui/Button";
+
+export const metadata: Metadata = {
+  title: siteMetadata.routes.pricing.title,
+  description: siteMetadata.routes.pricing.description,
+  alternates: {
+    canonical: `${siteMetadata.canonicalBase}/pricing`,
+  },
+};
 import { SiteFooter } from "@/components/ui/SiteNav";
 import { PricingShell } from "@/components/ui/PricingShell";
 import { PricingCards } from "@/components/report/PricingCards";

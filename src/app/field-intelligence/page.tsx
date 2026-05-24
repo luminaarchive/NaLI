@@ -10,6 +10,16 @@ import {
   ShieldCheck,
   Siren,
 } from "lucide-react";
+import type { Metadata } from "next";
+import { siteMetadata } from "@/lib/seo/siteMetadata";
+
+export const metadata: Metadata = {
+  title: siteMetadata.routes.fieldIntelligence.title,
+  description: siteMetadata.routes.fieldIntelligence.description,
+  alternates: {
+    canonical: `${siteMetadata.canonicalBase}/field-intelligence`,
+  },
+};
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { ButtonLink } from "@/components/ui/Button";

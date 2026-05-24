@@ -6,6 +6,16 @@ import {
   FileText,
   ShieldCheck,
 } from "lucide-react";
+import type { Metadata } from "next";
+import { siteMetadata } from "@/lib/seo/siteMetadata";
+
+export const metadata: Metadata = {
+  title: siteMetadata.routes.learnReport.title,
+  description: siteMetadata.routes.learnReport.description,
+  alternates: {
+    canonical: `${siteMetadata.canonicalBase}/learn-report`,
+  },
+};
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { ButtonLink } from "@/components/ui/Button";
