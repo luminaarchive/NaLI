@@ -1,9 +1,9 @@
-# NaLI CP1 — Guest Report Recovery & Autosave Operations Runbook
+# NaLI CP1 — Guest Report Recovery & Local History Operations Runbook
 
-This runbook guides operators and developers on managing, verifying, and troubleshooting the client-side guest report recovery and debounced autosave systems.
+This runbook guides operators and developers on managing, verifying, and troubleshooting the client-side guest report recovery, debounced autosave, and local history management systems.
 
 ## 1. System Architecture Overview
-The recovery and autosave layer is entirely client-side (`use client`) and resides in the browser's `localStorage` under the key:
+The recovery, autosave, and local history layer is entirely client-side (`use client`) and resides in the browser's `localStorage` under the key:
 `nali-recovery-snapshots`
 
 ### Data Flow & Autosave Behavior
@@ -14,25 +14,26 @@ The recovery and autosave layer is entirely client-side (`use client`) and resid
    - **Generation Succeeds**: The temporary snapshot is cleared, and a new snapshot with `status: "draft_ready"` and the permanent `reportId` is saved.
    - **Server Reject (Abuse)**: If the server rejects the request with an integrity error (e.g. academic cheating, data fabrication), all temporary and autosaved snapshots are cleared immediately.
    - **Network Error / Crash**: If the browser loses network connection, crashes, or the user navigates away, the last autosaved draft or the temporary `generation_failed` snapshot remains in storage.
-5. **Mount Check & UI Display**:
-   - When the user opens `/create-report` (welcome state): The system looks at the latest snapshot. If a valid recovery or autosaved snapshot exists, a mobile-safe `NaliAlert` banner is shown.
-   - When the user opens a chat thread `/report/[id]` where they had an autosaved follow-up query: If the snapshot has `status: "autosaved_draft"` and matches the `reportId` of the current page, it auto-prefills the empty input field directly, clearing the snapshot from storage so it does not reappear.
+5. **Local History Panel ("Riwayat lokal browser")**:
+   - Renders a collapsed-by-default history card when snapshots exist in `localStorage` (up to 3 max entries).
+   - Allows users to **Pulihkan** (Restore), **Ganti nama** (Rename), **Hapus** (Delete one), and **Hapus semua** (Clear all recoveries).
 
 ---
 
 ## 2. Troubleshooting & Operations
 
 ### A. What users may see
-- **On `/create-report` or welcome page**:
-  - Alert Title: `"Draft terakhir ditemukan"`
-  - Alert Message: `"NaLI menemukan draft terbaru yang tersimpan di browser ini. Kamu bisa memulihkannya atau menghapusnya."`
-  - Button **"Pulihkan"**:
-    - If `status === "draft_ready"`, attempts redirect using the access key in localStorage.
-    - If `status === "autosaved_draft"` or `generation_failed`, prefills the composer text.
-    - If user already typed some text, asks for confirmation using `window.confirm` to avoid accidental overwrites.
-  - Button **"Hapus"**: Deletes the snapshot from local storage.
-- **On `/report/[id]` (chat thread)**:
-  - If a user was typing a long chat update and refreshed the page, their input field will automatically contain their unsaved text on page load. No noisy alert banner is rendered in this view.
+- **History Panel (`"Riwayat lokal browser"`)**:
+  - Displays a list of up to 3 local recovery snapshots with relative timestamps and status tags (`Autosave`, `Gagal`, `Siap`, `Chat`).
+  - **"Pulihkan" (Restore)**:
+    - Restores snapshot state.
+    - If the user has active input text in the fields, prompts a confirmation dialog (`window.confirm`) to avoid accidental overwrites.
+    - **Safe Restore Behavior**: If the snapshot status is `draft_ready` or `chat_updated` but the access token/key is missing from the local browser storage, it will automatically fall back to pre-filling the text composer fields instead of redirecting the user to a broken, unauthorized `/report/[id]` view.
+  - **"Ganti nama" (Rename)**:
+    - Prompts the user for a new title.
+    - Sanitizes input: strips HTML, removes potential token/secret strings, and clamps title length to 80 characters.
+  - **"Hapus" (Delete)**: Removes the single snapshot by ID from `localStorage`.
+  - **"Hapus semua" (Clear All)**: Removes all NaLI recovery snapshots without touching other unrelated keys in `localStorage`.
 
 ### B. How to inspect recovery storage in Developer Console
 Open the browser developer tools (F12) -> Console, and run:
@@ -41,21 +42,32 @@ Open the browser developer tools (F12) -> Console, and run:
 JSON.parse(localStorage.getItem('nali-recovery-snapshots') || '[]')
 ```
 
-### C. How to clear local autosave manually
-Instruct the user to run:
-```javascript
-localStorage.removeItem('nali-recovery-snapshots')
-```
-Or programmatically:
+### C. Programmatic Recovery Operations
 ```typescript
-import { clearGuestReportRecovery } from "@/lib/reports/clientRecovery";
-clearGuestReportRecovery("composer-autosave"); // Clears autosave draft only
-clearGuestReportRecovery(); // Clears all snapshots
+import {
+  clearGuestReportRecovery,
+  renameGuestReportRecovery,
+  listGuestReportRecoveries,
+  getGuestRecoveryStats
+} from "@/lib/reports/clientRecovery";
+
+// Clear autosave snapshot only
+clearGuestReportRecovery("composer-autosave"); 
+
+// Clear all local snapshots
+clearGuestReportRecovery(); 
+
+// Rename a snapshot by ID
+renameGuestReportRecovery("snapshot-id", "New Sanitized Title");
+
+// Retrieve local history metrics
+const stats = getGuestRecoveryStats();
+console.log(`Saved entries: ${stats.count}, footprint: ${stats.storageBytes} bytes`);
 ```
 
-### D. Privacy Warning
-- **Purely Local**: Storage is restricted to the current browser/device.
-- **Sanitized Fields**: No API keys, credentials, report access keys (`report_access_token_hash`), payment transactions, or stack traces are stored.
+### D. Privacy & Safety Warning
+- **Purely Local**: Storage is restricted to the current browser/device. No account systems or cloud sync mechanics are introduced.
+- **Sanitized Fields**: No API keys, credentials, report access tokens (`report_access_token_hash`), payment transactions, or stack traces are stored.
 - **Auto-Deletion**: Snapshots are automatically cleared upon successful report generation or when academic abuse checks are triggered.
 
 ---
@@ -64,10 +76,11 @@ clearGuestReportRecovery(); // Clears all snapshots
 
 Before pushing any changes to this module:
 
-### Run unit and autosave tests
+### Run unit, autosave, and history tests
 ```bash
 node --test tests/reports/guest-report-recovery.test.cjs
 node --test tests/reports/guest-report-autosave.test.cjs
+node --test tests/reports/local-report-history.test.cjs
 ```
 
 ### Run full lint and type checking
@@ -86,5 +99,5 @@ Ensure there are no build errors.
 
 ## 4. Operational Boundaries
 - **Midtrans Integration**: DEFERRED. Never expose credit/token purchasing interfaces or trigger payment checkout prompts.
-- **Human Testing**: PAUSED. Do not ask users or founders to manually test recovery/autosave behaviors; rely on programmatic assertions.
+- **Human Testing**: PAUSED. Rely on programmatic assertions for verifying local history, rename/delete, and clear flows.
 - **Honest recovery labels only**: Do not market this as a cloud backup or account sync.

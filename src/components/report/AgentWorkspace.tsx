@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState, useMemo } from "react";
+import { FormEvent, useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -40,6 +40,8 @@ import {
   clearGuestReportRecovery,
   loadLatestGuestReportRecovery,
   pruneExpiredGuestRecoveries,
+  renameGuestReportRecovery,
+  listGuestReportRecoveries,
   type GuestReportRecoverySnapshot
 } from "@/lib/reports/clientRecovery";
 
@@ -111,6 +113,27 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const [integrityConsent, setIntegrityConsent] = useState(false);
   const [selectedModel, setSelectedModel] = useState<"peregrine" | "obsidian" | "zephyr">("peregrine");
   const [recoverySnapshot, setRecoverySnapshot] = useState<GuestReportRecoverySnapshot | null>(null);
+  const [snapshots, setSnapshots] = useState<GuestReportRecoverySnapshot[]>([]);
+
+  const loadSnapshots = useCallback(() => {
+    try {
+      const list = listGuestReportRecoveries();
+      setSnapshots(list);
+      
+      const latest = list.length > 0 ? list[0] : null;
+      if (latest) {
+        if (!(latest.status === "autosaved_draft" && initialReportId && latest.reportId === initialReportId)) {
+          setRecoverySnapshot(latest);
+        } else {
+          setRecoverySnapshot(null);
+        }
+      } else {
+        setRecoverySnapshot(null);
+      }
+    } catch {
+      // ignore
+    }
+  }, [initialReportId]);
   
   // App context
   const [error, setError] = useState<{ message: string; code?: string; status?: number; retryAfterSeconds?: number } | null>(null);
@@ -336,10 +359,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             setQuery(latest.mainText);
           }
           clearGuestReportRecovery(latest.id);
-        } else {
-          setRecoverySnapshot(latest);
         }
       }
+      loadSnapshots();
     } catch {
       // ignore
     }
@@ -353,7 +375,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       const newUrl = window.location.pathname;
       window.history.replaceState(null, "", newUrl);
     }
-  }, [initialReportId]);
+  }, [initialReportId, loadSnapshots]);
 
   // Debounced local composer autosave in AgentWorkspace
   useEffect(() => {
@@ -374,6 +396,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         timestamp: Date.now(),
         reportId: initialReportId || undefined,
       });
+      loadSnapshots();
     }, 2000);
 
     return () => clearTimeout(timer);
@@ -385,43 +408,62 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     integrityConsent,
     initialReportId,
     report?.title,
+    loadSnapshots,
   ]);
 
-  const handleRestoreRecovery = () => {
-    if (!recoverySnapshot) return;
-
-    // Do not auto-restore over active user input without confirmation.
+  const handleRestoreSnapshot = (snapshot: GuestReportRecoverySnapshot) => {
+    // Restore requires user action, warn first if active input exists
     if (query.trim()) {
       const confirmOverwrite = window.confirm("Apakah Anda ingin menimpa input aktif saat ini dengan draft yang dipulihkan?");
       if (!confirmOverwrite) return;
     }
 
-    const id = recoverySnapshot.id;
+    const id = snapshot.id;
     const storedToken = window.localStorage.getItem(`nali-report-access:${id}`) ||
                         window.localStorage.getItem(`nali-report-access-key:${id}`) ||
                         window.localStorage.getItem(`nali-report-key:${id}`) ||
                         window.localStorage.getItem(`nali-report-access-token:${id}`);
 
-    if (recoverySnapshot.status === "draft_ready" && storedToken) {
+    // Rule 7: If snapshot has reportId but no access key, restore draft/composer state
+    if ((snapshot.status === "draft_ready" || snapshot.status === "chat_updated") && storedToken && id && !id.startsWith("temp-") && id !== "composer-autosave") {
       router.push(`/report/${id}?token=${encodeURIComponent(storedToken)}`);
     } else {
-      setQuery(recoverySnapshot.mainText || "");
-      setSelectedMode(recoverySnapshot.mode || "draft_from_materials");
-      setSelectedModel(recoverySnapshot.selectedModel || "peregrine");
-      if (recoverySnapshot.reportTemplate) {
-        setSelectedTemplate(recoverySnapshot.reportTemplate);
+      setQuery(snapshot.mainText || "");
+      setSelectedMode(snapshot.mode || "draft_from_materials");
+      setSelectedModel(snapshot.selectedModel || "peregrine");
+      if (snapshot.reportTemplate) {
+        setSelectedTemplate(snapshot.reportTemplate);
       }
-      setIntegrityConsent(recoverySnapshot.integrityConsent || false);
+      setIntegrityConsent(snapshot.integrityConsent || false);
+      setError(null);
+      setNotice(null);
+      composerRef.current?.focus();
     }
-
-    clearGuestReportRecovery(recoverySnapshot.id);
-    setRecoverySnapshot(null);
   };
 
-  const handleDismissRecovery = () => {
-    if (!recoverySnapshot) return;
-    clearGuestReportRecovery(recoverySnapshot.id);
-    setRecoverySnapshot(null);
+  const handleRenameSnapshot = (id: string, currentTitle: string) => {
+    const newTitle = window.prompt("Masukkan nama baru untuk draft ini:", currentTitle);
+    if (newTitle === null) return;
+    const success = renameGuestReportRecovery(id, newTitle);
+    if (success) {
+      loadSnapshots();
+    } else {
+      alert("Gagal mengubah nama draft.");
+    }
+  };
+
+  const handleDeleteSnapshot = (id: string) => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus draft ini?")) {
+      clearGuestReportRecovery(id);
+      loadSnapshots();
+    }
+  };
+
+  const handleClearAllSnapshots = () => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus semua draft lokal di browser ini?")) {
+      clearGuestReportRecovery();
+      loadSnapshots();
+    }
   };
 
   // Load existing report if ID provided
@@ -980,17 +1022,16 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             {messages.length === 0 ? (
               /* --- Empty State / Hero Landing --- */
               <div className="flex flex-col items-center text-center pt-16 md:pt-24">
-                {recoverySnapshot && (
-                  <NaliAlert
-                    variant="info"
-                    title="Draft terakhir ditemukan"
-                    explanation="NaLI menemukan draft terbaru yang tersimpan di browser ini. Kamu bisa memulihkannya atau menghapusnya."
-                    actionLabel="Pulihkan"
-                    onAction={handleRestoreRecovery}
-                    secondaryActionLabel="Hapus"
-                    onSecondaryAction={handleDismissRecovery}
-                    className="mb-6 w-full max-w-[500px] text-left"
-                  />
+                {snapshots.length > 0 && (
+                  <div className="mb-6 w-full max-w-[500px] text-left">
+                    <LocalHistoryPanel
+                      snapshots={snapshots}
+                      onRestore={handleRestoreSnapshot}
+                      onRename={handleRenameSnapshot}
+                      onDelete={handleDeleteSnapshot}
+                      onClearAll={handleClearAllSnapshots}
+                    />
+                  </div>
                 )}
                 <NaLILogoMark size="md" className="shadow-2xl shadow-[#10b981]/10" />
                 <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white md:text-5xl">
@@ -1983,6 +2024,124 @@ function ReportResultCard({
           );
         })()}
       </div>
+    </div>
+  );
+}
+
+interface LocalHistoryPanelProps {
+  snapshots: GuestReportRecoverySnapshot[];
+  onRestore: (s: GuestReportRecoverySnapshot) => void;
+  onRename: (id: string, title: string) => void;
+  onDelete: (id: string) => void;
+  onClearAll: () => void;
+}
+
+function LocalHistoryPanel({
+  snapshots,
+  onRestore,
+  onRename,
+  onDelete,
+  onClearAll,
+}: LocalHistoryPanelProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (snapshots.length === 0) return null;
+
+  return (
+    <div className="mb-4 rounded-2xl border border-white/[0.06] bg-[#07090e]/40 p-3 backdrop-blur-md shadow-lg">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex w-full items-center justify-between text-xs font-bold uppercase tracking-wider text-white/50 hover:text-white transition cursor-pointer min-h-[44px] px-1"
+      >
+        <span className="flex items-center gap-1.5">
+          📁 Riwayat lokal browser
+          <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] text-white/70">
+            {snapshots.length}
+          </span>
+        </span>
+        <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} />
+      </button>
+
+      {isOpen && (
+        <div className="mt-3 space-y-2 border-t border-white/[0.04] pt-2">
+          {snapshots.map((item) => {
+            const timeStr = new Date(item.timestamp).toLocaleTimeString("id-ID", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+            const statusLabel = {
+              autosaved_draft: "Autosave",
+              generation_failed: "Gagal",
+              draft_ready: "Siap",
+              chat_updated: "Chat",
+            }[item.status] || "Draft";
+
+            const statusColors = {
+              autosaved_draft: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+              generation_failed: "bg-red-500/10 text-red-400 border-red-500/20",
+              draft_ready: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+              chat_updated: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+            }[item.status] || "bg-zinc-500/10 text-zinc-400 border-zinc-500/20";
+
+            return (
+              <div
+                key={item.id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-white/[0.04] bg-white/[0.01] p-2.5 hover:bg-white/[0.02] transition"
+              >
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-semibold text-white/80 truncate max-w-[200px]" title={item.title}>
+                      {item.title}
+                    </span>
+                    <span className={cn("rounded border px-1.5 py-0.5 text-[9px] font-bold tracking-wide uppercase", statusColors)}>
+                      {statusLabel}
+                    </span>
+                    <span className="text-[10px] text-white/30 font-mono">{timeStr}</span>
+                  </div>
+                  <p className="text-[11px] text-white/50 truncate max-w-[400px]">
+                    {item.mainText || "Tidak ada materi teks."}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-1 items-center mt-1 sm:mt-0 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => onRestore(item)}
+                    className="inline-flex min-h-[44px] sm:min-h-[36px] items-center justify-center rounded-lg bg-white px-3 text-[11px] font-semibold text-zinc-950 hover:bg-white/90 transition cursor-pointer"
+                  >
+                    Pulihkan
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onRename(item.id, item.title)}
+                    className="inline-flex min-h-[44px] sm:min-h-[36px] items-center justify-center rounded-lg bg-white/5 border border-white/[0.06] px-3 text-[11px] font-semibold text-white/70 hover:bg-white/10 hover:text-white transition cursor-pointer"
+                  >
+                    Ganti nama
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDelete(item.id)}
+                    className="inline-flex min-h-[44px] sm:min-h-[36px] items-center justify-center rounded-lg bg-red-500/10 border border-red-500/20 px-3 text-[11px] font-semibold text-red-400 hover:bg-red-500/20 transition cursor-pointer"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+
+          <div className="flex justify-end pt-1">
+            <button
+              type="button"
+              onClick={onClearAll}
+              className="inline-flex min-h-[44px] sm:min-h-[36px] items-center justify-center rounded-lg bg-white/5 border border-white/[0.06] px-3 text-[11px] font-semibold text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition cursor-pointer"
+            >
+              Hapus semua
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

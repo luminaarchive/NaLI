@@ -181,3 +181,76 @@ export function pruneExpiredGuestRecoveries(): void {
     // ignore
   }
 }
+
+export function renameGuestReportRecovery(id: string, title: string): boolean {
+  if (!safeStorageAvailable()) return false;
+
+  try {
+    let cleanTitle = typeof title === "string" ? title : "";
+    // Sanitize HTML
+    cleanTitle = cleanTitle.replace(/<[^>]*>/g, "");
+
+    // Sanitize tokens, api keys, provider names, payment systems, stack traces, paths, etc.
+    cleanTitle = cleanTitle
+      .replace(/sk-[a-zA-Z0-9_-]{12,}/gi, "")
+      .replace(/[a-zA-Z0-9_-]{32,}/g, "")
+      .replace(/(openrouter|supabase|midtrans|openai|claude|gpt|gemini|token|access_key|access-key|apikey|hash|secret|payment|transaction|fulfillment)/gi, "")
+      .replace(/at\s+[\w\d\s\.\\\/:\(\)-]+:\d+:\d+/gi, "")
+      .replace(/stack|trace|error/gi, "")
+      .replace(/\/Users\/[\w\d\s\.\\\/:-]+/gi, "")
+      .replace(/[a-zA-Z]:\\[\w\d\s\.\\\/:-]+/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!cleanTitle) {
+      cleanTitle = "Draft Laporan Tanpa Judul";
+    }
+
+    // Clamp length at 80 characters
+    cleanTitle = cleanTitle.slice(0, 80);
+
+    let list = listGuestReportRecoveries();
+    const index = list.findIndex((item) => item.id === id);
+    if (index === -1) return false;
+
+    list[index].title = cleanTitle;
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function getGuestReportRecoveryById(id: string): GuestReportRecoverySnapshot | null {
+  try {
+    const list = listGuestReportRecoveries();
+    return list.find((item) => item.id === id) || null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearExpiredGuestRecoveries(): void {
+  pruneExpiredGuestRecoveries();
+}
+
+export function getGuestRecoveryStats(): { count: number; storageBytes: number } {
+  if (!safeStorageAvailable()) return { count: 0, storageBytes: 0 };
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY) || "[]";
+    const list = listGuestReportRecoveries();
+    const bytes = typeof TextEncoder !== "undefined"
+      ? new TextEncoder().encode(raw).length
+      : raw.length;
+    return {
+      count: list.length,
+      storageBytes: bytes,
+    };
+  } catch {
+    return { count: 0, storageBytes: 0 };
+  }
+}
+
+export function clearAutosaveOnly(): void {
+  clearGuestReportRecovery("composer-autosave");
+}
