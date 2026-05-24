@@ -292,10 +292,10 @@ export function CreateReportForm() {
             />
           </label>
 
-          <label className="mt-3 flex gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2 sm:p-3">
+          <label className="mt-3 flex gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 cursor-pointer items-start text-left">
             <input
               checked={form.integrityConsent}
-              className="mt-1 h-4 w-4 accent-indigo-500"
+              className="mt-1 h-4 w-4 accent-indigo-500 shrink-0"
               type="checkbox"
               onChange={(event) => updateField("integrityConsent", event.target.checked)}
             />
@@ -323,7 +323,7 @@ export function CreateReportForm() {
             </label>
 
             <button
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#09090b] transition-all hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:pointer-events-none disabled:opacity-60 sm:min-h-12"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#09090b] transition-all hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:pointer-events-none disabled:opacity-60"
               disabled={isSubmitting}
               type="submit"
             >
@@ -345,7 +345,7 @@ export function CreateReportForm() {
           </p>
 
           <details className="group mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02]">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-white/80">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 min-h-[48px] text-sm font-semibold text-white/80">
               Tambahkan detail opsional
               <ChevronDown className="h-4 w-4 text-white/40 transition group-open:rotate-180" aria-hidden="true" />
             </summary>
@@ -474,10 +474,10 @@ function ModeButton({
   return (
     <button
       className={cn(
-        "rounded-xl border p-2 text-left transition-all duration-200 sm:p-4",
+        "rounded-xl border p-3 text-left transition-all duration-200 min-h-[48px] sm:p-4",
         active
           ? "border-white/[0.15] bg-white/[0.08] text-white"
-          : "border-white/[0.06] bg-white/[0.02] text-white/50 hover:bg-white/[0.05]",
+          : "border-white/[0.06] bg-[#07090e]/60 text-white/50 hover:bg-white/[0.05]",
       )}
       type="button"
       onClick={onClick}

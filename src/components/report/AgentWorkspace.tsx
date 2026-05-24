@@ -758,7 +758,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         </header>
 
         <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 md:px-8 space-y-6 z-10">
-          <div className="mx-auto max-w-[760px] space-y-6 pb-[calc(8.5rem+env(safe-area-inset-bottom))]">
+          <div className="mx-auto max-w-[760px] space-y-6 pb-[calc(12rem+env(safe-area-inset-bottom))] sm:pb-[calc(8.5rem+env(safe-area-inset-bottom))]">
             {messages.length === 0 ? (
               /* --- Empty State / Hero Landing --- */
               <div className="flex flex-col items-center text-center pt-16 md:pt-24">
@@ -970,7 +970,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                               {isLastMessage && suggestedActions && suggestedActions.length > 0 && activeRunStatus === "idle" && (
                                 <div className="mt-3 border-t border-white/[0.04] pt-2.5">
                                   <span className="block text-[9px] font-bold text-white/40 uppercase tracking-wider mb-2">Tindakan Lanjutan Yang Disarankan</span>
-                                  <div className="flex flex-wrap gap-1.5">
+                                  <div className="flex flex-wrap gap-2">
                                     {suggestedActions.map((act: { label: string; prompt: string }, aIdx: number) => {
                                       const cost = getEstimatedCreditCostFromQuery(act.prompt);
                                       return (
@@ -978,7 +978,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                                           key={aIdx}
                                           type="button"
                                           onClick={() => handleQuickAction(act.prompt)}
-                                          className="rounded-full border border-white/[0.06] bg-white/[0.02] px-2.5 py-1 text-xs text-white/50 hover:bg-white/[0.06] hover:text-white transition duration-200 cursor-pointer text-left"
+                                          className="inline-flex items-center min-h-[44px] rounded-full border border-white/[0.06] bg-white/[0.02] px-3.5 py-2 text-xs text-white/50 hover:bg-white/[0.06] hover:text-white transition duration-200 cursor-pointer text-left"
                                         >
                                           {act.label} ({cost})
                                         </button>
@@ -1213,7 +1213,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     { label: "Tambahkan Rekomendasi", prompt: "Tambahkan poin rekomendasi praktis" }
                   ];
               return (
-                <div className="flex flex-wrap gap-1.5 py-1 justify-center md:justify-start">
+                <div className="flex flex-wrap gap-2 py-1 justify-center md:justify-start">
                   {actions.map((act, i) => {
                     const cost = getEstimatedCreditCostFromQuery(act.prompt);
                     return (
@@ -1221,7 +1221,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                         key={i}
                         type="button"
                         onClick={() => handleQuickAction(act.prompt)}
-                        className="rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-xs text-white/50 hover:bg-white/[0.06] hover:text-white transition duration-200 cursor-pointer"
+                        className="inline-flex items-center min-h-[44px] rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-2 text-xs text-white/50 hover:bg-white/[0.06] hover:text-white transition duration-200 cursor-pointer"
                       >
                         {act.label} ({cost})
                       </button>
@@ -1258,7 +1258,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             >
               <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-indigo-600/10 to-indigo-400/10 opacity-30 blur-md transition duration-500 group-hover:opacity-50 group-focus-within:opacity-60" />
               
-              <div className="relative flex items-end gap-2 rounded-2xl border border-white/[0.08] bg-[#07090e]/80 p-2 shadow-2xl backdrop-blur-2xl transition duration-300 focus-within:border-white/[0.15] focus-within:bg-[#07090e]">
+              <div className="relative flex items-end gap-2 rounded-2xl border border-white/[0.08] bg-[#07090e]/80 p-2 min-h-[48px] sm:min-h-[56px] shadow-2xl backdrop-blur-2xl transition duration-300 focus-within:border-white/[0.15] focus-within:bg-[#07090e]">
                 <div className="flex-1 px-3 py-1">
                   <textarea
                     rows={1}
@@ -1288,7 +1288,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                   <button
                     type="submit"
                     disabled={activeRunStatus === "running" || !query.trim() || isInsufficient || (messages.length === 0 && !integrityConsent)}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-zinc-950 transition duration-200 hover:bg-white/90 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    aria-label="Kirim instruksi"
+                    className="inline-flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-white text-zinc-950 transition duration-200 hover:bg-white/90 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                   >
                     {activeRunStatus === "running" ? (
                       <Loader2 className="h-4 w-4 animate-spin text-zinc-950" />
@@ -1600,7 +1601,7 @@ function ReportResultCard({
           size="sm"
           variant="outline"
           onClick={onCopy}
-          className="h-8 border-white/[0.08] hover:bg-white/[0.04] text-white/60 hover:text-white cursor-pointer"
+          className="h-11 sm:h-8 border-white/[0.08] hover:bg-white/[0.04] text-white/60 hover:text-white cursor-pointer"
         >
           <Clipboard className="h-3.5 w-3.5 mr-1.5" />
           {copyStatus ? "Tersalin!" : "Salin Markdown"}
@@ -1612,7 +1613,7 @@ function ReportResultCard({
               size="sm"
               variant="default"
               onClick={() => onDownload("markdown")}
-              className="h-8 bg-white hover:bg-white/90 text-zinc-950 cursor-pointer"
+              className="h-11 sm:h-8 bg-white hover:bg-white/90 text-zinc-950 cursor-pointer"
             >
               <Download className="h-3.5 w-3.5 mr-1.5" />
               Markdown
@@ -1621,7 +1622,7 @@ function ReportResultCard({
               size="sm"
               variant="outline"
               onClick={() => onDownload("pdf")}
-              className="h-8 border-white/[0.08] hover:bg-white/[0.04] text-white/60 hover:text-white cursor-pointer"
+              className="h-11 sm:h-8 border-white/[0.08] hover:bg-white/[0.04] text-white/60 hover:text-white cursor-pointer"
             >
               <Download className="h-3.5 w-3.5 mr-1.5" />
               PDF
@@ -1631,7 +1632,7 @@ function ReportResultCard({
           <Button
             size="sm"
             onClick={onUnlock}
-            className="h-8 bg-[#7c3aed] text-white hover:bg-[#6d28d9] cursor-pointer"
+            className="h-11 sm:h-8 bg-[#7c3aed] text-white hover:bg-[#6d28d9] cursor-pointer"
           >
             <LockKeyhole className="h-3.5 w-3.5 mr-1.5" />
             Unlock PDF (15 Kredit / Bayar)
