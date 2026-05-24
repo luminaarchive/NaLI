@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState, useRef } from "react";
+import { FormEvent, useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
@@ -95,14 +95,14 @@ export function CreateReportForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snapshots, setSnapshots] = useState<GuestReportRecoverySnapshot[]>([]);
 
-  const loadSnapshots = () => {
+  const loadSnapshots = useCallback(() => {
     try {
       const list = listGuestReportRecoveries();
       setSnapshots(list);
     } catch {
       // ignore
     }
-  };
+  }, []);
 
   useEffect(() => {
     try {
@@ -111,7 +111,7 @@ export function CreateReportForm() {
     } catch {
       // ignore
     }
-  }, []);
+  }, [loadSnapshots]);
 
   const handleRestoreSnapshot = (snapshot: GuestReportRecoverySnapshot) => {
     // Restore requires user action, warn first if active input exists
@@ -292,6 +292,7 @@ export function CreateReportForm() {
     form.sourceUrls,
     form.fileDescription,
     form.integrityConsent,
+    loadSnapshots,
   ]);
 
   const materialCount = useMemo(

@@ -35,7 +35,7 @@ export function CodexMagicBackground() {
 
       {/* 1. Bottom center bloom — large indigo, breathes behind command box */}
       <div
-        className="ambient-blob ambient-bloom absolute bottom-[-20%] left-1/2 h-[600px] w-[1100px] rounded-full"
+        className="ambient-blob ambient-bloom absolute bottom-[-20%] left-1/2 md:h-[600px] md:w-[1100px] h-[300px] w-[550px] rounded-full"
         style={{
           background:
             "radial-gradient(ellipse at center, rgba(99,102,241,0.55) 0%, rgba(99,102,241,0.15) 45%, transparent 70%)",
@@ -44,7 +44,7 @@ export function CodexMagicBackground() {
 
       {/* 2. Right violet — drifts diagonally, melting feel */}
       <div
-        className="ambient-blob ambient-drift-medium absolute -right-[8%] -top-[10%] h-[550px] w-[750px] rounded-full"
+        className="ambient-blob ambient-drift-medium absolute -right-[8%] -top-[10%] h-[550px] w-[750px] rounded-full hidden md:block"
         style={{
           background:
             "radial-gradient(ellipse at center, rgba(139,92,246,0.45) 0%, rgba(139,92,246,0.1) 45%, transparent 70%)",
@@ -53,7 +53,7 @@ export function CodexMagicBackground() {
 
       {/* 3. Left cyan — rises and falls slowly */}
       <div
-        className="ambient-blob ambient-drift-fast absolute -left-[12%] top-[25%] h-[450px] w-[550px] rounded-full"
+        className="ambient-blob ambient-drift-fast absolute -left-[12%] top-[25%] h-[450px] w-[550px] rounded-full hidden md:block"
         style={{
           background:
             "radial-gradient(ellipse at center, rgba(56,189,248,0.35) 0%, rgba(56,189,248,0.08) 45%, transparent 70%)",
@@ -62,7 +62,7 @@ export function CodexMagicBackground() {
 
       {/* 4. Center indigo — expands slowly behind hero area */}
       <div
-        className="ambient-blob ambient-drift-slow absolute left-[20%] top-[10%] h-[500px] w-[700px] rounded-full"
+        className="ambient-blob ambient-drift-slow absolute left-[20%] top-[10%] h-[500px] w-[700px] rounded-full hidden md:block"
         style={{
           background:
             "radial-gradient(ellipse at center, rgba(99,102,241,0.3) 0%, rgba(99,102,241,0.08) 50%, transparent 70%)",
@@ -71,7 +71,7 @@ export function CodexMagicBackground() {
 
       {/* 5. Top-right soft accent — morphing shape-shift */}
       <div
-        className="ambient-blob ambient-morph absolute right-[10%] top-[-5%] h-[350px] w-[450px] rounded-full"
+        className="ambient-blob ambient-morph absolute right-[10%] top-[-5%] h-[350px] w-[450px] rounded-full hidden md:block"
         style={{
           background:
             "radial-gradient(ellipse at center, rgba(167,139,250,0.3) 0%, rgba(167,139,250,0.06) 50%, transparent 70%)",

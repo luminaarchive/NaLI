@@ -73,7 +73,7 @@ export function FluidVideoBackground() {
         />
 
         <div
-          className={`absolute rounded-full mix-blend-screen transform-gpu ${animateClass}`}
+          className={`absolute rounded-full mix-blend-screen transform-gpu ${animateClass} hidden md:block`}
           style={{
             bottom: "-20%",
             left: "20%",
@@ -89,7 +89,7 @@ export function FluidVideoBackground() {
         />
 
         <div
-          className={`absolute rounded-full mix-blend-screen transform-gpu ${animateClass}`}
+          className={`absolute rounded-full mix-blend-screen transform-gpu ${animateClass} hidden md:block`}
           style={{
             bottom: "-10%",
             right: "-10%",
@@ -105,7 +105,7 @@ export function FluidVideoBackground() {
         />
 
         <div
-          className={`absolute rounded-full mix-blend-screen transform-gpu ${animateClass}`}
+          className={`absolute rounded-full mix-blend-screen transform-gpu ${animateClass} hidden md:block`}
           style={{
             top: "-5%",
             left: "30%",
