@@ -15,6 +15,10 @@ export type SystemReadiness = {
   maintenanceSecretConfigured: boolean;
   midtransConfigured: boolean;
   midtransProductionMode: boolean;
+  midtransEnvironment: "sandbox" | "production" | "not_configured";
+  paidCheckoutActive: boolean;
+  creditPurchaseActive: boolean;
+  paidExportActive: boolean;
   naliLockPrepared: true;
   openRouterConfigured: boolean;
   professionalFieldIntelligence: "positioning_only";
@@ -45,17 +49,29 @@ export function getSystemReadiness(): SystemReadiness {
   const purge = getPurgeReadiness();
   const costProtection = getCostProtectionReadiness();
 
+  const midtransEnvironment = !midtransConfigured
+    ? "not_configured"
+    : midtransProductionMode
+      ? "production"
+      : "sandbox";
+
+  const exportActive = supabaseConfigured && midtransConfigured;
+
   return {
     adminViewEnabled: env.admin.viewEnabled,
     costProtectionActive: costProtection.costProtectionActive,
     costProtectionConfigured: costProtection.costProtectionConfigured,
     costProtectionPrepared: costProtection.costProtectionPrepared,
     exportGatePrepared: true,
-    exportGateStatus: supabaseConfigured && midtransConfigured ? "active" : "prepared_locked",
+    exportGateStatus: exportActive ? "active" : "prepared_locked",
     fileUploadActive: false,
     maintenanceSecretConfigured: purge.maintenanceSecretConfigured,
     midtransConfigured,
     midtransProductionMode,
+    midtransEnvironment,
+    paidCheckoutActive: exportActive,
+    creditPurchaseActive: exportActive,
+    paidExportActive: supabaseConfigured,
     naliLockPrepared: true,
     openRouterConfigured,
     professionalFieldIntelligence: "positioning_only",
