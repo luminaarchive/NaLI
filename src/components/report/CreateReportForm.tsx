@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState, useRef, useCallback } from "react";
+import { FormEvent, useEffect, useMemo, useState, useRef, useCallback, memo } from "react";
 import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
@@ -113,9 +113,14 @@ export function CreateReportForm() {
     }
   }, [loadSnapshots]);
 
-  const handleRestoreSnapshot = (snapshot: GuestReportRecoverySnapshot) => {
+  const formRef = useRef(form);
+  useEffect(() => {
+    formRef.current = form;
+  }, [form]);
+
+  const handleRestoreSnapshot = useCallback((snapshot: GuestReportRecoverySnapshot) => {
     // Restore requires user action, warn first if active input exists
-    const hasInput = [form.mainText, form.sourceUrls, form.location, form.fileDescription].some((v) => v.trim());
+    const hasInput = [formRef.current.mainText, formRef.current.sourceUrls, formRef.current.location, formRef.current.fileDescription].some((v) => v.trim());
     if (hasInput) {
       const confirmOverwrite = window.confirm("Apakah Anda ingin menimpa input aktif saat ini dengan draft yang dipulihkan?");
       if (!confirmOverwrite) return;
@@ -147,9 +152,9 @@ export function CreateReportForm() {
       setNotice(null);
       mainTextRef.current?.focus();
     }
-  };
+  }, [router]);
 
-  const handleRenameSnapshot = (id: string, currentTitle: string) => {
+  const handleRenameSnapshot = useCallback((id: string, currentTitle: string) => {
     const newTitle = window.prompt("Masukkan nama baru untuk draft ini:", currentTitle);
     if (newTitle === null) return;
     const success = renameGuestReportRecovery(id, newTitle);
@@ -158,21 +163,21 @@ export function CreateReportForm() {
     } else {
       alert("Gagal mengubah nama draft.");
     }
-  };
+  }, [loadSnapshots]);
 
-  const handleDeleteSnapshot = (id: string) => {
+  const handleDeleteSnapshot = useCallback((id: string) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus draft ini?")) {
       clearGuestReportRecovery(id);
       loadSnapshots();
     }
-  };
+  }, [loadSnapshots]);
 
-  const handleClearAllSnapshots = () => {
+  const handleClearAllSnapshots = useCallback(() => {
     if (window.confirm("Apakah Anda yakin ingin menghapus semua draft lokal di browser ini?")) {
       clearGuestReportRecovery();
       loadSnapshots();
     }
-  };
+  }, [loadSnapshots]);
 
   useEffect(() => {
     if (!error || !error.retryAfterSeconds || error.retryAfterSeconds <= 0) return;
@@ -795,7 +800,7 @@ interface LocalHistoryPanelProps {
   onClearAll: () => void;
 }
 
-export function LocalHistoryPanel({
+export const LocalHistoryPanel = memo(function LocalHistoryPanel({
   snapshots,
   onRestore,
   onRename,
@@ -903,4 +908,4 @@ export function LocalHistoryPanel({
       )}
     </div>
   );
-}
+});

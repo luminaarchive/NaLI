@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState, useMemo, useCallback } from "react";
+import { FormEvent, useEffect, useRef, useState, useMemo, useCallback, memo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -411,9 +411,14 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     loadSnapshots,
   ]);
 
-  const handleRestoreSnapshot = (snapshot: GuestReportRecoverySnapshot) => {
+  const queryRef = useRef(query);
+  useEffect(() => {
+    queryRef.current = query;
+  }, [query]);
+
+  const handleRestoreSnapshot = useCallback((snapshot: GuestReportRecoverySnapshot) => {
     // Restore requires user action, warn first if active input exists
-    if (query.trim()) {
+    if (queryRef.current.trim()) {
       const confirmOverwrite = window.confirm("Apakah Anda ingin menimpa input aktif saat ini dengan draft yang dipulihkan?");
       if (!confirmOverwrite) return;
     }
@@ -439,9 +444,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       setNotice(null);
       composerRef.current?.focus();
     }
-  };
+  }, [router]);
 
-  const handleRenameSnapshot = (id: string, currentTitle: string) => {
+  const handleRenameSnapshot = useCallback((id: string, currentTitle: string) => {
     const newTitle = window.prompt("Masukkan nama baru untuk draft ini:", currentTitle);
     if (newTitle === null) return;
     const success = renameGuestReportRecovery(id, newTitle);
@@ -450,21 +455,21 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     } else {
       alert("Gagal mengubah nama draft.");
     }
-  };
+  }, [loadSnapshots]);
 
-  const handleDeleteSnapshot = (id: string) => {
+  const handleDeleteSnapshot = useCallback((id: string) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus draft ini?")) {
       clearGuestReportRecovery(id);
       loadSnapshots();
     }
-  };
+  }, [loadSnapshots]);
 
-  const handleClearAllSnapshots = () => {
+  const handleClearAllSnapshots = useCallback(() => {
     if (window.confirm("Apakah Anda yakin ingin menghapus semua draft lokal di browser ini?")) {
       clearGuestReportRecovery();
       loadSnapshots();
     }
-  };
+  }, [loadSnapshots]);
 
   // Load existing report if ID provided
   useEffect(() => {
@@ -1688,12 +1693,14 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         </div>
       </div>
       {/* Upgrade Modal */}
-      <UpgradeModal
-        isOpen={isUpgradeOpen}
-        onClose={() => setIsUpgradeOpen(false)}
-        reportId={initialReportId || (report ? report.id : null)}
-        reportAccessKey={accessKey}
-      />
+      {isUpgradeOpen && (
+        <UpgradeModal
+          isOpen={isUpgradeOpen}
+          onClose={() => setIsUpgradeOpen(false)}
+          reportId={initialReportId || (report ? report.id : null)}
+          reportAccessKey={accessKey}
+        />
+      )}
     </div>
   );
 }
@@ -2036,7 +2043,7 @@ interface LocalHistoryPanelProps {
   onClearAll: () => void;
 }
 
-function LocalHistoryPanel({
+const LocalHistoryPanel = memo(function LocalHistoryPanel({
   snapshots,
   onRestore,
   onRename,
@@ -2144,4 +2151,4 @@ function LocalHistoryPanel({
       )}
     </div>
   );
-}
+});
