@@ -228,6 +228,43 @@ export function CreateReportForm() {
     }));
   }, []);
 
+  // Debounced local composer autosave
+  useEffect(() => {
+    // Minimum useful text length of 20 characters before autosaving
+    if (form.mainText.trim().length < 20) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      saveGuestReportRecovery({
+        id: "composer-autosave",
+        title: form.title || "Autosave Draft Laporan",
+        mode: form.mode,
+        selectedModel: form.selectedModel,
+        mainText: form.mainText,
+        reportTemplate: form.reportTemplate,
+        location: form.location,
+        sourceUrls: form.sourceUrls,
+        fileDescription: form.fileDescription,
+        integrityConsent: form.integrityConsent,
+        status: "autosaved_draft",
+        timestamp: Date.now(),
+      });
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [
+    form.mainText,
+    form.title,
+    form.mode,
+    form.selectedModel,
+    form.reportTemplate,
+    form.location,
+    form.sourceUrls,
+    form.fileDescription,
+    form.integrityConsent,
+  ]);
+
   const materialCount = useMemo(
     () =>
       [form.mainText, form.sourceUrls, form.location, form.fileDescription].filter((value) => value.trim()).length,
@@ -261,6 +298,7 @@ export function CreateReportForm() {
     }
 
     setIsSubmitting(true);
+    clearGuestReportRecovery("composer-autosave");
 
     try {
       const guestSessionId = getOrCreateGuestSessionId();
@@ -333,6 +371,7 @@ export function CreateReportForm() {
 
         if (isAbuseBlock) {
           clearGuestReportRecovery(tempId);
+          clearGuestReportRecovery("composer-autosave");
         }
 
         setError({
@@ -346,6 +385,7 @@ export function CreateReportForm() {
 
       // Successful generation: clear temp snapshot and save safe completed recovery
       clearGuestReportRecovery(tempId);
+      clearGuestReportRecovery("composer-autosave");
       saveGuestReportRecovery({
         id: reportId,
         title: payload.report.title || "Draft Laporan",

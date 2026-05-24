@@ -7,7 +7,7 @@ export interface GuestReportRecoverySnapshot {
   selectedModel: "peregrine" | "obsidian" | "zephyr";
   mainText: string;
   timestamp: number;
-  status: "draft_ready" | "generation_failed" | "chat_updated";
+  status: "draft_ready" | "generation_failed" | "chat_updated" | "autosaved_draft";
   reportTemplate?: string;
   location?: string;
   sourceUrls?: string;
@@ -53,7 +53,7 @@ export function sanitizeRecoverySnapshot(input: Partial<GuestReportRecoverySnaps
     selectedModel: safeModel,
     mainText: safeMainText,
     timestamp: typeof input.timestamp === "number" ? input.timestamp : Date.now(),
-    status: (input.status === "generation_failed" || input.status === "chat_updated") 
+    status: (input.status === "generation_failed" || input.status === "chat_updated" || input.status === "autosaved_draft") 
       ? input.status 
       : "draft_ready",
     integrityConsent: Boolean(input.integrityConsent),

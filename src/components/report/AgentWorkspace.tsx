@@ -329,7 +329,14 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       pruneExpiredGuestRecoveries();
       const latest = loadLatestGuestReportRecovery();
       if (latest) {
-        setRecoverySnapshot(latest);
+        if (latest.status === "autosaved_draft" && initialReportId && latest.reportId === initialReportId) {
+          if (latest.mainText) {
+            setQuery(latest.mainText);
+          }
+          clearGuestReportRecovery(latest.id);
+        } else {
+          setRecoverySnapshot(latest);
+        }
       }
     } catch {
       // ignore
@@ -344,7 +351,39 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       const newUrl = window.location.pathname;
       window.history.replaceState(null, "", newUrl);
     }
-  }, []);
+  }, [initialReportId]);
+
+  // Debounced local composer autosave in AgentWorkspace
+  useEffect(() => {
+    if (query.trim().length < 20) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      saveGuestReportRecovery({
+        id: "composer-autosave",
+        title: report?.title || selectedTemplate || "Autosave Draft Laporan",
+        mode: selectedMode,
+        selectedModel: selectedModel,
+        mainText: query,
+        reportTemplate: selectedTemplate,
+        integrityConsent: integrityConsent,
+        status: "autosaved_draft",
+        timestamp: Date.now(),
+        reportId: initialReportId || undefined,
+      });
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [
+    query,
+    selectedMode,
+    selectedModel,
+    selectedTemplate,
+    integrityConsent,
+    initialReportId,
+    report?.title,
+  ]);
 
   const handleRestoreRecovery = () => {
     if (!recoverySnapshot) return;
@@ -455,6 +494,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
     setError(null);
     setNotice(null);
+    clearGuestReportRecovery("composer-autosave");
     setActiveRunStatus("running");
     
     // Add optimistic user message
@@ -518,6 +558,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
         if (isAbuseBlock) {
           clearGuestReportRecovery(tempId);
+          clearGuestReportRecovery("composer-autosave");
         }
 
         if (response.status === 402) {
@@ -548,6 +589,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       const generatedReport = payload.report;
 
       clearGuestReportRecovery(tempId);
+      clearGuestReportRecovery("composer-autosave");
       saveGuestReportRecovery({
         id: reportId,
         title: generatedReport.title || selectedTemplate || "Draft Laporan",
@@ -624,6 +666,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
     setError(null);
     setQuery("");
+    clearGuestReportRecovery("composer-autosave");
     setActiveRunStatus("running");
 
     // Add optimistic user message to local feed
