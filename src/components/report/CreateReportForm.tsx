@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { reportTemplates, userRoles, type ReportMode, type ReportResult } from "@/lib/reports/reportGenerator";
 import { cn } from "@/lib/utils";
+import { NaliAlert } from "@/components/ui/NaliAlert";
+import { normalizePublicError } from "@/lib/errors/publicErrors";
 
 type FormState = {
   mode: ReportMode;
@@ -75,9 +77,29 @@ function hasMaterial(form: FormState) {
 export function CreateReportForm() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(initialForm);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; code?: string; status?: number; retryAfterSeconds?: number } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!error || !error.retryAfterSeconds || error.retryAfterSeconds <= 0) return;
+
+    const timer = setInterval(() => {
+      setError((curr) => {
+        if (!curr || !curr.retryAfterSeconds || curr.retryAfterSeconds <= 0) {
+          clearInterval(timer);
+          return curr;
+        }
+        return {
+          ...curr,
+          retryAfterSeconds: curr.retryAfterSeconds - 1,
+        };
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally only reacts to retryAfterSeconds, not entire error object
+  }, [error?.retryAfterSeconds]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -159,17 +181,17 @@ export function CreateReportForm() {
     setNotice(null);
 
     if (form.mode === "draft_from_materials" && !hasMaterial(form)) {
-      setError("Masukkan minimal satu bahan dulu: catatan, lokasi, URL, atau ringkasan bahan.");
+      setError({ message: "Masukkan minimal satu bahan dulu: catatan, lokasi, URL, atau ringkasan bahan." });
       return;
     }
 
     if (form.mode === "start_from_zero" && !form.mainText.trim()) {
-      setError("Tulis dulu topik atau jenis laporan yang ingin kamu mulai.");
+      setError({ message: "Tulis dulu topik atau jenis laporan yang ingin kamu mulai." });
       return;
     }
 
     if (!form.integrityConsent) {
-      setError("Centang pernyataan integritas dulu sebelum melanjutkan.");
+      setError({ message: "Centang pernyataan integritas dulu sebelum melanjutkan." });
       return;
     }
 
@@ -190,11 +212,13 @@ export function CreateReportForm() {
       });
       const payload = (await response.json()) as {
         error?: string;
+        code?: string;
         id?: string;
         notice?: string;
         persistence?: string;
         report?: ReportResult;
         report_access_key?: string;
+        retryAfterSeconds?: number;
       };
 
       const rawPayload = payload as any;
@@ -216,7 +240,12 @@ export function CreateReportForm() {
       }
 
       if (!response.ok || !payload.report || !reportId) {
-        setError(payload.error ?? "NaLI belum bisa melanjutkan. Periksa input dan coba lagi.");
+        setError({
+          message: payload.error ?? "NaLI belum bisa melanjutkan. Periksa input dan coba lagi.",
+          code: payload.code,
+          status: response.status,
+          retryAfterSeconds: payload.retryAfterSeconds,
+        });
         return;
       }
 
@@ -243,7 +272,10 @@ export function CreateReportForm() {
         : "";
       router.push(`/report/${reportId}${accessQuery}`);
     } catch {
-      setError("Koneksi ke server gagal. Coba lagi setelah jaringan stabil.");
+      setError({
+        message: "Koneksi ke server gagal. Coba lagi setelah jaringan stabil.",
+        status: 500,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -438,20 +470,31 @@ export function CreateReportForm() {
       </section>
 
       {error || notice ? (
-        <section className="mt-4 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 shadow-lg backdrop-blur-xl">
-          {error ? (
-            <div className="flex gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm leading-6 text-red-300">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-              <p>{error}</p>
-            </div>
-          ) : null}
+        <section className="mt-4 space-y-3">
+          {error && (() => {
+            const normalized = normalizePublicError({
+              status: error.status,
+              code: error.code,
+              message: error.message,
+              retryAfterSeconds: error.retryAfterSeconds,
+            });
+            return (
+              <NaliAlert
+                variant={normalized.severity}
+                title={normalized.title}
+                explanation={normalized.explanation}
+                nextStep={normalized.nextStep}
+              />
+            );
+          })()}
 
-          {notice ? (
-            <div className="flex gap-3 rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm leading-6 text-emerald-300">
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-              <p>{notice}</p>
-            </div>
-          ) : null}
+          {notice && (
+            <NaliAlert
+              variant="success"
+              title="Notifikasi"
+              explanation={notice}
+            />
+          )}
         </section>
       ) : null}
     </form>

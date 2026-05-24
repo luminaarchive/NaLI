@@ -79,7 +79,14 @@ export async function POST(req: NextRequest) {
   const headers = rateLimitHeaders(rateLimit);
 
   if (!rateLimit.allowed) {
-    return NextResponse.json({ error: RATE_LIMITED_MESSAGE }, { headers, status: 429 });
+    return NextResponse.json(
+      {
+        error: RATE_LIMITED_MESSAGE,
+        code: "RATE_LIMIT",
+        retryAfterSeconds: rateLimit.retryAfterSeconds,
+      },
+      { headers, status: 429 }
+    );
   }
 
   const integrityDecision = evaluateIntegrityPolicy(input as ReportRequestInput);

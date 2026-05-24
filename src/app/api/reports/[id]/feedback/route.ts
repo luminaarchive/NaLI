@@ -56,7 +56,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   });
 
   if (!rateLimit.allowed) {
-    return NextResponse.json({ error: RATE_LIMITED_MESSAGE }, { headers: rateLimitHeaders(rateLimit), status: 429 });
+    return NextResponse.json(
+      {
+        error: RATE_LIMITED_MESSAGE,
+        code: "RATE_LIMIT",
+        retryAfterSeconds: rateLimit.retryAfterSeconds,
+      },
+      { headers: rateLimitHeaders(rateLimit), status: 429 }
+    );
   }
 
   const supabase = getOptionalSupabaseAdminClient();

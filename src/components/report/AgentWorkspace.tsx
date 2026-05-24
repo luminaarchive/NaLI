@@ -31,6 +31,8 @@ import type { ReportResult, DraftReport, StartFromZeroGuide } from "@/lib/report
 import { buildReportMarkdown } from "@/lib/reports/markdown";
 import { UpgradeModal } from "./UpgradeModal";
 import { getEstimatedCreditCostFromQuery } from "@/lib/pricing/plans";
+import { NaliAlert } from "@/components/ui/NaliAlert";
+import { normalizePublicError } from "@/lib/errors/publicErrors";
 
 // Types matching backend AgentMessage schema
 type AgentMessage = {
@@ -97,9 +99,29 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const [integrityConsent, setIntegrityConsent] = useState(false);
   
   // App context
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; code?: string; status?: number; retryAfterSeconds?: number } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [accessKey, setAccessKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!error || !error.retryAfterSeconds || error.retryAfterSeconds <= 0) return;
+
+    const timer = setInterval(() => {
+      setError((curr) => {
+        if (!curr || !curr.retryAfterSeconds || curr.retryAfterSeconds <= 0) {
+          clearInterval(timer);
+          return curr;
+        }
+        return {
+          ...curr,
+          retryAfterSeconds: curr.retryAfterSeconds - 1,
+        };
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally only reacts to retryAfterSeconds, not entire error object
+  }, [error?.retryAfterSeconds]);
   
   // Credits & Monetization state
   const [credits, setCredits] = useState<number | null>(null);
@@ -240,7 +262,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         }
       }
     } catch {
-      setError("Gagal menghubungi server untuk memuat laporan.");
+      setError({ message: "Gagal menghubungi server untuk memuat laporan.", status: 500 });
     } finally {
       setActiveRunStatus("idle");
     }
@@ -368,7 +390,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     if (!trimmed) return;
 
     if (!integrityConsent) {
-      setError("Centang pernyataan integritas akademik NaLI terlebih dahulu.");
+      setError({ message: "Centang pernyataan integritas akademik NaLI terlebih dahulu." });
       return;
     }
 
@@ -412,14 +434,23 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       const payload = await response.json();
       if (!response.ok || !payload.report || !payload.id) {
         if (response.status === 402) {
-          setError(payload.message ?? "Kredit energi Anda tidak cukup.");
+          setError({
+            message: payload.message ?? "Kredit energi Anda tidak cukup.",
+            code: "insufficient_credits",
+            status: response.status,
+          });
           fetchBalance();
           setMessages([]);
           setActiveRunStatus("idle");
           setOptimisticSteps([]);
           return;
         }
-        setError(payload.error ?? "NaLI gagal membuat draf laporan awal.");
+        setError({
+          message: payload.error ?? "NaLI gagal membuat draf laporan awal.",
+          code: payload.code,
+          status: response.status,
+          retryAfterSeconds: payload.retryAfterSeconds,
+        });
         setMessages([]);
         setActiveRunStatus("failed");
         return;
@@ -474,7 +505,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       window.history.pushState(null, "", `/report/${reportId}`);
       fetchBalance();
     } catch {
-      setError("Koneksi gagal. Periksa jaringan Anda.");
+      setError({
+        message: "Koneksi gagal. Periksa jaringan Anda.",
+        status: 500,
+      });
       setMessages([]);
     } finally {
       setOptimisticSteps([]);
@@ -518,14 +552,23 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       const payload = await response.json();
       if (!response.ok) {
         if (response.status === 402) {
-          setError(payload.message ?? "Kredit energi Anda tidak cukup.");
+          setError({
+            message: payload.message ?? "Kredit energi Anda tidak cukup.",
+            code: "insufficient_credits",
+            status: response.status,
+          });
           fetchBalance();
           setMessages((curr) => curr.filter((msg) => msg.id !== userMsgId));
           setActiveRunStatus("idle");
           setOptimisticSteps([]);
           return;
         }
-        setError(payload.error ?? "NaLI gagal memproses kueri lanjutan Anda.");
+        setError({
+          message: payload.error ?? "NaLI gagal memproses kueri lanjutan Anda.",
+          code: payload.code,
+          status: response.status,
+          retryAfterSeconds: payload.retryAfterSeconds,
+        });
         setMessages((curr) => [
           ...curr,
           {
@@ -546,7 +589,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         fetchBalance();
       }
     } catch {
-      setError("Gagal mengirim kueri. Periksa koneksi internet Anda.");
+      setError({
+        message: "Gagal mengirim kueri. Periksa koneksi internet Anda.",
+        status: 500,
+      });
     } finally {
       setOptimisticSteps([]);
       setActiveRunStatus("idle");
@@ -572,7 +618,11 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
       const payload = await response.json();
       if (!response.ok) {
-        setError(payload.error ?? "Gagal menyinkronkan draf baru di server.");
+        setError({
+          message: payload.error ?? "Gagal menyinkronkan draf baru di server.",
+          code: payload.code,
+          status: response.status,
+        });
         return;
       }
 
@@ -581,7 +631,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       setNotice("Draf preview berhasil diganti dengan versi saran ini.");
       setTimeout(() => setNotice(null), 3500);
     } catch {
-      setError("Koneksi gagal. Gagal memperbarui draf di server.");
+      setError({
+        message: "Koneksi gagal. Gagal memperbarui draf di server.",
+        status: 500,
+      });
     }
   };
 
@@ -838,11 +891,18 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 const isSystem = message.role === "system";
 
                 if (isSystem) {
+                  const normalized = normalizePublicError({
+                    message: message.content,
+                  });
                   return (
-                    <div key={message.id} className="flex gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm leading-6 text-red-200">
-                      <AlertTriangle className="h-5 w-5 shrink-0 text-red-400" />
-                      <p>{message.content}</p>
-                    </div>
+                    <NaliAlert
+                      key={message.id}
+                      variant={normalized.severity}
+                      title={normalized.title}
+                      explanation={normalized.explanation}
+                      nextStep={normalized.nextStep}
+                      className="my-2"
+                    />
                   );
                 }
 
@@ -1180,19 +1240,30 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             )}
 
             {/* Error notifications */}
-            {error && (
-              <div className="flex gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm leading-6 text-red-200">
-                <AlertTriangle className="h-5 w-5 shrink-0 text-red-400" />
-                <p>{error}</p>
-              </div>
-            )}
+            {error && (() => {
+              const normalized = normalizePublicError({
+                status: error.status,
+                code: error.code,
+                message: error.message,
+                retryAfterSeconds: error.retryAfterSeconds,
+              });
+              return (
+                <NaliAlert
+                  variant={normalized.severity}
+                  title={normalized.title}
+                  explanation={normalized.explanation}
+                  nextStep={normalized.nextStep}
+                />
+              );
+            })()}
 
             {/* Notice notifications */}
             {notice && (
-              <div className="flex gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm leading-6 text-emerald-200">
-                <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-400" />
-                <p>{notice}</p>
-              </div>
+              <NaliAlert
+                variant="success"
+                title="Notifikasi"
+                explanation={notice}
+              />
             )}
 
             <div ref={messagesEndRef} />
@@ -1639,11 +1710,21 @@ function ReportResultCard({
           </Button>
         )}
 
-        {showExport && exportNotice && (
-          <div className="w-full mt-2 rounded border border-amber-500/20 bg-amber-500/10 p-2 text-[11px] text-amber-200/80 leading-5">
-            {exportNotice}
-          </div>
-        )}
+        {showExport && exportNotice && (() => {
+          const normalized = normalizePublicError({
+            message: exportNotice,
+          });
+          return (
+            <div className="w-full mt-2">
+              <NaliAlert
+                variant={normalized.severity}
+                title={normalized.title}
+                explanation={normalized.explanation}
+                nextStep={normalized.nextStep}
+              />
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
