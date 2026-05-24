@@ -13,6 +13,8 @@ interface NaliAlertProps {
   nextStep?: string;
   actionLabel?: string;
   onAction?: () => void;
+  secondaryActionLabel?: string;
+  onSecondaryAction?: () => void;
   className?: string;
 }
 
@@ -23,6 +25,8 @@ export function NaliAlert({
   nextStep,
   actionLabel,
   onAction,
+  secondaryActionLabel,
+  onSecondaryAction,
   className,
 }: NaliAlertProps) {
   // Determine icon based on variant
@@ -109,15 +113,26 @@ export function NaliAlert({
         </div>
       </div>
 
-      {actionLabel && onAction && (
-        <div className="shrink-0 flex items-center md:self-center mt-2 md:mt-0 px-8 md:px-0">
-          <button
-            type="button"
-            onClick={onAction}
-            className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-white/10 hover:bg-white/15 px-4 text-xs font-semibold text-white tracking-wide border border-white/[0.08] transition duration-150 cursor-pointer"
-          >
-            {actionLabel}
-          </button>
+      {((actionLabel && onAction) || (secondaryActionLabel && onSecondaryAction)) && (
+        <div className="shrink-0 flex flex-wrap gap-2 items-center md:self-center mt-3 md:mt-0 px-8 md:px-0">
+          {actionLabel && onAction && (
+            <button
+              type="button"
+              onClick={onAction}
+              className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-white text-zinc-950 hover:bg-white/90 px-4 text-xs font-semibold tracking-wide transition duration-150 cursor-pointer shadow-md"
+            >
+              {actionLabel}
+            </button>
+          )}
+          {secondaryActionLabel && onSecondaryAction && (
+            <button
+              type="button"
+              onClick={onSecondaryAction}
+              className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-white/10 hover:bg-white/15 px-4 text-xs font-semibold text-white tracking-wide border border-white/[0.08] transition duration-150 cursor-pointer"
+            >
+              {secondaryActionLabel}
+            </button>
+          )}
         </div>
       )}
     </div>

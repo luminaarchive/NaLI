@@ -35,6 +35,13 @@ import { getEstimatedCreditCostFromQuery } from "@/lib/pricing/plans";
 import { NaliAlert } from "@/components/ui/NaliAlert";
 import { normalizePublicError } from "@/lib/errors/publicErrors";
 import { naliModels } from "@/lib/models/naliModels";
+import {
+  saveGuestReportRecovery,
+  clearGuestReportRecovery,
+  loadLatestGuestReportRecovery,
+  pruneExpiredGuestRecoveries,
+  type GuestReportRecoverySnapshot
+} from "@/lib/reports/clientRecovery";
 
 // Types matching backend AgentMessage schema
 type AgentMessage = {
@@ -101,6 +108,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const [selectedMode, setSelectedMode] = useState<"draft_from_materials" | "start_from_zero">("draft_from_materials");
   const [integrityConsent, setIntegrityConsent] = useState(false);
   const [selectedModel, setSelectedModel] = useState<"peregrine" | "obsidian" | "zephyr">("peregrine");
+  const [recoverySnapshot, setRecoverySnapshot] = useState<GuestReportRecoverySnapshot | null>(null);
   
   // App context
   const [error, setError] = useState<{ message: string; code?: string; status?: number; retryAfterSeconds?: number } | null>(null);
@@ -317,6 +325,16 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     loadRecentThreads();
     fetchBalance();
 
+    try {
+      pruneExpiredGuestRecoveries();
+      const latest = loadLatestGuestReportRecovery();
+      if (latest) {
+        setRecoverySnapshot(latest);
+      }
+    } catch {
+      // ignore
+    }
+
     const params = new URLSearchParams(window.location.search);
     const itemType = params.get("item_type");
     const itemId = params.get("item_id");
@@ -327,6 +345,43 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       window.history.replaceState(null, "", newUrl);
     }
   }, []);
+
+  const handleRestoreRecovery = () => {
+    if (!recoverySnapshot) return;
+
+    // Do not auto-restore over active user input without confirmation.
+    if (query.trim()) {
+      const confirmOverwrite = window.confirm("Apakah Anda ingin menimpa input aktif saat ini dengan draft yang dipulihkan?");
+      if (!confirmOverwrite) return;
+    }
+
+    const id = recoverySnapshot.id;
+    const storedToken = window.localStorage.getItem(`nali-report-access:${id}`) ||
+                        window.localStorage.getItem(`nali-report-access-key:${id}`) ||
+                        window.localStorage.getItem(`nali-report-key:${id}`) ||
+                        window.localStorage.getItem(`nali-report-access-token:${id}`);
+
+    if (recoverySnapshot.status === "draft_ready" && storedToken) {
+      router.push(`/report/${id}?token=${encodeURIComponent(storedToken)}`);
+    } else {
+      setQuery(recoverySnapshot.mainText || "");
+      setSelectedMode(recoverySnapshot.mode || "draft_from_materials");
+      setSelectedModel(recoverySnapshot.selectedModel || "peregrine");
+      if (recoverySnapshot.reportTemplate) {
+        setSelectedTemplate(recoverySnapshot.reportTemplate);
+      }
+      setIntegrityConsent(recoverySnapshot.integrityConsent || false);
+    }
+
+    clearGuestReportRecovery(recoverySnapshot.id);
+    setRecoverySnapshot(null);
+  };
+
+  const handleDismissRecovery = () => {
+    if (!recoverySnapshot) return;
+    clearGuestReportRecovery(recoverySnapshot.id);
+    setRecoverySnapshot(null);
+  };
 
   // Load existing report if ID provided
   useEffect(() => {
@@ -423,6 +478,19 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         window.localStorage.setItem(guestSessionKey, guestSessionId);
       }
 
+      const tempId = `temp-${Date.now()}`;
+      saveGuestReportRecovery({
+        id: tempId,
+        title: selectedTemplate || "Draft Laporan",
+        mode: selectedMode,
+        selectedModel: selectedModel,
+        mainText: trimmed,
+        reportTemplate: selectedTemplate,
+        integrityConsent: integrityConsent,
+        status: "generation_failed",
+        timestamp: Date.now(),
+      });
+
       const response = await fetch("/api/reports/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -438,6 +506,20 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
       const payload = await response.json();
       if (!response.ok || !payload.report || !payload.id) {
+        // Rule 7: Abuse-blocked prompts must not become recovery drafts.
+        const isAbuseBlock = response.status === 400 && [
+          "EMPTY_DRAFT_MATERIAL",
+          "FINAL_ASSIGNMENT_WITHOUT_MATERIAL",
+          "FAKE_CITATION_REQUEST",
+          "FAKE_DATA_REQUEST",
+          "PLAGIARISM_EVASION",
+          "DO_MY_WORK"
+        ].includes(payload.code || "");
+
+        if (isAbuseBlock) {
+          clearGuestReportRecovery(tempId);
+        }
+
         if (response.status === 402) {
           setError({
             message: payload.message ?? "Kredit energi Anda tidak cukup.",
@@ -464,6 +546,19 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       const reportId = payload.id;
       const key = payload.report_access_key;
       const generatedReport = payload.report;
+
+      clearGuestReportRecovery(tempId);
+      saveGuestReportRecovery({
+        id: reportId,
+        title: generatedReport.title || selectedTemplate || "Draft Laporan",
+        mode: selectedMode,
+        selectedModel: selectedModel,
+        mainText: trimmed,
+        reportTemplate: selectedTemplate,
+        integrityConsent: integrityConsent,
+        status: "draft_ready",
+        timestamp: Date.now(),
+      });
 
       setReport(generatedReport);
       setAccessKey(key);
@@ -592,6 +687,17 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         setMessages(payload.messages);
         window.localStorage.setItem(`nali-messages:${initialReportId}`, JSON.stringify(payload.messages));
         fetchBalance();
+
+        // Also update recovery snapshot to reflect "chat_updated" status and the latest mainText
+        saveGuestReportRecovery({
+          id: initialReportId,
+          title: report?.title || "Draft Laporan",
+          mode: selectedMode,
+          selectedModel: selectedModel,
+          mainText: trimmed,
+          status: "chat_updated",
+          timestamp: Date.now(),
+        });
       }
     } catch {
       setError({
@@ -825,6 +931,18 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             {messages.length === 0 ? (
               /* --- Empty State / Hero Landing --- */
               <div className="flex flex-col items-center text-center pt-16 md:pt-24">
+                {recoverySnapshot && (
+                  <NaliAlert
+                    variant="info"
+                    title="Draft terakhir ditemukan"
+                    explanation="NaLI menemukan draft terbaru yang tersimpan di browser ini. Kamu bisa memulihkannya atau menghapusnya."
+                    actionLabel="Pulihkan"
+                    onAction={handleRestoreRecovery}
+                    secondaryActionLabel="Hapus"
+                    onSecondaryAction={handleDismissRecovery}
+                    className="mb-6 w-full max-w-[500px] text-left"
+                  />
+                )}
                 <NaLILogoMark size="md" className="shadow-2xl shadow-[#10b981]/10" />
                 <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white md:text-5xl">
                   NaLI Intelligence

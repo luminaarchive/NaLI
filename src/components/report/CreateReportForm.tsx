@@ -22,6 +22,13 @@ import { cn } from "@/lib/utils";
 import { NaliAlert } from "@/components/ui/NaliAlert";
 import { normalizePublicError } from "@/lib/errors/publicErrors";
 import { naliModels } from "@/lib/models/naliModels";
+import {
+  saveGuestReportRecovery,
+  clearGuestReportRecovery,
+  loadLatestGuestReportRecovery,
+  pruneExpiredGuestRecoveries,
+  type GuestReportRecoverySnapshot
+} from "@/lib/reports/clientRecovery";
 
 type FormState = {
   mode: ReportMode;
@@ -83,6 +90,61 @@ export function CreateReportForm() {
   const [error, setError] = useState<{ message: string; code?: string; status?: number; retryAfterSeconds?: number } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [recoverySnapshot, setRecoverySnapshot] = useState<GuestReportRecoverySnapshot | null>(null);
+
+  useEffect(() => {
+    try {
+      pruneExpiredGuestRecoveries();
+      const latest = loadLatestGuestReportRecovery();
+      if (latest) {
+        setRecoverySnapshot(latest);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const handleRestoreRecovery = () => {
+    if (!recoverySnapshot) return;
+
+    // Do not auto-restore over active user input without confirmation.
+    const hasInput = [form.mainText, form.sourceUrls, form.location, form.fileDescription].some((v) => v.trim());
+    if (hasInput) {
+      const confirmOverwrite = window.confirm("Apakah Anda ingin menimpa input aktif saat ini dengan draft yang dipulihkan?");
+      if (!confirmOverwrite) return;
+    }
+
+    const id = recoverySnapshot.id;
+    const storedToken = window.localStorage.getItem(`nali-report-access:${id}`) ||
+                        window.localStorage.getItem(`nali-report-access-key:${id}`) ||
+                        window.localStorage.getItem(`nali-report-key:${id}`) ||
+                        window.localStorage.getItem(`nali-report-access-token:${id}`);
+
+    if (recoverySnapshot.status === "draft_ready" && storedToken) {
+      router.push(`/report/${id}?token=${encodeURIComponent(storedToken)}`);
+    } else {
+      setForm((curr) => ({
+        ...curr,
+        mode: recoverySnapshot.mode || "draft_from_materials",
+        selectedModel: recoverySnapshot.selectedModel || "peregrine",
+        mainText: recoverySnapshot.mainText || "",
+        reportTemplate: recoverySnapshot.reportTemplate || "Laporan Observasi Lingkungan",
+        location: recoverySnapshot.location || "",
+        sourceUrls: recoverySnapshot.sourceUrls || "",
+        fileDescription: recoverySnapshot.fileDescription || "",
+        integrityConsent: recoverySnapshot.integrityConsent || false,
+      }));
+    }
+
+    clearGuestReportRecovery(recoverySnapshot.id);
+    setRecoverySnapshot(null);
+  };
+
+  const handleDismissRecovery = () => {
+    if (!recoverySnapshot) return;
+    clearGuestReportRecovery(recoverySnapshot.id);
+    setRecoverySnapshot(null);
+  };
 
   useEffect(() => {
     if (!error || !error.retryAfterSeconds || error.retryAfterSeconds <= 0) return;
@@ -203,6 +265,22 @@ export function CreateReportForm() {
     try {
       const guestSessionId = getOrCreateGuestSessionId();
 
+      const tempId = `temp-${Date.now()}`;
+      saveGuestReportRecovery({
+        id: tempId,
+        title: form.title || "Draft Laporan",
+        mode: form.mode,
+        selectedModel: form.selectedModel,
+        mainText: form.mainText,
+        reportTemplate: form.reportTemplate,
+        location: form.location,
+        sourceUrls: form.sourceUrls,
+        fileDescription: form.fileDescription,
+        integrityConsent: form.integrityConsent,
+        status: "generation_failed",
+        timestamp: Date.now(),
+      });
+
       const response = await fetch("/api/reports/generate", {
         body: JSON.stringify({
           ...form,
@@ -243,6 +321,20 @@ export function CreateReportForm() {
       }
 
       if (!response.ok || !payload.report || !reportId) {
+        // Rule 7: Abuse-blocked prompts must not become recovery drafts.
+        const isAbuseBlock = response.status === 400 && [
+          "EMPTY_DRAFT_MATERIAL",
+          "FINAL_ASSIGNMENT_WITHOUT_MATERIAL",
+          "FAKE_CITATION_REQUEST",
+          "FAKE_DATA_REQUEST",
+          "PLAGIARISM_EVASION",
+          "DO_MY_WORK"
+        ].includes(payload.code || "");
+
+        if (isAbuseBlock) {
+          clearGuestReportRecovery(tempId);
+        }
+
         setError({
           message: payload.error ?? "NaLI belum bisa melanjutkan. Periksa input dan coba lagi.",
           code: payload.code,
@@ -251,6 +343,23 @@ export function CreateReportForm() {
         });
         return;
       }
+
+      // Successful generation: clear temp snapshot and save safe completed recovery
+      clearGuestReportRecovery(tempId);
+      saveGuestReportRecovery({
+        id: reportId,
+        title: payload.report.title || "Draft Laporan",
+        mode: form.mode,
+        selectedModel: form.selectedModel,
+        mainText: form.mainText,
+        reportTemplate: form.reportTemplate,
+        location: form.location,
+        sourceUrls: form.sourceUrls,
+        fileDescription: form.fileDescription,
+        integrityConsent: form.integrityConsent,
+        status: "draft_ready",
+        timestamp: Date.now(),
+      });
 
       // Embed the access key inside the locally saved report object for fallback recovery
       const savedReport = {
@@ -290,6 +399,19 @@ export function CreateReportForm() {
 
   return (
     <form className="safe-bottom" onSubmit={handleSubmit}>
+      {recoverySnapshot && (
+        <div className="mb-4">
+          <NaliAlert
+            variant="info"
+            title="Draft terakhir ditemukan"
+            explanation="NaLI menemukan draft terbaru yang tersimpan di browser ini. Kamu bisa memulihkannya atau menghapusnya."
+            actionLabel="Pulihkan"
+            onAction={handleRestoreRecovery}
+            secondaryActionLabel="Hapus"
+            onSecondaryAction={handleDismissRecovery}
+          />
+        </div>
+      )}
       <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-3 shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-4">
         <div>
           <div className="grid grid-cols-2 gap-2 sm:gap-3">
