@@ -93,6 +93,8 @@ const templates = [
 
 export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const router = useRouter();
+  const composerRef = useRef<HTMLTextAreaElement>(null);
+  const [lastAttemptedQuery, setLastAttemptedQuery] = useState("");
   const [messages, setMessages] = useState<AgentMessage[]>([]);
   const [report, setReport] = useState<ReportResult | null>(null);
   const [activeRunStatus, setActiveRunStatus] = useState<"idle" | "running" | "completed" | "failed" | "blocked">("idle");
@@ -482,9 +484,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     }, 2800);
   };
 
-  const handleInitialSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    const trimmed = query.trim();
+  const handleInitialSubmit = async (e?: FormEvent, retryQuery?: string) => {
+    if (e) e.preventDefault();
+    const trimmed = (retryQuery !== undefined ? retryQuery : query).trim();
     if (!trimmed) return;
 
     if (!integrityConsent) {
@@ -494,6 +496,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
     setError(null);
     setNotice(null);
+    setLastAttemptedQuery(trimmed);
     clearGuestReportRecovery("composer-autosave");
     setActiveRunStatus("running");
     
@@ -659,13 +662,14 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     }
   };
 
-  const handleFollowUpSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    const trimmed = query.trim();
+  const handleFollowUpSubmit = async (e?: FormEvent, retryQuery?: string) => {
+    if (e) e.preventDefault();
+    const trimmed = (retryQuery !== undefined ? retryQuery : query).trim();
     if (!trimmed || activeRunStatus === "running" || !report || !initialReportId) return;
 
     setError(null);
     setQuery("");
+    setLastAttemptedQuery(trimmed);
     clearGuestReportRecovery("composer-autosave");
     setActiveRunStatus("running");
 
@@ -868,6 +872,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     if (!ledgerReady || credits === null) return false;
     return credits < estCreditCost;
   }, [ledgerReady, credits, estCreditCost]);
+
+  const isRateLimited = error?.status === 429 || (error?.retryAfterSeconds !== undefined && error.retryAfterSeconds > 0);
 
   return (
     <div className="relative flex min-h-screen w-screen overflow-hidden bg-[#07090e] text-white">
@@ -1416,12 +1422,53 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 message: error.message,
                 retryAfterSeconds: error.retryAfterSeconds,
               });
+
+              let actionLabel: string | undefined = undefined;
+              let onAction: (() => void) | undefined = undefined;
+
+              if (normalized.category === "RATE_LIMIT") {
+                if (error.retryAfterSeconds === undefined || error.retryAfterSeconds <= 0) {
+                  actionLabel = "Coba Lagi";
+                  onAction = () => {
+                    if (messages.length === 0) {
+                      handleInitialSubmit();
+                    } else {
+                      handleFollowUpSubmit(undefined, lastAttemptedQuery);
+                    }
+                  };
+                }
+              } else if (normalized.category === "NETWORK_OR_SERVER") {
+                actionLabel = "Coba Lagi";
+                onAction = () => {
+                  if (messages.length === 0) {
+                    handleInitialSubmit();
+                  } else {
+                    handleFollowUpSubmit(undefined, lastAttemptedQuery);
+                  }
+                };
+              } else if (normalized.category === "INTEGRITY_BLOCK") {
+                actionLabel = "Ubah Materi";
+                onAction = () => {
+                  setError(null);
+                  composerRef.current?.focus();
+                };
+              } else if (normalized.category === "WEAK_INPUT") {
+                actionLabel = "Tambah Detail";
+                onAction = () => {
+                  setError(null);
+                  composerRef.current?.focus();
+                };
+              }
+
               return (
                 <NaliAlert
                   variant={normalized.severity}
                   title={normalized.title}
                   explanation={normalized.explanation}
                   nextStep={normalized.nextStep}
+                  retryAfterSeconds={error.retryAfterSeconds}
+                  actionLabel={actionLabel}
+                  onAction={onAction}
                 />
               );
             })()}
@@ -1501,17 +1548,21 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               <div className="relative flex items-end gap-2 rounded-2xl border border-white/[0.08] bg-[#07090e]/80 p-2 min-h-[48px] sm:min-h-[56px] shadow-2xl backdrop-blur-2xl transition duration-300 focus-within:border-white/[0.15] focus-within:bg-[#07090e]">
                 <div className="flex-1 px-3 py-1">
                   <textarea
+                    ref={composerRef}
                     rows={1}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => setIsComposerFocused(true)}
                     onBlur={() => setIsComposerFocused(false)}
+                    disabled={isRateLimited}
                     placeholder={
-                      messages.length === 0
+                      isRateLimited
+                        ? "Batas percobaan tercapai. Silakan tunggu..."
+                        : messages.length === 0
                         ? "Ketik catatan, topik, lokasi atau ringkasan materi observasi..."
                         : "Ketik instruksi penyuntingan draf lanjutan (misal: 'perpendek', 'tulis kesimpulan formal')..."
                     }
-                    className="w-full bg-transparent text-[14px] leading-6 text-white placeholder-white/30 outline-none border-none py-1 resize-none max-h-32"
+                    className="w-full bg-transparent text-[14px] leading-6 text-white placeholder-white/30 outline-none border-none py-1 resize-none max-h-32 disabled:opacity-50"
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
                         e.preventDefault();
@@ -1529,7 +1580,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
                   <button
                     type="submit"
-                    disabled={activeRunStatus === "running" || !query.trim() || isInsufficient || (messages.length === 0 && !integrityConsent)}
+                    disabled={activeRunStatus === "running" || !query.trim() || isInsufficient || (messages.length === 0 && !integrityConsent) || isRateLimited}
                     aria-label="Kirim instruksi"
                     className="inline-flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-white text-zinc-950 transition duration-200 hover:bg-white/90 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                   >

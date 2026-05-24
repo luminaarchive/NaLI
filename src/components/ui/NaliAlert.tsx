@@ -16,6 +16,7 @@ interface NaliAlertProps {
   secondaryActionLabel?: string;
   onSecondaryAction?: () => void;
   className?: string;
+  retryAfterSeconds?: number;
 }
 
 export function NaliAlert({
@@ -28,6 +29,7 @@ export function NaliAlert({
   secondaryActionLabel,
   onSecondaryAction,
   className,
+  retryAfterSeconds,
 }: NaliAlertProps) {
   // Determine icon based on variant
   const Icon = (() => {
@@ -99,8 +101,14 @@ export function NaliAlert({
       <div className="flex items-start gap-3 flex-1 min-w-0">
         <Icon className={cn("h-5 w-5 shrink-0 mt-0.5", styles.icon)} aria-hidden="true" />
         <div className="flex-1 min-w-0 space-y-1">
-          <h4 className={cn("text-sm font-bold tracking-tight leading-5", styles.text)}>
-            {title}
+          <h4 className={cn("text-sm font-bold tracking-tight leading-5 flex items-center gap-2 flex-wrap", styles.text)}>
+            <span>{title}</span>
+            {retryAfterSeconds !== undefined && retryAfterSeconds > 0 && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse">
+                <span className="h-1 w-1 rounded-full bg-amber-400" />
+                {retryAfterSeconds}s
+              </span>
+            )}
           </h4>
           <p className="text-xs leading-relaxed text-white/70 whitespace-normal break-words">
             {explanation}

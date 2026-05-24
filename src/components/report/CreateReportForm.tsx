@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
@@ -86,6 +86,7 @@ function hasMaterial(form: FormState) {
 
 export function CreateReportForm() {
   const router = useRouter();
+  const mainTextRef = useRef<HTMLTextAreaElement>(null);
   const [form, setForm] = useState<FormState>(initialForm);
   const [error, setError] = useState<{ message: string; code?: string; status?: number; retryAfterSeconds?: number } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -277,8 +278,8 @@ export function CreateReportForm() {
     setNotice(null);
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleSubmit(event?: FormEvent<HTMLFormElement>) {
+    if (event) event.preventDefault();
     setError(null);
     setNotice(null);
 
@@ -478,6 +479,7 @@ export function CreateReportForm() {
               {isDraft ? "Bahan utama" : "Topik atau tugas awal"}
             </span>
             <textarea
+              ref={mainTextRef}
               className="command-input min-h-[124px] p-4 text-base leading-7 sm:min-h-[240px]"
               value={form.mainText}
               onChange={(event) => updateField("mainText", event.target.value)}
@@ -553,7 +555,7 @@ export function CreateReportForm() {
 
             <button
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#09090b] transition-all hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:pointer-events-none disabled:opacity-60"
-              disabled={isSubmitting}
+              disabled={isSubmitting || (error?.retryAfterSeconds !== undefined && error.retryAfterSeconds > 0)}
               type="submit"
             >
               {isSubmitting ? (
@@ -675,12 +677,41 @@ export function CreateReportForm() {
               message: error.message,
               retryAfterSeconds: error.retryAfterSeconds,
             });
+
+            let actionLabel: string | undefined = undefined;
+            let onAction: (() => void) | undefined = undefined;
+
+            if (normalized.category === "RATE_LIMIT") {
+              if (error.retryAfterSeconds === undefined || error.retryAfterSeconds <= 0) {
+                actionLabel = "Coba Lagi";
+                onAction = () => handleSubmit();
+              }
+            } else if (normalized.category === "NETWORK_OR_SERVER") {
+              actionLabel = "Coba Lagi";
+              onAction = () => handleSubmit();
+            } else if (normalized.category === "INTEGRITY_BLOCK") {
+              actionLabel = "Ubah Materi";
+              onAction = () => {
+                setError(null);
+                mainTextRef.current?.focus();
+              };
+            } else if (normalized.category === "WEAK_INPUT") {
+              actionLabel = "Tambah Detail";
+              onAction = () => {
+                setError(null);
+                mainTextRef.current?.focus();
+              };
+            }
+
             return (
               <NaliAlert
                 variant={normalized.severity}
                 title={normalized.title}
                 explanation={normalized.explanation}
                 nextStep={normalized.nextStep}
+                retryAfterSeconds={error.retryAfterSeconds}
+                actionLabel={actionLabel}
+                onAction={onAction}
               />
             );
           })()}

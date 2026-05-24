@@ -90,6 +90,10 @@ test("NaliAlert source contains mobile-safe classes and accessible rules", () =>
   assert.match(code, /min-h-\[44px\]/, "Action button must use touch target of at least 44px");
   assert.match(code, /whitespace-normal/, "NaliAlert text containers must allow text wrapping");
   assert.match(code, /break-words/, "NaliAlert text containers must break long words safely");
+
+  // Countdown badge and retryAfterSeconds support
+  assert.match(code, /retryAfterSeconds\?: number/, "NaliAlertProps must support optional retryAfterSeconds");
+  assert.match(code, /retryAfterSeconds !== undefined && retryAfterSeconds > 0/, "NaliAlert must render countdown badge when active");
 });
 
 test("System readiness preserves Midtrans DEFERRED and Paid Launch inactive configurations", () => {
