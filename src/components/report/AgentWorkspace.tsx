@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FluidVideoBackground } from "@/components/ui/FluidVideoBackground";
+import { NaLILogoMark } from "@/components/ui/NaLILogoMark";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import type { ReportResult, DraftReport, StartFromZeroGuide } from "@/lib/reports/reportGenerator";
@@ -818,9 +819,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             {messages.length === 0 ? (
               /* --- Empty State / Hero Landing --- */
               <div className="flex flex-col items-center text-center pt-16 md:pt-24">
-                <div className="relative h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-500 to-indigo-600 p-2.5 shadow-2xl">
-                  <Sparkles className="h-7 w-7 text-white animate-pulse" />
-                </div>
+                <NaLILogoMark size="md" className="shadow-2xl shadow-[#10b981]/10" />
                 <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white md:text-5xl">
                   NaLI Intelligence
                 </h1>
@@ -1381,7 +1380,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-white/40">
                   Profil Pemrosesan (Model)
                 </span>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <div className="flex flex-wrap gap-2">
                   {naliModels.map((model) => {
                     const isSelected = selectedModel === model.id;
                     return (
@@ -1390,23 +1389,23 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                         type="button"
                         onClick={() => setSelectedModel(model.id)}
                         className={cn(
-                          "rounded-xl border p-3 text-left transition-all duration-200 min-h-[56px] flex flex-col justify-between cursor-pointer",
+                          "flex-1 sm:flex-none inline-flex items-center justify-center rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 min-h-[44px] cursor-pointer",
                           isSelected
-                            ? "border-[#6f8057] bg-[#6f8057]/10 text-white"
+                            ? "border-[#6f8057] bg-[#6f8057]/15 text-white shadow-sm shadow-[#6f8057]/10"
                             : "border-white/[0.06] bg-[#07090e]/60 text-white/40 hover:bg-white/[0.04] hover:text-white/60"
                         )}
                         aria-pressed={isSelected}
                       >
-                        <div>
-                          <span className="block text-sm font-bold">{model.label}</span>
-                          <span className="mt-1 block text-[10px] leading-4 text-white/35">
-                            {model.shortDescription}
-                          </span>
-                        </div>
+                        {model.label}
                       </button>
                     );
                   })}
                 </div>
+                <p className="mt-2 text-xs text-white/40">
+                  {selectedModel === "peregrine" && "Peregrine: cepat untuk draft awal"}
+                  {selectedModel === "obsidian" && "Obsidian: lebih kuat untuk batas klaim dan struktur"}
+                  {selectedModel === "zephyr" && "Zephyr: lebih halus untuk kejernihan dan gaya"}
+                </p>
               </div>
             )}
 

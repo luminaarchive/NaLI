@@ -105,6 +105,15 @@ test("model selector UI is rendered under composer areas with exact label refere
   assert.match(workspaceSrc, /selectedModel\s*===\s*model\.id/);
   assert.match(workspaceSrc, /setSelectedModel\(model\.id\)/);
   assert.match(workspaceSrc, /selectedModel,\s*\n\s*\}\)/); // submitted in JSON payload
+
+  // Model Descriptions check
+  assert.match(formSrc, /Peregrine: cepat untuk draft awal/);
+  assert.match(formSrc, /Obsidian: lebih kuat untuk batas klaim dan struktur/);
+  assert.match(formSrc, /Zephyr: lebih halus untuk kejernihan dan gaya/);
+
+  assert.match(workspaceSrc, /Peregrine: cepat untuk draft awal/);
+  assert.match(workspaceSrc, /Obsidian: lebih kuat untuk batas klaim dan struktur/);
+  assert.match(workspaceSrc, /Zephyr: lebih halus untuk kejernihan dan gaya/);
 });
 
 // ─── Test 5: Prohibited and Safe Personalization keywords ────────────────────
@@ -133,21 +142,26 @@ test("Zephyr, Obsidian, and Peregrine descriptions strictly avoid unsafe cheatin
   }
 });
 
-// ─── Test 6: Mobile Class layout regression ──────────────────────────────────
+// ─── Test 6: Mobile Class layout regression & Logo Verification ──────────────
 
 test("model selector elements preserve mobile safe-area paddings and keep touch targets accessible", () => {
   const formSrc = fs.readFileSync(path.join(repoRoot, "src/components/report/CreateReportForm.tsx"), "utf8");
   const workspaceSrc = fs.readFileSync(path.join(repoRoot, "src/components/report/AgentWorkspace.tsx"), "utf8");
 
   // Ensure 44px+ touch-target compatibility
-  assert.match(formSrc, /min-h-\[56px\]/);
-  assert.match(workspaceSrc, /min-h-\[56px\]/);
+  assert.match(formSrc, /min-h-\[44px\]/);
+  assert.match(workspaceSrc, /min-h-\[44px\]/);
 
-  // Ensure segmented responsive class grid is preserved
-  assert.match(formSrc, /grid-cols-1\s+gap-2\s+sm:grid-cols-3/);
-  assert.match(workspaceSrc, /grid-cols-1\s+gap-2\s+sm:grid-cols-3/);
+  // Ensure flex responsive layout class is used
+  assert.match(formSrc, /flex\s+flex-wrap\s+gap-2/);
+  assert.match(workspaceSrc, /flex\s+flex-wrap\s+gap-2/);
 
   // Ensure mobile form safe-bottom padding classes are untouched
   assert.match(formSrc, /safe-bottom/);
   assert.match(workspaceSrc, /safe-area-inset-bottom/);
+
+  // Ensure NaLILogoMark is imported and rendered instead of wrong Sparkles icon
+  assert.match(workspaceSrc, /import\s+\{\s*NaLILogoMark\s*\}\s+from\s+"@\/components\/ui\/NaLILogoMark"/);
+  assert.match(workspaceSrc, /<NaLILogoMark\s+size="md"/);
+  assert.ok(!workspaceSrc.includes('<Sparkles className="h-7 w-7 text-white animate-pulse" />'));
 });
