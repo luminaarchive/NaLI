@@ -24,7 +24,7 @@ function html(model = "peregrine") {
 
 test("V6 provides a fully composed publication cover and article opener", () => {
   const source = html("zephyr");
-  assert.match(source, /data-publication-edition="v6"/);
+  assert.match(source, /data-publication-edition="v7"/);
   assert.match(source, /class="cover-landscape"/);
   assert.match(source, /class="volume-issue-block"/);
   assert.match(source, /Volume 1/);
@@ -39,8 +39,8 @@ test("V6 body, figure plate, and tables use publication layout components", () =
   assert.match(source, /column-count:\s*2/);
   assert.match(source, /class="figure-plate"/);
   assert.match(source, /class="photo-window"/);
-  assert.match(source, />Photo not provided</);
-  assert.match(source, /Reserved visual documentation plate for labelled user evidence/);
+  assert.match(source, /Foto belum disediakan/);
+  assert.match(source, /Leaf A\/B comparative visual plate/);
   assert.match(source, /\.results-table th[\s\S]*background:/);
   assert.match(source, /<table class="annex-table">/);
   assert.doesNotMatch(source, /\|\s*Object\s*\|/);

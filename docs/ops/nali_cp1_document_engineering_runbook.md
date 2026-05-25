@@ -2,13 +2,13 @@
 
 This procedure is for NaLI CP1 founder/admin local QA artifacts only. It must not be connected to public downloads, paid export, upload, or source verification.
 
-## Generate V6 Artifacts
+## Generate V7 Artifacts
 
 From the repository root:
 
 ```bash
 npm install
-node scratch/generate_reference_journal_v6.cjs
+node scratch/generate_reference_journal_v7.cjs
 ls -lah ~/Downloads/NaLI-QA
 ```
 
@@ -22,23 +22,23 @@ npx playwright install chromium
 
 ## Rendering Boundary
 
-- V6 PDF uses `src/lib/reports/journalHtmlTemplate.ts` and local Playwright rendering in `src/lib/reports/journalHtmlPdfRenderer.ts`.
+- V7 PDF uses `src/lib/reports/journalHtmlTemplate.ts` and local Playwright rendering in `src/lib/reports/journalHtmlPdfRenderer.ts`.
 - Playwright is a development dependency and must not be imported by `src/app` public routes or `src/components` client components.
 - DOCX uses `src/lib/reports/journalDocxRenderer.ts` and structured article data, not a markdown dump.
-- `pdf-lib` is not the primary journal-quality renderer for founder/admin QA output.
 - Generation paths are restricted to `~/Downloads/NaLI-QA/` and `/tmp/nali-qa/`; generated documents must never be staged.
 
-## Inspect Quality
+## Inspect Quality (V7 Quality Gate)
 
-For each V6 PDF, inspect rendered pages and record PASS, PARTIAL, or FAIL:
+For each V7 PDF, verify the following:
 
-- Page 1 has the original NaLI full green cover composition, volume/issue block, article category, and clean publisher band.
-- Page 2 has a journal opener with title/byline, restrained information panel, abstract, keywords, and introduction.
-- Body pages have readable two-column flow, a styled result table, a deliberate no-photo figure plate, conclusions, annexure, and references statement.
-- Running furniture identifies the journal and article category without dominant operational QA language.
-- The artifact does not show fake DOI/ISSN/citations, supplied-photo claims, species identification, source verification, or copied benchmark branding.
+- **Cover page**: Premium nature-themed dark green design with NaLI logo, custom issue/edition block, and appropriate local QA fixture disclaimer.
+- **Article opener**: Desired metadata info box on the left, abstract on the right, and introduction in standard two-column academic grid.
+- **Measurements & replicates**: Actual replicates table (A1-A3, B1-B3) and summary stats (mean length, mean width, mean petiole length) are rendered.
+- **Figure plates**: Figure 1 (Leaf shapes) and Figure 2 (Measurement workflow) appear as clean inline SVG vector art.
+- **Citations**: References parsed from the rich evidence fixture; in-text citation keys mapped to standard numbered brackets `[1]` and `[2]`.
+- **Labeling**: Figures, text, and tables are labeled with approved terms (`synthetic QA placeholder`, `local QA fixture`, `not externally verified`) to prevent false validation assertions.
 
-For DOCX, open or render each file in Microsoft Word or another page-compatible renderer and confirm that cover, metadata, headings, tables, reserved figure plate, annexure, references, and editing behavior remain clean. PDF may be visually richer; DOCX must remain structurally professional and editable.
+For DOCX, open each file in Microsoft Word or LibreOffice and confirm that headings, cover block, replicates, stats, and references tables remain clean, structured, and editable.
 
 ## Safety Gates
 
@@ -60,5 +60,3 @@ npm run build
 npm run test:demo
 node --test tests/reports/*.test.cjs
 ```
-
-Treat V5 as a visual/professional `FAIL`. V6 may be called `CONDITIONAL GO` only after page-level visual inspection and integrity checks pass; neither result unlocks public export or makes the evidence-limited draft a published article.

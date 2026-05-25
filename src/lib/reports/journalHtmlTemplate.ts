@@ -2,6 +2,7 @@ import type { JournalArticle } from "./journalArticleTemplate";
 import { PUBLIC_REPORT_DISCLAIMER } from "./reportGenerator";
 
 function escapeHtml(value: string) {
+  if (!value) return "";
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -11,6 +12,7 @@ function escapeHtml(value: string) {
 }
 
 function renderParagraphs(value: string) {
+  if (!value) return "";
   return value
     .split(/\n\n+/)
     .filter(Boolean)
@@ -19,10 +21,19 @@ function renderParagraphs(value: string) {
 }
 
 function renderList(items: string[]) {
+  if (!items) return "";
   return `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
 }
 
 export function buildJournalHtml(article: JournalArticle) {
+  const isExpandedModel = article.metadata.modelLabel.includes("Obsidian") || article.metadata.modelLabel.includes("Zephyr");
+  
+  // Conditional page break helper
+  const breakResults = isExpandedModel ? 'style="break-before: page;"' : '';
+  const breakFigures = isExpandedModel ? 'style="break-before: page;"' : '';
+  const breakAnnex = isExpandedModel ? 'style="break-before: page;"' : '';
+  const breakReferences = isExpandedModel ? 'style="break-before: page;"' : '';
+
   const resultRows = article.results.comparisonTable
     .map(
       (row) => `<tr>
@@ -35,6 +46,32 @@ export function buildJournalHtml(article: JournalArticle) {
       </tr>`,
     )
     .join("");
+
+  const statsRows = (article.results.statsTable || [])
+    .map(
+      (row) => `<tr>
+        <td><strong>${escapeHtml(row.groupName)}</strong></td>
+        <td>${row.meanLength.toFixed(2)} cm</td>
+        <td>${row.meanWidth.toFixed(2)} cm</td>
+        <td>${row.meanPetiole.toFixed(2)} cm</td>
+      </tr>`
+    )
+    .join("");
+
+  const replicateRows = (article.results.replicatesTable || [])
+    .map(
+      (row) => `<tr>
+        <td>${escapeHtml(row.id)}</td>
+        <td>${row.id.startsWith("A") ? "Daun A" : "Daun B"}</td>
+        <td>${row.lengthCm.toFixed(1)} cm</td>
+        <td>${row.widthCm.toFixed(1)} cm</td>
+        <td>${row.petioleLengthCm.toFixed(1)} cm</td>
+        <td>${escapeHtml(row.shape)}</td>
+        <td>${escapeHtml(row.marginType)}</td>
+      </tr>`
+    )
+    .join("");
+
   const evidenceRows = article.annexure.evidenceTable
     .map(
       (row) => `<tr>
@@ -43,6 +80,12 @@ export function buildJournalHtml(article: JournalArticle) {
         <td>${escapeHtml(row.summary)}</td>
         <td>${escapeHtml(row.verification_status)}</td>
       </tr>`,
+    )
+    .join("");
+
+  const referencesListHtml = article.references
+    .map(
+      (ref) => `<div class="reference-item">${escapeHtml(ref)}</div>`
     )
     .join("");
 
@@ -199,7 +242,7 @@ export function buildJournalHtml(article: JournalArticle) {
     }
     .cover-article .category {
       color: #e2eecc;
-      font: 700 9px/1 Arial, sans-serif;
+      font: 700 9px/1, sans-serif;
       letter-spacing: .16em;
       margin-bottom: 3.2mm;
       text-transform: uppercase;
@@ -312,8 +355,8 @@ export function buildJournalHtml(article: JournalArticle) {
     }
     .info-row {
       border-bottom: 1px solid #ddd7ca;
-      margin: 0 0 3mm;
-      padding: 0 0 3mm;
+      margin: 0 0 3.5mm;
+      padding: 0 0 3.5mm;
     }
     .info-row:last-child { border: 0; margin-bottom: 0; padding-bottom: 0; }
     .info-row strong {
@@ -390,7 +433,7 @@ export function buildJournalHtml(article: JournalArticle) {
       color: var(--canopy);
       font: 700 11px/1.25 Arial, sans-serif;
       letter-spacing: .08em;
-      margin: 0 0 2.5mm;
+      margin: 0 0 2.55mm;
       padding-top: 2.2mm;
       text-transform: uppercase;
     }
@@ -407,6 +450,7 @@ export function buildJournalHtml(article: JournalArticle) {
     table {
       border-collapse: collapse;
       font: 8.4px/1.35 Arial, sans-serif;
+      margin-bottom: 4mm;
       width: 100%;
     }
     caption {
@@ -415,7 +459,7 @@ export function buildJournalHtml(article: JournalArticle) {
       margin-bottom: 2mm;
       text-align: left;
     }
-    .results-table th {
+    table th, .results-table th {
       background: var(--canopy);
       color: #f7f5ee;
       font-weight: 700;
@@ -433,7 +477,7 @@ export function buildJournalHtml(article: JournalArticle) {
       padding: 2mm 1.8mm;
       vertical-align: top;
     }
-    .results-table tbody tr:nth-child(even) td { background: #f5f2e9; }
+    tr:nth-child(even) td { background: #f5f2e9; }
     .figure-plate {
       break-inside: avoid;
       margin: 5mm 0 7mm;
@@ -444,29 +488,27 @@ export function buildJournalHtml(article: JournalArticle) {
       border: 1px solid var(--line);
       display: flex;
       flex-direction: column;
-      height: 54mm;
+      height: 60mm;
       justify-content: center;
       overflow: hidden;
       position: relative;
     }
     .photo-window svg {
       height: 100%;
-      left: 0;
-      opacity: .55;
-      position: absolute;
-      top: 0;
       width: 100%;
     }
-    .photo-window span {
-      background: rgba(255, 253, 248, .78);
-      border: 1px solid rgba(49, 95, 69, .24);
-      color: var(--muted);
-      font: 700 9px/1 Arial, sans-serif;
-      letter-spacing: .13em;
-      padding: 3mm 5mm;
-      position: relative;
+    .photo-window .tag-label {
+      background: rgba(255, 253, 248, 0.9);
+      border: 1px solid var(--canopy);
+      color: var(--canopy);
+      font: 700 8.5px/1 Arial, sans-serif;
+      letter-spacing: 0.12em;
+      padding: 1.5mm 3.5mm;
+      position: absolute;
+      right: 4mm;
+      top: 4mm;
       text-transform: uppercase;
-      z-index: 1;
+      z-index: 10;
     }
     figcaption {
       border-left: 2px solid var(--canopy);
@@ -495,18 +537,23 @@ export function buildJournalHtml(article: JournalArticle) {
       padding-left: 5mm;
     }
     li { margin-bottom: 1.7mm; }
-    .annex-table td:first-child { width: 10%; }
-    .annex-table td:nth-child(2) { width: 16%; }
-    .annex-table td:last-child { width: 19%; }
-    .source-statement {
-      background: #f5f3ed;
-      border: 1px solid var(--line);
-      font: 9.4px/1.5 Arial, sans-serif;
-      padding: 3.5mm;
+    .reference-section {
+      border-top: 1px solid var(--line);
+      margin-top: 6mm;
+      padding-top: 4mm;
     }
-    .annex-section {
-      break-inside: avoid-page;
-      page-break-inside: avoid;
+    .reference-section h2 {
+      color: var(--canopy);
+      font: 700 11px/1.25 Arial, sans-serif;
+      letter-spacing: .08em;
+      margin: 0 0 4mm;
+      text-transform: uppercase;
+    }
+    .reference-item {
+      font-size: 8.5px;
+      line-height: 1.5;
+      margin-bottom: 3mm;
+      text-align: justify;
     }
     .integrity-endnote {
       border-top: 1px solid var(--line);
@@ -531,7 +578,7 @@ export function buildJournalHtml(article: JournalArticle) {
     }
   </style>
 </head>
-<body data-publication-edition="v6">
+<body data-publication-edition="v7">
   <section class="cover-page">
     <header class="cover-top">
       <div class="brand-lockup">
@@ -560,13 +607,13 @@ export function buildJournalHtml(article: JournalArticle) {
       <path d="M519 318C557 237 616 203 679 213C664 270 606 313 519 318Z" fill="#77a951"/>
       <path d="M532 312L657 224M568 287L574 246M600 267L611 236" fill="none" stroke="#d6e6a5" stroke-width="3" opacity=".7"/>
       <g fill="none" stroke="#c2dc8b" stroke-width="2" opacity=".54">
-        <path d="M316 182C366 148 417 151 458 184C418 194 364 201 316 182Z"/>
-        <path d="M298 200C356 160 426 163 479 198"/>
-        <path d="M272 220C346 171 442 174 503 213"/>
+         <path d="M316 182C366 148 417 151 458 184C418 194 364 201 316 182Z"/>
+         <path d="M298 200C356 160 426 163 479 198"/>
+         <path d="M272 220C346 171 442 174 503 213"/>
       </g>
       <g fill="none" stroke="#f0f2df" stroke-width="3" opacity=".5">
-        <path d="M584 131C603 112 623 111 640 126C657 105 679 104 698 124"/>
-        <path d="M74 216C89 200 105 201 119 212C132 196 150 196 164 211"/>
+         <path d="M584 131C603 112 623 111 640 126C657 105 679 104 698 124"/>
+         <path d="M74 216C89 200 105 201 119 212C132 196 150 196 164 211"/>
       </g>
     </svg>
     <div class="cover-article">
@@ -596,10 +643,10 @@ export function buildJournalHtml(article: JournalArticle) {
     <div class="front-grid">
       <aside class="article-info">
         <h2>Article Information</h2>
-        <p class="info-row"><strong>Category</strong>${escapeHtml(article.infoBlock.category)}</p>
-        <p class="info-row"><strong>Material basis</strong>${escapeHtml(article.infoBlock.materialBasis)}</p>
-        <p class="info-row"><strong>Status</strong>${escapeHtml(article.infoBlock.status)}</p>
-        <p class="info-row"><strong>Editorial note</strong>${escapeHtml(article.metadata.editorialNote)}</p>
+        <div class="info-row"><strong>Category</strong>${escapeHtml(article.infoBlock.category)}</div>
+        <div class="info-row"><strong>Material basis</strong>${escapeHtml(article.infoBlock.materialBasis)}</div>
+        <div class="info-row"><strong>Status</strong>${escapeHtml(article.infoBlock.status)}</div>
+        <div class="info-row"><strong>Editorial note</strong>${escapeHtml(article.metadata.editorialNote)}</div>
       </aside>
       <article class="abstract">
         <h2>Abstract</h2>
@@ -609,7 +656,7 @@ export function buildJournalHtml(article: JournalArticle) {
       </article>
     </div>
     <section class="opener-introduction">
-      <h2>INTRODUCTION</h2>
+      <h2>1. INTRODUCTION</h2>
       ${renderParagraphs(article.introduction)}
     </section>
   </section>
@@ -617,11 +664,11 @@ export function buildJournalHtml(article: JournalArticle) {
   <main class="article-body">
     <div class="body-flow">
       <section class="journal-section long">
-        <h2>LITERATURE REVIEW</h2>
+        <h2>2. LITERATURE REVIEW</h2>
         ${renderParagraphs(article.literatureReview)}
       </section>
       <section class="journal-section long">
-        <h2>MATERIALS AND METHODS</h2>
+        <h2>3. MATERIALS AND METHODS</h2>
         <p><strong>Material and setting.</strong> ${escapeHtml(article.materialsAndMethods.objectObserved)}. ${escapeHtml(article.materialsAndMethods.location)}; ${escapeHtml(article.materialsAndMethods.time)}.</p>
         <p><strong>Approach.</strong> ${escapeHtml(article.materialsAndMethods.method)}</p>
         <p><strong>Editorial emphasis.</strong> ${escapeHtml(article.materialsAndMethods.profileEmphasis)}</p>
@@ -631,39 +678,103 @@ export function buildJournalHtml(article: JournalArticle) {
         <p><strong>Reproducibility boundary.</strong> ${escapeHtml(article.materialsAndMethods.reproducibility)}</p>
       </section>
 
-      <section class="journal-section long">
-        <h2>RESULTS AND DISCUSSION</h2>
+      <section class="journal-section long" ${breakResults}>
+        <h2>4. RESULTS AND DISCUSSION</h2>
         <div class="full-span">
           <table class="results-table">
-            <caption>Table 1. Reported leaf morphology characters from user-provided notes.</caption>
+            <caption>Table 1. Reported leaf morphology characters from user-provided notes (local QA fixture).</caption>
             <thead>
               <tr><th>Object</th><th>Shape</th><th>Margin</th><th>Apparent colour</th><th>Source</th><th>Status</th></tr>
             </thead>
             <tbody>${resultRows}</tbody>
           </table>
         </div>
+
+        <div class="full-span">
+          <table class="stats-table">
+            <caption>Table 2. Summary measurements statistics per group (mean dimensions, local QA fixture).</caption>
+            <thead>
+              <tr><th>Group</th><th>Mean Length</th><th>Mean Width</th><th>Mean Petiole Length</th></tr>
+            </thead>
+            <tbody>${statsRows}</tbody>
+          </table>
+        </div>
+
         ${renderParagraphs(article.results.narrative)}
         ${renderParagraphs(article.discussion)}
       </section>
 
+      <div class="full-span" ${breakFigures}>
+        <figure class="figure-plate">
+          <div class="photo-window">
+            <span class="tag-label">synthetic QA placeholder</span>
+            <svg viewBox="0 0 720 220" style="background:#f4f6f0; border:1px dashed var(--canopy);">
+              <!-- Leaf A Drawing (Ovate) -->
+              <g transform="translate(180, 110)">
+                <path d="M-80,0 C-40,-50 40,-50 80,0 C40,50 -40,50 -80,0 Z" fill="#4d7756" opacity="0.85" stroke="#10231b" stroke-width="1.5"/>
+                <line x1="-80" y1="0" x2="80" y2="0" stroke="#10231b" stroke-width="1.5" stroke-dasharray="3,3"/>
+                <!-- Venation -->
+                <path d="M-40,0 L-20,-15 M-20,0 L0,-18 M0,0 L20,-15 M20,0 L40,-12 M-40,0 L-20,15 M-20,0 L0,18 M0,0 L20,15 M20,0 L40,12" stroke="#fff" stroke-width="1" opacity="0.6"/>
+                <text x="0" y="-35" font-family="Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#10231b" text-anchor="middle">Daun A (Ovate / Lonjong)</text>
+                <text x="0" y="38" font-family="Arial, sans-serif" font-size="7.5" fill="#59645e" text-anchor="middle">Margin: Rata (Entire)</text>
+              </g>
+              <!-- Leaf B Drawing (Palmate) -->
+              <g transform="translate(540, 110)">
+                <!-- 5 lobed palmate leaf path approximation -->
+                <path d="M0,0 L15,-40 L5,-15 L40,-25 L15,-5 L35,25 L10,8 L15,40 L-10,12 L-35,22 L-12,-4 L-38,-28 L-5,-16 Z" fill="#7ba05a" opacity="0.85" stroke="#10231b" stroke-width="1.5"/>
+                <text x="0" y="-45" font-family="Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#10231b" text-anchor="middle">Daun B (Palmate / Menjari)</text>
+                <text x="0" y="48" font-family="Arial, sans-serif" font-size="7.5" fill="#59645e" text-anchor="middle">Margin: Bergerigi (Serrate)</text>
+              </g>
+              <text x="360" y="210" font-family="Arial, sans-serif" font-size="8" fill="#59645e" text-anchor="middle" font-style="italic">[ Figure 1 Plate - Local QA Fixture Placeholder ]</text>
+            </svg>
+          </div>
+          <figcaption>Figure 1. Leaf A/B comparative visual plate showing ovate shape with entire margin for Daun A, and palmate shape with serrated margin for Daun B. Labeled as synthetic QA placeholder for local QA testing.</figcaption>
+        </figure>
+      </div>
+
       <div class="full-span">
         <figure class="figure-plate">
           <div class="photo-window">
-            <svg viewBox="0 0 720 220" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M35 183C166 62 257 58 346 121C429 184 520 179 686 38" fill="none" stroke="#c7d6bc" stroke-width="2"/>
-              <path d="M95 172C151 82 221 63 291 80C276 131 212 172 95 172Z" fill="#dfe8d7"/>
-              <path d="M112 165L265 88M156 143L170 103M196 124L211 93" fill="none" stroke="#a9bc97" stroke-width="2"/>
+            <span class="tag-label">synthetic QA placeholder</span>
+            <svg viewBox="0 0 720 220" style="background:#fcfaf5; border:1px dashed var(--canopy);">
+              <!-- Diagram showing petiole, length, width measurements -->
+              <g transform="translate(360, 100)">
+                <!-- Axis grid -->
+                <rect x="-240" y="-70" width="480" height="140" fill="none" stroke="#cfc6b7" stroke-width="0.5"/>
+                <!-- Leaf shape vector outline for measurement -->
+                <path d="M-150,0 C-100,-40 20,-40 100,0 C20,40 -100,40 -150,0 Z" fill="#e8eee0" stroke="#728347" stroke-width="1.5"/>
+                <!-- Petiole line -->
+                <line x1="-210" y1="0" x2="-150" y2="0" stroke="#728347" stroke-width="2.5"/>
+                <!-- Measurement helpers -->
+                <!-- Length -->
+                <line x1="-150" y1="-50" x2="100" y2="-50" stroke="#cf2121" stroke-width="1"/>
+                <line x1="-150" y1="-45" x2="-150" y2="-55" stroke="#cf2121" stroke-width="1"/>
+                <line x1="100" y1="-45" x2="100" y2="-55" stroke="#cf2121" stroke-width="1"/>
+                <text x="-25" y="-55" font-family="Arial, sans-serif" font-size="8" fill="#cf2121" text-anchor="middle">Leaf Length (L)</text>
+                
+                <!-- Width -->
+                <line x1="0" y1="-30" x2="0" y2="30" stroke="#1c47a3" stroke-width="1"/>
+                <line x1="-5" y1="-30" x2="5" y2="-30" stroke="#1c47a3" stroke-width="1"/>
+                <line x1="-5" y1="30" x2="5" y2="30" stroke="#1c47a3" stroke-width="1"/>
+                <text x="10" y="3" font-family="Arial, sans-serif" font-size="8" fill="#1c47a3">Width (W)</text>
+
+                <!-- Petiole length -->
+                <line x1="-210" y1="20" x2="-150" y2="20" stroke="#a3631c" stroke-width="1"/>
+                <line x1="-210" y1="15" x2="-210" y2="25" stroke="#a3631c" stroke-width="1"/>
+                <line x1="-150" y1="15" x2="-150" y2="25" stroke="#a3631c" stroke-width="1"/>
+                <text x="-180" y="32" font-family="Arial, sans-serif" font-size="8" fill="#a3631c" text-anchor="middle">Petiole (P)</text>
+              </g>
+              <text x="360" y="200" font-family="Arial, sans-serif" font-size="8" fill="#59645e" text-anchor="middle" font-style="italic">[ Figure 2 Plate - Local QA Fixture Placeholder ]</text>
             </svg>
-            <span>Photo not provided</span>
           </div>
-          <figcaption>${escapeHtml(article.evidence.figureCaption)} No photographic image has been supplied for this draft.</figcaption>
+          <figcaption>Figure 2. Measurement protocol schematic defining the acquisition of leaf length (L), width (W), and petiole length (P) on specimens. Labeled as synthetic QA placeholder for local QA testing.</figcaption>
         </figure>
       </div>
 
       <section class="journal-section">
         <h2>EVIDENCE DOCUMENTATION</h2>
         <div class="callout">
-          <strong>Documentation record</strong>
+          <strong>Documentation record [local QA fixture]</strong>
           ${escapeHtml(article.evidence.photoSlot)} ${escapeHtml(article.evidence.measurementSlot)}
         </div>
         <p>${escapeHtml(article.evidence.locationSlot)}</p>
@@ -696,22 +807,29 @@ export function buildJournalHtml(article: JournalArticle) {
         ${renderParagraphs(article.conclusion)}
       </section>
 
-      <section class="full-span journal-section annex-section">
+      <section class="full-span journal-section annex-section" ${breakAnnex}>
         <h2>ANNEXURE</h2>
         <table class="annex-table">
-          <caption>Annex Table A1. Evidence inventory and review status.</caption>
+          <caption>Annex Table A1. Evidence inventory and review status (local QA fixture).</caption>
           <thead><tr><th>ID</th><th>Type</th><th>Material summary</th><th>Status</th></tr></thead>
           <tbody>${evidenceRows}</tbody>
         </table>
+        
+        <table class="annex-table" style="margin-top: 4mm">
+          <caption>Annex Table A2. Raw replicate measurements per group (local QA fixture).</caption>
+          <thead><tr><th>ID</th><th>Group</th><th>Length</th><th>Width</th><th>Petiole</th><th>Shape</th><th>Margin</th></tr></thead>
+          <tbody>${replicateRows}</tbody>
+        </table>
+
         <div class="callout" style="margin-top: 4mm">
           <strong>Review checklist</strong>
           ${renderList(article.annexure.checklist)}
         </div>
       </section>
 
-      <section class="full-span journal-section">
+      <section class="full-span journal-section reference-section" ${breakReferences}>
         <h2>REFERENCES</h2>
-        <div class="source-statement">${escapeHtml(article.references[0])}</div>
+        ${referencesListHtml}
       </section>
 
       <footer class="full-span integrity-endnote">

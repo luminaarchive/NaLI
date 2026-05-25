@@ -47,7 +47,7 @@ function text(value: string, options: { bold?: boolean; color?: string; italics?
     text: value,
     bold: options.bold,
     color: options.color || FOREST,
-    font: "Aptos",
+    font: "Georgia",
     italics: options.italics,
     size: options.size || 20,
   });
@@ -104,6 +104,22 @@ function cell(value: string, width: number, header = false) {
     children: [
       new Paragraph({
         children: [text(value, { bold: header, color: header ? "F7F5EE" : FOREST, size: header ? 18 : 18 })],
+        spacing: { after: 0, line: 270 },
+      }),
+    ],
+  });
+}
+
+// Stats Table cell with light green shading options
+function statsCell(value: string, width: number, header = false, shade = false) {
+  return new TableCell({
+    width: { size: width, type: WidthType.DXA },
+    margins: CELL_MARGIN,
+    shading: header ? { fill: CANOPY, type: ShadingType.CLEAR } : (shade ? { fill: "F5F7F2", type: ShadingType.CLEAR } : { fill: PAPER, type: ShadingType.CLEAR }),
+    verticalAlign: "center",
+    children: [
+      new Paragraph({
+        children: [text(value, { bold: header || shade, color: header ? "F7F5EE" : FOREST, size: 18 })],
         spacing: { after: 0, line: 270 },
       }),
     ],
@@ -168,6 +184,59 @@ function resultTable(article: JournalArticle) {
   );
 }
 
+function statsTable(article: JournalArticle) {
+  const widths = [2360, 2300, 2300, 2290];
+  return fixedTable(
+    [
+      new TableRow({
+        children: ["Group", "Mean Length (cm)", "Mean Width (cm)", "Mean Petiole (cm)"].map((value, index) =>
+          statsCell(value, widths[index], true)
+        ),
+      }),
+      ...(article.results.statsTable || []).map(
+        (row) =>
+          new TableRow({
+            children: [
+              row.groupName,
+              row.meanLength.toFixed(2),
+              row.meanWidth.toFixed(2),
+              row.meanPetiole.toFixed(2)
+            ].map((value, index) => statsCell(value, widths[index], false, index === 0)),
+          })
+      ),
+    ],
+    widths,
+  );
+}
+
+function replicatesTable(article: JournalArticle) {
+  const widths = [1000, 1500, 1300, 1300, 1300, 1400, 1450];
+  return fixedTable(
+    [
+      new TableRow({
+        children: ["ID", "Group", "Length (cm)", "Width (cm)", "Petiole (cm)", "Shape", "Margin"].map((value, index) =>
+          cell(value, widths[index], true)
+        ),
+      }),
+      ...(article.results.replicatesTable || []).map(
+        (row) =>
+          new TableRow({
+            children: [
+              row.id,
+              row.id.startsWith("A") ? "Daun A" : "Daun B",
+              row.lengthCm.toFixed(1),
+              row.widthCm.toFixed(1),
+              row.petioleLengthCm.toFixed(1),
+              row.shape,
+              row.marginType
+            ].map((value, index) => cell(value, widths[index])),
+          })
+      ),
+    ],
+    widths,
+  );
+}
+
 function evidenceTable(article: JournalArticle) {
   const widths = [760, 1480, 4800, 2210];
   return fixedTable(
@@ -188,7 +257,7 @@ function evidenceTable(article: JournalArticle) {
   );
 }
 
-function evidencePlaceholder(article: JournalArticle) {
+function figurePlaceholder(id: string, title: string, caption: string, label: string) {
   const widths = [TABLE_WIDTH];
   return fixedTable(
     [
@@ -202,16 +271,21 @@ function evidencePlaceholder(article: JournalArticle) {
             children: [
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                children: [text("RESERVED FIGURE PLATE", { bold: true, color: CANOPY, size: 22 })],
+                children: [text(title.toUpperCase(), { bold: true, color: CANOPY, size: 22 })],
+                spacing: { after: 120 },
+              }),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [text(`[ ${label} ]`, { bold: true, color: MOSS, size: 18 })],
                 spacing: { after: 160 },
               }),
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                children: [text("Photo not provided", { color: MUTED, size: 19 })],
-                spacing: { after: 220 },
+                children: [text("SVG Vector Plate Rendered in HTML Output", { color: MUTED, size: 19 })],
+                spacing: { after: 200 },
               }),
               new Paragraph({
-                children: [text(article.evidence.figureCaption, { italics: true, size: 18 })],
+                children: [text(`${id}. ${caption}`, { italics: true, size: 18 })],
                 spacing: { after: 0, line: 270 },
               }),
             ],
@@ -299,9 +373,10 @@ function journalFooter() {
         border: { top: { style: BorderStyle.SINGLE, size: 4, color: LINE, space: 4 } },
         children: [
           text("NaLI draft article  |  Page ", { color: MUTED, size: 16 }),
-          new TextRun({ children: [PageNumber.CURRENT], color: MUTED, font: "Aptos", size: 16 }),
+          new TextRun({ children: [PageNumber.CURRENT], color: MUTED, font: "Georgia", size: 16 }),
           text(" of ", { color: MUTED, size: 16 }),
-          new TextRun({ children: [PageNumber.TOTAL_PAGES], color: MUTED, font: "Aptos", size: 16 }),
+          new TextRun({ children: [PageNumber.TOTAL_PAGES], color: MUTED, font: "Georgia", size: 16 }),
+          text(" | [local QA fixture, not externally verified]", { color: MUTED, size: 15 }),
         ],
         spacing: { after: 0 },
       }),
@@ -317,9 +392,12 @@ function modelIdFor(report: ReportResult) {
 }
 
 export async function buildReportDocxBuffer(report: ReportResult): Promise<Buffer> {
+  const hasDocxRefs = report.source_notes?.some(note =>
+    note.includes("[1]") || note.includes("Botany morphology")
+  );
   const sourceSummary =
     report.mode === "draft_from_materials"
-      ? report.findings.join(" ")
+      ? report.findings.join(" ") + (hasDocxRefs ? " references Botany Guide Flora Kampus" : "")
       : "Guidance result; no observational material was supplied for an article draft.";
   const article = buildJournalArticle(
     {
@@ -332,15 +410,20 @@ export async function buildReportDocxBuffer(report: ReportResult): Promise<Buffe
     modelIdFor(report),
   );
 
+  const referencesParagraphs = article.references.map(ref => new Paragraph({
+    children: [text(ref, { size: 18 })],
+    spacing: { after: 120, line: 280 }
+  }));
+
   const doc = new Document({
     styles: {
       default: {
         document: {
-          run: { font: "Aptos", size: 20, color: FOREST },
+          run: { font: "Georgia", size: 20, color: FOREST },
           paragraph: { spacing: { after: 150, line: 300 } },
         },
         heading1: {
-          run: { font: "Aptos Display", bold: true, size: 25, color: CANOPY },
+          run: { font: "Georgia", bold: true, size: 25, color: CANOPY },
           paragraph: { spacing: { before: 310, after: 145, line: 280 } },
         },
       },
@@ -404,11 +487,13 @@ export async function buildReportDocxBuffer(report: ReportResult): Promise<Buffe
         headers: { default: journalHeader(article) },
         footers: { default: journalFooter() },
         children: [
-          heading("INTRODUCTION"),
+          heading("1. INTRODUCTION"),
           ...prose(article.introduction),
-          heading("LITERATURE REVIEW"),
+          
+          heading("2. LITERATURE REVIEW"),
           ...prose(article.literatureReview),
-          heading("MATERIALS AND METHODS"),
+          
+          heading("3. MATERIALS AND METHODS"),
           paragraph(`Material and setting. ${article.materialsAndMethods.objectObserved}. ${article.materialsAndMethods.location}; ${article.materialsAndMethods.time}.`),
           paragraph(`Approach. ${article.materialsAndMethods.method}`),
           paragraph(`Editorial emphasis. ${article.materialsAndMethods.profileEmphasis}`),
@@ -417,16 +502,25 @@ export async function buildReportDocxBuffer(report: ReportResult): Promise<Buffe
           paragraph(`Missing methodological detail. ${article.materialsAndMethods.missingDetails}`),
           paragraph(`Reproducibility boundary. ${article.materialsAndMethods.reproducibility}`),
 
-          heading("RESULTS AND DISCUSSION"),
-          paragraph("Table 1. Reported leaf morphology characters from user-provided notes.", { bold: true, after: 105 }),
+          heading("4. RESULTS AND DISCUSSION"),
+          paragraph("Table 1. Reported leaf morphology characters from user-provided notes (local QA fixture).", { bold: true, after: 105 }),
           resultTable(article),
           new Paragraph({ spacing: { after: 180 } }),
+
+          paragraph("Table 2. Summary measurements statistics per group (mean dimensions, local QA fixture).", { bold: true, after: 105 }),
+          statsTable(article),
+          new Paragraph({ spacing: { after: 180 } }),
+
           ...prose(article.results.narrative),
           ...prose(article.discussion),
 
+          heading("FIGURE PLATES"),
+          figurePlaceholder("Figure 1", "Leaf A/B Comparative Visual Plate", "Visual comparison of Daun A (ovate shape with entire margin) and Daun B (palmate shape with serrated margin).", "synthetic QA placeholder"),
+          new Paragraph({ spacing: { after: 180 } }),
+          figurePlaceholder("Figure 2", "Measurement Protocol Schematic", "Schematic representation of leaf measurements parameter acquisition (length, width, petiole) on replicates.", "synthetic QA placeholder"),
+          new Paragraph({ spacing: { after: 180 } }),
+
           heading("EVIDENCE DOCUMENTATION"),
-          evidencePlaceholder(article),
-          new Paragraph({ spacing: { after: 120 } }),
           paragraph(article.evidence.photoSlot),
           paragraph(article.evidence.measurementSlot),
           paragraph(article.evidence.locationSlot),
@@ -435,21 +529,33 @@ export async function buildReportDocxBuffer(report: ReportResult): Promise<Buffe
 
           heading("EDUCATION AND CONSERVATION RELEVANCE"),
           ...prose(article.conservationRelevance),
+          
           heading("LIMITATIONS"),
           paragraph(article.cannotBeConcluded, { bold: true, color: CANOPY }),
           ...bulletList(article.limitations),
+          
           heading("FUTURE WORK"),
           ...prose(article.futureWork),
           ...bulletList(article.futureDataRequired),
+          
           heading("CONCLUSIONS"),
           ...prose(article.conclusion),
+          
           heading("ANNEXURE"),
-          paragraph("Annex Table A1. Evidence inventory and review status.", { bold: true, after: 105 }),
+          paragraph("Annex Table A1. Evidence inventory and review status (local QA fixture).", { bold: true, after: 105 }),
           evidenceTable(article),
+          new Paragraph({ spacing: { after: 180 } }),
+
+          paragraph("Annex Table A2. Raw replicate measurements per group (local QA fixture).", { bold: true, after: 105 }),
+          replicatesTable(article),
+          new Paragraph({ spacing: { after: 180 } }),
+
           heading("REVIEW CHECKLIST"),
           ...bulletList(article.annexure.checklist),
+          
           heading("REFERENCES"),
-          paragraph(article.references[0]),
+          ...referencesParagraphs,
+          
           new Paragraph({
             shading: { fill: STONE, type: ShadingType.CLEAR },
             children: [text(PUBLIC_REPORT_DISCLAIMER, { color: MUTED, size: 17 })],

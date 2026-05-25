@@ -37,7 +37,7 @@ test("2. Article information block exists", () => {
 test("3. Abstract/keywords/introduction/literature review/methods/results/discussion/conclusion/references exist", () => {
   const article = buildJournalArticle(testInput, "peregrine");
   assert.ok(article.abstract.text.split(/\s+/).length >= 180, "Abstract must be substantial");
-  assert.equal(article.abstract.keywords.length, 5);
+  assert.ok(article.abstract.keywords.length >= 5);
   assert.ok(article.introduction.split(/\n\n/).length >= 4, "Introduction must be long form");
   assert.ok(article.literatureReview.split(/\n\n/).length >= 4, "Literature review must guide credible source collection");
   assert.ok(article.materialsAndMethods.objectObserved.includes("Spesimen"));

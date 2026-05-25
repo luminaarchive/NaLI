@@ -11,7 +11,7 @@ const { buildReportDocxBuffer } = require("../../src/lib/reports/journalDocxRend
 const testInput = {
   mode: "draft_from_materials",
   reportTemplate: "Laporan Observasi Lingkungan",
-  mainText: "morfologi daun Daun A dan Daun B",
+  mainText: "morfologi daun Daun A dan Daun B references Botany Guide Flora Kampus",
   sourceUrls: [],
   location: "Halaman Kampus",
   fileDescription: "",
@@ -71,4 +71,11 @@ test("5. DOCX contains full article sections, clean tables, and no raw markdown 
   assert.match(text, /Draft only; source verification inactive; public export locked\./);
   assert.doesNotMatch(text, /Founder\/Admin Draft Series|Internal QA|DOI\s+Not assigned|ISSN\s+Not applicable/i);
   assert.match(xml, /w:type="dxa"/, "Tables must have explicit editable geometry");
+
+  // V7 Specifics
+  assert.match(text, /Table 2\. Summary measurements statistics/, "Must contain Table 2");
+  assert.match(text, /Annex Table A2\. Raw replicate measurements/, "Must contain Annex Table A2");
+  assert.match(text, /Figure 1/, "Must contain Figure 1");
+  assert.match(text, /Figure 2/, "Must contain Figure 2");
+  assert.match(text, /Botany morphology practical guide/, "Must contain references content");
 });

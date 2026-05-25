@@ -16,6 +16,13 @@ test("1. Research and audit documents exist", () => {
   const v6DesignSpecExists = fs.existsSync(path.join(repoRoot, "docs/qa/nali_cp1_journal_v6_design_spec.md"));
   const v6QualityReportExists = fs.existsSync(path.join(repoRoot, "docs/qa/nali_cp1_journal_v6_quality_report.md"));
 
+  // V7 Documents
+  const v7ResearchExists = fs.existsSync(path.join(repoRoot, "docs/qa/nali_cp1_v7_document_intelligence_stack_research.md"));
+  const v7DependencyAuditExists = fs.existsSync(path.join(repoRoot, "docs/qa/nali_cp1_v7_dependency_install_audit.md"));
+  const v6LimitationsAuditExists = fs.existsSync(path.join(repoRoot, "docs/qa/nali_cp1_journal_v6_limitations_audit.md"));
+  const v7InspectionExists = fs.existsSync(path.join(repoRoot, "docs/qa/nali_cp1_journal_v7_artifact_inspection.md"));
+  const v7EvidenceReportExists = fs.existsSync(path.join(repoRoot, "docs/qa/nali_cp1_journal_v7_rich_evidence_report.md"));
+
   assert.ok(formatAnalysisExists, "Format analysis must exist");
   assert.ok(researchExists, "Stack research must exist");
   assert.ok(auditExists, "Dependency audit must exist");
@@ -24,6 +31,12 @@ test("1. Research and audit documents exist", () => {
   assert.ok(v5FailureAuditExists, "V5 failure audit must exist");
   assert.ok(v6DesignSpecExists, "V6 design specification must exist");
   assert.ok(v6QualityReportExists, "V6 quality report must exist");
+  
+  assert.ok(v7ResearchExists, "V7 stack research must exist");
+  assert.ok(v7DependencyAuditExists, "V7 dependency audit must exist");
+  assert.ok(v6LimitationsAuditExists, "V6 limitations audit must exist");
+  assert.ok(v7InspectionExists, "V7 artifact inspection must exist");
+  assert.ok(v7EvidenceReportExists, "V7 evidence report must exist");
 });
 
 test("2. Rendering dependencies are not imported in public client components", () => {

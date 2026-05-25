@@ -55,8 +55,8 @@ test("4. Peregrine, Obsidian, and Zephyr profiles produce meaningfully different
 
   assert.notEqual(pReport.executive_summary, oReport.executive_summary, "Peregrine and Obsidian abstracts must differ");
   assert.notEqual(oReport.executive_summary, zReport.executive_summary, "Obsidian and Zephyr abstracts must differ");
-  assert.ok(oReport.executive_summary.includes("Ketiadaan bukti foto"), "Obsidian should explicitly state limitations");
-  assert.ok(zReport.executive_summary.includes("Laporan pengamatan mandiri ini menyajikan"), "Zephyr should have refined prose");
+  assert.ok(oReport.executive_summary.includes("tidak tersedianya foto bukti"), "Obsidian should explicitly state limitations");
+  assert.ok(zReport.executive_summary.includes("gaya naratif"), "Zephyr should have refined prose");
 });
 
 test("5. PDF builder includes headers, disclaimers, and evidence slots", async () => {

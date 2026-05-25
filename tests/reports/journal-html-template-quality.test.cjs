@@ -51,7 +51,7 @@ test("HTML template renders journal sections, a figure slot, and semantic result
   ]) {
     assert.match(html, new RegExp(section));
   }
-  assert.match(html, /Figure 1\. Reserved visual documentation plate for labelled user evidence\./);
+  assert.match(html, /Figure 1\. Leaf A\/B comparative visual plate/);
   assert.match(html, /<table class="results-table">/);
   assert.match(html, /<caption>Table 1\./);
   assert.doesNotMatch(html, /\|\s*Spesimen\s*\|/);

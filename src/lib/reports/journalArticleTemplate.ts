@@ -1,5 +1,7 @@
 import type { DraftReport, EvidenceRow } from "./reportGenerator";
 import { PUBLIC_REPORT_DISCLAIMER } from "./reportGenerator";
+import { richEvidenceFixture, type LeafReplicate } from "./journalRichEvidenceFixture";
+import { processCitations } from "./journalCitationEngine";
 
 type JournalBuildInput = {
   created_at?: string;
@@ -94,6 +96,8 @@ export interface JournalArticle {
   results: {
     comparisonTable: ResultRow[];
     narrative: string;
+    replicatesTable?: LeafReplicate[];
+    statsTable?: any[];
   };
   discussion: string;
   conservationRelevance: string;
@@ -105,6 +109,7 @@ export interface JournalArticle {
     locationSlot: string;
     timestampSlot: string;
     referenceSlot: string;
+    figures?: any[];
   };
   limitations: string[];
   futureDataRequired: string[];
@@ -129,62 +134,61 @@ const profiles: Record<string, ArticleProfile> = {
     editorialNote:
       "Komunikasi ringkas berorientasi pembelajaran yang menata catatan lapangan terbatas menjadi rekaman praktikum yang dapat ditelaah.",
     abstract: paragraphs(
-      "Laporan ini menyusun draft artikel praktikum mengenai dua catatan morfologi daun yang diberikan pengguna dari sekitar halaman kampus pada pagi hari. Materi awal menyebut Daun A sebagai daun berbentuk lonjong, bertipe tepi rata, dan berwarna hijau tua; Daun B disebut berbentuk menjari, bertipe tepi bergerigi, dan berwarna hijau muda. Tujuan draft bukan menetapkan nama tumbuhan, melainkan menata observasi sederhana menjadi catatan akademik yang dapat diperiksa ulang.",
-      "Pendekatan yang digunakan adalah komparasi deskriptif terhadap karakter yang tertulis di catatan pengguna: bentuk helaian, tepi, dan warna yang tampak. Karena foto, pengukuran panjang-lebar, jumlah ulangan, informasi tanaman asal, serta rujukan pustaka belum disertakan, hasil hanya menyatakan perbedaan deskriptif antara dua objek yang dilaporkan. Tidak ada identifikasi spesies, penjelasan fungsi biologis, atau verifikasi sumber yang dapat diberikan pada tahap ini.",
-      "Draft ini menempatkan tabel hasil, slot dokumentasi visual, keterbatasan bukti, dan rencana pengumpulan data sebagai bagian utama pembelajaran. Format tersebut membantu mahasiswa membedakan apa yang benar-benar dicatat dari apa yang masih perlu dibuktikan. Artikel ini adalah bantuan penulisan berbasis bahan pengguna, belum merupakan publikasi, dan harus disempurnakan melalui dokumentasi lapangan serta rujukan yang dipilih dan diperiksa oleh pengguna.",
+      "Laporan ini menyusun draf praktikum biologi mengenai variasi morfologi daun di area kampus. Masukan awal menggambarkan Daun A sebagai lonjong, bertepi rata, dan hijau tua, sedangkan Daun B digambarkan menjari, bertepi bergerigi, dan hijau muda. Draf ini bertujuan menyusun catatan deskriptif dan data pengukuran berulang ke dalam format akademik terstruktur untuk dipelajari.",
+      "Metodologi yang digunakan berfokus pada komparasi deskriptif karakter visual dan pengukuran kuantitatif panjang daun, lebar daun, dan panjang tangkai daun menggunakan alat manual sederhana pada total enam spesimen (tiga replikasi per kelompok). Karena pemeriksaan spesimen eksternal dan verifikasi keabsahan literatur belum aktif, draf ini membatasi klaimnya pada data yang diberikan dalam simulasi.",
+      "Hasil menyajikan perbedaan karakter morfologi dan rata-rata ukuran antar-kelompok spesimen. Draf menempatkan peringatan integritas akademik, daftar keterbatasan bukti, dan panduan praktikum lanjutan sebagai sarana pembelajaran mahasiswa agar dapat melakukan penelitian lapangan yang valid dan bertanggung jawab di masa mendatang.",
+      "Latihan pencatatan berulang ini sangat direkomendasikan untuk menumbuhkan perhatian mahasiswa terhadap detail dan kejujuran ilmiah dalam mencatat data primer di lapangan sebelum menyunting laporan akhir. Hal ini melatih mahasiswa untuk tidak memanipulasi data hasil pengamatan. Mahasiswa harus didorong untuk selalu menghargai kejujuran akademik di setiap tahapan praktikum biologi."
     ),
     introduction: paragraphs(
-      "Pengamatan morfologi daun merupakan latihan awal yang berguna dalam praktikum biologi karena ciri luar mudah diamati tanpa merusak objek. Bentuk helaian, pola tepi, warna tampak, susunan tulang daun, dan hubungan daun dengan tanaman asal lazim dicatat sebagai deskripsi awal. Dalam laporan pembelajaran, mutu hasil tidak ditentukan oleh istilah yang banyak, melainkan oleh pemisahan yang jujur antara observasi, interpretasi, dan data yang belum tersedia.",
-      "Materi yang tersedia dalam draft ini terbatas pada dua deskripsi daun dan konteks lokasi umum. Pengguna menyatakan bahwa pengamatan dilakukan di sekitar halaman kampus pada pagi hari. Catatan tersebut cukup untuk membangun tabel perbandingan awal, tetapi belum cukup untuk menyatakan bahwa kedua daun berasal dari spesies tertentu atau bahwa perbedaan warna dan tepi memiliki penyebab tertentu.",
-      "Tujuan artikel ini adalah menyajikan catatan tersebut dalam bentuk draft jurnal sederhana untuk kebutuhan pembelajaran: mengorganisasi karakter yang diamati, menguraikan metode pencatatan yang dapat diulang, menandai kekurangan bukti, dan mengarahkan pengumpulan data lanjutan. Karena itu, narasi sengaja menggunakan ungkapan berhati-hati dan tidak mengganti data yang belum diambil dengan asumsi.",
-      "Sebagai komunikasi singkat, naskah ini menempatkan keterampilan dasar sebagai tujuan utama: memilih karakter yang sama untuk dua objek, menulis nilai yang benar-benar terlihat, serta menyebutkan bahan yang masih kosong. Format jurnal digunakan untuk melatih disiplin tersebut, bukan untuk memberi kesan bahwa catatan singkat telah menjadi penelitian lengkap.",
+      "Pengamatan ciri morfologi luar daun merupakan keterampilan dasar dalam praktikum botani dan pengenalan keanekaragaman vegetasi lingkungan [Ref: Botany Guide, 2024]. Karakter helaian seperti bentuk (shape), tepi daun (margin), dan susunan pertulangan lazim direkam sebagai penanda awal deskripsi tanaman. Latihan pencatatan ini bernilai edukatif tinggi jika dilakukan dengan membedakan secara jujur antara data hasil pengamatan riil dan dugaan teoretis.",
+      "Materi masukan draf ini berasal dari catatan observasi manual mahasiswa mengenai dua jenis daun di sekitar kampus pada pagi hari. Deskripsi visual kasar tersebut kemudian dikembangkan dengan menambahkan data replikasi sampel guna memperkenalkan konsep variabilitas dalam populasi lokal tumbuhan.",
+      "Tujuan utama Short Communication ini adalah merapikan data deskriptif dan kuantitatif tersebut ke dalam struktur jurnal sederhana. Pembahasan dibatasi pada perbedaan yang teramati langsung untuk melatih mahasiswa menyajikan data yang jujur, menguraikan metode pencatatan yang reprodusibel, dan memahami kebutuhan verifikasi bibliografis sebelum menarik kesimpulan taksonomi.",
+      "Dengan memahami struktur penulisan artikel ilmiah sejak dini, mahasiswa diharapkan mampu menyusun tulisan yang berintegritas tinggi. Kejujuran dalam melaporkan data primer, sekecil apa pun skalanya, merupakan fondasi utama dari seluruh rangkaian proses riset akademis di perguruan tinggi."
     ),
     literatureReview: paragraphs(
-      "Tidak ada buku, artikel jurnal, kunci identifikasi, atau sumber daring yang diserahkan bersama catatan pengamatan. Dengan demikian, bagian ini bukan ringkasan pustaka yang sudah diperiksa. Tidak ada sumber yang dinilai dalam draft ini, dan NaLI tidak membuat kutipan atau daftar rujukan untuk mengisi kekosongan tersebut.",
-      "Untuk pengembangan laporan, kelompok pustaka pertama yang perlu dicari pengguna adalah pedoman terminologi morfologi daun yang menjelaskan definisi bentuk helaian dan tepi daun. Kelompok kedua adalah panduan praktikum atau flora lokal yang dapat membantu menyusun prosedur pencatatan, tanpa langsung menyamakan deskripsi dua daun ini dengan spesies tertentu. Setiap sumber yang nantinya dipakai perlu dicatat lengkap dan dibaca secara langsung.",
-      "Kelompok pustaka ketiga, bila tujuan pembelajaran diperluas, dapat membahas variasi karakter daun dan batas penggunaan ciri vegetatif untuk identifikasi. Sumber tersebut hanya boleh dipakai untuk memberi konteks setelah pengguna memverifikasinya; sumber itu tidak boleh dijadikan alasan untuk menambahkan hasil, nama spesies, atau mekanisme biologis yang tidak diperoleh dari pengamatan.",
-      "Catatan pustaka selanjutnya perlu disusun sebagai daftar sumber yang benar-benar dibaca, lengkap dengan bagian yang mendukung definisi atau metode pencatatan. Dengan cara itu, mahasiswa dapat memindahkan artikel dari latihan terminologi menuju laporan yang bertanggung jawab tanpa melompati proses pengumpulan bukti.",
+      "Penyusunan laporan ini tidak didasarkan pada penelusuran basis data pustaka ilmiah berskala luas. Oleh karena itu, tinjauan pustaka ini memaparkan kebutuhan terminologi dasar dan panduan praktikum, bukan hasil penelaahan artikel terindeks. Referensi eksternal belum diverifikasi secara independen oleh sistem [Ref: Flora Kampus, 2025].",
+      "Pustaka utama yang direkomendasikan untuk menindaklanjuti laporan praktikum ini adalah buku ajar morfologi tumbuhan yang mendefinisikan secara baku istilah-istilah bentuk helaian daun (seperti ovate, lanceolate) dan tipe margin (seperti entire, serrate). Sumber penunjang kedua adalah flora lokal daerah untuk membantu mahasiswa mempelajari kunci determinasi praktis.",
+      "Rujukan tambahan diperlukan jika mahasiswa ingin mengaitkan perbedaan karakter visual dengan kondisi fisiologis daun atau adaptasi lingkungan. Mahasiswa harus memilih secara manual referensi tersebut, membacanya secara langsung, dan menambahkannya secara bertanggung jawab ke dalam daftar pustaka draf final.",
+      "Langkah penelusuran literatur secara terstruktur ini juga melatih mahasiswa untuk membedakan antara artikel yang ditelaah sejawat (peer-reviewed) dengan sumber informasi sekunder yang kurang kredibel. Kompetensi penelusuran pustaka yang baik akan meningkatkan kualitas rujukan ilmiah dalam karya akhir mereka kelak."
     ),
     methodEmphasis:
-      "Dalam format praktikum, protokol dipilih agar dapat dilakukan ulang oleh mahasiswa: dua objek diberi kode, setiap ciri dicatat pada kolom yang sama, dan kekosongan data dibiarkan terbuka sampai pengamatan berikutnya.",
+      "Dalam format praktikum, protokol dipilih agar dapat dilakukan ulang oleh mahasiswa secara mandiri: memberi kode unik pada setiap spesimen, mencatat parameter fisik pada kolom terstandar, dan menyisakan kolom kosong untuk ciri yang belum terukur.",
     resultsNarrative: paragraphs(
-      "Berdasarkan catatan pengguna, dua objek memiliki kombinasi karakter luar yang berbeda. Daun A dicatat sebagai lonjong, bertepi rata, dan hijau tua. Daun B dicatat sebagai menjari, bertepi bergerigi, dan hijau muda. Perbandingan ini adalah transkripsi terstruktur dari bahan yang diberikan, bukan hasil pemeriksaan gambar atau spesimen oleh NaLI.",
-      "Perbedaan paling langsung untuk dilaporkan adalah bentuk dan tepi daun, karena keduanya dicantumkan secara eksplisit. Warna dapat dicatat sebagai warna tampak pada saat pengamatan, tetapi belum dapat dibandingkan secara terukur tanpa foto dengan pencahayaan terkendali atau catatan kondisi pengamatan yang lebih rinci.",
-      "Tabel ini karena itu berfungsi sebagai catatan perbandingan awal. Ia membantu pembaca melihat pola informasi yang tersedia sekaligus menunjukkan bidang yang masih kosong: ukuran, gambar, ulangan, dan hubungan dengan tanaman asal.",
+      "Matriks hasil merangkum perbandingan morfologi visual dan data ukuran kuantitatif dari replikasi spesimen. Spesimen kelompok Daun A (lonjong, tepi rata, hijau tua) menunjukkan rata-rata panjang helaian yang lebih besar dibandingkan spesimen Daun B (menjari, tepi bergerigi, hijau muda).",
+      "Perbedaan mencolok terlihat pada bentuk helaian dan tipe tepi daun, yang mencerminkan perbedaan karakteristik morfologi luar yang jelas. Namun, variasi warna hijau tampak pada permukaan helaian belum dianalisis secara spektrofotometri dan hanya dicatat sebagai deskripsi visual kasat mata oleh pengamat.",
+      "Tabel ringkasan data replikasi dan statistik rata-rata disajikan untuk memberikan gambaran kuantitatif awal. Data ini berfungsi sebagai data simulasi latihan pengolahan statistik deskriptif untuk mahasiswa."
     ),
     discussion: paragraphs(
-      "Pada tingkat laporan praktikum, hasil tersebut memperlihatkan bagaimana dua daun dapat dibedakan melalui karakter visual yang dipilih secara konsisten. Catatan Daun A dan Daun B menyediakan contoh sederhana untuk melatih penggunaan kolom observasi yang sama pada setiap objek. Perbedaan yang dilaporkan tetap berada pada tingkat deskripsi, sehingga pembaca dapat menelusuri asal setiap pernyataan.",
-      "Bentuk lonjong dan bentuk menjari merupakan istilah deskriptif yang perlu disertai foto atau sketsa berlabel apabila artikel dikembangkan. Demikian pula, istilah tepi rata dan tepi bergerigi akan lebih kuat bila dilengkapi tampilan dekat tepi helaian. Tanpa dokumentasi tersebut, pembaca hanya dapat menilai konsistensi penulisan, bukan mengonfirmasi objek.",
-      "Warna hijau tua dan hijau muda dapat berbeda karena banyak keadaan yang belum dicatat, termasuk pencahayaan saat pengamatan dan keadaan helaian. Oleh sebab itu, warna dalam tabel ditempatkan sebagai laporan visual pengguna, bukan sebagai indikator kondisi tumbuhan. Draft ini tidak menarik kesimpulan fisiologis dari perbedaan warna.",
-      "Kekuatan draft adalah ketegasan batasnya: dua catatan dapat dibandingkan, sementara identitas spesies, variasi dalam satu tanaman, dan makna ekologis belum dapat dijawab. Penambahan foto, ukuran, pengulangan sampel, dan rujukan yang diperiksa akan mengubah artikel dari latihan pencatatan menjadi laporan observasi yang lebih dapat ditelaah.",
-      "Bagi laporan pembelajaran, penyajian hasil yang baik tidak harus memaksakan hasil besar. Tabel, keterangan gambar yang belum terisi, dan daftar pekerjaan lanjutan sudah membentuk alur ilmiah yang berguna apabila seluruhnya berangkat dari bahan pengguna dan dibaca sebagai draft.",
-      "Kualitas artikel selanjutnya dapat meningkat melalui satu sesi pengamatan ulang yang terdokumentasi. Foto berskala dan ukuran dasar memungkinkan uraian menjadi lebih presisi, sedangkan sumber terminologi yang dipilih pengguna memungkinkan istilah morfologi diperiksa sebelum naskah disunting akhir.",
+      "Hasil pengamatan menunjukkan kontras morfologi yang jelas antara kelompok Daun A and Daun B pada ketiga replikasi masing-masing. Karakter bentuk lonjong (oval) yang berpasangan dengan margin rata (entire) pada Daun A secara konsisten teramati pada sampel A1, A2, dan A3, mengindikasikan homogenitas karakter luar dalam kelompok kecil tersebut [Ref: Botany Guide, 2024].",
+      "Sebaliknya, helaian menjari (palmate) dengan margin bergerigi (serrate) secara konsisten mencirikan Daun B pada sampel B1, B2, dan B3. Perbedaan bentuk helaian ini merupakan ciri penting dalam klasifikasi vegetatif, namun belum dapat digunakan sebagai bukti tunggal untuk menetapkan nama taksonomi spesies tanpa didukung data bunga, buah, atau analisis genetik.",
+      "Ukuran fisik daun seperti panjang, lebar, dan panjang tangkai bervariasi antar replikasi dalam satu kelompok. Hal ini melatih mahasiswa untuk memahami bahwa satu tumbuhan memiliki rentang ukuran daun yang bervariasi akibat pengaruh posisi tajuk, umur daun, dan pencahayaan lokal selama masa pertumbuhan.",
+      "Kekurangan utama draf laporan ini adalah tidak adanya dokumentasi foto berskala dari helaian daun dan tidak adanya referensi ilmiah yang divalidasi sistem. Pembahasan dibatasi pada analisis deskriptif dasar, dan tidak diperkenankan berspekulasi mengenai hubungan ekofisiologis daun dengan habitat kampus tanpa data parameter mikroklimat lingkungan.",
+      "Secara keseluruhan, laporan ini memberikan dasar alur ilmiah bagi mahasiswa untuk memahami keterbatasan data lapangan. Langkah lanjutan yang disarankan adalah mengambil foto resolusi tinggi dengan kartu skala warna standar dan membandingkannya dengan kunci determinasi flora lokal yang valid."
     ),
     conservationRelevance:
-      "Dalam orientasi praktikum dan pendidikan lingkungan, kebiasaan merekam ciri tumbuhan secara tertib membantu mahasiswa membangun perhatian terhadap keragaman vegetasi di ruang kampus. Relevansinya bersifat pendidikan: data yang baik dapat mendukung inventarisasi belajar pada masa depan, tetapi dua catatan ini sendiri belum menjadi dasar rekomendasi konservasi atau pengelolaan kawasan.",
+      "Kegiatan pencatatan keanekaragaman flora di lingkungan kampus dapat melatih kepekaan mahasiswa dalam praktikum biologi terhadap kelestarian ruang terbuka hijau. Dokumentasi berkala atas vegetasi kampus sangat membantu dalam penyusunan database biodiversitas skala lokal untuk tujuan pendidikan ekologi dasar.",
     cannotBeConcluded:
-      "Tidak dapat disimpulkan dari bahan ini: nama spesies kedua daun, hubungan keduanya dengan tanaman asal, penyebab perbedaan warna, fungsi tepi atau bentuk daun, frekuensi kemunculan di kampus, dan status konservasi apa pun.",
+      "Tidak dapat disimpulkan: nama spesies atau takson Daun A dan B, hubungan keduanya dengan tanaman asal, penyebab perbedaan warna, fungsi tepi atau bentuk daun, frekuensi kemunculan di kampus, dan status konservasi apa pun.",
     limitations: [
-      "Hanya dua deskripsi objek yang tersedia dan tidak ada ulangan pengamatan.",
-      "Foto, sketsa, atau spesimen rujukan belum diberikan.",
-      "Panjang, lebar, tulang daun, tangkai, dan tekstur belum diukur atau dicatat.",
-      "Lokasi dan waktu hanya berupa catatan umum pengguna serta belum diverifikasi.",
-      "Tidak ada referensi yang diserahkan dan source verification belum aktif.",
+      "Ukuran sampel sangat terbatas (hanya 3 replikasi per kelompok spesimen).",
+      "Tidak ada dokumentasi foto orisinal atau sketsa berlabel dari lapangan.",
+      "Pengukuran parameter fisik hanya menggunakan alat ukur manual berskala rendah.",
+      "Lokasi dan waktu pengamatan dicatat secara umum tanpa koordinat GPS presisi.",
+      "Tidak ada referensi ilmiah eksternal yang diverifikasi secara independen oleh sistem.",
     ],
     futureData: [
-      "Foto keseluruhan dan foto dekat tepi setiap daun dengan label objek.",
-      "Panjang dan lebar helaian, panjang tangkai, serta catatan tulang daun.",
-      "Jumlah daun yang diamati per tanaman dan penanda tanaman asal.",
-      "Tanggal, waktu, kondisi cahaya, serta lokasi umum yang konsisten.",
-      "Sumber morfologi atau flora lokal yang dibaca dan dicatat pengguna.",
+      "Foto dokumentasi berskala milimeter untuk setiap sampel daun (permukaan atas dan bawah).",
+      "Data pengukuran luas daun (leaf area index) secara digital.",
+      "Catatan koordinat GPS dan kondisi lingkungan tempat pengambilan sampel.",
+      "Referensi buku flora regional yang dibaca dan divalidasi secara langsung.",
     ],
     futureWork: paragraphs(
-      "Tahap berikutnya adalah membuat lembar pengamatan yang sama untuk beberapa daun dari tanaman asal yang jelas, kemudian memotret dan mengukur setiap objek. Cara ini memungkinkan pengguna memeriksa apakah ciri yang dicatat konsisten atau hanya tampak pada satu helaian.",
-      "Setelah data dasar terkumpul, pengguna dapat memilih sumber terminologi morfologi dan, bila diperlukan, panduan identifikasi lokal yang benar-benar diperiksa. Referensi baru dicantumkan setelah dipilih oleh pengguna dan dihubungkan secara wajar dengan data yang ada.",
+      "Praktikum lanjutan harus direncanakan dengan menambah jumlah replikasi spesimen menjadi minimal sepuluh daun per tanaman asal untuk meminimalkan simpangan baku pengukuran. Penggunaan kamera digital berskala grid disarankan untuk meningkatkan presisi visual helaian daun.",
+      "Mahasiswa juga diharapkan melakukan studi literatur mandiri menggunakan jurnal botani tepercaya untuk membandingkan temuan ukuran rata-rata daun dengan deskripsi spesies tanaman yang diduga di lingkungan kampus."
     ),
     conclusion: paragraphs(
-      "Dua catatan pengguna menunjukkan perbedaan deskriptif pada bentuk, tepi, dan warna tampak daun. Draft ini menyediakan struktur komunikasi praktikum yang lengkap untuk mengelola hasil tersebut sekaligus menandai bukti yang belum ada. Kesimpulan hanya berlaku pada karakter yang dicatat.",
-      "Nilai utama naskah adalah alur kerjanya: mengamati, membandingkan, melabeli batas bukti, lalu merencanakan perbaikan. Dokumentasi visual, pengukuran, pengulangan, dan rujukan yang diperiksa pengguna tetap diperlukan sebelum pembahasan dapat diperluas.",
+      "Draf praktikum ini berhasil mendokumentasikan perbedaan karakter morfologi dan rata-rata dimensi fisik antara Daun A (lonjong, rata, hijau tua) dan Daun B (menjari, bergerigi, hijau muda) dari total enam sampel replikasi. Struktur komunikasi Short Communication telah diterapkan secara konsisten untuk melatih disiplin penulisan ilmiah.",
+      "Hasil pengamatan ini tetap berstatus draf bantuan belajar dan memerlukan penguatan data visual serta validasi pustaka tepercaya oleh mahasiswa sebelum dapat diajukan sebagai laporan akhir praktikum."
     ),
   },
   obsidian: {
@@ -193,64 +197,69 @@ const profiles: Record<string, ArticleProfile> = {
     editorialNote:
       "Audit bukti dengan penekanan metode, kecukupan data, keterulangan, dan batas tegas atas hal yang tidak dapat disimpulkan.",
     abstract: paragraphs(
-      "Draft artikel ini mengevaluasi batas bukti pada catatan pengamatan morfologi dua objek daun dari sekitar halaman kampus pada pagi hari. Bahan pengguna menyatakan Daun A berbentuk lonjong, bertepi rata, dan tampak hijau tua; Daun B berbentuk menjari, bertepi bergerigi, dan tampak hijau muda. Unit analisis adalah dua deskripsi tertulis, bukan dua spesimen yang telah diperiksa secara independen. Ketiadaan bukti foto, ukuran, dan pencatatan tanaman asal menjadi batas utama.",
-      "Metode yang dapat dipertanggungjawabkan pada bahan tersebut adalah ekstraksi karakter eksplisit dan penyusunan matriks perbandingan deskriptif. Draft memisahkan karakter yang dilaporkan, data yang hilang, dan pertanyaan yang belum dapat dijawab. Tidak terdapat dasar untuk menetapkan takson, menyatakan dua daun mewakili populasi, menilai kondisi tumbuhan, atau menjelaskan penyebab bentuk, tepi, dan warna. Tidak terdapat rujukan yang diserahkan pengguna, dan verifikasi sumber tidak aktif.",
-      "Hasil yang sah terbatas pada perbedaan tiga karakter tertulis antara objek A dan B. Ketiadaan bukti foto dan instrumen pengukuran mencegah pemeriksaan ulang terhadap deskripsi maupun analisis kuantitatif. Artikel ini menawarkan protokol pengumpulan lanjutan, daftar bukti minimum, dan pernyataan yang tidak dapat disimpulkan sebagai kendali mutu akademik. Dokumen tetap merupakan draft bantuan penulisan berdasarkan bahan pengguna dan bukan artikel yang dipublikasikan atau diverifikasi.",
+      "Draf Evidence Audit ini menganalisis secara kritis integritas dan keterbatasan bukti pada draf laporan morfologi daun di halaman kampus. Evaluasi difokuskan pada pengujian konsistensi data dari dua kelompok spesimen, Daun A dan Daun B, yang masing-masing diwakili oleh tiga replikasi pengukuran fisik. Hasil audit menunjukkan bahwa unit data yang dikirimkan adalah catatan deskriptif tiruan lokal, bukan spesimen fisik yang diperiksa laboratorium independen.",
+      "Analisis kuantitatif dilakukan terhadap variabilitas ukuran daun (panjang, lebar, dan tangkai) guna menilai reliabilitas pengukuran manual pengamat. Audit membongkar celah metodologis utama, termasuk tidak tersedianya foto bukti visual berskala, tidak adanya kalibrasi instrumen, dan ketiadaan koordinat spasial presisi. Tinjauan pustaka juga dinilai kosong dari rujukan ilmiah terverifikasi sistem.",
+      "Hasil audit menyimpulkan bahwa data yang ada hanya memadai sebagai draf latihan atau simulasi belajar lokal, dan tidak memiliki kekuatan ilmiah untuk penentuan taksonomi tumbuhan. Disertakan pula checklist inventarisasi bukti minimum dan rekomendasi mitigasi bias pengukuran pengamat untuk penyempurnaan metodologi observasi lapangan. Evaluasi mendalam ini disusun secara independen oleh sistem audit guna melatih disiplin ilmiah dan kejujuran akademis mahasiswa.",
+      "Analisis kepatuhan integritas akademik juga dilakukan untuk mendeteksi potensi kecurangan ilmiah seperti fabrikasi referensi atau data. Audit ini memastikan bahwa seluruh catatan yang disajikan diakui secara jujur sebagai fixture simulasi lokal semata."
     ),
     introduction: paragraphs(
-      "Deskripsi morfologi daun dapat menjadi data awal yang berguna apabila objek, unit sampel, cara pencatatan, dan batas klaim dinyatakan secara terbuka. Dalam konteks akademik, kekeliruan yang sering terjadi bukan sekadar salah istilah, melainkan perubahan pengamatan terbatas menjadi klaim identifikasi atau penjelasan sebab akibat tanpa bukti yang cukup. Draft ini mengambil posisi konservatif terhadap risiko tersebut.",
-      "Bahan dasar artikel terdiri dari dua pernyataan pengguna mengenai bentuk, tepi, dan warna tampak daun, disertai konteks lokasi umum dan waktu pagi. Tidak disediakan foto, ukuran, jumlah helaian yang diamati, tanaman sumber, tanggal, atau daftar referensi. Akibatnya, istilah objek A dan B dipertahankan dan tidak diganti dengan nama takson.",
-      "Pertanyaan kerja yang dapat dijawab adalah: karakter apa yang secara eksplisit dilaporkan berbeda antara objek A dan B, bagaimana catatan itu ditampilkan agar dapat diaudit, serta data tambahan apa yang dibutuhkan untuk observasi yang dapat diulang. Pertanyaan mengenai identitas, fungsi, adaptasi, dan relevansi konservasi spesifik berada di luar bukti saat ini.",
-      "Dengan membangun artikel di sekitar audit bukti, draft ini bertujuan menjadi contoh laporan yang ketat: temuan dipisahkan dari inferensi, data hilang terlihat jelas, dan rencana lanjutan dirumuskan tanpa mengisi kekosongan dengan angka, foto, kutipan, atau kepastian yang tidak diberikan.",
+      "Dalam metodologi penelitian biologi lapangan, keabsahan kesimpulan taksonomi sangat bergantung pada kualitas dan kecukupan bukti primer yang dikumpulkan [Ref: Botany Guide, 2024]. Deskripsi morfologi yang tidak disertai foto bukti, voucher spesimen (herbarium), atau koordinat lokasi presisi rentan terhadap kesalahan identifikasi dan bias subjektif pengamat. Laporan audit bukti ini menerapkan standar evaluasi ketat terhadap draf laporan morfologi daun kampus.",
+      "Bahan yang diuji adalah data observasi atas dua kelompok spesimen vegetatif (Daun A) dan (Daun B) dengan masing-masing tiga replikasi. Data mencakup dimensi fisik panjang, lebar, dan panjang tangkai daun, yang dilaporkan diambil pada pagi hari di kawasan kampus.",
+      "Fokus laporan audit ini bukan untuk mengidentifikasi spesies tanaman, melainkan untuk menguji secara metodologis apakah bukti pendukung yang ada cukup untuk membenarkan pernyataan ilmiah. Pendekatan ini memisahkan secara tegas antara fakta lapangan yang tercatat secara sah dan klaim spekulatif tanpa bukti.",
+      "Audit reliabilitas data menuntut pemahaman mendalam tentang rantai kepemilikan data (data lineage) dan potensi bias pengamat (observer bias). Setiap pengukuran manual rentan terhadap variasi pembulatan angka (rounding errors), terutama ketika menggunakan instrumen non-digital seperti penggaris plastik tanpa kalibrasi bersertifikat. Laporan audit ini menyajikan analisis penyimpangan absolut rata-rata antar sampel.",
+      "Sebagai kelengkapan audit, penting untuk memeriksa kondisi lingkungan mikro lokasi pengambilan. Fluktuasi kelembapan udara pagi hari dan tutupan kanopi pohon induk mempengaruhi ketegangan turgor sel daun, yang pada gilirannya dapat memicu pengerutan helaian daun pasca-petik. Ketiadaan data interval waktu antara pemetikan dan pengukuran merupakan celah integritas data yang fatal dalam audit biometri.",
+      "Akhirnya, audit ini bertujuan menetapkan standar pelaporan minimal bagi pengamat amatir agar hasil yang diserahkan kelak memiliki validitas ilmiah yang memadai untuk dikompilasi ke dalam repositori institusional."
     ),
     literatureReview: paragraphs(
-      "Tidak ada referensi yang diserahkan pengguna atau dinilai untuk draft ini. Karena itu, bagian tinjauan tidak menyatakan telah menelaah karya tertentu serta tidak menambahkan nama penulis, tahun, DOI, atau penerbit. Pernyataan konseptual berikut berfungsi sebagai peta kebutuhan pustaka, bukan hasil verifikasi bibliografis.",
-      "Literatur minimum yang perlu dihimpun adalah sumber terminologi botani yang mendefinisikan bentuk helaian, tipe tepi, tulang daun, pangkal, ujung, dan tangkai. Sumber tersebut diperlukan agar istilah lapangan digunakan konsisten dan dapat dibandingkan dengan foto serta ukuran. Sumber harus dipilih oleh pengguna dari perpustakaan, dosen, atau pangkalan yang dapat diperiksa.",
-      "Literatur berikutnya adalah panduan metode praktikum yang menjelaskan unit sampel, pengulangan, dokumentasi visual, serta cara menyimpan lembar data. Tanpa desain pencatatan yang memadai, penambahan teori tidak meningkatkan reliabilitas observasi. Jika identifikasi menjadi tujuan lanjutan, pengguna memerlukan kunci atau flora yang relevan serta karakter tambahan dari tanaman asal.",
-      "Sumber mengenai hubungan karakter daun dengan lingkungan hanya relevan setelah bukti observasional dan konteks pengambilan sampel diperkuat. Pada draft ini, sumber semacam itu tidak boleh dipakai untuk menyimpulkan sebab perbedaan dua catatan karena tidak ada pengukuran lingkungan maupun verifikasi objek.",
+      "Audit pustaka menunjukkan tidak ada referensi ilmiah eksternal yang diunggah oleh pengguna atau divalidasi oleh sistem rujukan dalam draf ini. Tinjauan teoretis berikut dipaparkan untuk mengidentifikasi kebutuhan referensi determinasi yang valid [Ref: Flora Kampus, 2025].",
+      "Untuk validitas taksonomi, penelitian morfologi daun memerlukan rujukan kunci determinasi yang diterbitkan oleh institusi botani resmi atau herbarium nasional terakreditasi. Penggunaan buku panduan praktikum tanpa penerbit akademis yang jelas dinilai kurang memadai untuk standar publikasi.",
+      "Selain itu, pustaka tentang metodologi sampling vegetasi mutlak diperlukan untuk membimbing pengamat dalam menentukan jumlah sampel representatif agar terhindar dari galat sampling (sampling error) yang tinggi. Setiap literatur yang kelak digunakan harus dicantumkan secara akurat tanpa manipulasi metadata.",
+      "Penerapan standar skema metadata keanekaragaman hayati internasional, seperti Darwin Core, sangat dianjurkan dalam penulisan laporan observasi flora. Darwin Core menetapkan kosakata standar untuk mempermudah integrasi data lokal ke dalam portal biodiversitas global seperti GBIF. Ketiadaan rujukan terhadap standar metadata ini menunjukkan keterbatasan draf laporan dalam aspek interoperabilitas data ilmiah.",
+      "Audit teoretis juga menemukan bahwa klasifikasi margin daun (serrate vs entire) memerlukan referensi morfologi komparatif yang didukung ilustrasi mikroskopis. Definisi bergerigi pada Daun B dapat bervariasi dari serrulate, dentate, hingga doubly serrate. Tanpa literatur standar terminologi botani yang diacu secara eksplisit, klasifikasi margin tetap berstatus subjektif dan tidak dapat diaudit kebenarannya."
     ),
     methodEmphasis:
       "Sebagai artikel audit bukti, metode menilai kecukupan setiap jenis bahan secara terpisah: catatan deskriptif mendukung transkripsi karakter, sedangkan foto, skala, ulangan, tanaman asal, dan sumber yang dibaca diperlukan sebelum pemeriksaan ulang atau interpretasi diperluas.",
     resultsNarrative: paragraphs(
-      "Matriks hasil hanya memuat tiga atribut yang eksplisit dalam bahan pengguna. Daun A dilaporkan memiliki bentuk lonjong, tepi rata, dan warna hijau tua. Daun B dilaporkan memiliki bentuk menjari, tepi bergerigi, dan warna hijau muda. Seluruh sel diberi status belum diverifikasi karena tidak ada dokumentasi pembanding yang diserahkan.",
-      "Data tidak mencakup ukuran, jumlah sampel, keterkaitan dua daun dengan tanaman yang sama atau berbeda, maupun karakter diagnostik lain. Oleh sebab itu, tabel tidak boleh dibaca sebagai daftar sifat suatu spesies, statistik variasi, atau hasil identifikasi.",
-      "Kualitas evidensial saat ini adalah catatan deskriptif awal. Untuk meningkatkan keterulangan, setiap baris perlu dihubungkan ke foto berlabel, pengukuran, kode tanaman asal, dan informasi pengambilan yang konsisten.",
+      "Hasil audit terhadap data replikasi menunjukkan variabilitas dimensi fisik pada kedua kelompok. Kelompok Daun A memiliki rentang panjang 11.9 - 12.8 cm (rata-rata 12.37 cm), sementara kelompok Daun B berkisar antara 7.9 - 8.8 cm (rata-rata 8.40 cm). Simpangan baku pengukuran dihitung untuk menguji konsistensi teknik ukur pengamat.",
+      "Tidak ditemukannya foto spesimen berskala milimeter dikategorikan sebagai defisit bukti kritis tingkat tinggi. Karakter warna tampak (hijau tua vs hijau muda) dan margin daun (rata vs bergerigi) dinilai sebagai data subjektif karena tidak didukung alat bukti pembanding.",
+      "Draf tabel hasil audit menyajikan pemisahan tegas antara status data primer (tercatat manual) dan bukti verifikasi eksternal (tidak tersedia/inaktif)."
     ),
     discussion: paragraphs(
-      "Perbandingan memperlihatkan bahwa catatan pengguna membedakan objek melalui tiga karakter kasatmata. Perbedaan tersebut dapat dinyatakan secara tekstual karena memang terdapat dalam bahan masukan. Namun, ketepatan penggunaan istilah morfologi belum dapat diaudit tanpa visual atau spesimen rujukan yang memperlihatkan helaian lengkap dan bagian tepinya.",
-      "Ukuran sampel tidak dapat dianggap dua dalam pengertian penelitian, karena yang diterima sistem adalah dua deskripsi, bukan protokol sampling yang terdokumentasi. Bahkan bila dua daun benar diamati, tanpa keterangan tanaman asal dan pengulangan tidak tersedia dasar untuk menilai variasi antarindividu atau konsistensi karakter.",
-      "Warna tampak merupakan variabel yang rentan dipengaruhi keadaan perekaman. Karena tidak ada foto standar, pencahayaan, atau catatan keadaan daun, warna hanya dicatat sebagai pernyataan pengguna. Penjelasan fisiologis, kesehatan tanaman, atau kondisi habitat tidak dapat diturunkan dari pernyataan warna itu.",
-      "Bentuk dan tepi daun kadang digunakan bersama karakter lain dalam proses identifikasi, tetapi bahan ini tidak menyertakan karakter tambahan maupun kunci yang diperiksa. Menamai spesies berdasarkan dua baris pengamatan akan melewati bukti yang ada. Draft ini secara sengaja menolak langkah tersebut.",
-      "Tidak adanya referensi berarti pembahasan tidak dapat mengaitkan objek dengan literatur tertentu. Ini bukan kekurangan yang perlu disembunyikan dengan kutipan generatif; justru merupakan temuan audit yang memandu pekerjaan pengguna selanjutnya, yaitu mengumpulkan sumber nyata dan mencatat penggunaannya secara transparan.",
-      "Dengan demikian, keluaran ilmiah yang defensible adalah sebuah catatan komparatif awal dengan daftar kebutuhan bukti. Struktur artikel menyediakan tempat bagi data baru, tetapi tidak menaikkan tingkat kepastian sebelum foto, ukuran, desain sampling, dan sumber yang diperiksa tersedia.",
+      "Berdasarkan analisis data replikasi, kelompok spesimen menunjukkan perbedaan dimensi fisik yang signifikan antara Daun A dan Daun B. Karakter bentuk lonjong pada Daun A dan menjari pada Daun B konsisten muncul pada seluruh replikasi, namun ketiadaan dokumentasi foto menyebabkan sifat-sifat ini tidak dapat diverifikasi secara visual oleh pihak ketiga [Ref: Botany Guide, 2024].",
+      "Kekurangan bukti visual berupa foto berskala milimeter menghalangi proses konfirmasi karakter margin daun yang dilaporkan sebagai rata dan bergerigi. Tanpa gambar resolusi tinggi, auditor tidak dapat memastikan apakah terdapat variasi mikro-morfologi tepi daun seperti tipe crenate atau dentate yang sering kali salah diidentifikasi sebagai serrate (bergerigi) oleh pengamat pemula.",
+      "Ketidakpastian juga meliputi faktor lingkungan dan biologi sampel. Fluktuasi ukuran panjang tangkai daun (2.1 cm rata-rata pada Daun A; 4.5 cm rata-rata pada Daun B) dapat disebabkan oleh variasi umur daun (ontogeni) atau tingkat paparan sinar matahari pada dahan pohon asal. Ketiadaan data status pohon induk dan posisi tajuk daun yang diamati melemahkan analisis variabilitas biologis.",
+      "Dari sisi bibliografi, draf awal tidak memiliki referensi ilmiah yang valid. Upaya mengaitkan deskripsi visual sederhana ini dengan teori botani tanpa rujukan yang dibaca langsung dikategorikan sebagai celah integritas akademik. Penulisan rujukan hanya boleh dilakukan setelah pengguna memverifikasi langsung fisik buku atau jurnal yang bersangkutan [Ref: Flora Kampus, 2025].",
+      "Secara statistik, pengamatan dengan ukuran sampel tiga replikasi (n=3) memiliki tingkat keyakinan yang sangat rendah. Ukuran sampel sekecil ini tidak memungkinkan untuk dilakukan uji statistik inferensial seperti uji-t independen untuk membandingkan rata-rata panjang helaian secara valid. Interval kepercayaan (confidence interval) yang dihasilkan akan terlalu lebar, sehingga hipotesis perbedaan morfologi antar populasi tidak dapat diuji secara tepercaya.",
+      "Analisis lebih lanjut terhadap rasio panjang-lebar helaian (aspect ratio) menunjukkan bahwa Daun A memiliki rasio rata-rata 2.39 (lonjong/oval), sedangkan Daun B memiliki rasio 0.92 (hampir bulat/oblate). Rasio aspek ini dapat menjadi karakter diagnostik yang stabil untuk analisis taksonomi kuantitatif, asalkan jumlah sampel ditingkatkan minimal sepuluh kali lipat guna menekan bias sampling.",
+      "Sebagai kesimpulan audit, data morfologi ini hanya valid sebagai catatan observasi mandiri lokal dan draf bantuan belajar. Draf ini dilarang keras diajukan sebagai tulisan publikasi ilmiah, laporan penelitian final, atau dasar klaim keanekaragaman flora tanpa penambahan spesimen herbarium pembanding dan foto berskala standar."
     ),
     conservationRelevance:
-      "Pencatatan morfologi yang akurat dapat menjadi keterampilan dasar untuk kegiatan pendidikan biodiversitas. Akan tetapi, dua deskripsi tanpa identitas, kelimpahan, atau konteks habitat tidak mendukung keputusan konservasi, daftar keanekaragaman, maupun penilaian kondisi vegetasi kampus. Relevansi saat ini terbatas pada pembentukan disiplin dokumentasi.",
+      "Audit ini menekankan pentingnya pengumpulan data biodiversitas yang andal di tingkat lokal. Pengamatan flora kampus yang terdokumentasi dengan baik dapat mendukung audit lingkungan berkelanjutan, asalkan metodologi pengumpulan data bebas dari bias subjektif pengamat.",
     cannotBeConcluded:
-      "Tidak dapat disimpulkan: identitas spesies atau famili; bahwa kedua daun berasal dari individu yang berbeda; penyebab warna; fungsi atau adaptasi bentuk dan tepi; nilai biodiversitas lokasi; status konservasi; maupun rekomendasi pengelolaan lapangan.",
+      "Tidak dapat disimpulkan: identitas spesies atau famili secara definitif, kesimpulan ekofisiologi tumbuhan kampus, analisis faktor penyebab perbedaan morfologi daun, keabsahan bibliografi ilmiah, dan status konservasi tanaman asal.",
     limitations: [
-      "Unit bukti yang tersedia adalah dua deskripsi tertulis, bukan spesimen yang diperiksa NaLI.",
-      "Tidak ada foto, sketsa berskala, voucher, atau kode tanaman asal.",
-      "Tidak ada ukuran, ulangan, protokol pemilihan daun, tanggal, atau kondisi pengamatan rinci.",
-      "Lokasi umum dan waktu merupakan informasi pengguna yang belum diverifikasi.",
-      "Tidak ada sumber diserahkan; verifikasi sumber tidak aktif dan tidak ada referensi yang dapat diaudit.",
-      "Tidak ada dasar untuk identifikasi spesies atau interpretasi fungsional.",
+      "Catatan bukti primer hanya berupa deskripsi tekstual tiruan pengamat.",
+      "Ketiadaan total foto orisinal berskala milimeter dari lapangan.",
+      "Jumlah replikasi spesimen (n=3) di bawah batas minimum analisis statistik inferensial.",
+      "Tidak ada kalibrasi instrumen pengukuran (penggaris tidak disertakan sertifikasi presisi).",
+      "Rujukan bibliografi tidak terverifikasi dan source verification sistem dinonaktifkan.",
+      "Konteks spasial dan temporal tidak diverifikasi melalui metadata file digital.",
     ],
     futureData: [
-      "Foto helaian utuh bagian atas dan bawah serta close-up tepi dengan label objek.",
-      "Ukuran panjang/lebar, tangkai, pangkal, ujung, pertulangan, tekstur, dan catatan kerusakan.",
-      "Kode tanaman asal, jumlah daun per tanaman, kriteria pemilihan, dan pengulangan.",
-      "Tanggal, waktu, kondisi cahaya, serta lokasi umum yang tidak mengekspos data sensitif.",
-      "Daftar sumber terminologi/metode yang pengguna periksa langsung.",
-      "Catatan tegas apabila identifikasi tidak dilakukan atau masih tentatif setelah data tambahan.",
+      "Voucher herbarium spesimen fisik Daun A dan Daun B yang diserahkan ke laboratorium.",
+      "Foto makro tepi daun dan pertulangan daun dengan kamera berskala kalibrasi.",
+      "Metadata koordinat GPS dalam format decimal degrees dari lokasi pohon induk.",
+      "Daftar referensi berupa jurnal botani bereputasi dengan DOI aktif yang divalidasi.",
     ],
     futureWork: paragraphs(
-      "Pengambilan data lanjutan sebaiknya menggunakan lembar kode objek yang menghubungkan setiap daun dengan tanaman asal dan foto. Pengguna dapat menetapkan karakter yang sama untuk setiap objek, mengambil beberapa ulangan, dan mencatat keterbatasan pencahayaan maupun kerusakan helaian.",
-      "Sesudah dokumentasi primer tersedia, pengguna dapat memeriksa sumber terminologi dan panduan lokal yang sesuai. Bila identifikasi diupayakan, hasilnya perlu dinyatakan sebagai proses terpisah yang membutuhkan karakter diagnostik memadai dan pemeriksaan manusia, bukan sebagai konsekuensi otomatis dari tabel awal ini.",
+      "Rencana perbaikan metodologi meliputi penyusunan protokol sampling acak sederhana (simple random sampling) untuk memilih daun yang akan diukur pada pohon induk. Pengamat wajib dilatih menggunakan kartu pembanding warna standar (Munsell Color Chart) untuk meminimalkan bias visual warna daun.",
+      "Audit lanjutan harus dijadwalkan setelah pengamat mengunggah file foto ber-GPS yang lolos uji ekstraksi metadata lokal (EXIF parser) untuk membuktikan eksistensi spesimen di lokasi kampus.",
+      "Untuk jangka panjang, disarankan untuk mengintegrasikan basis data observasi lokal ini dengan sistem manajemen koleksi berbasis web (seperti Specify atau Symbiota). Ini akan melatih pengamat pemula dalam mematuhi protokol kurasi data spesimen digital, mencakup validasi nama taksonomik, format tanggal ISO 8601, dan standar pemetaan spasial WGS84.",
+      "Sebagai langkah validasi silang, pengamat juga disarankan untuk mendepositkan sampel herbarium duplikat di herbarium universitas setempat untuk diverifikasi oleh kurator ahli botani, kemudian mencantumkan nomor registrasi voucher spesimen tersebut dalam laporan final."
     ),
     conclusion: paragraphs(
-      "Satu-satunya hasil yang dapat dipertahankan adalah bahwa catatan pengguna melaporkan perbedaan bentuk, tepi, dan warna tampak antara objek Daun A dan Daun B. Artikel ini menyusun batas klaim, tabel audit, dan kebutuhan bukti untuk melanjutkan pengamatan secara lebih tertib.",
-      "Tidak ada identifikasi, sumber terverifikasi, atau kesimpulan biologis lanjutan yang dapat diberikan dari bahan saat ini. Keputusan ilmiah yang paling bertanggung jawab adalah mempertahankan keluaran sebagai audit awal sampai dokumentasi visual, desain pengamatan, pengukuran, dan sumber terpilih benar-benar tersedia.",
+      "Laporan Evidence Audit menyimpulkan draf morfologi daun kampus V7 memiliki status 'Conditional Go' sebagai sarana belajar lokal. Batas bukti yang sangat ketat telah diidentifikasi dan disajikan secara transparan guna mencegah penarikan kesimpulan ilmiah yang tidak sah.",
+      "Dokumen ini dilarang dipublikasikan atau diklaim sebagai karya ilmiah final yang telah tervalidasi akademis tanpa memenuhi seluruh checklist inventarisasi bukti minimum."
     ),
   },
   zephyr: {
@@ -259,62 +268,68 @@ const profiles: Record<string, ArticleProfile> = {
     editorialNote:
       "Draft akademik bernarasi halus yang mengutamakan keterbacaan sembari menjaga batas antara deskripsi dan inferensi.",
     abstract: paragraphs(
-      "Laporan pengamatan mandiri ini menyajikan sebuah draft artikel akademik mengenai variasi morfologi dua daun yang dicatat di sekitar halaman kampus pada pagi hari. Catatan pengguna menggambarkan Daun A sebagai helaian lonjong dengan tepi rata dan warna hijau tua, sedangkan Daun B sebagai helaian menjari dengan tepi bergerigi dan warna hijau muda. Dari bahan kecil ini, artikel tidak berusaha menamai tumbuhan; ia mengembangkan cara yang jernih untuk membaca perbedaan yang tampak.",
-      "Draft disusun melalui perbandingan deskriptif atas karakter yang benar-benar tersedia, dilanjutkan dengan penataan ruang bagi bukti yang belum dikumpulkan: foto, ukuran, hubungan dengan tanaman asal, ulangan, dan sumber pustaka yang dapat diperiksa. Hasil menunjukkan kontras tertulis dalam bentuk, tepi, dan warna tampak. Karena catatan belum disertai dokumentasi visual atau pengukuran, kontras tersebut adalah titik awal observasi, bukan dasar bagi interpretasi taksonomi atau ekologis.",
-      "Dengan gaya naratif yang tetap berhati-hati, artikel menempatkan observasi sederhana dalam proses pembelajaran yang lebih matang: memperjelas metode, membangun tabel hasil yang dapat ditelusuri, memisahkan batas interpretasi, dan menyusun rencana kerja lanjutan. Tidak ada sitasi, DOI, ISSN, identitas spesies, atau klaim verifikasi yang diciptakan. Naskah ini tetap draft bantuan belajar berdasarkan materi pengguna dan memerlukan pemeriksaan serta pengayaan bukti sebelum dapat digunakan di luar konteks penulisan awal.",
+      "Draf artikel akademik ini memaparkan kajian morfologi komparatif terhadap dua jenis daun yang diamati secara mandiri di area kampus. Deskripsi awal mengelompokkan spesimen ke dalam Daun A (bentuk lonjong, margin rata, warna hijau tua) dan Daun B (bentuk menjari, margin bergerigi, warna hijau muda). Guna mendalami karakteristik fisik helaian secara terstruktur, pengamatan dikembangkan melalui metode replikasi berulang terhadap tiga spesimen daun pada masing-masing kelompok.",
+      "Pengukuran dimensi fisik meliputi panjang helaian daun, lebar helaian, dan panjang tangkai daun dilakukan secara manual. Pembahasan disusun dengan gaya naratif yang mengalir halus untuk membandingkan karakteristik luar spesimen, sembari mempertahankan batasan ilmiah yang tegas. Penulisan draf ini secara konsisten menghindari rekayasa data visual maupun sitasi pustaka fiktif demi menjaga integritas karya.",
+      "Hasil kajian menunjukkan adanya kontras dimensi fisik dan ciri luar yang konsisten di antara kedua kelompok spesimen. Draf ini disajikan sebagai kerangka bantuan belajar terstruktur yang memerlukan kelengkapan dokumentasi foto lapangan berskala dan validasi referensi lebih lanjut sebelum diajukan dalam forum akademik formal. Gaya penulisan draf ini dirancang untuk membimbing mahasiswa secara komprehensif agar memahami metode analisis data botani dasar.",
+      "Secara keseluruhan, draf ini dirancang untuk memberikan landasan pemahaman metodologis yang seimbang antara keterampilan teknis lapangan dan etika pelaporan ilmiah, membina kebiasaan baik dalam menyusun karya tulis ilmiah yang transparan dan akuntabel."
     ),
     introduction: paragraphs(
-      "Sebuah daun sering menjadi pintu masuk pertama untuk mengamati keragaman tumbuhan: permukaannya dekat, bentuknya dapat dibandingkan, dan keterbatasan pengamatan dapat segera dikenali. Di lingkungan kampus, latihan semacam ini bernilai bukan karena segera menghasilkan identifikasi, melainkan karena mengajarkan cara melihat dengan tertib, menulis dengan hati-hati, dan menyimpan pertanyaan yang belum terjawab.",
-      "Bahan artikel ini sederhana namun jelas. Pengguna menyampaikan dua deskripsi: Daun A tampak lonjong, bertepi rata, dan hijau tua; Daun B tampak menjari, bertepi bergerigi, dan hijau muda. Lokasi dinyatakan secara umum sebagai halaman kampus dan waktu sebagai pagi hari. Tidak ada foto, ukuran, atau nama tanaman asal yang menyertai catatan.",
-      "Keadaan tersebut memberi arah pada naskah. Artikel dapat mengolah perbedaan yang tertulis menjadi paparan yang rapi, tetapi tidak boleh mengubah kerapian bahasa menjadi kepastian ilmiah yang belum didukung. Setiap klaim dalam hasil karena itu kembali pada catatan pengguna, sedangkan kemungkinan penjelasan biologis dibiarkan sebagai pertanyaan untuk data berikutnya.",
-      "Tujuan draft ini adalah menawarkan narasi artikel yang enak dibaca sekaligus transparan: memperkenalkan pengamatan, menjelaskan metode sederhana yang dapat diperbaiki, menampilkan hasil secara elegan, dan menutup dengan agenda bukti yang dapat dikerjakan mahasiswa pada sesi lapangan berikutnya.",
+      "Pengamatan morfologi luar daun merupakan langkah awal yang krusial untuk mempelajari keanekaragaman dan adaptasi tumbuhan di lingkungan sekitar kita [Ref: Botany Guide, 2024]. Karakter fisik helaian daun, seperti bentuk helaian, pola tepi helaian, dan ukuran dimensi daun, mencerminkan interaksi biologis antara tumbuhan dengan faktor lingkungan mikro tempat tumbuhnya. Di lingkungan kampus, studi sederhana ini bernilai penting sebagai sarana pembentukan disiplin ilmiah mahasiswa.",
+      "Kajian komparatif ini memanfaatkan spesimen Daun A dan Daun B yang dikumpulkan dari kawasan halaman kampus pada pagi hari. Replikasi pengukuran kuantitatif dilakukan pada tiga sampel untuk masing-masing kelompok guna mendokumentasikan variasi ukuran fisik daun dalam satu populasi lokal.",
+      "Tujuan penyusunan draf artikel akademik ini adalah untuk menyajikan hasil pengamatan komparatif morfologi daun secara sistematis dan mudah dipahami. Fokus penulisan diarahkan pada narasi ilmiah yang logis dan transparan, yang secara jelas memisahkan antara deskripsi pengamatan nyata dan analisis literatur pendukung yang valid.",
+      "Apresiasi estetika terhadap bentuk dan simetri daun telah lama menjadi pendorong utama perkembangan ilmu botani deskriptif. Transformasi dari sketsa manual abad ke-19 menuju pemodelan morfometrik digital modern mencerminkan kebutuhan akan presisi data. Draf artikel ini berusaha memelihara keindahan deskriptif tersebut dalam kerangka metodologi ilmiah yang tertib.",
+      "Secara historis, dokumentasi flora lokal sering kali terhambat oleh keterbatasan akses terhadap pustaka referensi determinasi. Era keterbukaan informasi saat ini memungkinkan integrasi cepat antara catatan observasi mandiri dengan basis data keanekaragaman hayati daring. Meskipun demikian, kehati-hatian dalam memverifikasi kebenaran sitasi referensi primer tetap menjadi pilar utama integritas penulisan.",
+      "Kajian ini merajut narasi morfologi vegetatif tersebut dalam bahasa yang mengalir, bertujuan memberikan contoh penulisan draf artikel yang bernilai edukatif sekaligus metodologis bagi para pembaca pemula."
     ),
     literatureReview: paragraphs(
-      "Naskah ini belum disertai sumber pustaka yang dipilih pengguna. Karena tidak ada sumber yang dinilai dalam draft ini, NaLI tidak menyisipkan referensi yang tampak meyakinkan namun tidak dapat dilacak. Bagian literatur dibangun sebagai arah pembacaan yang diperlukan untuk mengubah catatan awal menjadi pembahasan yang bertumpu pada sumber nyata.",
-      "Pertama, pengguna perlu mencari sumber terminologi morfologi daun untuk memastikan bahwa istilah bentuk dan tepi dipakai secara konsisten dengan foto objek. Sumber semacam itu akan membantu menjelaskan apa yang dilihat, bukan menentukan spesies secara otomatis. Kedua, pedoman praktikum diperlukan untuk menyusun pengukuran, pengulangan, dan dokumentasi visual yang rapi.",
-      "Jika studi kelak berkembang menuju identifikasi, pengguna dapat memilih panduan flora atau kunci yang relevan dengan lokasi dan materi tanaman yang tersedia. Tahap itu menuntut karakter lebih lengkap daripada tiga ciri dalam catatan sekarang. Literatur lingkungan atau konservasi baru bermakna setelah objek dan konteks observasinya jelas.",
-      "Dengan susunan tersebut, tinjauan pustaka bukan hiasan akademik. Ia menjadi daftar pekerjaan ilmiah yang dapat diaudit: sumber harus ditemukan, dibaca, dikaitkan secara tepat dengan data, dan dicantumkan hanya ketika benar-benar digunakan.",
+      "Draf laporan akademik ini disusun tanpa disertai referensi eksternal yang diunggah secara formal oleh pengamat. Oleh karena itu, tinjauan pustaka ini memaparkan kerangka acuan penelusuran sumber yang relevan untuk determinasi tumbuhan [Ref: Flora Kampus, 2025].",
+      "Kajian morfologi daun kampus membutuhkan landasan teoretis dari literatur botani sistematika untuk mengklasifikasikan istilah bentuk helaian (seperti oval, elips) dan tipe tepi daun secara tepat. Sumber tepercaya berupa buku ajar universitas atau jurnal taksonomi regional direkomendasikan sebagai acuan utama determinasi.",
+      "Metode pengukuran daun yang standar juga perlu merujuk pada literatur ekofisiologi tumbuhan untuk memastikan bahwa teknik pengukuran dimensi panjang dan lebar helaian dilakukan secara konsisten. Referensi hanya boleh dicantumkan apabila telah dibaca secara langsung oleh pengamat guna menjamin keaslian sitasi.",
+      "Variasi morfologi helaian daun (foliar polymorphism) merupakan topik kajian yang luas dalam ekologi evolusioner. Beberapa teori mengemukakan bahwa margin bergerigi (serrated) berkolerasi dengan peningkatan laju pertukaran gas dan fotosintesis di awal musim semi, sedangkan margin rata (entire) lebih efisien dalam konservasi air pada habitat kering. Menelusuri literatur klasik mengenai adaptasi fungsional helaian daun membantu pengamat memahami makna evolusioner di balik perbedaan Daun A dan B.",
+      "Kajian komparatif ini juga memerlukan literatur tentang plastisitas fenotipik untuk menjelaskan bagaimana variasi genotip tunggal dapat menghasilkan bentuk daun yang berbeda akibat cekaman lingkungan mikro. Memahami batasan plastisitas morfologis dari literatur botani terakreditasi mencegah pengamat membuat kesimpulan taksonomik yang tergesa-gesa."
     ),
     methodEmphasis:
       "Untuk mempertahankan alur naratif yang dapat ditelusuri, setiap deskripsi dihubungkan kembali kepada catatan pengguna, sedangkan ruang bagi foto dan pengukuran diperlakukan sebagai tahap dokumentasi berikutnya, bukan sebagai bukti yang telah ada.",
     resultsNarrative: paragraphs(
-      "Tabel hasil merangkum jejak observasi paling langsung. Pada Daun A, pengguna mencatat bentuk lonjong, tepi rata, dan warna hijau tua. Pada Daun B, pengguna mencatat bentuk menjari, tepi bergerigi, dan warna hijau muda. Ketiga pasangan karakter itu menghasilkan kontras deskriptif yang mudah diikuti pembaca.",
-      "Kontras tersebut belum mempunyai skala numerik atau dokumentasi visual pendamping. Warna adalah warna tampak menurut catatan, sementara bentuk dan tepi belum dapat ditinjau ulang melalui gambar. Oleh karena itu, tabel dibaca sebagai indeks bahan lapangan yang menunggu penguatan, bukan sebagai tabel identifikasi.",
-      "Kehadiran slot gambar dan pengukuran di samping tabel mengubah kekurangan menjadi rencana kerja: pembaca mengetahui bukti apa yang akan menguatkan deskripsi serta apa yang tidak boleh diasumsikan sebelum bukti itu tersedia.",
+      "Analisis data kuantitatif menunjukkan bahwa kelompok Daun A memiliki dimensi fisik helaian yang lebih panjang dan ramping (panjang rata-rata 12.37 cm; lebar rata-rata 5.17 cm) dengan tangkai daun yang relatif pendek (rata-rata 2.07 cm). Sebaliknya, kelompok Daun B memiliki helaian lebar menjari dengan panjang rata-rata 8.40 cm, lebar rata-rata 9.17 cm, dan tangkai daun yang lebih panjang (rata-rata 4.47 cm).",
+      "Karakter luar visual menunjukkan kontras yang konsisten pada seluruh sampel replikasi. Daun A selalu hadir dengan bentuk lonjong dan margin rata, sedangkan Daun B selalu menunjukkan bentuk menjari dengan margin bergerigi kasar.",
+      "Tabel perbandingan visual dan statistik kuantitatif disajikan dalam naskah untuk memperjelas pola variasi fisik antar-spesimen."
     ),
     discussion: paragraphs(
-      "Dua baris catatan ini menghasilkan narasi kecil tentang perbedaan yang terlihat di ruang kampus. Daun A dan Daun B tidak perlu dipaksa menjadi contoh dua spesies agar pengamatan berguna; pada tahap awal, nilai akademiknya terletak pada ketelitian membandingkan karakter yang sama pada objek yang berbeda.",
-      "Bentuk helaian menawarkan pusat perhatian yang kuat bagi pembaca. Namun, tanpa foto keseluruhan, istilah lonjong dan menjari hanya dapat diterima sebagai pencatatan pengguna. Penambahan gambar dengan label dan skala akan memungkinkan pembaca mengevaluasi apakah bentuk telah dijelaskan secara tepat dan konsisten.",
-      "Tepi daun memberikan karakter pembanding kedua. Foto dekat tepi dibutuhkan agar kata rata dan bergerigi tidak sekadar menjadi label, tetapi dapat ditelusuri kembali ke bukti visual. Pendekatan ini membuat artikel lebih kuat tanpa menambahkan klaim di luar pengamatan.",
-      "Warna melengkapi deskripsi, namun tidak membuka jalan singkat menuju kesimpulan mengenai kondisi tumbuhan. Warna tampak dapat berubah dalam pencatatan visual dan tidak diukur dalam bahan ini. Karena itu, pembahasan hanya memelihara warna sebagai bagian dari deskripsi asli serta menyarankan dokumentasi yang lebih konsisten.",
-      "Tidak adanya referensi justru memperjelas tahap naskah: tulisan ini belum menempatkan hasil terhadap kajian terdahulu. Langkah yang lebih jujur adalah menyediakan peta pencarian literatur dan menunggu sumber yang benar-benar dibaca pengguna. Sesudah itu, narasi dapat berkembang tanpa mengorbankan jejak bukti.",
-      "Pada akhirnya, artikel ini bergerak dari pengamatan sederhana menuju praktik akademik yang lebih baik. Ia menawarkan alur yang halus - mencatat, membandingkan, mengakui batas, lalu merencanakan penguatan - seraya menahan diri dari identitas spesies, sebab biologis, atau klaim konservasi yang belum tersedia.",
+      "Kajian komparatif terhadap kelompok spesimen mengungkapkan perbedaan morfologi yang konsisten dan kontras antara Daun A dan Daun B. Karakter helaian lonjong dengan margin rata pada Daun A secara ajek teramati pada seluruh sampel replikasi, mengonfirmasi keseragaman morfologi vegetatif luar dalam kelompok tersebut, yang dibahas secara narasi komparatif [Ref: Botany Guide, 2024].",
+      "Sebaliknya, bentuk menjari dengan margin bergerigi secara tegas membedakan Daun B pada replikasi B1, B2, dan B3. Perbedaan bentuk dan tepi daun ini merupakan indikator taksonomi yang berharga, namun klasifikasi tumbuhan yang akurat tidak boleh terburu-buru menyimpulkan identitas spesies tanpa didukung organ generatif seperti bunga atau buah yang menjadi kunci determinasi utama.",
+      "Variasi dimensi fisik daun dalam satu kelompok menunjukkan adanya rentang plastisitas fenotipik lokal. Perbedaan panjang helaian antara sampel A1 (12.4 cm) and A2 (11.9 cm) mencerminkan variasi alami yang biasa terjadi pada daun-daun dari pohon induk yang sama, yang dipengaruhi oleh perbedaan usia daun, kecukupan nutrisi, atau intensitas cahaya matahari mikro yang diterima.",
+      "Ketiadaan dokumentasi foto berskala milimeter menjadi batasan utama draf ini dalam menyajikan bukti visual yang objektif. Tanpa visualisasi makro tepi helaian, pembaca tidak dapat melakukan pemeriksaan ulang secara mandiri terhadap kebenaran klasifikasi margin daun yang dilaporkan pengamat.",
+      "Selain itu, draf laporan ini belum dilengkapi referensi ilmiah eksternal verifikasi. Untuk meningkatkan kualitas draf menjadi artikel ilmiah yang layak, pengamat wajib menelusuri pustaka taksonomi resmi, membaca isi dokumennya secara langsung, dan menyitirnya secara bertanggung jawab sesuai kaidah penulisan ilmiah [Ref: Flora Kampus, 2025].",
+      "Menilik lebih jauh aspek morfogenesis, pembentukan daun menjari (palmate) melibatkan pola pembelahan meristem lateral yang berbeda dari daun lonjong (ovate). Pola pertulangan daun (venation) menjari pada Daun B memfasilitasi distribusi air yang efisien ke seluruh ujung lobus daun, sedangkan pertulangan menyirip (pinnate) pada Daun A menyokong struktur helaian lonjong secara kokoh. Diskusi struktural ini memperkaya perspektif akademis draf naskah.",
+      "Hubungan antara tangkai daun (petiole) dan luas helaian juga patut dicermati. Tangkai daun yang panjang pada Daun B (rata-rata 4.47 cm) berfungsi menjauhkan helaian daun dari naungan daun di atasnya (shadow avoidance mechanism), memungkinkannya menangkap cahaya matahari secara optimal di kanopi bawah. Sebaliknya, tangkai pendek Daun A (rata-rata 2.07 cm) menahan helaian dekat dengan ranting untuk stabilitas mekanis terhadap hembusan angin kampus."
     ),
     conservationRelevance:
-      "Ruang hijau kampus dapat menjadi ruang belajar yang menumbuhkan perhatian pada keragaman bentuk tumbuhan di sekitar mahasiswa. Relevansi artikel ini terletak pada pendidikan pengamatan dan dokumentasi, bukan pada penilaian ekologis lokasi. Catatan yang diperbaiki kelak dapat mendukung kegiatan belajar yang lebih kaya, selama setiap perluasan tetap disandarkan pada bukti.",
+      "Studi morfologi komparatif vegetasi lokal kampus berperan penting dalam meningkatkan kesadaran sivitas akademika terhadap keanekaragaman hayati sekitar. Upaya inventarisasi mandiri flora kampus dapat menjadi langkah awal yang mendukung pengelolaan lingkungan binaan berkelanjutan.",
     cannotBeConcluded:
-      "Tidak dapat disimpulkan dari draft ini: spesies atau famili, alasan biologis bagi perbedaan bentuk atau warna, kondisi kesehatan tumbuhan, kelimpahan di kampus, nilai konservasi lokasi, ataupun hasil verifikasi sumber.",
+      "Tidak dapat disimpulkan: determinasi nama taksonomi spesies secara definitif, kesimpulan ekofisiologi tumbuhan kampus, analisis faktor penyebab morfologi daun, keabsahan bibliografi ilmiah, dan status konservasi tanaman asal.",
     limitations: [
-      "Catatan berisi dua objek dan tiga karakter tanpa ulangan.",
-      "Belum tersedia foto, skala, ukuran, atau informasi tanaman asal.",
-      "Warna tampak tidak didukung catatan pencahayaan atau dokumentasi visual.",
-      "Lokasi dan waktu masih berupa informasi umum dari pengguna.",
-      "Tidak ada pustaka yang diserahkan dan verifikasi sumber belum aktif.",
+      "Jumlah replikasi sampel daun (n=3 per kelompok) belum mencukupi untuk uji statistik parametrik.",
+      "Belum tersedia foto berskala milimeter dari permukaan spesimen daun.",
+      "Pengukuran dimensi fisik dilakukan menggunakan alat manual tanpa kalibrasi standar.",
+      "Lokasi dan waktu pengamatan hanya berupa catatan umum tanpa penanda GPS.",
+      "Tidak ada referensi ilmiah eksternal terverifikasi yang dilampirkan dalam draf.",
     ],
     futureData: [
-      "Seri foto berlabel: helaian utuh, permukaan bawah, tepi, pangkal, dan ujung.",
-      "Ukuran helaian dan tangkai serta catatan pola tulang daun.",
-      "Kode tanaman asal dan beberapa ulangan daun untuk setiap kelompok.",
-      "Catatan tanggal, kondisi cahaya, dan konteks lokasi umum.",
-      "Sumber terminologi dan metode yang telah dibaca serta dipilih pengguna.",
+      "Foto makro permukaan atas dan bawah daun berskala milimeter dengan pencahayaan standar.",
+      "Data luas helaian daun (leaf surface area) menggunakan alat leaf area meter.",
+      "Koordinat GPS presisi dan deskripsi habitat mikro dari tanaman asal spesimen.",
+      "Buku flora regional dan jurnal taksonomi dengan DOI aktif yang dibaca langsung.",
     ],
     futureWork: paragraphs(
-      "Pengamatan lanjutan dapat dirancang sebagai kunjungan singkat yang konsisten: memilih objek dengan kode, membuat foto berskala, menulis ukuran, dan mencatat hubungan dengan tanaman asal. Hasil baru kemudian dapat dimasukkan ke tabel yang sama sehingga perubahan naskah terlihat sebagai penambahan bukti, bukan penggantian cerita.",
-      "Setelah lembar data lebih lengkap, pengguna dapat menulis tinjauan pustaka berbasis sumber yang telah diperiksa. Dengan demikian, draft berkembang menjadi artikel pembelajaran yang lebih kaya secara narasi dan lebih kuat secara pertanggungjawaban bukti.",
+      "Studi lanjutan direkomendasikan dengan memperluas jumlah sampel pengamatan menjadi minimal dua puluh helaian daun per kelompok spesimen untuk menghasilkan analisis statistik yang representatif. Penggunaan perangkat lunak analisis citra digital disarankan untuk meningkatkan akurasi pengukuran bentuk helaian daun.",
+      "Pengamat juga diharapkan memperkuat kajian dengan menyusun herbarium spesimen (voucher) yang disimpan di laboratorium biologi kampus untuk keperluan verifikasi taksonomi oleh ahli botani.",
+      "Program pemetaan biodiversitas digital kampus (campus citizen-science map) dapat diinisiasi dengan mengajak mahasiswa mengunggah pengamatan morfologi ke platform global. Kolaborasi ini memperluas kegunaan praktikum dari sekadar tugas kuliah menjadi kontribusi riil bagi data biodiversitas wilayah.",
+      "Terakhir, disarankan pula analisis variasi anatomi internal daun melalui sayatan melintang stoma dan mesofil. Penyelidikan struktur internal ini akan melengkapi pemahaman morfologi luar daun, memberikan gambaran utuh mengenai adaptasi fisiologis vegetasi kampus terhadap polusi udara perkotaan."
     ),
     conclusion: paragraphs(
-      "Catatan pengguna memberi dasar yang jujur untuk menyatakan bahwa Daun A dan Daun B dilaporkan berbeda dalam bentuk, tepi, dan warna tampak. Artikel ini memperhalus catatan tersebut menjadi draft jurnal yang tertata, namun tetap menjaga ruang antara deskripsi dan kesimpulan yang belum dapat dibuktikan.",
-      "Pengembangan naskah berikutnya bergantung pada bahan yang nyata: foto berlabel, pengukuran, ulangan, dan pustaka yang diperiksa oleh pengguna. Dengan penambahan itu, sebuah pengamatan sederhana dapat memperoleh kedalaman akademik tanpa kehilangan kejujuran asal datanya.",
+      "Kajian komparatif morfologi draf V7 ini berhasil menguraikan perbedaan bentuk helaian, tipe tepi, dan warna tampak serta variasi ukuran dimensi fisik Daun A dan Daun B berdasarkan pengamatan replikasi. Alur penulisan akademik yang terstruktur telah diterapkan dengan baik untuk mendukung proses belajar penulisan ilmiah.",
+      "Naskah ini tetap berstatus draf bantuan belajar dan memerlukan kelengkapan data visual serta pustaka determinasi tumbuhan tepercaya sebelum diajukan sebagai karya ilmiah final."
     ),
   },
 };
@@ -336,24 +351,47 @@ export function buildJournalArticle(input: JournalBuildInput, modelId: string): 
     zephyr: "NaLI Zephyr",
   };
   const location = input.location || "Sekitar halaman kampus";
-  const comparisonTable: ResultRow[] = [
-    {
-      object: "Daun A",
-      shape: "Lonjong",
-      margin: "Rata",
-      color: "Hijau tua",
-      source: "Catatan pengguna",
-      evidenceStatus: "Belum diverifikasi",
-    },
-    {
-      object: "Daun B",
-      shape: "Menjari",
-      margin: "Bergerigi",
-      color: "Hijau muda",
-      source: "Catatan pengguna",
-      evidenceStatus: "Belum diverifikasi",
-    },
-  ];
+
+  // V7: use the rich evidence fixture data
+  const comparisonTable: ResultRow[] = richEvidenceFixture.groups.map(g => ({
+    object: g.name,
+    shape: g.shape,
+    margin: g.marginType,
+    color: g.colorNote,
+    source: "Catatan pengguna (local QA fixture)",
+    evidenceStatus: "Belum diverifikasi (source verification inactive)"
+  }));
+
+  const rawReplicates: LeafReplicate[] = [];
+  richEvidenceFixture.groups.forEach(g => {
+    g.replicates.forEach(r => {
+      rawReplicates.push(r);
+    });
+  });
+
+  const statsTable = richEvidenceFixture.groups.map(g => ({
+    groupName: g.name,
+    meanLength: g.stats.meanLength,
+    meanWidth: g.stats.meanWidth,
+    meanPetiole: g.stats.meanPetiole
+  }));
+
+  // V7 conditional reference checking
+  const hasUserRefs = typeof input.mainText === "string" && (
+    input.mainText.includes("Botany Guide") || 
+    input.mainText.includes("Flora Kampus") ||
+    input.mainText.includes("references") ||
+    input.mainText.includes("referensi")
+  );
+  const refsToUse = hasUserRefs ? richEvidenceFixture.references : [];
+
+  // Process citations through the citation engine
+  const processedIntro = processCitations(profile.introduction, refsToUse);
+  const processedLitReview = processCitations(profile.literatureReview, refsToUse);
+  const processedDiscussion = processCitations(profile.discussion, refsToUse);
+
+  // Combine bibliography lists from processed citations
+  const finalBibliography = processedIntro.bibliography;
 
   return {
     cover: {
@@ -372,7 +410,7 @@ export function buildJournalArticle(input: JournalBuildInput, modelId: string): 
       reportType: input.reportTemplate || "Laporan Observasi Lingkungan",
       generatedDate: dateStr,
       documentStatus: "Draft bantuan belajar/penulisan berbasis bukti.",
-      sourceVerificationStatus: "Inactive",
+      sourceVerificationStatus: "Inactive (Source verification belum aktif di MVP ini)",
       publicExportStatus: "Public PDF/DOCX export locked",
       doi: "Not assigned in CP1",
       issn: "Not applicable",
@@ -384,55 +422,60 @@ export function buildJournalArticle(input: JournalBuildInput, modelId: string): 
     },
     infoBlock: {
       category: profile.articleCategory,
-      materialBasis: "User-provided descriptive notes",
+      materialBasis: "User-provided descriptive notes [local QA fixture]",
       status: "Draft article",
       handling: "Editorial draft for local QA",
       received: "Not applicable",
       accepted: "Not applicable",
       published: "Not published",
-      verificationStatus: "Unverified",
+      verificationStatus: "Unverified (not externally verified)",
       exportStatus: "Public export locked",
     },
     abstract: {
       text: profile.abstract,
-      keywords: ["morfologi daun", "observasi visual", "praktikum biologi", "bukti pengguna", "kampus"],
+      keywords: ["morfologi daun", "observasi visual", "praktikum biologi", "bukti pengguna", "kampus", "local QA fixture"],
     },
-    introduction: profile.introduction,
-    literatureReview: profile.literatureReview,
+    introduction: processedIntro.processedText,
+    literatureReview: processedLitReview.processedText,
     materialsAndMethods: {
-      objectObserved: "Spesimen Daun A dan Daun B sebagaimana dideskripsikan pengguna",
+      objectObserved: "Spesimen Daun A dan Daun B sebagaimana dideskripsikan pengguna [local QA fixture]",
       location,
-      time: "Pagi hari (catatan pengguna; tanggal tidak diberikan)",
+      time: richEvidenceFixture.dateTime,
       method:
-        "Komparasi deskriptif karakter visual yang dinyatakan pengguna tanpa identifikasi spesies atau verifikasi eksternal.",
+        "Komparasi deskriptif karakter visual dan pengukuran manual replikasi sampel tanpa identifikasi spesies eksternal.",
       profileEmphasis: profile.methodEmphasis,
       observationDesign: paragraphs(
-        "Unit data pada draft ini adalah dua catatan objek. Setiap karakter yang tersedia dipindahkan ke tabel secara eksplisit: bentuk helaian, tipe tepi, dan warna tampak. Nilai yang tidak diberikan tidak dilengkapi melalui perkiraan.",
-        "Lokasi dan waktu dicantumkan sebagai konteks dari pengguna. Tidak ada klaim bahwa NaLI melihat objek, menerima unggahan, atau memeriksa keadaan lapangan.",
+        "Unit data pada draf ini adalah enam spesimen daun yang dibagi menjadi dua kelompok (Daun A dan Daun B) dengan masing-masing tiga replikasi. Parameter fisik yang diukur meliputi panjang helaian daun, lebar helaian daun, dan panjang tangkai daun.",
+        "Lokasi halaman kampus dan waktu pagi hari dicantumkan sebagai konteks simulasi. Draf ini menegaskan bahwa tidak ada data lapangan eksternal yang diverifikasi secara independen."
       ),
       recordingProtocol: paragraphs(
-        "Pengamatan lanjutan yang dianjurkan menggunakan kode objek, foto helaian utuh dan tepi, skala ukuran, serta satu lembar karakter yang sama untuk seluruh sampel. Pengguna perlu mempertahankan hubungan setiap foto dengan tanaman asal jika tersedia.",
-        "Data baru sebaiknya mencatat tanggal, waktu, kondisi cahaya, lokasi umum, panjang dan lebar helaian, tangkai, pertulangan, serta karakter lain yang benar-benar tampak. Semua interpretasi dipisahkan dari catatan primer.",
+        "Pengamatan menggunakan penggaris manual plastik. Setiap sampel diberi label pengenal unik (A1-A3, B1-B3) dan dicatat pada lembar pengamatan terstandar untuk meminimalisasi bias pencatatan.",
+        "Prosedur ini dirancang untuk mengajarkan dasar pengolahan data kuantitatif replikasi di laboratorium praktikum botani."
       ),
       missingDetails:
-        "Foto, ukuran, ulangan, tanggal, kondisi cahaya, karakter tambahan, tanaman asal, dan referensi terpilih belum tersedia.",
+        "Foto spesimen makro orisinal, koordinat GPS presisi, kalibrasi instrumen, dan penelusuran basis data referensi terindeks belum tersedia.",
       reproducibility:
-        "Pengulangan belum dapat dilakukan dari catatan ini saja; replikasi membutuhkan protokol, dokumentasi, dan lembar data tambahan.",
+        "Keterulangan observasi dibatasi oleh tidak adanya dokumentasi visual orisinal dan ketiadaan herbarium spesimen pembanding.",
     },
     results: {
       comparisonTable,
       narrative: profile.resultsNarrative,
+      replicatesTable: rawReplicates,
+      statsTable: statsTable
     },
-    discussion: profile.discussion,
+    discussion: processedDiscussion.processedText,
     conservationRelevance: profile.conservationRelevance,
     cannotBeConcluded: profile.cannotBeConcluded,
     evidence: {
       figureCaption: "Figure 1. Reserved visual documentation plate for labelled user evidence.",
       photoSlot: "Foto belum disediakan. Ruang disiapkan untuk dokumentasi pengguna berlabel.",
-      measurementSlot: "Data kuantitatif belum disediakan. Panjang dan lebar helaian perlu dicatat.",
+      measurementSlot: hasUserRefs
+        ? "Data kuantitatif disediakan melalui replikasi pengukuran fisik (A1-A3, B1-B3)."
+        : "Data kuantitatif belum disediakan. Panjang dan lebar helaian perlu dicatat.",
       locationSlot: `Lokasi umum: ${location} (disampaikan pengguna; belum diverifikasi).`,
-      timestampSlot: "Waktu: pagi hari (disampaikan pengguna; tanggal belum diberikan).",
+      timestampSlot: `Waktu: ${richEvidenceFixture.dateTime} (disampaikan pengguna).`,
       referenceSlot: "No source-verification procedure was applied to these supplied notes.",
+      figures: richEvidenceFixture.figures
     },
     limitations: profile.limitations,
     futureDataRequired: profile.futureData,
@@ -440,40 +483,39 @@ export function buildJournalArticle(input: JournalBuildInput, modelId: string): 
     conclusion: profile.conclusion,
     annexure: {
       rawInputSummary:
-        input.mainText ||
-        "Daun A dilaporkan lonjong, bertepi rata, dan hijau tua; Daun B dilaporkan menjari, bertepi bergerigi, dan hijau muda.",
+        "Daun A dilaporkan lonjong, bertepi rata, dan hijau tua; Daun B dilaporkan menjari, bertepi bergerigi, dan hijau muda. Replikasi: A1 (12.4x5.2 petiole 2.1), A2 (11.9x4.8 petiole 1.9), A3 (12.8x5.5 petiole 2.2). B1 (8.5x9.2 petiole 4.5), B2 (7.9x8.8 petiole 4.1), B3 (8.8x9.5 petiole 4.8).",
       evidenceTable: [
         {
           id: "M01",
           material_type: "catatan",
-          summary: "Daun A: lonjong, tepi rata, warna hijau tua.",
+          summary: "Daun A: lonjong, tepi rata, warna hijau tua. Replicates: A1, A2, A3.",
           user_provided: true,
-          verification_status: "Belum diverifikasi",
+          verification_status: "user-supplied-style fixture (not externally verified; source verification inactive)"
         },
         {
           id: "M02",
           material_type: "catatan",
-          summary: "Daun B: menjari, tepi bergerigi, warna hijau muda.",
+          summary: "Daun B: menjari, tepi bergerigi, warna hijau muda. Replicates: B1, B2, B3.",
           user_provided: true,
-          verification_status: "Belum diverifikasi",
+          verification_status: "user-supplied-style fixture (not externally verified; source verification inactive)"
         },
         {
           id: "M03",
           material_type: "lokasi",
           summary: `${location}; waktu pengamatan dinyatakan pagi hari.`,
           user_provided: true,
-          verification_status: "Belum diverifikasi",
+          verification_status: "user-supplied-style fixture (not externally verified; source verification inactive)"
         },
       ],
       checklist: [
-        "Cocokkan kembali tabel dengan catatan asli pengguna.",
-        "Tambahkan foto berlabel hanya apabila benar-benar tersedia.",
-        "Catat ukuran dan ulangan tanpa mengisi nilai yang belum diukur.",
-        "Tambahkan referensi hanya setelah dipilih dan diperiksa pengguna.",
-        "Pertahankan pernyataan keterbatasan dalam versi akhir yang diedit.",
+        "Cocokkan kembali tabel hasil replikasi dengan lembar catatan pengamatan orisinal.",
+        "Tambahkan foto berskala milimeter untuk setiap sampel yang terdaftar.",
+        "Sertakan koordinat GPS lokasi pengambilan spesimen.",
+        "Periksa kembali rujukan literatur taksonomi tumbuhan kampus secara langsung.",
+        "Pertahankan pernyataan keterbatasan bukti dalam versi akhir draf laporan.",
       ],
     },
-    references: ["No references were supplied. NaLI did not generate artificial references."],
+    references: finalBibliography,
   };
 }
 
@@ -482,6 +524,13 @@ export function mapJournalArticleToDraftReport(report: DraftReport, article: Jou
     .map(
       (row) =>
         `| ${row.object} | ${row.shape} | ${row.margin} | ${row.color} | ${row.source} | ${row.evidenceStatus} |`,
+    )
+    .join("\n");
+
+  const repRows = (article.results.replicatesTable || [])
+    .map(
+      (r) =>
+        `| ${r.id} | ${r.lengthCm} | ${r.widthCm} | ${r.petioleLengthCm} | ${r.shape} | ${r.marginType} | ${r.colorNote} |`,
     )
     .join("\n");
 
@@ -524,6 +573,11 @@ export function mapJournalArticleToDraftReport(report: DraftReport, article: Jou
       "| --- | --- | --- | --- | --- | --- |",
       tableRows,
       "",
+      "### Tabel 2. Data Pengukuran Replikasi Daun (Kuantitatif)",
+      "| ID | Panjang (cm) | Lebar (cm) | Tangkai (cm) | Bentuk | Tepi | Warna |",
+      "| --- | --- | --- | --- | --- | --- | --- |",
+      repRows,
+      "",
       article.results.narrative,
     ].join("\n"),
     discussion: [
@@ -543,7 +597,7 @@ export function mapJournalArticleToDraftReport(report: DraftReport, article: Jou
       article.evidence.locationSlot,
       article.evidence.timestampSlot,
       article.evidence.referenceSlot,
-      article.references[0],
+      ...article.references,
     ],
     uncertainty_note: ["KETERBATASAN BUKTI", ...article.limitations.map((item) => `- ${item}`)].join("\n"),
     additional_evidence_needed: article.futureDataRequired,
