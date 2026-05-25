@@ -12,12 +12,18 @@ test("1. Research and audit documents exist", () => {
   const auditExists = fs.existsSync(path.join(repoRoot, "docs/qa/nali_cp1_journal_document_dependency_audit.md"));
   const replacementExists = fs.existsSync(path.join(repoRoot, "docs/qa/nali_cp1_journal_renderer_replacement_research.md"));
   const failureAuditExists = fs.existsSync(path.join(repoRoot, "docs/qa/nali_cp1_journal_v4_failure_audit.md"));
+  const v5FailureAuditExists = fs.existsSync(path.join(repoRoot, "docs/qa/nali_cp1_journal_v5_failure_audit.md"));
+  const v6DesignSpecExists = fs.existsSync(path.join(repoRoot, "docs/qa/nali_cp1_journal_v6_design_spec.md"));
+  const v6QualityReportExists = fs.existsSync(path.join(repoRoot, "docs/qa/nali_cp1_journal_v6_quality_report.md"));
 
   assert.ok(formatAnalysisExists, "Format analysis must exist");
   assert.ok(researchExists, "Stack research must exist");
   assert.ok(auditExists, "Dependency audit must exist");
   assert.ok(replacementExists, "Replacement renderer research must exist");
   assert.ok(failureAuditExists, "V4 failure audit must exist");
+  assert.ok(v5FailureAuditExists, "V5 failure audit must exist");
+  assert.ok(v6DesignSpecExists, "V6 design specification must exist");
+  assert.ok(v6QualityReportExists, "V6 quality report must exist");
 });
 
 test("2. Rendering dependencies are not imported in public client components", () => {

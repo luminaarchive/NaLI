@@ -80,6 +80,8 @@ test("7. Founder/admin journal PDF uses a Playwright local-only renderer", () =>
   assert.match(source, /from "playwright"/);
   assert.match(source, /printBackground:\s*true/);
   assert.match(source, /preferCSSPageSize:\s*true/);
+  assert.doesNotMatch(source, /Founder\/Admin Draft Series|Internal QA/);
+  assert.match(source, /article\.metadata\.shortCategory/);
 });
 
 test("8. Journal PDF renderer refuses repository and public output paths", () => {
@@ -88,4 +90,12 @@ test("8. Journal PDF renderer refuses repository and public output paths", () =>
     validateJournalPdfOutputPath(path.join(require("node:os").homedir(), "Downloads/NaLI-QA/founder-draft.pdf")),
   );
   assert.throws(() => validateJournalPdfOutputPath(path.join(__dirname, "../../public/export.pdf")));
+});
+
+test("9. V6 generator keeps publication artifacts outside the repository", () => {
+  const repoRoot = path.join(__dirname, "../..");
+  const source = fs.readFileSync(path.join(repoRoot, "scratch/generate_reference_journal_v6.cjs"), "utf8");
+  assert.match(source, /Downloads", "NaLI-QA"/);
+  assert.match(source, /journal-reference-v6/);
+  assert.doesNotMatch(source, /public\/|src\/app/);
 });

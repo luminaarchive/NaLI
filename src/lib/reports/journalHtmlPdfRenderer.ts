@@ -42,7 +42,7 @@ export async function renderJournalPdfFromHtml(article: JournalArticle, outputPa
       printBackground: true,
       preferCSSPageSize: true,
       displayHeaderFooter: true,
-      headerTemplate: `<div style="box-sizing:border-box;color:#627067;font-family:Arial,sans-serif;font-size:8px;letter-spacing:.11em;padding:6mm 15mm 0;text-transform:uppercase;width:100%;">NaLI Nature &amp; Evidence Journal <span style="float:right">Founder/Admin Draft Series</span></div>`,
+      headerTemplate: `<div style="box-sizing:border-box;color:#627067;font-family:Arial,sans-serif;font-size:8px;letter-spacing:.11em;padding:6mm 15mm 0;text-transform:uppercase;width:100%;">NaLI Nature &amp; Evidence Journal <span style="float:right">${article.metadata.shortCategory}</span></div>`,
       footerTemplate: `<div style="box-sizing:border-box;border-top:1px solid #d6d0c3;color:#627067;font-family:Arial,sans-serif;font-size:8px;margin:0 15mm;padding-top:2mm;text-align:right;width:calc(100% - 30mm);">Page <span class="pageNumber"></span> / <span class="totalPages"></span></div>`,
       margin: {
         top: "0",

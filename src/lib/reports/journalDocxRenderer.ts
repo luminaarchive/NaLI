@@ -132,12 +132,10 @@ function fixedTable(rows: TableRow[], widths: number[]) {
 function metadataTable(article: JournalArticle) {
   const widths = [2360, 6890];
   const data = [
-    ["Received", article.infoBlock.received],
-    ["Accepted", article.infoBlock.accepted],
-    ["Published", article.infoBlock.published],
-    ["DOI", article.metadata.doi],
-    ["ISSN", article.metadata.issn],
-    ["Verification", article.infoBlock.verificationStatus],
+    ["Category", article.infoBlock.category],
+    ["Material basis", article.infoBlock.materialBasis],
+    ["Status", article.infoBlock.status],
+    ["Editorial note", article.metadata.editorialNote],
   ];
   return fixedTable(
     [
@@ -204,12 +202,12 @@ function evidencePlaceholder(article: JournalArticle) {
             children: [
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                children: [text("VISUAL DOCUMENTATION SLOT", { bold: true, color: CANOPY, size: 22 })],
+                children: [text("RESERVED FIGURE PLATE", { bold: true, color: CANOPY, size: 22 })],
                 spacing: { after: 160 },
               }),
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                children: [text("Photo not provided - no visual evidence embedded", { color: MUTED, size: 19 })],
+                children: [text("Photo not provided", { color: MUTED, size: 19 })],
                 spacing: { after: 220 },
               }),
               new Paragraph({
@@ -237,19 +235,24 @@ function coverPanel(article: JournalArticle) {
             shading: { fill: CANOPY, type: ShadingType.CLEAR },
             children: [
               new Paragraph({
-                children: [text("NALI  /  NATURE  /  EVIDENCE", { bold: true, color: "E6EBD8", size: 20 })],
-                spacing: { after: 1300, line: 280 },
+                children: [text("NALI  /  NATURE  /  EVIDENCE  /  JOURNAL", { bold: true, color: "E6EBD8", size: 20 })],
+                spacing: { after: 820, line: 280 },
               }),
               new Paragraph({
                 children: [new TextRun({ text: article.cover.journalTitle, bold: true, color: "F7F5EE", font: "Georgia", size: 62 })],
                 spacing: { after: 230, line: 300 },
               }),
               new Paragraph({
-                children: [text(`${article.cover.seriesTitle}  |  ${article.cover.issueLine}  |  ${article.cover.year}`, { color: "E6EBD8", size: 20 })],
-                spacing: { after: 2300, line: 290 },
+                children: [text(`${article.cover.issueLine}  |  ${article.cover.editionLine}`, { color: "E6EBD8", size: 20 })],
+                spacing: { after: 330, line: 290 },
               }),
               new Paragraph({
-                children: [text("ARTICLE DRAFT", { bold: true, color: "D4E3B7", size: 18 })],
+                shading: { fill: "F7F5EE", type: ShadingType.CLEAR },
+                children: [text(`  VOLUME 1   /   ISSUE 1   /   ${article.cover.year}  `, { bold: true, color: CANOPY, size: 22 })],
+                spacing: { after: 2100, line: 320 },
+              }),
+              new Paragraph({
+                children: [text(article.metadata.articleCategory.toUpperCase(), { bold: true, color: "D4E3B7", size: 18 })],
                 spacing: { after: 110, line: 270 },
               }),
               new Paragraph({
@@ -273,14 +276,14 @@ function coverPanel(article: JournalArticle) {
   );
 }
 
-function journalHeader() {
+function journalHeader(article: JournalArticle) {
   return new Header({
     children: [
       new Paragraph({
         alignment: AlignmentType.RIGHT,
         border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: LINE, space: 4 } },
         children: [
-          text("NALI NATURE & EVIDENCE JOURNAL  |  FOUNDER/ADMIN DRAFT SERIES", { color: MUTED, size: 15 }),
+          text(`NALI NATURE & EVIDENCE JOURNAL  |  ${article.metadata.shortCategory.toUpperCase()}`, { color: MUTED, size: 15 }),
         ],
         spacing: { after: 0 },
       }),
@@ -372,13 +375,14 @@ export async function buildReportDocxBuffer(report: ReportResult): Promise<Buffe
           type: SectionType.NEXT_PAGE,
           page: PAGE_LAYOUT,
         },
-        headers: { default: journalHeader() },
+        headers: { default: journalHeader(article) },
         footers: { default: journalFooter() },
         children: [
           new Paragraph({
             children: [text(article.cover.journalTitle.toUpperCase(), { bold: true, color: CANOPY, size: 18 })],
             spacing: { after: 130, line: 292 },
           }),
+          paragraph(article.metadata.articleCategory.toUpperCase(), { bold: true, color: CANOPY, size: 18, after: 100 }),
           new Paragraph({
             style: "ArticleTitle",
             children: [new TextRun({ text: article.metadata.title, bold: true, font: "Georgia", size: 39, color: FOREST })],
@@ -389,6 +393,7 @@ export async function buildReportDocxBuffer(report: ReportResult): Promise<Buffe
           heading("ABSTRACT"),
           ...prose(article.abstract.text),
           paragraph(`Keywords: ${article.abstract.keywords.join("; ")}`, { bold: true, color: CANOPY, size: 19 }),
+          paragraph(article.cover.truthNote, { color: MUTED, size: 16, after: 0 }),
         ],
       },
       {
@@ -396,7 +401,7 @@ export async function buildReportDocxBuffer(report: ReportResult): Promise<Buffe
           type: SectionType.NEXT_PAGE,
           page: PAGE_LAYOUT,
         },
-        headers: { default: journalHeader() },
+        headers: { default: journalHeader(article) },
         footers: { default: journalFooter() },
         children: [
           heading("INTRODUCTION"),
@@ -406,6 +411,7 @@ export async function buildReportDocxBuffer(report: ReportResult): Promise<Buffe
           heading("MATERIALS AND METHODS"),
           paragraph(`Material and setting. ${article.materialsAndMethods.objectObserved}. ${article.materialsAndMethods.location}; ${article.materialsAndMethods.time}.`),
           paragraph(`Approach. ${article.materialsAndMethods.method}`),
+          paragraph(`Editorial emphasis. ${article.materialsAndMethods.profileEmphasis}`),
           ...prose(article.materialsAndMethods.observationDesign),
           ...prose(article.materialsAndMethods.recordingProtocol),
           paragraph(`Missing methodological detail. ${article.materialsAndMethods.missingDetails}`),
@@ -425,6 +431,7 @@ export async function buildReportDocxBuffer(report: ReportResult): Promise<Buffe
           paragraph(article.evidence.measurementSlot),
           paragraph(article.evidence.locationSlot),
           paragraph(article.evidence.timestampSlot),
+          paragraph(article.evidence.referenceSlot),
 
           heading("EDUCATION AND CONSERVATION RELEVANCE"),
           ...prose(article.conservationRelevance),

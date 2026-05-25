@@ -67,5 +67,8 @@ test("5. DOCX contains full article sections, clean tables, and no raw markdown 
     assert.match(text, new RegExp(section));
   }
   assert.doesNotMatch(text, /\|\s*Spesimen\s*\||#{1,3}\s/);
+  assert.match(text, /Evidence Audit Article/);
+  assert.match(text, /Draft only; source verification inactive; public export locked\./);
+  assert.doesNotMatch(text, /Founder\/Admin Draft Series|Internal QA|DOI\s+Not assigned|ISSN\s+Not applicable/i);
   assert.match(xml, /w:type="dxa"/, "Tables must have explicit editable geometry");
 });

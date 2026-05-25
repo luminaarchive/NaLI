@@ -1,20 +1,20 @@
 # Operations Runbook: Document Engineering QA
 
-This procedure is for NaLI CP1 founder/admin local QA artifacts only. It must not be connected to public downloads, paid export, upload, or source-verification behavior.
+This procedure is for NaLI CP1 founder/admin local QA artifacts only. It must not be connected to public downloads, paid export, upload, or source verification.
 
-## Generate V5 Artifacts
+## Generate V6 Artifacts
 
 From the repository root:
 
 ```bash
 npm install
-node scratch/generate_reference_journal_v5.cjs
+node scratch/generate_reference_journal_v6.cjs
 ls -lah ~/Downloads/NaLI-QA
 ```
 
-The script generates `peregrine`, `obsidian`, and `zephyr` outputs in `.html`, `.md`, `.txt`, `.pdf`, and `.docx` formats. Output is written to `~/Downloads/NaLI-QA/`, with `/tmp/nali-qa/` as a fallback.
+The script generates `peregrine`, `obsidian`, and `zephyr` outputs in `.html`, `.md`, `.txt`, `.pdf`, and `.docx` formats. It writes to `~/Downloads/NaLI-QA/`, with `/tmp/nali-qa/` as fallback.
 
-If the Playwright Chromium executable is missing on a new local environment, install that development browser runtime before regenerating:
+If Chromium is missing on a new QA machine, install only Playwright's required local browser runtime:
 
 ```bash
 npx playwright install chromium
@@ -22,30 +22,32 @@ npx playwright install chromium
 
 ## Rendering Boundary
 
-- PDF v5 uses `src/lib/reports/journalHtmlTemplate.ts` plus local Playwright rendering in `src/lib/reports/journalHtmlPdfRenderer.ts`.
-- Playwright is a development dependency and must remain out of `src/app` public routes and `src/components` client components.
-- DOCX uses the structured Word renderer in `src/lib/reports/journalDocxRenderer.ts`; it must receive structured journal content, not raw markdown.
-- `pdf-lib` is no longer the primary journal-quality PDF renderer for these local QA artifacts.
+- V6 PDF uses `src/lib/reports/journalHtmlTemplate.ts` and local Playwright rendering in `src/lib/reports/journalHtmlPdfRenderer.ts`.
+- Playwright is a development dependency and must not be imported by `src/app` public routes or `src/components` client components.
+- DOCX uses `src/lib/reports/journalDocxRenderer.ts` and structured article data, not a markdown dump.
+- `pdf-lib` is not the primary journal-quality renderer for founder/admin QA output.
+- Generation paths are restricted to `~/Downloads/NaLI-QA/` and `/tmp/nali-qa/`; generated documents must never be staged.
 
 ## Inspect Quality
 
-For each v5 PDF, confirm:
+For each V6 PDF, inspect rendered pages and record PASS, PARTIAL, or FAIL:
 
-- Page 1 is a NaLI-branded cover with no benchmark publisher branding.
-- Page 2 contains article metadata, abstract, and keywords.
-- Body pages include structured prose, a clean results table, an intentional unfilled figure slot, annexure, and references statement.
-- There are no invented DOI, ISSN, references, species identifications, photographs, or verification claims.
+- Page 1 has the original NaLI full green cover composition, volume/issue block, article category, and clean publisher band.
+- Page 2 has a journal opener with title/byline, restrained information panel, abstract, keywords, and introduction.
+- Body pages have readable two-column flow, a styled result table, a deliberate no-photo figure plate, conclusions, annexure, and references statement.
+- Running furniture identifies the journal and article category without dominant operational QA language.
+- The artifact does not show fake DOI/ISSN/citations, supplied-photo claims, species identification, source verification, or copied benchmark branding.
 
-For DOCX, open or render the files in a Word-compatible page renderer and confirm the cover, metadata table, headings, results table, evidence slot, annexure, and references statement remain clean and editable.
+For DOCX, open or render each file in Microsoft Word or another page-compatible renderer and confirm that cover, metadata, headings, tables, reserved figure plate, annexure, references, and editing behavior remain clean. PDF may be visually richer; DOCX must remain structurally professional and editable.
 
 ## Safety Gates
 
 - Human Testing remains `PAUSED`.
-- Paid launch remains `NO-GO`; do not activate Midtrans here.
-- Public/user PDF and DOCX export remains locked or inactive.
+- Midtrans remains `DEFERRED`; do not activate payment here.
+- Paid launch remains `NO-GO`.
+- Public/user PDF and DOCX export remains `LOCKED` or inactive.
 - Upload and source verification remain inactive.
-- Never stage artifacts in `~/Downloads/NaLI-QA/` or `/tmp/nali-qa/`.
-- Never stage `.env.local`, service keys, payment secrets, report access values, hashes, or guest session values.
+- Never stage QA artifacts, temporary rendered previews, `.env.local`, service keys, payment secrets, access values, hashes, or guest session values.
 
 ## Verification
 
@@ -59,4 +61,4 @@ npm run test:demo
 node --test tests/reports/*.test.cjs
 ```
 
-Record failures honestly. A local artifact is not a published article and is not eligible for public release solely because generation succeeds.
+Treat V5 as a visual/professional `FAIL`. V6 may be called `CONDITIONAL GO` only after page-level visual inspection and integrity checks pass; neither result unlocks public export or makes the evidence-limited draft a published article.

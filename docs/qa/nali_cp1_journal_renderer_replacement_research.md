@@ -3,6 +3,8 @@
 Date: 2026-05-25
 Decision: use HTML/CSS print layout rendered locally through Playwright for founder/admin QA PDF artifacts.
 
+V6 note: the selected renderer remains valid, while the V5 visual template is now classified as **FAIL**. V6 retains this renderer and replaces the visible publication design, content depth, and metadata treatment.
+
 ## Why V4 Failed
 
 V4 treated a journal article as a sequence of text drawing operations in `pdf-lib`. That is sufficient for a controlled receipt or simple report export, but it requires hand-building typography, columns, page breaking, figure composition, metadata panels, table flow, and page furniture. The audited v4 result is three sparse pages with a blank-looking cover, report-style body, and no credible publication design; its DOCX preview also collapses visibly. Continuing to patch coordinate drawing would deepen the wrong abstraction.
@@ -20,7 +22,7 @@ V4 treated a journal article as a sequence of text drawing operations in `pdf-li
 - Dependency: `playwright@^1.60.0`, declared in `devDependencies` only.
 - HTML template: `src/lib/reports/journalHtmlTemplate.ts`.
 - PDF helper: `src/lib/reports/journalHtmlPdfRenderer.ts`.
-- Local generation command: `node scratch/generate_reference_journal_v5.cjs`.
+- Current local generation command: `node scratch/generate_reference_journal_v6.cjs`.
 - Allowed output directories: `~/Downloads/NaLI-QA/` and `/tmp/nali-qa/`.
 
 The PDF helper uses A4 CSS page sizing, print backgrounds, and Chromium PDF pagination. It loads an internally generated HTML document only and aborts outbound page requests. It does not accept a public route request and rejects output paths inside the repository.
@@ -41,10 +43,10 @@ Playwright is deliberately a development dependency because local print renderin
 
 - Rendering is local and output-path restricted; generated artifacts stay outside git.
 - The template does not fetch external assets or copy benchmark logos/branding.
-- DOI is rendered as `not assigned in CP1`; ISSN is rendered as `not applicable`.
+- V6 does not display absent DOI/ISSN fields as visible publication furniture and does not fabricate identifiers.
 - No citations, photographs, species identifications, or source-verification claims are synthesized.
 - Payment, upload, public export, and source-verification activation remain outside scope and unchanged.
 
 ## Known Operational Limitation
 
-The bundled DOCX review script requires LibreOffice (`soffice`), which is not installed in this environment. For v5 verification, each generated DOCX was instead exported to a temporary PDF through the locally installed Microsoft Word application and visually inspected from that rendered output. This is adequate for local QA evidence, but it does not convert the DOCX pipeline into a publication or public export service.
+The bundled DOCX review script requires LibreOffice (`soffice`), which is not installed in this environment. For V6 verification, each generated DOCX was instead exported to a temporary PDF through the locally installed Microsoft Word application and visually inspected from that rendered output. This is adequate for local QA evidence, but it does not convert the DOCX pipeline into a publication or public export service.

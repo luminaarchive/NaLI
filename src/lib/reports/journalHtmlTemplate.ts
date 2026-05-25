@@ -56,232 +56,309 @@ export function buildJournalHtml(article: JournalArticle) {
     :root {
       --forest: #10231b;
       --canopy: #315f45;
+      --canopy-bright: #177043;
       --moss: #728347;
-      --fern: #dbe4d2;
-      --paper: #fdfcf8;
-      --stone: #eee9dd;
+      --leaf: #b4ce70;
+      --mist: #e8eee0;
+      --paper: #fffdf8;
+      --stone: #f2eee4;
       --line: #cfc6b7;
       --muted: #59645e;
-      --cyan: #397e87;
     }
     * { box-sizing: border-box; }
     @page cover { size: A4; margin: 0; }
-    @page article { size: A4; margin: 16mm 15mm 18mm 15mm; }
+    @page article { size: A4; margin: 16mm 15mm 18mm; }
     html, body {
       margin: 0;
       padding: 0;
-      background: #d7d4cc;
+      background: #dad8d0;
       color: var(--forest);
-      font-family: "Georgia", "Times New Roman", serif;
+      font-family: Georgia, "Times New Roman", serif;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
+    p { orphans: 3; widows: 3; }
     .cover-page {
       page: cover;
+      background: linear-gradient(133deg, #0f5d37 0%, #167745 52%, #0e492c 100%);
       break-after: page;
-      position: relative;
+      color: #fffdf8;
       height: 297mm;
-      width: 210mm;
       overflow: hidden;
-      padding: 23mm 20mm 17mm;
-      background:
-        radial-gradient(circle at 78% 24%, rgba(208, 230, 186, .28) 0 16%, transparent 16.5%),
-        linear-gradient(144deg, #0f241b 0%, #18372a 46%, #315f45 100%);
-      color: #f7f5ee;
-    }
-    .cover-page::before {
-      content: "";
-      position: absolute;
-      inset: auto -22mm -40mm -30mm;
-      height: 142mm;
-      background:
-        radial-gradient(ellipse at 20% 58%, #728b45 0 10%, transparent 10.5%),
-        radial-gradient(ellipse at 39% 34%, #557647 0 15%, transparent 15.5%),
-        radial-gradient(ellipse at 66% 54%, #88a54d 0 12%, transparent 12.5%),
-        linear-gradient(8deg, #172d24 10%, transparent 10.5%);
-      opacity: .88;
-      transform: rotate(-3deg);
+      padding: 17mm 17mm 0;
+      position: relative;
+      width: 210mm;
     }
     .cover-page::after {
+      background: linear-gradient(90deg, rgba(12, 47, 29, .16), rgba(12, 47, 29, .64));
+      bottom: 0;
       content: "";
+      left: 0;
       position: absolute;
-      right: -30mm;
-      top: 46mm;
-      height: 155mm;
-      width: 108mm;
-      border: 1px solid rgba(230, 235, 214, .18);
-      border-radius: 52% 0 0 54%;
-      box-shadow: -13mm 8mm 0 -12.4mm rgba(230, 235, 214, .25),
-        -28mm 17mm 0 -27.4mm rgba(230, 235, 214, .18);
-      transform: rotate(-17deg);
+      right: 0;
+      top: 0;
+      z-index: 1;
     }
-    .cover-mark {
+    .cover-top, .cover-heading, .volume-issue-block, .cover-article, .publisher-band {
+      position: relative;
+      z-index: 3;
+    }
+    .cover-top {
       align-items: center;
-      border-bottom: 1px solid rgba(247, 245, 238, .34);
+      border-bottom: 1px solid rgba(247, 245, 238, .42);
       display: flex;
-      font-family: Arial, sans-serif;
+      font: 700 9px/1.45 Arial, sans-serif;
       justify-content: space-between;
-      letter-spacing: .18em;
-      padding-bottom: 8mm;
-      position: relative;
+      letter-spacing: .16em;
+      padding-bottom: 5mm;
       text-transform: uppercase;
-      z-index: 1;
     }
-    .cover-monogram {
-      align-items: center;
-      border: 1px solid rgba(247, 245, 238, .6);
-      display: flex;
-      font-size: 20px;
-      font-weight: 700;
-      height: 15mm;
-      justify-content: center;
-      width: 15mm;
+    .brand-lockup { align-items: center; display: flex; gap: 3.5mm; }
+    .brand-leaf {
+      border: 1px solid rgba(247, 245, 238, .62);
+      border-radius: 50%;
+      display: block;
+      height: 13mm;
+      padding: 2mm;
+      width: 13mm;
     }
-    .cover-series {
-      color: #dbe4d2;
-      font-size: 9px;
-      font-weight: 600;
+    .edition-note {
+      color: rgba(248, 247, 240, .78);
+      font-size: 8px;
+      letter-spacing: .12em;
     }
-    .cover-content {
-      max-width: 158mm;
-      position: relative;
-      z-index: 1;
+    .cover-heading {
+      margin-top: 19mm;
+      max-width: 133mm;
     }
     .cover-kicker {
-      color: #d9e5c8;
-      font-family: Arial, sans-serif;
-      font-size: 11px;
-      font-weight: 600;
+      color: #e4edd3;
+      font: 700 9.5px/1 Arial, sans-serif;
       letter-spacing: .2em;
-      margin: 30mm 0 7mm;
+      margin: 0 0 6mm;
       text-transform: uppercase;
     }
-    .cover-title {
-      font-size: 38px;
-      font-weight: 500;
-      line-height: 1.12;
-      margin: 0 0 8mm;
-      max-width: 148mm;
-    }
-    .cover-issue {
-      border-left: 2px solid #a9c761;
-      color: #e7ebdc;
+    .cover-heading h1 {
       font-family: Arial, sans-serif;
-      font-size: 12px;
-      line-height: 1.7;
-      margin-top: 13mm;
-      padding-left: 5mm;
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -.035em;
+      line-height: 1.03;
+      margin: 0;
+    }
+    .cover-heading h1 span {
+      display: block;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 44px;
+      font-weight: 400;
+      letter-spacing: -.025em;
+      margin-top: 2mm;
+    }
+    .volume-issue-block {
+      background: #f7f5ee;
+      color: var(--forest);
+      display: grid;
+      font-family: Arial, sans-serif;
+      grid-template-columns: 33mm 39mm 1fr;
+      margin-top: 16mm;
+      max-width: 129mm;
+      min-height: 22mm;
+    }
+    .volume-issue-block div {
+      border-right: 1px solid #ddd6c9;
+      padding: 4mm 4mm 3.5mm;
+    }
+    .volume-issue-block div:last-child { border-right: 0; }
+    .volume-issue-block strong {
+      color: var(--canopy);
+      display: block;
+      font-size: 17px;
+      line-height: 1.05;
+    }
+    .volume-issue-block span {
+      color: var(--muted);
+      display: block;
+      font-size: 8px;
+      letter-spacing: .12em;
+      margin-bottom: 1.5mm;
+      text-transform: uppercase;
+    }
+    .cover-landscape {
+      bottom: 34mm;
+      height: 142mm;
+      left: 0;
+      position: absolute;
+      width: 210mm;
+      z-index: 2;
     }
     .cover-article {
-      bottom: 49mm;
-      left: 20mm;
-      max-width: 126mm;
+      bottom: 59mm;
+      left: 18mm;
+      max-width: 117mm;
       position: absolute;
-      z-index: 1;
     }
-    .cover-article-label {
-      color: #d2e1be;
+    .cover-article .category {
+      color: #e2eecc;
       font: 700 9px/1 Arial, sans-serif;
-      letter-spacing: .2em;
-      margin-bottom: 4mm;
+      letter-spacing: .16em;
+      margin-bottom: 3.2mm;
       text-transform: uppercase;
     }
     .cover-article h2 {
-      color: #f8f7f2;
-      font-size: 24px;
-      font-weight: 500;
+      font-size: 22px;
+      font-weight: 400;
       line-height: 1.24;
       margin: 0;
     }
-    .cover-footer {
-      bottom: 15mm;
-      color: rgba(247, 245, 238, .82);
+    .publisher-band {
+      align-items: center;
+      background: rgba(9, 35, 23, .82);
+      bottom: 10mm;
       display: flex;
-      font: 10px/1.5 Arial, sans-serif;
+      font-family: Arial, sans-serif;
       justify-content: space-between;
-      left: 20mm;
+      left: -17mm;
+      min-height: 21mm;
+      padding: 4mm 17mm;
       position: absolute;
-      right: 20mm;
-      z-index: 2;
+      right: -17mm;
     }
-    .cover-truth { max-width: 64mm; text-align: right; }
-    .article-first-page, .article-body {
+    .publisher-band strong {
+      color: #f7f5ee;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .cover-truth-note {
+      color: rgba(247, 245, 238, .76);
+      font-size: 7.5px;
+      line-height: 1.45;
+      max-width: 62mm;
+      text-align: right;
+    }
+    .article-opener, .article-body {
       page: article;
       background: var(--paper);
       color: var(--forest);
     }
-    .article-first-page {
+    .article-opener {
       break-after: page;
       min-height: 263mm;
     }
     .masthead {
       align-items: end;
-      background: #f2f0e8;
-      border-bottom: 3px solid var(--canopy);
+      border-bottom: 2px solid var(--canopy);
+      border-top: 7px solid var(--canopy);
       display: flex;
       justify-content: space-between;
-      margin-bottom: 12mm;
-      padding: 6mm 7mm 5mm;
+      margin-bottom: 8mm;
+      padding: 4mm 0 3mm;
     }
     .masthead-brand {
-      font-size: 18px;
+      font-family: Arial, sans-serif;
+      font-size: 20px;
       font-weight: 700;
-      line-height: 1.16;
+      letter-spacing: -.03em;
     }
     .masthead-meta {
       color: var(--muted);
-      font: 9.5px/1.6 Arial, sans-serif;
+      font: 8.5px/1.55 Arial, sans-serif;
+      letter-spacing: .08em;
       text-align: right;
+      text-transform: uppercase;
+    }
+    .article-category {
+      border-left: 3px solid var(--moss);
+      color: var(--canopy);
+      font: 700 9px/1.45 Arial, sans-serif;
+      letter-spacing: .12em;
+      margin-bottom: 4mm;
+      padding-left: 3mm;
+      text-transform: uppercase;
     }
     .article-title {
-      font-size: 28px;
-      font-weight: 600;
-      line-height: 1.18;
-      margin: 0 auto 4mm;
-      max-width: 165mm;
-      text-align: center;
+      font-size: 29px;
+      font-weight: 500;
+      letter-spacing: -.018em;
+      line-height: 1.16;
+      margin: 0 0 4mm;
+      max-width: 166mm;
     }
     .byline {
+      border-bottom: 1px solid var(--line);
       color: var(--muted);
-      font: 12px/1.65 Arial, sans-serif;
-      margin-bottom: 11mm;
-      text-align: center;
+      font: 10.5px/1.65 Arial, sans-serif;
+      margin-bottom: 6mm;
+      padding-bottom: 5mm;
     }
+    .byline strong { color: var(--forest); font-weight: 600; }
     .front-grid {
       display: grid;
       gap: 6mm;
-      grid-template-columns: 46mm 1fr;
+      grid-template-columns: 45mm 1fr;
     }
     .article-info {
       align-self: start;
-      background: #f1f0e9;
-      border-top: 7px solid var(--canopy);
-      font: 10px/1.45 Arial, sans-serif;
-      padding: 4mm;
+      background: var(--stone);
+      border-top: 5px solid var(--canopy);
+      font: 9px/1.42 Arial, sans-serif;
+      padding: 4mm 3.5mm;
     }
-    .article-info h2, .abstract h2 {
+    .article-info h2, .abstract h2, .opener-introduction h2 {
       color: var(--canopy);
-      font: 700 13px/1.2 Arial, sans-serif;
-      letter-spacing: .05em;
-      margin: 0 0 4mm;
+      font: 700 11px/1.2 Arial, sans-serif;
+      letter-spacing: .08em;
+      margin: 0 0 3mm;
       text-transform: uppercase;
     }
-    .info-row { border-bottom: 1px solid #ddd7ca; padding: 0 0 3mm; margin: 0 0 3mm; }
-    .info-row strong { display: block; text-transform: uppercase; font-size: 8px; letter-spacing: .08em; }
+    .info-row {
+      border-bottom: 1px solid #ddd7ca;
+      margin: 0 0 3mm;
+      padding: 0 0 3mm;
+    }
+    .info-row:last-child { border: 0; margin-bottom: 0; padding-bottom: 0; }
+    .info-row strong {
+      color: var(--canopy);
+      display: block;
+      font-size: 7.5px;
+      letter-spacing: .1em;
+      margin-bottom: .8mm;
+      text-transform: uppercase;
+    }
     .abstract p {
-      font-size: 11.2px;
-      line-height: 1.55;
-      margin: 0 0 3.2mm;
+      font-size: 10.1px;
+      line-height: 1.48;
+      margin: 0 0 2.5mm;
       text-align: justify;
     }
     .keywords {
       border-top: 1px solid var(--line);
       color: var(--canopy);
-      font: 10.5px/1.6 Arial, sans-serif;
-      margin-top: 4mm;
-      padding-top: 3mm;
+      font: 9.4px/1.55 Arial, sans-serif;
+      margin-top: 3mm;
+      padding-top: 2mm;
     }
     .keywords strong { color: var(--forest); margin-right: 2mm; }
+    .truth-strip {
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font: 7.8px/1.45 Arial, sans-serif;
+      margin-top: 5mm;
+      padding-top: 2.4mm;
+    }
+    .opener-introduction {
+      border-top: 1px solid var(--line);
+      column-count: 2;
+      column-gap: 7mm;
+      margin-top: 7mm;
+      padding-top: 4mm;
+    }
+    .opener-introduction h2 { column-span: all; margin-bottom: 3mm; }
+    .opener-introduction p {
+      font-size: 9.2px;
+      line-height: 1.45;
+      margin: 0 0 2.6mm;
+      text-align: justify;
+    }
     .article-body {
       min-height: 263mm;
       position: relative;
@@ -291,214 +368,254 @@ export function buildJournalHtml(article: JournalArticle) {
       border-bottom: 1px solid var(--canopy);
       color: var(--muted);
       display: flex;
-      font: 9px/1 Arial, sans-serif;
+      font: 8.5px/1 Arial, sans-serif;
       justify-content: space-between;
-      letter-spacing: .08em;
-      margin-bottom: 7mm;
-      padding-bottom: 3mm;
+      letter-spacing: .09em;
+      margin-bottom: 5mm;
+      padding-bottom: 2.6mm;
       text-transform: uppercase;
     }
     .body-flow {
       column-count: 2;
-      column-gap: 8mm;
-      column-rule: 1px solid #e0dbd0;
+      column-gap: 7.5mm;
+      column-rule: 1px solid #e4dfd3;
     }
     .journal-section {
       break-inside: avoid-column;
-      margin: 0 0 6mm;
+      margin: 0 0 5mm;
     }
     .journal-section.long { break-inside: auto; }
     .journal-section h2 {
       border-top: 1px solid var(--line);
       color: var(--canopy);
-      font: 700 12px/1.25 Arial, sans-serif;
-      letter-spacing: .06em;
-      margin: 0 0 3mm;
-      padding-top: 2.5mm;
+      font: 700 11px/1.25 Arial, sans-serif;
+      letter-spacing: .08em;
+      margin: 0 0 2.5mm;
+      padding-top: 2.2mm;
       text-transform: uppercase;
     }
     .journal-section p {
-      font-size: 9.6px;
-      line-height: 1.52;
-      margin: 0 0 3mm;
-      orphans: 3;
+      font-size: 9.25px;
+      line-height: 1.5;
+      margin: 0 0 2.55mm;
       text-align: justify;
-      widows: 3;
     }
     .full-span {
       column-span: all;
-      margin: 5mm 0 7mm;
+      margin: 4mm 0 6mm;
     }
     table {
       border-collapse: collapse;
-      font: 9px/1.35 Arial, sans-serif;
+      font: 8.4px/1.35 Arial, sans-serif;
       width: 100%;
     }
     caption {
       color: var(--forest);
-      font: 700 10px/1.4 Arial, sans-serif;
-      margin-bottom: 2.5mm;
+      font: 700 9px/1.4 Arial, sans-serif;
+      margin-bottom: 2mm;
       text-align: left;
     }
-    th {
+    .results-table th {
       background: var(--canopy);
       color: #f7f5ee;
       font-weight: 700;
       letter-spacing: .04em;
       text-align: left;
     }
+    .annex-table th {
+      background: #e8e4d9;
+      color: var(--forest);
+      font-weight: 700;
+      text-align: left;
+    }
     td, th {
       border: 1px solid var(--line);
-      padding: 2.4mm 2mm;
+      padding: 2mm 1.8mm;
       vertical-align: top;
     }
-    tbody tr:nth-child(even) td { background: #f5f2e9; }
-    .figure-slot {
-      background: linear-gradient(135deg, #f0f3e8, #faf8f2);
+    .results-table tbody tr:nth-child(even) td { background: #f5f2e9; }
+    .figure-plate {
+      break-inside: avoid;
+      margin: 5mm 0 7mm;
+    }
+    .photo-window {
+      align-items: center;
+      background: linear-gradient(145deg, #eef2e7, #faf8f1);
       border: 1px solid var(--line);
-      min-height: 47mm;
-      padding: 12mm 9mm 7mm;
+      display: flex;
+      flex-direction: column;
+      height: 54mm;
+      justify-content: center;
+      overflow: hidden;
       position: relative;
-      text-align: center;
     }
-    .figure-leaf {
-      border: 2px solid rgba(49, 95, 69, .2);
-      border-radius: 80% 10% 80% 10%;
-      height: 20mm;
-      margin: 0 auto 6mm;
-      position: relative;
-      transform: rotate(-34deg);
-      width: 39mm;
-    }
-    .figure-leaf::after {
-      background: rgba(49, 95, 69, .28);
-      content: "";
-      height: 1px;
-      left: 3mm;
+    .photo-window svg {
+      height: 100%;
+      left: 0;
+      opacity: .55;
       position: absolute;
-      top: 10mm;
-      transform: rotate(-35deg);
-      width: 37mm;
+      top: 0;
+      width: 100%;
     }
-    .figure-note { color: var(--muted); font: 10px/1.5 Arial, sans-serif; }
-    .caption {
+    .photo-window span {
+      background: rgba(255, 253, 248, .78);
+      border: 1px solid rgba(49, 95, 69, .24);
+      color: var(--muted);
+      font: 700 9px/1 Arial, sans-serif;
+      letter-spacing: .13em;
+      padding: 3mm 5mm;
+      position: relative;
+      text-transform: uppercase;
+      z-index: 1;
+    }
+    figcaption {
+      border-left: 2px solid var(--canopy);
       color: var(--forest);
-      font: 9.5px/1.55 Arial, sans-serif;
-      margin-top: 2.4mm;
-      text-align: left;
+      font: 8.9px/1.5 Arial, sans-serif;
+      margin-top: 2.5mm;
+      padding-left: 3mm;
     }
     .callout {
       background: #eff2e8;
       border-left: 3px solid var(--moss);
-      font: 9.5px/1.52 Arial, sans-serif;
-      margin-bottom: 6mm;
-      padding: 3.5mm 4mm;
+      font: 9px/1.48 Arial, sans-serif;
+      margin-bottom: 4mm;
+      padding: 3mm 3.5mm;
     }
-    .callout strong { display: block; letter-spacing: .04em; margin-bottom: 1.5mm; text-transform: uppercase; }
+    .callout strong {
+      color: var(--canopy);
+      display: block;
+      letter-spacing: .06em;
+      margin-bottom: 1mm;
+      text-transform: uppercase;
+    }
     ul {
-      font: 9.5px/1.48 Arial, sans-serif;
-      margin: 0 0 4mm;
+      font: 9px/1.48 Arial, sans-serif;
+      margin: 0 0 3.5mm;
       padding-left: 5mm;
     }
-    li { margin-bottom: 2mm; }
+    li { margin-bottom: 1.7mm; }
     .annex-table td:first-child { width: 10%; }
     .annex-table td:nth-child(2) { width: 16%; }
     .annex-table td:last-child { width: 19%; }
     .source-statement {
       background: #f5f3ed;
       border: 1px solid var(--line);
-      font: 10px/1.5 Arial, sans-serif;
-      padding: 4mm;
+      font: 9.4px/1.5 Arial, sans-serif;
+      padding: 3.5mm;
     }
-    .truth-footer {
+    .annex-section {
+      break-inside: avoid-page;
+      page-break-inside: avoid;
+    }
+    .integrity-endnote {
       border-top: 1px solid var(--line);
       color: var(--muted);
-      font: 8.5px/1.55 Arial, sans-serif;
-      margin-top: 7mm;
-      padding-top: 3mm;
+      font: 7.7px/1.5 Arial, sans-serif;
+      margin-top: 6mm;
+      padding-top: 2.7mm;
     }
     @media screen {
-      .cover-page, .article-first-page, .article-body {
+      .cover-page, .article-opener, .article-body {
         box-shadow: 0 2mm 9mm rgba(0, 0, 0, .11);
         margin: 8mm auto;
-        padding-left: 15mm;
-        padding-right: 15mm;
         width: 210mm;
       }
-      .cover-page { padding-left: 20mm; padding-right: 20mm; }
-      .article-first-page, .article-body { padding-top: 16mm; padding-bottom: 18mm; }
+      .article-opener, .article-body {
+        padding: 16mm 15mm 18mm;
+      }
     }
     @media print {
       html, body { background: #fff; }
-      .cover-page, .article-first-page, .article-body { margin: 0; }
+      .cover-page, .article-opener, .article-body { margin: 0; }
     }
   </style>
 </head>
-<body>
+<body data-publication-edition="v6">
   <section class="cover-page">
-    <div class="cover-mark">
-      <div class="cover-monogram">N</div>
-      <div class="cover-series">${escapeHtml(article.cover.seriesTitle)}</div>
-    </div>
-    <div class="cover-content">
-      <p class="cover-kicker">Nature / Evidence / Learning</p>
-      <h1 class="cover-title">${escapeHtml(article.cover.journalTitle)}</h1>
-      <div class="cover-issue">
-        ${escapeHtml(article.cover.issueLine)}<br>
-        ${escapeHtml(String(article.cover.year))} &nbsp; / &nbsp; ${escapeHtml(article.metadata.modelLabel)}
+    <header class="cover-top">
+      <div class="brand-lockup">
+        <svg class="brand-leaf" viewBox="0 0 40 40" aria-hidden="true">
+          <path d="M9 27C9 14 20 7 32 8C31 21 23 31 9 31Z" fill="none" stroke="#f7f5ee" stroke-width="2"/>
+          <path d="M10 30C17 23 21 18 28 12" fill="none" stroke="#f7f5ee" stroke-width="2"/>
+        </svg>
+        <span>NaLI / Nature / Evidence</span>
       </div>
+      <span class="edition-note">${escapeHtml(article.cover.editionLine)}</span>
+    </header>
+    <div class="cover-heading">
+      <p class="cover-kicker">Field Notes Transformed With Care</p>
+      <h1>NaLI Nature <span>&amp; Evidence Journal</span></h1>
     </div>
+    <div class="volume-issue-block">
+      <div><span>Volume</span><strong>1</strong></div>
+      <div><span>Issue</span><strong>1</strong></div>
+      <div><span>Edition</span><strong>${escapeHtml(String(article.cover.year))}</strong></div>
+    </div>
+    <svg class="cover-landscape" viewBox="0 0 800 550" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 355C100 327 164 364 255 326C347 287 416 322 500 279C607 224 679 252 800 210V550H0Z" fill="#103b29" opacity=".7"/>
+      <path d="M0 404C121 335 201 393 294 350C391 306 467 364 573 300C661 247 728 277 800 258V550H0Z" fill="#0d3021"/>
+      <path d="M108 408C147 331 202 296 253 301C239 351 194 397 108 408Z" fill="#5d934b"/>
+      <path d="M121 404L231 312M150 383L163 344M179 359L194 326" fill="none" stroke="#b4ce70" stroke-width="3" opacity=".72"/>
+      <path d="M519 318C557 237 616 203 679 213C664 270 606 313 519 318Z" fill="#77a951"/>
+      <path d="M532 312L657 224M568 287L574 246M600 267L611 236" fill="none" stroke="#d6e6a5" stroke-width="3" opacity=".7"/>
+      <g fill="none" stroke="#c2dc8b" stroke-width="2" opacity=".54">
+        <path d="M316 182C366 148 417 151 458 184C418 194 364 201 316 182Z"/>
+        <path d="M298 200C356 160 426 163 479 198"/>
+        <path d="M272 220C346 171 442 174 503 213"/>
+      </g>
+      <g fill="none" stroke="#f0f2df" stroke-width="3" opacity=".5">
+        <path d="M584 131C603 112 623 111 640 126C657 105 679 104 698 124"/>
+        <path d="M74 216C89 200 105 201 119 212C132 196 150 196 164 211"/>
+      </g>
+    </svg>
     <div class="cover-article">
-      <div class="cover-article-label">Article Draft</div>
+      <p class="category">${escapeHtml(article.metadata.articleCategory)}</p>
       <h2>${escapeHtml(article.metadata.title)}</h2>
     </div>
-    <footer class="cover-footer">
-      <div>${escapeHtml(article.cover.brandNote)}</div>
-      <div class="cover-truth">${escapeHtml(article.cover.truthNote)}</div>
+    <footer class="publisher-band">
+      <strong>${escapeHtml(article.cover.brandNote)}</strong>
+      <span class="cover-truth-note">${escapeHtml(article.cover.truthNote)}</span>
     </footer>
   </section>
 
-  <section class="article-first-page">
+  <section class="article-opener">
     <header class="masthead">
       <div class="masthead-brand">${escapeHtml(article.cover.journalTitle)}</div>
       <div class="masthead-meta">
-        Founder/Admin Draft Series &nbsp;|&nbsp; ${escapeHtml(String(article.cover.year))}<br>
-        DOI: ${escapeHtml(article.metadata.doi)} &nbsp;|&nbsp; ISSN: ${escapeHtml(article.metadata.issn)}
+        ${escapeHtml(article.cover.issueLine)}<br>
+        ${escapeHtml(article.metadata.shortCategory)}
       </div>
     </header>
+    <p class="article-category">${escapeHtml(article.metadata.articleCategory)}</p>
     <h1 class="article-title">${escapeHtml(article.metadata.title)}</h1>
     <div class="byline">
-      ${escapeHtml(article.metadata.author)}<br>
+      <strong>${escapeHtml(article.metadata.author)}</strong><br>
       ${escapeHtml(article.metadata.affiliation)}
     </div>
     <div class="front-grid">
       <aside class="article-info">
         <h2>Article Information</h2>
-        <p class="info-row"><strong>Received</strong>${escapeHtml(article.infoBlock.received)}</p>
-        <p class="info-row"><strong>Accepted</strong>${escapeHtml(article.infoBlock.accepted)}</p>
-        <p class="info-row"><strong>Published</strong>${escapeHtml(article.infoBlock.published)}</p>
-        <p class="info-row"><strong>DOI</strong>${escapeHtml(article.metadata.doi)}</p>
-        <p class="info-row"><strong>ISSN</strong>${escapeHtml(article.metadata.issn)}</p>
-        <p class="info-row"><strong>Verification</strong>${escapeHtml(article.infoBlock.verificationStatus)}</p>
+        <p class="info-row"><strong>Category</strong>${escapeHtml(article.infoBlock.category)}</p>
+        <p class="info-row"><strong>Material basis</strong>${escapeHtml(article.infoBlock.materialBasis)}</p>
+        <p class="info-row"><strong>Status</strong>${escapeHtml(article.infoBlock.status)}</p>
+        <p class="info-row"><strong>Editorial note</strong>${escapeHtml(article.metadata.editorialNote)}</p>
       </aside>
       <article class="abstract">
         <h2>Abstract</h2>
         ${renderParagraphs(article.abstract.text)}
         <p class="keywords"><strong>Keywords</strong>${escapeHtml(article.abstract.keywords.join("; "))}</p>
+        <p class="truth-strip">${escapeHtml(article.cover.truthNote)}</p>
       </article>
     </div>
+    <section class="opener-introduction">
+      <h2>INTRODUCTION</h2>
+      ${renderParagraphs(article.introduction)}
+    </section>
   </section>
 
   <main class="article-body">
-    <div class="running-header">
-      <span>${escapeHtml(article.cover.journalTitle)}</span>
-      <span>Evidence-based draft / ${escapeHtml(article.metadata.modelLabel)}</span>
-    </div>
     <div class="body-flow">
-      <section class="journal-section long">
-        <h2>INTRODUCTION</h2>
-        ${renderParagraphs(article.introduction)}
-      </section>
       <section class="journal-section long">
         <h2>LITERATURE REVIEW</h2>
         ${renderParagraphs(article.literatureReview)}
@@ -507,40 +624,46 @@ export function buildJournalHtml(article: JournalArticle) {
         <h2>MATERIALS AND METHODS</h2>
         <p><strong>Material and setting.</strong> ${escapeHtml(article.materialsAndMethods.objectObserved)}. ${escapeHtml(article.materialsAndMethods.location)}; ${escapeHtml(article.materialsAndMethods.time)}.</p>
         <p><strong>Approach.</strong> ${escapeHtml(article.materialsAndMethods.method)}</p>
+        <p><strong>Editorial emphasis.</strong> ${escapeHtml(article.materialsAndMethods.profileEmphasis)}</p>
         ${renderParagraphs(article.materialsAndMethods.observationDesign)}
         ${renderParagraphs(article.materialsAndMethods.recordingProtocol)}
         <p><strong>Missing methodological detail.</strong> ${escapeHtml(article.materialsAndMethods.missingDetails)}</p>
         <p><strong>Reproducibility boundary.</strong> ${escapeHtml(article.materialsAndMethods.reproducibility)}</p>
       </section>
 
-      <section class="full-span">
-        <table class="results-table">
-          <caption>Table 1. Reported leaf morphology characters from user-provided notes.</caption>
-          <thead>
-            <tr><th>Object</th><th>Shape</th><th>Margin</th><th>Apparent colour</th><th>Source</th><th>Status</th></tr>
-          </thead>
-          <tbody>${resultRows}</tbody>
-        </table>
-      </section>
-
       <section class="journal-section long">
         <h2>RESULTS AND DISCUSSION</h2>
+        <div class="full-span">
+          <table class="results-table">
+            <caption>Table 1. Reported leaf morphology characters from user-provided notes.</caption>
+            <thead>
+              <tr><th>Object</th><th>Shape</th><th>Margin</th><th>Apparent colour</th><th>Source</th><th>Status</th></tr>
+            </thead>
+            <tbody>${resultRows}</tbody>
+          </table>
+        </div>
         ${renderParagraphs(article.results.narrative)}
         ${renderParagraphs(article.discussion)}
       </section>
 
-      <figure class="full-span">
-        <div class="figure-slot">
-          <div class="figure-leaf"></div>
-          <div class="figure-note">Evidence placeholder / no image embedded</div>
-        </div>
-        <figcaption class="caption">${escapeHtml(article.evidence.figureCaption)} The slot is intentionally empty because no photograph was supplied.</figcaption>
-      </figure>
+      <div class="full-span">
+        <figure class="figure-plate">
+          <div class="photo-window">
+            <svg viewBox="0 0 720 220" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M35 183C166 62 257 58 346 121C429 184 520 179 686 38" fill="none" stroke="#c7d6bc" stroke-width="2"/>
+              <path d="M95 172C151 82 221 63 291 80C276 131 212 172 95 172Z" fill="#dfe8d7"/>
+              <path d="M112 165L265 88M156 143L170 103M196 124L211 93" fill="none" stroke="#a9bc97" stroke-width="2"/>
+            </svg>
+            <span>Photo not provided</span>
+          </div>
+          <figcaption>${escapeHtml(article.evidence.figureCaption)} No photographic image has been supplied for this draft.</figcaption>
+        </figure>
+      </div>
 
       <section class="journal-section">
         <h2>EVIDENCE DOCUMENTATION</h2>
         <div class="callout">
-          <strong>Available record</strong>
+          <strong>Documentation record</strong>
           ${escapeHtml(article.evidence.photoSlot)} ${escapeHtml(article.evidence.measurementSlot)}
         </div>
         <p>${escapeHtml(article.evidence.locationSlot)}</p>
@@ -573,7 +696,7 @@ export function buildJournalHtml(article: JournalArticle) {
         ${renderParagraphs(article.conclusion)}
       </section>
 
-      <section class="full-span journal-section">
+      <section class="full-span journal-section annex-section">
         <h2>ANNEXURE</h2>
         <table class="annex-table">
           <caption>Annex Table A1. Evidence inventory and review status.</caption>
@@ -591,7 +714,7 @@ export function buildJournalHtml(article: JournalArticle) {
         <div class="source-statement">${escapeHtml(article.references[0])}</div>
       </section>
 
-      <footer class="full-span truth-footer">
+      <footer class="full-span integrity-endnote">
         ${escapeHtml(PUBLIC_REPORT_DISCLAIMER)}
       </footer>
     </div>

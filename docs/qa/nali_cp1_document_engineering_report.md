@@ -13,55 +13,53 @@ Scope: NaLI CP1 founder/admin local document QA only.
 | Public/user PDF export | LOCKED |
 | Public/user DOCX export | LOCKED / INACTIVE |
 | Founder/admin local PDF/DOCX QA | CONDITIONAL GO |
-| V4 reference-journal quality | FAIL |
-| V5 reference-journal template quality | CONDITIONAL GO |
+| V4 journal quality | FAIL |
+| V5 visual/professional similarity | FAIL |
+| V6 local publication-template quality | CONDITIONAL GO |
 
-`CONDITIONAL GO` means the new local renderer is suitable for continued founder/admin artifact QA. It does not mean the evidence-limited sample is publishable, source-verified, or available through public export.
+`CONDITIONAL GO` permits continued founder/admin local artifact QA. It is not publishability, evidence verification, or a public-export release decision.
 
-## Renderer Replacement
+## Renderer And Template State
 
-V4 used `pdf-lib` coordinate drawing as its primary PDF article layout engine. Inspection found three sparse pages, weak article identity, shallow content, and a broken-looking DOCX preview. V5 replaces that local QA path with an HTML/CSS print template rendered by Playwright Chromium:
+V4's coordinate-drawn `pdf-lib` journal approach failed. V5 introduced the correct local renderer class, HTML/CSS print layout through Playwright, but founder review and subsequent visual audit found its presentation unacceptable. V6 retains the proper renderer while replacing the publication design and depth contract:
 
-- `playwright@^1.60.0` is installed as a `devDependency` only.
-- `src/lib/reports/journalHtmlTemplate.ts` supplies A4 print CSS, a NaLI-branded cover, article front matter, two-column main body, figure slot, and styled tables.
-- `src/lib/reports/journalHtmlPdfRenderer.ts` renders only to external QA folders and blocks external page requests.
-- `src/lib/reports/journalDocxRenderer.ts` now creates editable Word sections with a cover, metadata table, full article content, evidence figure slot, annexure, and references statement.
-- No Playwright import or renderer activation was added to public client components or public endpoints.
+- `playwright@^1.60.0` remains a `devDependency` used only by local QA rendering.
+- `src/lib/reports/journalHtmlTemplate.ts` now produces an original full cover composition, publication opener, two-column body, reserved figure plate, and styled tables.
+- `src/lib/reports/journalHtmlPdfRenderer.ts` renders A4 PDF only to allowed external QA paths and uses category-based page furniture.
+- `src/lib/reports/journalArticleTemplate.ts` provides long-form content and visible editorial distinctions for Peregrine, Obsidian, and Zephyr.
+- `src/lib/reports/journalDocxRenderer.ts` creates structured editable Word documents without raw markdown or visible absent-identifier furniture.
+- No client component or public endpoint imports or activates Playwright/DOCX generation.
 
-## External QA Artifacts
+## External Artifacts And Inspection
 
-Artifacts are generated into `~/Downloads/NaLI-QA/` and are not repository files.
+The V6 generator wrote `.html`, `.md`, `.txt`, `.pdf`, and `.docx` artifacts for each model to `~/Downloads/NaLI-QA/`. Generated QA files remain outside the repository.
 
-| Model | V4 PDF baseline | V5 PDF inspected | V5 DOCX inspected |
+| Model | V6 PDF | V6 Word-rendered DOCX | Article identity |
 | --- | --- | --- | --- |
-| Peregrine | 3 pages / 603 words | 5 pages / 1,732 words | Word-rendered, 6 pages |
-| Obsidian | 3 pages / 738 words | 5 pages / 1,907 words | Word-rendered, 7 pages |
-| Zephyr | 3 pages / 697 words | 5 pages / 1,877 words | Word-rendered, 7 pages |
+| Peregrine | 5 pages / 1,982 words | 7 pages / 2,027 words | Short Communication / Practicum Note |
+| Obsidian | 5 pages / 1,963 words | 7 pages / 2,011 words | Evidence Audit Article |
+| Zephyr | 5 pages / 1,938 words | 7 pages / 1,984 words | Polished Academic Article Draft |
 
-Each v5 model generated `.html`, `.md`, `.txt`, `.pdf`, and `.docx` files. PDF visual inspection found the intended cover, article first page, readable two-column body, clean result table, deliberate no-photo figure slot, annexure, and references statement. DOCX files were exported to temporary PDFs through installed Microsoft Word for page-level inspection because LibreOffice is unavailable.
+PDF pages were rasterized with macOS PDFKit and examined page-by-page. DOCX files were opened and exported through installed Microsoft Word to temporary PDFs, then inspected visually. V6 repairs the V5 visual failures: cover composition is strong, opener is journal-like, body is dense/readable, the figure plate is deliberate, and annexure pagination is coherent. DOCX remains cleaner and editable but intentionally simpler than the PDF cover.
 
 ## Integrity And Boundary Checks
 
-- DOI is expressly shown as not assigned in CP1; ISSN is shown as not applicable.
-- No supplied references means the document states that no references were supplied and NaLI did not generate artificial references.
-- Figure areas state that a photo was not provided; no evidence image is synthesized.
-- The article does not assert species identification, field verification, functional plant conclusions, payment activation, upload activation, or source-verification activation.
-- Public PDF/DOCX export remains locked; generated artifacts are local QA output only.
+- Visible V6 article design omits missing DOI/ISSN furniture and does not invent identifiers.
+- No references were supplied; the document states that NaLI did not generate artificial references.
+- No photo was supplied; figure areas state that clearly and synthesize no evidence image.
+- No species identification, field verification, payment activation, upload activation, or source-verification activation is asserted.
+- Public PDF/DOCX export remains locked; V6 output is founder/admin local QA only.
 
-## Verification Performed
+## Verification Required For Commit
 
-| Check | Result |
-| --- | --- |
-| `npm run lint` | PASS |
-| `npm run typecheck` | PASS |
-| `npm run build` | PASS |
-| `npm run test:demo` | PASS (5 tests) |
-| `node --test tests/reports/*.test.cjs` | PASS (252 tests) |
-| Direct PDF visual inspection | PASS for v5 cover/front matter/body/table/figure/annexure checks |
-| Word-rendered DOCX inspection | PASS for all three v5 profiles |
+Final verification commands are:
 
-## Remaining Limitations
+```bash
+npm run lint
+npm run typecheck
+npm run build
+npm run test:demo
+node --test tests/reports/*.test.cjs
+```
 
-- The sample input provides two brief morphology notes, no photo, no measurements, no replicated observations, and no references; the article must therefore remain a draft with explicit limits.
-- V5 is intentionally NaLI-branded rather than an imitation of the supplied publisher benchmark.
-- DOCX provides a professional editable structure, but PDF remains the stronger controlled visual output for founder/admin layout QA.
+The final commit record must state their results after execution.
