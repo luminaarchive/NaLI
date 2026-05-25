@@ -29,7 +29,7 @@ import {
   pruneExpiredGuestRecoveries,
   renameGuestReportRecovery,
   listGuestReportRecoveries,
-  type GuestReportRecoverySnapshot
+  type GuestReportRecoverySnapshot,
 } from "@/lib/reports/clientRecovery";
 import { validateReportInput } from "@/lib/reports/inputValidation";
 import { useDebouncedReportValidation } from "@/lib/reports/useDebouncedValidation";
@@ -84,16 +84,19 @@ function getOrCreateGuestSessionId() {
 }
 
 function hasMaterial(form: FormState) {
-  return (
-    [form.mainText, form.sourceUrls, form.location, form.fileDescription].some((value) => value.trim().length > 0)
-  );
+  return [form.mainText, form.sourceUrls, form.location, form.fileDescription].some((value) => value.trim().length > 0);
 }
 
 export function CreateReportForm() {
   const router = useRouter();
   const mainTextRef = useRef<HTMLTextAreaElement>(null);
   const [form, setForm] = useState<FormState>(initialForm);
-  const [error, setError] = useState<{ message: string; code?: string; status?: number; retryAfterSeconds?: number } | null>(null);
+  const [error, setError] = useState<{
+    message: string;
+    code?: string;
+    status?: number;
+    retryAfterSeconds?: number;
+  } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snapshots, setSnapshots] = useState<GuestReportRecoverySnapshot[]>([]);
@@ -101,7 +104,11 @@ export function CreateReportForm() {
   const showValidation = !error && hasMaterial(form) && validationIssue.severity !== "none";
 
   const [metadataResult, setMetadataResult] = useState<LocalImageMetadataResult | null>(null);
-  const [metadataAlert, setMetadataAlert] = useState<{ variant: "info" | "warning" | "error" | "success" | "locked"; title: string; explanation: string } | null>(null);
+  const [metadataAlert, setMetadataAlert] = useState<{
+    variant: "info" | "warning" | "error" | "success" | "locked";
+    title: string;
+    explanation: string;
+  } | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setMetadataAlert(null);
@@ -121,7 +128,8 @@ export function CreateReportForm() {
         setMetadataAlert({
           variant: "warning",
           title: "Metadata tidak ditemukan",
-          explanation: res.warnings[0] || "Tidak ada lokasi atau waktu pengambilan foto di dalam file ini. File tidak diupload.",
+          explanation:
+            res.warnings[0] || "Tidak ada lokasi atau waktu pengambilan foto di dalam file ini. File tidak diupload.",
         });
       } else if (res.warnings.length > 0) {
         setMetadataAlert({
@@ -159,8 +167,8 @@ export function CreateReportForm() {
     const dateText = metadataResult.capturedAt
       ? `[Metadata waktu foto: ${metadataResult.capturedAt}] (File tidak diupload)`
       : metadataResult.fileLastModifiedAt
-      ? `[Waktu modifikasi file: ${metadataResult.fileLastModifiedAt}] (File tidak diupload)`
-      : "";
+        ? `[Waktu modifikasi file: ${metadataResult.fileLastModifiedAt}] (File tidak diupload)`
+        : "";
 
     let overwriteLocation = false;
     let overwriteDesc = false;
@@ -217,59 +225,82 @@ export function CreateReportForm() {
     formRef.current = form;
   }, [form]);
 
-  const handleRestoreSnapshot = useCallback((snapshot: GuestReportRecoverySnapshot) => {
-    // Restore requires user action, warn first if active input exists
-    const hasInput = [formRef.current.mainText, formRef.current.sourceUrls, formRef.current.location, formRef.current.fileDescription].some((v) => v.trim());
-    if (hasInput) {
-      const confirmOverwrite = window.confirm("Apakah Anda ingin menimpa input aktif saat ini dengan draft yang dipulihkan?");
-      if (!confirmOverwrite) return;
-    }
+  const handleRestoreSnapshot = useCallback(
+    (snapshot: GuestReportRecoverySnapshot) => {
+      // Restore requires user action, warn first if active input exists
+      const hasInput = [
+        formRef.current.mainText,
+        formRef.current.sourceUrls,
+        formRef.current.location,
+        formRef.current.fileDescription,
+      ].some((v) => v.trim());
+      if (hasInput) {
+        const confirmOverwrite = window.confirm(
+          "Apakah Anda ingin menimpa input aktif saat ini dengan draft yang dipulihkan?",
+        );
+        if (!confirmOverwrite) return;
+      }
 
-    const id = snapshot.id;
-    const storedToken = window.localStorage.getItem(`nali-report-access:${id}`) ||
-                        window.localStorage.getItem(`nali-report-access-key:${id}`) ||
-                        window.localStorage.getItem(`nali-report-key:${id}`) ||
-                        window.localStorage.getItem(`nali-report-access-token:${id}`);
+      const id = snapshot.id;
+      const storedToken =
+        window.localStorage.getItem(`nali-report-access:${id}`) ||
+        window.localStorage.getItem(`nali-report-access-key:${id}`) ||
+        window.localStorage.getItem(`nali-report-key:${id}`) ||
+        window.localStorage.getItem(`nali-report-access-token:${id}`);
 
-    // Rule 7: If snapshot has reportId but no access key, restore draft/composer state
-    if ((snapshot.status === "draft_ready" || snapshot.status === "chat_updated") && storedToken && id && !id.startsWith("temp-") && id !== "composer-autosave") {
-      router.push(`/report/${id}?token=${encodeURIComponent(storedToken)}`);
-    } else {
-      setForm({
-        mode: snapshot.mode || "draft_from_materials",
-        selectedModel: snapshot.selectedModel || "peregrine",
-        mainText: snapshot.mainText || "",
-        reportTemplate: snapshot.reportTemplate || "Laporan Observasi Lingkungan",
-        location: snapshot.location || "",
-        sourceUrls: snapshot.sourceUrls || "",
-        fileDescription: snapshot.fileDescription || "",
-        integrityConsent: snapshot.integrityConsent || false,
-        title: snapshot.title || "",
-        userRole: snapshot.userRole || "pengguna",
-      });
-      setError(null);
-      setNotice(null);
-      mainTextRef.current?.focus();
-    }
-  }, [router]);
+      // Rule 7: If snapshot has reportId but no access key, restore draft/composer state
+      if (
+        (snapshot.status === "draft_ready" || snapshot.status === "chat_updated") &&
+        storedToken &&
+        id &&
+        !id.startsWith("temp-") &&
+        id !== "composer-autosave"
+      ) {
+        router.push(`/report/${id}?token=${encodeURIComponent(storedToken)}`);
+      } else {
+        setForm({
+          mode: snapshot.mode || "draft_from_materials",
+          selectedModel: snapshot.selectedModel || "peregrine",
+          mainText: snapshot.mainText || "",
+          reportTemplate: snapshot.reportTemplate || "Laporan Observasi Lingkungan",
+          location: snapshot.location || "",
+          sourceUrls: snapshot.sourceUrls || "",
+          fileDescription: snapshot.fileDescription || "",
+          integrityConsent: snapshot.integrityConsent || false,
+          title: snapshot.title || "",
+          userRole: snapshot.userRole || "pengguna",
+        });
+        setError(null);
+        setNotice(null);
+        mainTextRef.current?.focus();
+      }
+    },
+    [router],
+  );
 
-  const handleRenameSnapshot = useCallback((id: string, currentTitle: string) => {
-    const newTitle = window.prompt("Masukkan nama baru untuk draft ini:", currentTitle);
-    if (newTitle === null) return;
-    const success = renameGuestReportRecovery(id, newTitle);
-    if (success) {
-      loadSnapshots();
-    } else {
-      alert("Gagal mengubah nama draft.");
-    }
-  }, [loadSnapshots]);
+  const handleRenameSnapshot = useCallback(
+    (id: string, currentTitle: string) => {
+      const newTitle = window.prompt("Masukkan nama baru untuk draft ini:", currentTitle);
+      if (newTitle === null) return;
+      const success = renameGuestReportRecovery(id, newTitle);
+      if (success) {
+        loadSnapshots();
+      } else {
+        alert("Gagal mengubah nama draft.");
+      }
+    },
+    [loadSnapshots],
+  );
 
-  const handleDeleteSnapshot = useCallback((id: string) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus draft ini?")) {
-      clearGuestReportRecovery(id);
-      loadSnapshots();
-    }
-  }, [loadSnapshots]);
+  const handleDeleteSnapshot = useCallback(
+    (id: string) => {
+      if (window.confirm("Apakah Anda yakin ingin menghapus draft ini?")) {
+        clearGuestReportRecovery(id);
+        loadSnapshots();
+      }
+    },
+    [loadSnapshots],
+  );
 
   const handleClearAllSnapshots = useCallback(() => {
     if (window.confirm("Apakah Anda yakin ingin menghapus semua draft lokal di browser ini?")) {
@@ -400,8 +431,7 @@ export function CreateReportForm() {
   ]);
 
   const materialCount = useMemo(
-    () =>
-      [form.mainText, form.sourceUrls, form.location, form.fileDescription].filter((value) => value.trim()).length,
+    () => [form.mainText, form.sourceUrls, form.location, form.fileDescription].filter((value) => value.trim()).length,
     [form.fileDescription, form.location, form.mainText, form.sourceUrls],
   );
 
@@ -470,16 +500,17 @@ export function CreateReportForm() {
 
       const rawPayload = payload as any;
       const reportId = rawPayload.report_id || rawPayload.id || rawPayload.report?.id;
-      const accessKey = rawPayload.report_access_key ||
-                        rawPayload.access_key ||
-                        rawPayload.reportAccessKey ||
-                        rawPayload.report?.report_access_key ||
-                        rawPayload.report?.access_key ||
-                        rawPayload["report_access_" + "to" + "ken"] ||
-                        rawPayload["reportAccess" + "To" + "ken"] ||
-                        rawPayload.accessKey ||
-                        rawPayload.report?.["report_access_" + "to" + "ken"] ||
-                        rawPayload.report?.["accessKey"];
+      const accessKey =
+        rawPayload.report_access_key ||
+        rawPayload.access_key ||
+        rawPayload.reportAccessKey ||
+        rawPayload.report?.report_access_key ||
+        rawPayload.report?.access_key ||
+        rawPayload["report_access_" + "to" + "ken"] ||
+        rawPayload["reportAccess" + "To" + "ken"] ||
+        rawPayload.accessKey ||
+        rawPayload.report?.["report_access_" + "to" + "ken"] ||
+        rawPayload.report?.["accessKey"];
 
       if (process.env.NODE_ENV !== "production") {
         console.debug("[NaLI DEV] reportId exists:", !!reportId);
@@ -488,14 +519,16 @@ export function CreateReportForm() {
 
       if (!response.ok || !payload.report || !reportId) {
         // Rule 7: Abuse-blocked prompts must not become recovery drafts.
-        const isAbuseBlock = response.status === 400 && [
-          "EMPTY_DRAFT_MATERIAL",
-          "FINAL_ASSIGNMENT_WITHOUT_MATERIAL",
-          "FAKE_CITATION_REQUEST",
-          "FAKE_DATA_REQUEST",
-          "PLAGIARISM_EVASION",
-          "DO_MY_WORK"
-        ].includes(payload.code || "");
+        const isAbuseBlock =
+          response.status === 400 &&
+          [
+            "EMPTY_DRAFT_MATERIAL",
+            "FINAL_ASSIGNMENT_WITHOUT_MATERIAL",
+            "FAKE_CITATION_REQUEST",
+            "FAKE_DATA_REQUEST",
+            "PLAGIARISM_EVASION",
+            "DO_MY_WORK",
+          ].includes(payload.code || "");
 
         if (isAbuseBlock) {
           clearGuestReportRecovery(tempId);
@@ -547,9 +580,7 @@ export function CreateReportForm() {
         window.localStorage.setItem(`nali-report-notice:${reportId}`, payload.notice);
       }
       const accessParamName = "to" + "ken";
-      const accessQuery = accessKey
-        ? `?${accessParamName}=${encodeURIComponent(accessKey)}`
-        : "";
+      const accessQuery = accessKey ? `?${accessParamName}=${encodeURIComponent(accessKey)}` : "";
       router.push(`/report/${reportId}${accessQuery}`);
     } catch {
       setError({
@@ -615,7 +646,7 @@ export function CreateReportForm() {
           </label>
 
           <div className="mt-3">
-            <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-white/40">
+            <span className="mb-2 block text-xs font-semibold tracking-[0.08em] text-white/40 uppercase">
               Pilih Profil Pemrosesan (Model)
             </span>
             <div className="flex flex-wrap gap-2">
@@ -625,10 +656,10 @@ export function CreateReportForm() {
                   <button
                     key={model.id}
                     className={cn(
-                      "flex-1 sm:flex-none inline-flex items-center justify-center rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 min-h-[44px] cursor-pointer",
+                      "inline-flex min-h-[44px] flex-1 cursor-pointer items-center justify-center rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 sm:flex-none",
                       isSelected
                         ? "border-[#6f8057] bg-[#6f8057]/15 text-white shadow-sm shadow-[#6f8057]/10"
-                        : "border-white/[0.06] bg-[#07090e]/60 text-white/50 hover:bg-white/[0.05]"
+                        : "border-white/[0.06] bg-[#07090e]/60 text-white/50 hover:bg-white/[0.05]",
                     )}
                     type="button"
                     onClick={() => updateField("selectedModel", model.id)}
@@ -639,17 +670,39 @@ export function CreateReportForm() {
                 );
               })}
             </div>
-            <p className="mt-2 text-xs text-white/40">
-              {form.selectedModel === "peregrine" && "Peregrine: cepat untuk draft awal"}
-              {form.selectedModel === "obsidian" && "Obsidian: lebih kuat untuk batas klaim dan struktur"}
-              {form.selectedModel === "zephyr" && "Zephyr: lebih halus untuk kejernihan dan gaya"}
-            </p>
+            {naliModels
+              .filter((model) => model.id === form.selectedModel)
+              .map((model) => (
+                <div
+                  key={`${model.id}-detail`}
+                  className="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3"
+                >
+                  <p className="text-xs leading-5 text-white/60">{model.shortDescription}</p>
+                  <p className="mt-2 text-xs font-medium text-white/70">
+                    {model.costLabel} / estimasi {model.estimatedCredits} Kredit
+                  </p>
+                  <p className="mt-1 text-[11px] leading-5 text-white/40">{model.pricingReadinessNote}</p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {model.safeCapabilities.map((capability) => (
+                      <span
+                        key={capability}
+                        className="rounded-full border border-white/[0.06] px-2 py-1 text-[10px] text-white/55"
+                      >
+                        {capability}
+                      </span>
+                    ))}
+                  </div>
+                  {model.limitations.length > 0 && (
+                    <p className="mt-2 text-[11px] leading-5 text-white/40">{model.limitations.join(" / ")}</p>
+                  )}
+                </div>
+              ))}
           </div>
 
-          <label className="mt-3 flex gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 cursor-pointer items-start text-left">
+          <label className="mt-3 flex cursor-pointer items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-left">
             <input
               checked={form.integrityConsent}
-              className="mt-1 h-4 w-4 accent-indigo-500 shrink-0"
+              className="mt-1 h-4 w-4 shrink-0 accent-indigo-500"
               type="checkbox"
               onChange={(event) => updateField("integrityConsent", event.target.checked)}
             />
@@ -660,7 +713,7 @@ export function CreateReportForm() {
 
           <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-end">
             <label className="block">
-              <span className="sr-only text-xs font-semibold uppercase tracking-[0.08em] text-white/40 sm:not-sr-only sm:mb-2 sm:block">
+              <span className="sr-only text-xs font-semibold tracking-[0.08em] text-white/40 uppercase sm:not-sr-only sm:mb-2 sm:block">
                 Template
               </span>
               <select
@@ -678,7 +731,11 @@ export function CreateReportForm() {
 
             <button
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#09090b] transition-all hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:pointer-events-none disabled:opacity-60"
-              disabled={isSubmitting || (error?.retryAfterSeconds !== undefined && error.retryAfterSeconds > 0) || !validationIssue.canSubmit}
+              disabled={
+                isSubmitting ||
+                (error?.retryAfterSeconds !== undefined && error.retryAfterSeconds > 0) ||
+                !validationIssue.canSubmit
+              }
               type="submit"
             >
               {isSubmitting ? (
@@ -699,7 +756,7 @@ export function CreateReportForm() {
           </p>
 
           <details className="group mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02]">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 min-h-[48px] text-sm font-semibold text-white/80">
+            <summary className="flex min-h-[48px] cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-white/80">
               Tambahkan detail opsional
               <ChevronDown className="h-4 w-4 text-white/40 transition group-open:rotate-180" aria-hidden="true" />
             </summary>
@@ -768,7 +825,7 @@ export function CreateReportForm() {
                 />
               </label>
 
-              <div className="lg:col-span-2 space-y-3">
+              <div className="space-y-3 lg:col-span-2">
                 <div className="flex flex-col gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="flex items-center gap-2 text-sm font-semibold text-white/80">
@@ -787,15 +844,16 @@ export function CreateReportForm() {
                 </div>
 
                 {/* Local-only Image Metadata Helper */}
-                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-3">
-                  <h4 className="text-sm font-semibold text-white/80 flex items-center gap-2">
+                <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+                  <h4 className="flex items-center gap-2 text-sm font-semibold text-white/80">
                     <UploadCloud className="h-4 w-4 text-indigo-400/60" />
                     Bantu isi dari metadata foto lokal
                   </h4>
-                  <p className="text-xs text-white/40 leading-relaxed">
-                    Pilih foto dari perangkatmu untuk membaca metadata lokal seperti waktu atau koordinat jika tersedia. File tidak diupload.
+                  <p className="text-xs leading-relaxed text-white/40">
+                    Pilih foto dari perangkatmu untuk membaca metadata lokal seperti waktu atau koordinat jika tersedia.
+                    File tidak diupload.
                   </p>
-                  
+
                   <div className="flex flex-wrap items-center gap-3">
                     <input
                       type="file"
@@ -806,7 +864,7 @@ export function CreateReportForm() {
                     />
                     <label
                       htmlFor="local-metadata-file"
-                      className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/10 px-4 text-xs font-semibold text-white hover:bg-white/15 transition focus-within:ring-2 focus-within:ring-indigo-500"
+                      className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/10 px-4 text-xs font-semibold text-white transition focus-within:ring-2 focus-within:ring-indigo-500 hover:bg-white/15"
                     >
                       Baca metadata lokal
                     </label>
@@ -814,7 +872,7 @@ export function CreateReportForm() {
                       <button
                         type="button"
                         onClick={handleClearMetadata}
-                        className="text-xs text-red-400 hover:text-red-300 font-medium cursor-pointer min-h-[32px]"
+                        className="min-h-[32px] cursor-pointer text-xs font-medium text-red-400 hover:text-red-300"
                       >
                         Hapus pilihan
                       </button>
@@ -832,25 +890,44 @@ export function CreateReportForm() {
                   )}
 
                   {metadataResult && metadataResult.ok && (
-                    <div className="rounded-lg bg-white/[0.02] border border-white/[0.04] p-3 text-xs space-y-3">
+                    <div className="space-y-3 rounded-lg border border-white/[0.04] bg-white/[0.02] p-3 text-xs">
                       <p className="font-semibold text-white/70">Pratinjau Metadata Gambar:</p>
-                      <ul className="space-y-1 text-white/40 list-disc list-inside">
-                        <li>Nama File: <span className="text-white/60">{metadataResult.fileName}</span></li>
-                        <li>Ukuran: <span className="text-white/60">{(metadataResult.fileSizeBytes ? (metadataResult.fileSizeBytes / 1024 / 1024).toFixed(2) : "0.00")} MB</span></li>
+                      <ul className="list-inside list-disc space-y-1 text-white/40">
+                        <li>
+                          Nama File: <span className="text-white/60">{metadataResult.fileName}</span>
+                        </li>
+                        <li>
+                          Ukuran:{" "}
+                          <span className="text-white/60">
+                            {metadataResult.fileSizeBytes
+                              ? (metadataResult.fileSizeBytes / 1024 / 1024).toFixed(2)
+                              : "0.00"}{" "}
+                            MB
+                          </span>
+                        </li>
                         {metadataResult.capturedAt && (
-                          <li>Waktu Pengambilan: <span className="text-emerald-400 font-mono">{metadataResult.capturedAt}</span></li>
+                          <li>
+                            Waktu Pengambilan:{" "}
+                            <span className="font-mono text-emerald-400">{metadataResult.capturedAt}</span>
+                          </li>
                         )}
                         {!metadataResult.capturedAt && metadataResult.fileLastModifiedAt && (
-                          <li>Modifikasi File: <span className="text-white/60 font-mono">{metadataResult.fileLastModifiedAt}</span> <span className="text-white/25">(bukan waktu pengamatan)</span></li>
+                          <li>
+                            Modifikasi File:{" "}
+                            <span className="font-mono text-white/60">{metadataResult.fileLastModifiedAt}</span>{" "}
+                            <span className="text-white/25">(bukan waktu pengamatan)</span>
+                          </li>
                         )}
                         {metadataResult.locationText && (
-                          <li>Lokasi: <span className="text-emerald-400">{metadataResult.locationText}</span></li>
+                          <li>
+                            Lokasi: <span className="text-emerald-400">{metadataResult.locationText}</span>
+                          </li>
                         )}
                       </ul>
                       <button
                         type="button"
                         onClick={handleApplyMetadata}
-                        className="inline-flex min-h-[36px] items-center justify-center rounded-lg bg-emerald-500 text-zinc-950 px-3 text-xs font-bold hover:bg-emerald-400 transition cursor-pointer"
+                        className="inline-flex min-h-[36px] cursor-pointer items-center justify-center rounded-lg bg-emerald-500 px-3 text-xs font-bold text-zinc-950 transition hover:bg-emerald-400"
                       >
                         Gunakan sebagai isian awal
                       </button>
@@ -868,84 +945,80 @@ export function CreateReportForm() {
 
       {error || notice || showValidation ? (
         <section className="mt-4 space-y-3">
-          {showValidation && (() => {
-            const variant = validationIssue.severity === "error" ? "error" : "warning";
-            const nextStep = validationIssue.suggestions.join(" ");
-            let actionLabel: string | undefined = undefined;
-            let onAction: (() => void) | undefined = undefined;
+          {showValidation &&
+            (() => {
+              const variant = validationIssue.severity === "error" ? "error" : "warning";
+              const nextStep = validationIssue.suggestions.join(" ");
+              let actionLabel: string | undefined = undefined;
+              let onAction: (() => void) | undefined = undefined;
 
-            if (validationIssue.code === "TOO_SHORT" || validationIssue.code === "WEAK_INPUT") {
-              actionLabel = "Tambah detail";
-              onAction = () => {
-                mainTextRef.current?.focus();
-              };
-            }
+              if (validationIssue.code === "TOO_SHORT" || validationIssue.code === "WEAK_INPUT") {
+                actionLabel = "Tambah detail";
+                onAction = () => {
+                  mainTextRef.current?.focus();
+                };
+              }
 
-            return (
-              <NaliAlert
-                variant={variant}
-                title={validationIssue.title}
-                explanation={validationIssue.message}
-                nextStep={nextStep}
-                actionLabel={actionLabel}
-                onAction={onAction}
-              />
-            );
-          })()}
+              return (
+                <NaliAlert
+                  variant={variant}
+                  title={validationIssue.title}
+                  explanation={validationIssue.message}
+                  nextStep={nextStep}
+                  actionLabel={actionLabel}
+                  onAction={onAction}
+                />
+              );
+            })()}
 
-          {error && (() => {
-            const normalized = normalizePublicError({
-              status: error.status,
-              code: error.code,
-              message: error.message,
-              retryAfterSeconds: error.retryAfterSeconds,
-            });
+          {error &&
+            (() => {
+              const normalized = normalizePublicError({
+                status: error.status,
+                code: error.code,
+                message: error.message,
+                retryAfterSeconds: error.retryAfterSeconds,
+              });
 
-            let actionLabel: string | undefined = undefined;
-            let onAction: (() => void) | undefined = undefined;
+              let actionLabel: string | undefined = undefined;
+              let onAction: (() => void) | undefined = undefined;
 
-            if (normalized.category === "RATE_LIMIT") {
-              if (error.retryAfterSeconds === undefined || error.retryAfterSeconds <= 0) {
+              if (normalized.category === "RATE_LIMIT") {
+                if (error.retryAfterSeconds === undefined || error.retryAfterSeconds <= 0) {
+                  actionLabel = "Coba Lagi";
+                  onAction = () => handleSubmit();
+                }
+              } else if (normalized.category === "NETWORK_OR_SERVER") {
                 actionLabel = "Coba Lagi";
                 onAction = () => handleSubmit();
+              } else if (normalized.category === "INTEGRITY_BLOCK") {
+                actionLabel = "Ubah Materi";
+                onAction = () => {
+                  setError(null);
+                  mainTextRef.current?.focus();
+                };
+              } else if (normalized.category === "WEAK_INPUT") {
+                actionLabel = "Tambah Detail";
+                onAction = () => {
+                  setError(null);
+                  mainTextRef.current?.focus();
+                };
               }
-            } else if (normalized.category === "NETWORK_OR_SERVER") {
-              actionLabel = "Coba Lagi";
-              onAction = () => handleSubmit();
-            } else if (normalized.category === "INTEGRITY_BLOCK") {
-              actionLabel = "Ubah Materi";
-              onAction = () => {
-                setError(null);
-                mainTextRef.current?.focus();
-              };
-            } else if (normalized.category === "WEAK_INPUT") {
-              actionLabel = "Tambah Detail";
-              onAction = () => {
-                setError(null);
-                mainTextRef.current?.focus();
-              };
-            }
 
-            return (
-              <NaliAlert
-                variant={normalized.severity}
-                title={normalized.title}
-                explanation={normalized.explanation}
-                nextStep={normalized.nextStep}
-                retryAfterSeconds={error.retryAfterSeconds}
-                actionLabel={actionLabel}
-                onAction={onAction}
-              />
-            );
-          })()}
+              return (
+                <NaliAlert
+                  variant={normalized.severity}
+                  title={normalized.title}
+                  explanation={normalized.explanation}
+                  nextStep={normalized.nextStep}
+                  retryAfterSeconds={error.retryAfterSeconds}
+                  actionLabel={actionLabel}
+                  onAction={onAction}
+                />
+              );
+            })()}
 
-          {notice && (
-            <NaliAlert
-              variant="success"
-              title="Notifikasi"
-              explanation={notice}
-            />
-          )}
+          {notice && <NaliAlert variant="success" title="Notifikasi" explanation={notice} />}
         </section>
       ) : null}
     </form>
@@ -968,7 +1041,7 @@ function ModeButton({
   return (
     <button
       className={cn(
-        "rounded-xl border p-3 text-left transition-all duration-200 min-h-[48px] sm:p-4",
+        "min-h-[48px] rounded-xl border p-3 text-left transition-all duration-200 sm:p-4",
         active
           ? "border-white/[0.15] bg-white/[0.08] text-white"
           : "border-white/[0.06] bg-[#07090e]/60 text-white/50 hover:bg-white/[0.05]",
@@ -1005,17 +1078,15 @@ export const LocalHistoryPanel = memo(function LocalHistoryPanel({
   if (snapshots.length === 0) return null;
 
   return (
-    <div className="mb-4 rounded-2xl border border-white/[0.06] bg-[#07090e]/40 p-3 backdrop-blur-md shadow-lg">
+    <div className="mb-4 rounded-2xl border border-white/[0.06] bg-[#07090e]/40 p-3 shadow-lg backdrop-blur-md">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between text-xs font-bold uppercase tracking-wider text-white/50 hover:text-white transition cursor-pointer min-h-[44px] px-1"
+        className="flex min-h-[44px] w-full cursor-pointer items-center justify-between px-1 text-xs font-bold tracking-wider text-white/50 uppercase transition hover:text-white"
       >
         <span className="flex items-center gap-1.5">
           📁 Riwayat lokal browser
-          <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] text-white/70">
-            {snapshots.length}
-          </span>
+          <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] text-white/70">{snapshots.length}</span>
         </span>
         <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} />
       </button>
@@ -1027,59 +1098,66 @@ export const LocalHistoryPanel = memo(function LocalHistoryPanel({
               hour: "2-digit",
               minute: "2-digit",
             });
-            const statusLabel = {
-              autosaved_draft: "Autosave",
-              generation_failed: "Gagal",
-              draft_ready: "Siap",
-              chat_updated: "Chat",
-            }[item.status] || "Draft";
+            const statusLabel =
+              {
+                autosaved_draft: "Autosave",
+                generation_failed: "Gagal",
+                draft_ready: "Siap",
+                chat_updated: "Chat",
+              }[item.status] || "Draft";
 
-            const statusColors = {
-              autosaved_draft: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-              generation_failed: "bg-red-500/10 text-red-400 border-red-500/20",
-              draft_ready: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-              chat_updated: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-            }[item.status] || "bg-zinc-500/10 text-zinc-400 border-zinc-500/20";
+            const statusColors =
+              {
+                autosaved_draft: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+                generation_failed: "bg-red-500/10 text-red-400 border-red-500/20",
+                draft_ready: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+                chat_updated: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+              }[item.status] || "bg-zinc-500/10 text-zinc-400 border-zinc-500/20";
 
             return (
               <div
                 key={item.id}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-white/[0.04] bg-white/[0.01] p-2.5 hover:bg-white/[0.02] transition"
+                className="flex flex-col justify-between gap-2 rounded-xl border border-white/[0.04] bg-white/[0.01] p-2.5 transition hover:bg-white/[0.02] sm:flex-row sm:items-center"
               >
                 <div className="min-w-0 flex-1 space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-semibold text-white/80 truncate max-w-[200px]" title={item.title}>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="max-w-[200px] truncate text-xs font-semibold text-white/80" title={item.title}>
                       {item.title}
                     </span>
-                    <span className={cn("rounded border px-1.5 py-0.5 text-[9px] font-bold tracking-wide uppercase", statusColors)}>
+                    <span
+                      className={cn(
+                        "rounded border px-1.5 py-0.5 text-[9px] font-bold tracking-wide uppercase",
+                        statusColors,
+                      )}
+                    >
                       {statusLabel}
                     </span>
-                    <span className="text-[10px] text-white/30 font-mono">{timeStr}</span>
+                    <span className="font-mono text-[10px] text-white/30">{timeStr}</span>
                   </div>
-                  <p className="text-[11px] text-white/50 truncate max-w-[400px]">
+                  <p className="max-w-[400px] truncate text-[11px] text-white/50">
                     {item.mainText || "Tidak ada materi teks."}
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-1 items-center mt-1 sm:mt-0 shrink-0">
+                <div className="mt-1 flex shrink-0 flex-wrap items-center gap-1 sm:mt-0">
                   <button
                     type="button"
                     onClick={() => onRestore(item)}
-                    className="inline-flex min-h-[44px] sm:min-h-[36px] items-center justify-center rounded-lg bg-white px-3 text-[11px] font-semibold text-zinc-950 hover:bg-white/90 transition cursor-pointer"
+                    className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-white px-3 text-[11px] font-semibold text-zinc-950 transition hover:bg-white/90 sm:min-h-[36px]"
                   >
                     Pulihkan
                   </button>
                   <button
                     type="button"
                     onClick={() => onRename(item.id, item.title)}
-                    className="inline-flex min-h-[44px] sm:min-h-[36px] items-center justify-center rounded-lg bg-white/5 border border-white/[0.06] px-3 text-[11px] font-semibold text-white/70 hover:bg-white/10 hover:text-white transition cursor-pointer"
+                    className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-white/[0.06] bg-white/5 px-3 text-[11px] font-semibold text-white/70 transition hover:bg-white/10 hover:text-white sm:min-h-[36px]"
                   >
                     Ganti nama
                   </button>
                   <button
                     type="button"
                     onClick={() => onDelete(item.id)}
-                    className="inline-flex min-h-[44px] sm:min-h-[36px] items-center justify-center rounded-lg bg-red-500/10 border border-red-500/20 px-3 text-[11px] font-semibold text-red-400 hover:bg-red-500/20 transition cursor-pointer"
+                    className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 px-3 text-[11px] font-semibold text-red-400 transition hover:bg-red-500/20 sm:min-h-[36px]"
                   >
                     Hapus
                   </button>
@@ -1092,7 +1170,7 @@ export const LocalHistoryPanel = memo(function LocalHistoryPanel({
             <button
               type="button"
               onClick={onClearAll}
-              className="inline-flex min-h-[44px] sm:min-h-[36px] items-center justify-center rounded-lg bg-white/5 border border-white/[0.06] px-3 text-[11px] font-semibold text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition cursor-pointer"
+              className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-white/[0.06] bg-white/5 px-3 text-[11px] font-semibold text-red-400 transition hover:border-red-500/20 hover:bg-red-500/10 sm:min-h-[36px]"
             >
               Hapus semua
             </button>

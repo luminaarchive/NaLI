@@ -46,7 +46,7 @@ test("4. DOCX library dependency is not imported in client components", () => {
   assert.equal(clientSource.includes('from "docx"'), false, "DOCX library must not be loaded on the client side");
 });
 
-test("5. DOCX contains full article sections, clean tables, and no raw markdown dump", async () => {
+test("5. Obsidian DOCX contains evidence-audit sections, clean tables, and no premium dump", async () => {
   const report = buildMockResult(testInput, "NaLI Obsidian");
   const zip = await JSZip.loadAsync(await buildReportDocxBuffer(report));
   const xml = await zip.file("word/document.xml").async("string");
@@ -58,8 +58,9 @@ test("5. DOCX contains full article sections, clean tables, and no raw markdown 
     "MATERIALS AND METHODS",
     "RESULTS AND DISCUSSION",
     "EVIDENCE DOCUMENTATION",
-    "LIMITATIONS",
-    "FUTURE WORK",
+    "EVIDENCE SUFFICIENCY ASSESSMENT",
+    "DATA RISK REGISTER",
+    "METHODOLOGICAL VULNERABILITY",
     "CONCLUSIONS",
     "ANNEXURE",
     "REFERENCES",
@@ -67,7 +68,8 @@ test("5. DOCX contains full article sections, clean tables, and no raw markdown 
     assert.match(text, new RegExp(section));
   }
   assert.doesNotMatch(text, /\|\s*Spesimen\s*\||#{1,3}\s/);
-  assert.match(text, /Evidence Audit Article/);
+  assert.match(text, /Evidence Audit Article/i);
+  assert.doesNotMatch(text, /Publication-style Revision Notes|Reviewer-readiness Checklist/);
   assert.match(text, /Draft only; source verification inactive; public export locked\./);
   assert.doesNotMatch(text, /Founder\/Admin Draft Series|Internal QA|DOI\s+Not assigned|ISSN\s+Not applicable/i);
   assert.match(xml, /w:type="dxa"/, "Tables must have explicit editable geometry");

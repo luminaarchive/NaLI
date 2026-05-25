@@ -5,15 +5,15 @@ import { getGuestSessionIdHash, isUsableGuestSessionId } from "@/lib/reports/acc
 import { getOptionalSupabaseAdminClient } from "@/lib/supabase/admin";
 import { v5 as uuidv5 } from "uuid";
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const guestSessionId = searchParams.get("guestSessionId");
+    const input = (await req.json().catch(() => null)) as { guestSessionId?: unknown } | null;
+    const guestSessionId = input?.guestSessionId;
 
     if (!isUsableGuestSessionId(guestSessionId)) {
       return NextResponse.json(
         { ready: false, balance: 0, trialAvailable: false, reason: "missing_guest_session" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
         balance: 0,
         trialAvailable: false,
         reason: balanceRes.reason,
-        source: "unconfigured"
+        source: "unconfigured",
       });
     }
 
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
         balance: 0,
         trialAvailable: false,
         reason: "supabase_unconfigured",
-        source: "unconfigured"
+        source: "unconfigured",
       });
     }
 
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
         ready: true,
         balance: balanceRes.balance,
         trialAvailable: false,
-        source: "ledger"
+        source: "ledger",
       });
     }
 
@@ -63,13 +63,13 @@ export async function GET(req: NextRequest) {
     if (entries && entries.length === 0) {
       // Deterministic UUID for the trial grant
       const trialGrantId = uuidv5(`trial_grant:${guestSessionIdHash}`, UUID_NAMESPACE);
-      
+
       const seedRes = await recordEnergyLedgerEntry({
         id: trialGrantId,
         amount: 30,
         guestSessionIdHash,
         reason: `trial_grant:${guestSessionIdHash}`,
-        type: "credit"
+        type: "credit",
       });
 
       if (seedRes.recorded) {
@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
           ready: true,
           balance: updatedBalanceRes.ready ? updatedBalanceRes.balance : 30,
           trialAvailable: false,
-          source: "ledger"
+          source: "ledger",
         });
       }
     }
@@ -88,13 +88,10 @@ export async function GET(req: NextRequest) {
       ready: true,
       balance: balanceRes.balance,
       trialAvailable: false,
-      source: "ledger"
+      source: "ledger",
     });
   } catch (error) {
     console.error("NaLI energy balance route error", error);
-    return NextResponse.json(
-      { error: "Terjadi kesalahan server internal." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Terjadi kesalahan server internal." }, { status: 500 });
   }
 }

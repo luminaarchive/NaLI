@@ -2,8 +2,7 @@ import type { JournalArticle } from "./journalArticleTemplate";
 import { PUBLIC_REPORT_DISCLAIMER } from "./reportGenerator";
 
 function escapeHtml(value: string) {
-  if (!value) return "";
-  return value
+  return String(value || "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -11,8 +10,7 @@ function escapeHtml(value: string) {
     .replace(/'/g, "&#39;");
 }
 
-function renderParagraphs(value: string) {
-  if (!value) return "";
+function paragraphs(value: string) {
   return value
     .split(/\n\n+/)
     .filter(Boolean)
@@ -20,74 +18,321 @@ function renderParagraphs(value: string) {
     .join("");
 }
 
-function renderList(items: string[]) {
-  if (!items) return "";
+function list(items: string[]) {
   return `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
 }
 
+function resultTable(article: JournalArticle, caption: string) {
+  const rows = article.results.comparisonTable
+    .map(
+      (row) =>
+        `<tr><td>${escapeHtml(row.object)}</td><td>${escapeHtml(row.shape)}</td><td>${escapeHtml(
+          row.margin,
+        )}</td><td>${escapeHtml(row.color)}</td><td>${escapeHtml(row.source)}</td><td>${escapeHtml(
+          row.evidenceStatus,
+        )}</td></tr>`,
+    )
+    .join("");
+  return `<table class="results-table">
+    <caption>${escapeHtml(caption)}</caption>
+    <thead><tr><th>Object</th><th>Shape</th><th>Margin</th><th>Apparent colour</th><th>Source</th><th>Status</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function statsTable(article: JournalArticle, caption: string) {
+  const rows = (article.results.statsTable || [])
+    .map(
+      (row) =>
+        `<tr><td>${escapeHtml(row.groupName)}</td><td>${row.meanLength.toFixed(2)} cm</td><td>${row.meanWidth.toFixed(2)} cm</td><td>${row.meanPetiole.toFixed(2)} cm</td></tr>`,
+    )
+    .join("");
+  return `<table class="stats-table">
+    <caption>${escapeHtml(caption)}</caption>
+    <thead><tr><th>Group</th><th>Mean length</th><th>Mean width</th><th>Mean petiole</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function replicateTable(article: JournalArticle) {
+  const rows = (article.results.replicatesTable || [])
+    .map(
+      (row) =>
+        `<tr><td>${escapeHtml(row.id)}</td><td>${row.lengthCm.toFixed(1)}</td><td>${row.widthCm.toFixed(
+          1,
+        )}</td><td>${row.petioleLengthCm.toFixed(1)}</td><td>${escapeHtml(row.shape)}</td><td>${escapeHtml(
+          row.marginType,
+        )}</td></tr>`,
+    )
+    .join("");
+  return `<table class="measurement-table">
+    <caption>Table 3. Raw replicate entries supplied as local QA fixture data (not externally verified).</caption>
+    <thead><tr><th>ID</th><th>Length</th><th>Width</th><th>Petiole</th><th>Shape</th><th>Margin</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function evidenceTable(article: JournalArticle) {
+  const rows = article.annexure.evidenceTable
+    .map(
+      (row) =>
+        `<tr><td>${escapeHtml(row.id)}</td><td>${escapeHtml(row.material_type)}</td><td>${escapeHtml(
+          row.summary,
+        )}</td><td>${escapeHtml(row.verification_status)}</td></tr>`,
+    )
+    .join("");
+  return `<table class="annex-table">
+    <caption>Annex Table A1. Evidence inventory and review status (local QA fixture).</caption>
+    <thead><tr><th>ID</th><th>Type</th><th>Summary</th><th>Status</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function editorialReadinessTable(article: JournalArticle) {
+  const rows = article.premium?.reviewerReadinessChecklist
+    .map((item) => `<tr><td>${escapeHtml(item)}</td><td>Perlu verifikasi pengguna</td></tr>`)
+    .join("");
+  return `<table class="editorial-table">
+    <caption>Table E1. Premium reviewer-readiness controls before editorial use.</caption>
+    <thead><tr><th>Editorial control</th><th>Status</th></tr></thead>
+    <tbody>${rows ?? ""}</tbody>
+  </table>`;
+}
+
+function visualPlate(number: number, caption: string, premium = false) {
+  return `<figure class="figure-plate ${premium ? "refined" : ""}">
+    <div class="plate-label">synthetic QA placeholder</div>
+    <svg viewBox="0 0 720 210" aria-label="Local QA placeholder figure">
+      <rect width="720" height="210" fill="${premium ? "#f5f0e6" : "#f1f4ec"}"/>
+      ${
+        number === 1
+          ? `<path d="M90 104C132 36 249 34 295 104C246 176 133 174 90 104Z" fill="#477052"/>
+             <path d="M425 104L465 39L475 80L526 51L503 98L553 123L497 128L506 177L468 142L430 171L440 126L394 113Z" fill="#75945c"/>
+             <path d="M89 104H294M425 104H529" stroke="#e9efdd" stroke-width="2"/>
+             <text x="190" y="194">Daun A - reported oval form</text><text x="465" y="194">Daun B - reported palmate form</text>`
+          : number === 2
+            ? `<path d="M120 112C180 64 323 64 385 112C324 159 181 159 120 112Z" fill="#d7e1cb" stroke="#477052" stroke-width="2"/>
+             <path d="M78 112H120M120 48V176M385 48V176" stroke="#977047" stroke-width="2"/>
+             <path d="M120 45H385M258 70V153" stroke="#38668e" stroke-width="2"/>
+             <text x="245" y="35">reported length reading</text><text x="271" y="168">reported width</text>`
+            : `<rect x="58" y="77" width="150" height="58" rx="8" fill="#f2e5c8" stroke="#977047" stroke-width="2"/>
+             <rect x="286" y="77" width="150" height="58" rx="8" fill="#f2e5c8" stroke="#977047" stroke-width="2"/>
+             <rect x="514" y="77" width="150" height="58" rx="8" fill="#f2e5c8" stroke="#977047" stroke-width="2"/>
+             <path d="M208 106H286M436 106H514" stroke="#38668e" stroke-width="3"/>
+             <path d="M276 98L286 106L276 114M504 98L514 106L504 114" fill="none" stroke="#38668e" stroke-width="3"/>
+             <text x="96" y="109">evidence</text><text x="332" y="109">limits</text><text x="548" y="109">revision</text>`
+      }
+    </svg>
+    <figcaption>${escapeHtml(caption)}</figcaption>
+  </figure>`;
+}
+
+function header(article: JournalArticle, badge = article.capabilities.badge) {
+  return `<header class="running-header"><span>NaLI Nature &amp; Evidence Journal</span><strong>${escapeHtml(
+    badge,
+  )}</strong><span>${escapeHtml(article.metadata.publicExportStatus)}</span></header>`;
+}
+
+function references(article: JournalArticle) {
+  return article.references.map((reference) => `<p class="reference-item">${escapeHtml(reference)}</p>`).join("");
+}
+
+function cover(article: JournalArticle) {
+  return `<section class="page cover-page ${article.capabilities.visualVariant}">
+    <div class="cover-brand">NaLI / Nature / Evidence</div>
+    <span class="tier-badge">${escapeHtml(article.capabilities.badge)}</span>
+    <p class="cover-series">${escapeHtml(article.cover.editionLine)}</p>
+    <h1>${escapeHtml(article.cover.journalTitle)}</h1>
+    <p class="cover-category">${escapeHtml(article.metadata.articleCategory)}</p>
+    <h2>${escapeHtml(article.metadata.title)}</h2>
+    <div class="cover-rule"></div>
+    <p class="cover-value">${escapeHtml(article.metadata.editorialNote)}</p>
+    <footer><strong>${escapeHtml(article.cover.brandNote)}</strong><br>${escapeHtml(article.cover.truthNote)}</footer>
+  </section>`;
+}
+
+function starterPages(article: JournalArticle) {
+  return `
+  <section class="page article-opener starter">
+    ${header(article)}
+    <p class="kicker">Limited Starter Output</p>
+    <h1>${escapeHtml(article.metadata.title)}</h1>
+    <div class="starter-callout"><strong>Starter Draft</strong> Output cepat untuk catatan awal dan praktikum dasar; sengaja bukan jurnal panjang atau audit penuh.</div>
+    <h2>STARTER ABSTRACT</h2>${paragraphs(article.abstract.text)}
+    <h2>1. BACKGROUND FOR PRACTICUM</h2>${paragraphs(article.introduction)}
+  </section>
+  <section class="page article-body starter">
+    ${header(article)}
+    <h2>2. SIMPLE MATERIALS AND METHOD</h2>
+    <p>${escapeHtml(article.materialsAndMethods.method)}</p>
+    <p>${escapeHtml(article.materialsAndMethods.profileEmphasis)}</p>
+    <h2>3. STARTER RESULTS</h2>
+    ${resultTable(article, "Table 1. Simple visual comparison from user-provided notes (local QA fixture).")}
+    ${paragraphs(article.results.narrative)}
+    ${visualPlate(1, "Figure 1. Starter visual plate only; illustrative local QA placeholder, not specimen evidence.")}
+  </section>
+  <section class="page article-body starter">
+    ${header(article)}
+    <h2>4. SHORT LIMITATION CHECKLIST</h2>${list(article.limitations)}
+    <h2>5. NEXT OBSERVATION STEPS</h2>${list(article.futureDataRequired)}
+    <h2>CONCLUSION</h2>${paragraphs(article.conclusion)}
+    <div class="upgrade-note"><strong>Upgrade path</strong>${escapeHtml(article.upgradeNote || "")}</div>
+    <h2>REFERENCES PROVIDED BY USER</h2>${references(article)}
+    <p class="integrity-endnote">${escapeHtml(PUBLIC_REPORT_DISCLAIMER)}</p>
+  </section>`;
+}
+
+function auditPages(article: JournalArticle) {
+  const audit = article.audit!;
+  return `
+  <section class="page article-opener audit">
+    ${header(article)}
+    <p class="kicker">Evidence Audit Article</p>
+    <h1>${escapeHtml(article.metadata.title)}</h1>
+    <div class="audit-card"><strong>Evidence Audit</strong>${escapeHtml(audit.evidenceSufficiencyAssessment)}</div>
+    <h2>AUDIT ABSTRACT</h2>${paragraphs(article.abstract.text)}
+  </section>
+  <section class="page article-body audit">
+    ${header(article)}
+    <h2>1. INTRODUCTION / SCOPE AND CLAIM BOUNDARY</h2>${paragraphs(article.introduction)}
+    <h2>2. LITERATURE REVIEW / CITATION BOUNDARY AUDIT</h2>${paragraphs(article.literatureReview)}
+    <div class="audit-card">${escapeHtml(audit.citationBoundaryAudit)}</div>
+  </section>
+  <section class="page article-body audit">
+    ${header(article)}
+    <h2>3. MATERIALS AND METHODS / AUDIT PROTOCOL</h2>
+    <p>${escapeHtml(article.materialsAndMethods.method)}</p>
+    <p>${escapeHtml(article.materialsAndMethods.profileEmphasis)}</p>
+    <h2>EVIDENCE INVENTORY</h2>${evidenceTable(article)}
+  </section>
+  <section class="page article-body audit">
+    ${header(article)}
+    <h2>4. RESULTS AND DISCUSSION / MEASUREMENT TABLES</h2>
+    ${resultTable(article, "Table 1. Reported visual characters retained with source boundary.")}
+    ${statsTable(article, "Table 2. Descriptive measurement summary from supplied fixture rows.")}
+    ${replicateTable(article)}
+  </section>
+  <section class="page article-body audit">
+    ${header(article)}
+    <h2>FIGURE PLATES FOR AUDIT TRACEABILITY</h2>
+    ${visualPlate(1, "Figure 1. Reported shape comparison; illustrative QA plate only.")}
+    ${visualPlate(2, "Figure 2. Measurement traceability guide; illustrative QA plate only.")}
+  </section>
+  <section class="page article-body audit">
+    ${header(article)}
+    <h2>EVIDENCE SUFFICIENCY ASSESSMENT</h2><div class="sufficiency-card">${escapeHtml(
+      audit.evidenceSufficiencyAssessment,
+    )}<p>${escapeHtml(audit.reliabilityScore)}</p></div>
+    <h2>CANNOT BE CONCLUDED</h2><div class="cannot-conclude">${escapeHtml(article.cannotBeConcluded)}</div>
+    <h2>DATA RISK REGISTER</h2>${list(audit.dataRiskRegister)}
+  </section>
+  <section class="page article-body audit">
+    ${header(article)}
+    <h2>METHODOLOGICAL VULNERABILITY</h2>${paragraphs(audit.methodologicalVulnerability)}
+    <h2>SOURCE GAP ANALYSIS</h2>${paragraphs(audit.sourceGapAnalysis)}
+    <h2>CONCLUSIONS</h2>${paragraphs(article.conclusion)}
+    <div class="upgrade-note subtle">${escapeHtml(article.upgradeNote || "")}</div>
+  </section>
+  <section class="page article-body audit">
+    ${header(article)}
+    <h2>ANNEXURE</h2>${replicateTable(article)}
+    <h2>REFERENCES</h2>${references(article)}
+    <p class="integrity-endnote">${escapeHtml(PUBLIC_REPORT_DISCLAIMER)}</p>
+  </section>`;
+}
+
+function premiumPages(article: JournalArticle) {
+  const premium = article.premium!;
+  return `
+  <section class="page article-opener premium">
+    ${header(article)}
+    <p class="kicker">Premium Journal Draft</p>
+    <h1>${escapeHtml(article.metadata.title)}</h1>
+    <div class="editorial-panel"><strong>Executive Editorial Summary</strong>${escapeHtml(
+      premium.executiveEditorialSummary,
+    )}</div>
+    <h2>EDITORIAL ABSTRACT</h2>${paragraphs(article.abstract.text)}
+  </section>
+  <section class="page article-body premium">
+    ${header(article)}
+    <h2>1. INTRODUCTION</h2>${paragraphs(article.introduction)}
+    <h2>2. INTEGRATED LITERATURE FRAMING</h2>${paragraphs(premium.integratedLiteratureFraming)}
+    ${paragraphs(article.literatureReview)}
+  </section>
+  <section class="page article-body premium">
+    ${header(article)}
+    <h2>3. MATERIALS AND METHODS</h2>
+    <p>${escapeHtml(article.materialsAndMethods.method)}</p>
+    <p>${escapeHtml(article.materialsAndMethods.profileEmphasis)}</p>
+    <p>${escapeHtml(article.materialsAndMethods.observationDesign)}</p>
+    <div class="editorial-panel"><strong>Traceability Boundary</strong>${escapeHtml(
+      article.materialsAndMethods.missingDetails,
+    )}</div>
+  </section>
+  <section class="page article-body premium">
+    ${header(article)}
+    <h2>4. RESULTS</h2>
+    ${resultTable(article, premium.refinedTableCaptions[0])}
+    ${statsTable(article, premium.refinedTableCaptions[1])}
+    ${replicateTable(article)}
+  </section>
+  <section class="page article-body premium figures">
+    ${header(article)}
+    <h2>REFINED FIGURE CAPTIONS AND PLATES</h2>
+    ${visualPlate(1, premium.refinedFigureCaptions[0], true)}
+    ${visualPlate(2, premium.refinedFigureCaptions[1], true)}
+  </section>
+  <section class="page article-body premium figures">
+    ${header(article)}
+    <h2>EDITORIAL STRUCTURE HARMONIZATION</h2>
+    ${visualPlate(3, premium.refinedFigureCaptions[2], true)}
+    <div class="editorial-panel"><strong>Editorial control</strong>The premium structure connects supplied material, declared limits, and revision work without treating editorial organization as verification.</div>
+  </section>
+  <section class="page article-body premium">
+    ${header(article)}
+    <h2>5. INTEGRATED DISCUSSION</h2>${paragraphs(article.discussion)}
+    <div class="editorial-panel">${escapeHtml(premium.integratedDiscussion)}</div>
+    <h2>EDUCATION AND CONSERVATION RELEVANCE</h2>${paragraphs(article.conservationRelevance)}
+  </section>
+  <section class="page article-body premium">
+    ${header(article)}
+    <h2>6. EVIDENCE AND SOURCE LIMITS</h2>${list(article.limitations)}
+    <div class="cannot-conclude"><strong>Cannot be concluded</strong>${escapeHtml(article.cannotBeConcluded)}</div>
+    <h2>7. PREMIUM CONCLUSION</h2>${paragraphs(article.conclusion)}
+  </section>
+  <section class="page article-body premium">
+    ${header(article)}
+    <h2>8. PUBLICATION-STYLE REVISION NOTES</h2>${list(premium.publicationStyleRevisionNotes)}
+    <h2>9. REVIEWER-READINESS CHECKLIST</h2>${list(premium.reviewerReadinessChecklist)}
+    ${editorialReadinessTable(article)}
+    <div class="editorial-panel">Advanced structure harmonization: re-check title, abstract, captions, limits, and conclusion after evidence is completed.</div>
+  </section>
+  <section class="page article-body premium">
+    ${header(article)}
+    <h2>10. ANNEXURE AND REFERENCES PRESENTATION</h2>${evidenceTable(article)}
+    ${replicateTable(article)}
+    <h2>REFERENCES</h2>${references(article)}
+  </section>
+  <section class="page article-body premium finale">
+    ${header(article)}
+    <p class="kicker">Editorial Integrity Sheet</p>
+    <h2>DOCUMENT STATUS</h2>
+    <div class="editorial-panel"><strong>Premium draft, not final truth</strong>${escapeHtml(
+      article.metadata.sourceVerificationStatus,
+    )}. ${escapeHtml(article.metadata.publicExportStatus)}.</div>
+    <h2>FINAL RESPONSIBILITY</h2>
+    <p>Human review remains final. Tidak ada identifikasi spesies, DOI, ISSN, koordinat, foto, atau bukti verifikasi yang dibuat oleh dokumen ini.</p>
+    <p class="integrity-endnote">${escapeHtml(PUBLIC_REPORT_DISCLAIMER)}</p>
+  </section>`;
+}
+
 export function buildJournalHtml(article: JournalArticle) {
-  const isExpandedModel = article.metadata.modelLabel.includes("Obsidian") || article.metadata.modelLabel.includes("Zephyr");
-  
-  // Conditional page break helper
-  const breakResults = isExpandedModel ? 'style="break-before: page;"' : '';
-  const breakFigures = isExpandedModel ? 'style="break-before: page;"' : '';
-  const breakAnnex = isExpandedModel ? 'style="break-before: page;"' : '';
-  const breakReferences = isExpandedModel ? 'style="break-before: page;"' : '';
-
-  const resultRows = article.results.comparisonTable
-    .map(
-      (row) => `<tr>
-        <td>${escapeHtml(row.object)}</td>
-        <td>${escapeHtml(row.shape)}</td>
-        <td>${escapeHtml(row.margin)}</td>
-        <td>${escapeHtml(row.color)}</td>
-        <td>${escapeHtml(row.source)}</td>
-        <td>${escapeHtml(row.evidenceStatus)}</td>
-      </tr>`,
-    )
-    .join("");
-
-  const statsRows = (article.results.statsTable || [])
-    .map(
-      (row) => `<tr>
-        <td><strong>${escapeHtml(row.groupName)}</strong></td>
-        <td>${row.meanLength.toFixed(2)} cm</td>
-        <td>${row.meanWidth.toFixed(2)} cm</td>
-        <td>${row.meanPetiole.toFixed(2)} cm</td>
-      </tr>`
-    )
-    .join("");
-
-  const replicateRows = (article.results.replicatesTable || [])
-    .map(
-      (row) => `<tr>
-        <td>${escapeHtml(row.id)}</td>
-        <td>${row.id.startsWith("A") ? "Daun A" : "Daun B"}</td>
-        <td>${row.lengthCm.toFixed(1)} cm</td>
-        <td>${row.widthCm.toFixed(1)} cm</td>
-        <td>${row.petioleLengthCm.toFixed(1)} cm</td>
-        <td>${escapeHtml(row.shape)}</td>
-        <td>${escapeHtml(row.marginType)}</td>
-      </tr>`
-    )
-    .join("");
-
-  const evidenceRows = article.annexure.evidenceTable
-    .map(
-      (row) => `<tr>
-        <td>${escapeHtml(row.id)}</td>
-        <td>${escapeHtml(row.material_type)}</td>
-        <td>${escapeHtml(row.summary)}</td>
-        <td>${escapeHtml(row.verification_status)}</td>
-      </tr>`,
-    )
-    .join("");
-
-  const referencesListHtml = article.references
-    .map(
-      (ref) => `<div class="reference-item">${escapeHtml(ref)}</div>`
-    )
-    .join("");
+  const pages =
+    article.modelId === "peregrine"
+      ? starterPages(article)
+      : article.modelId === "obsidian"
+        ? auditPages(article)
+        : premiumPages(article);
 
   return `<!doctype html>
 <html lang="id">
@@ -96,747 +341,71 @@ export function buildJournalHtml(article: JournalArticle) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(article.metadata.title)} | ${escapeHtml(article.cover.journalTitle)}</title>
   <style>
-    :root {
-      --forest: #10231b;
-      --canopy: #315f45;
-      --canopy-bright: #177043;
-      --moss: #728347;
-      --leaf: #b4ce70;
-      --mist: #e8eee0;
-      --paper: #fffdf8;
-      --stone: #f2eee4;
-      --line: #cfc6b7;
-      --muted: #59645e;
-    }
-    * { box-sizing: border-box; }
-    @page cover { size: A4; margin: 0; }
-    @page article { size: A4; margin: 16mm 15mm 18mm; }
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: #dad8d0;
-      color: var(--forest);
-      font-family: Georgia, "Times New Roman", serif;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-    p { orphans: 3; widows: 3; }
-    .cover-page {
-      page: cover;
-      background: linear-gradient(133deg, #0f5d37 0%, #167745 52%, #0e492c 100%);
-      break-after: page;
-      color: #fffdf8;
-      height: 297mm;
-      overflow: hidden;
-      padding: 17mm 17mm 0;
-      position: relative;
-      width: 210mm;
-    }
-    .cover-page::after {
-      background: linear-gradient(90deg, rgba(12, 47, 29, .16), rgba(12, 47, 29, .64));
-      bottom: 0;
-      content: "";
-      left: 0;
-      position: absolute;
-      right: 0;
-      top: 0;
-      z-index: 1;
-    }
-    .cover-top, .cover-heading, .volume-issue-block, .cover-article, .publisher-band {
-      position: relative;
-      z-index: 3;
-    }
-    .cover-top {
-      align-items: center;
-      border-bottom: 1px solid rgba(247, 245, 238, .42);
-      display: flex;
-      font: 700 9px/1.45 Arial, sans-serif;
-      justify-content: space-between;
-      letter-spacing: .16em;
-      padding-bottom: 5mm;
-      text-transform: uppercase;
-    }
-    .brand-lockup { align-items: center; display: flex; gap: 3.5mm; }
-    .brand-leaf {
-      border: 1px solid rgba(247, 245, 238, .62);
-      border-radius: 50%;
-      display: block;
-      height: 13mm;
-      padding: 2mm;
-      width: 13mm;
-    }
-    .edition-note {
-      color: rgba(248, 247, 240, .78);
-      font-size: 8px;
-      letter-spacing: .12em;
-    }
-    .cover-heading {
-      margin-top: 19mm;
-      max-width: 133mm;
-    }
-    .cover-kicker {
-      color: #e4edd3;
-      font: 700 9.5px/1 Arial, sans-serif;
-      letter-spacing: .2em;
-      margin: 0 0 6mm;
-      text-transform: uppercase;
-    }
-    .cover-heading h1 {
-      font-family: Arial, sans-serif;
-      font-size: 40px;
-      font-weight: 700;
-      letter-spacing: -.035em;
-      line-height: 1.03;
-      margin: 0;
-    }
-    .cover-heading h1 span {
-      display: block;
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: 44px;
-      font-weight: 400;
-      letter-spacing: -.025em;
-      margin-top: 2mm;
-    }
-    .volume-issue-block {
-      background: #f7f5ee;
-      color: var(--forest);
-      display: grid;
-      font-family: Arial, sans-serif;
-      grid-template-columns: 33mm 39mm 1fr;
-      margin-top: 16mm;
-      max-width: 129mm;
-      min-height: 22mm;
-    }
-    .volume-issue-block div {
-      border-right: 1px solid #ddd6c9;
-      padding: 4mm 4mm 3.5mm;
-    }
-    .volume-issue-block div:last-child { border-right: 0; }
-    .volume-issue-block strong {
-      color: var(--canopy);
-      display: block;
-      font-size: 17px;
-      line-height: 1.05;
-    }
-    .volume-issue-block span {
-      color: var(--muted);
-      display: block;
-      font-size: 8px;
-      letter-spacing: .12em;
-      margin-bottom: 1.5mm;
-      text-transform: uppercase;
-    }
-    .cover-landscape {
-      bottom: 34mm;
-      height: 142mm;
-      left: 0;
-      position: absolute;
-      width: 210mm;
-      z-index: 2;
-    }
-    .cover-article {
-      bottom: 59mm;
-      left: 18mm;
-      max-width: 117mm;
-      position: absolute;
-    }
-    .cover-article .category {
-      color: #e2eecc;
-      font: 700 9px/1, sans-serif;
-      letter-spacing: .16em;
-      margin-bottom: 3.2mm;
-      text-transform: uppercase;
-    }
-    .cover-article h2 {
-      font-size: 22px;
-      font-weight: 400;
-      line-height: 1.24;
-      margin: 0;
-    }
-    .publisher-band {
-      align-items: center;
-      background: rgba(9, 35, 23, .82);
-      bottom: 10mm;
-      display: flex;
-      font-family: Arial, sans-serif;
-      justify-content: space-between;
-      left: -17mm;
-      min-height: 21mm;
-      padding: 4mm 17mm;
-      position: absolute;
-      right: -17mm;
-    }
-    .publisher-band strong {
-      color: #f7f5ee;
-      font-size: 10px;
-      font-weight: 600;
-    }
-    .cover-truth-note {
-      color: rgba(247, 245, 238, .76);
-      font-size: 7.5px;
-      line-height: 1.45;
-      max-width: 62mm;
-      text-align: right;
-    }
-    .article-opener, .article-body {
-      page: article;
-      background: var(--paper);
-      color: var(--forest);
-    }
-    .article-opener {
-      break-after: page;
-      min-height: 263mm;
-    }
-    .masthead {
-      align-items: end;
-      border-bottom: 2px solid var(--canopy);
-      border-top: 7px solid var(--canopy);
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8mm;
-      padding: 4mm 0 3mm;
-    }
-    .masthead-brand {
-      font-family: Arial, sans-serif;
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -.03em;
-    }
-    .masthead-meta {
-      color: var(--muted);
-      font: 8.5px/1.55 Arial, sans-serif;
-      letter-spacing: .08em;
-      text-align: right;
-      text-transform: uppercase;
-    }
-    .article-category {
-      border-left: 3px solid var(--moss);
-      color: var(--canopy);
-      font: 700 9px/1.45 Arial, sans-serif;
-      letter-spacing: .12em;
-      margin-bottom: 4mm;
-      padding-left: 3mm;
-      text-transform: uppercase;
-    }
-    .article-title {
-      font-size: 29px;
-      font-weight: 500;
-      letter-spacing: -.018em;
-      line-height: 1.16;
-      margin: 0 0 4mm;
-      max-width: 166mm;
-    }
-    .byline {
-      border-bottom: 1px solid var(--line);
-      color: var(--muted);
-      font: 10.5px/1.65 Arial, sans-serif;
-      margin-bottom: 6mm;
-      padding-bottom: 5mm;
-    }
-    .byline strong { color: var(--forest); font-weight: 600; }
-    .front-grid {
-      display: grid;
-      gap: 6mm;
-      grid-template-columns: 45mm 1fr;
-    }
-    .article-info {
-      align-self: start;
-      background: var(--stone);
-      border-top: 5px solid var(--canopy);
-      font: 9px/1.42 Arial, sans-serif;
-      padding: 4mm 3.5mm;
-    }
-    .article-info h2, .abstract h2, .opener-introduction h2 {
-      color: var(--canopy);
-      font: 700 11px/1.2 Arial, sans-serif;
-      letter-spacing: .08em;
-      margin: 0 0 3mm;
-      text-transform: uppercase;
-    }
-    .info-row {
-      border-bottom: 1px solid #ddd7ca;
-      margin: 0 0 3.5mm;
-      padding: 0 0 3.5mm;
-    }
-    .info-row:last-child { border: 0; margin-bottom: 0; padding-bottom: 0; }
-    .info-row strong {
-      color: var(--canopy);
-      display: block;
-      font-size: 7.5px;
-      letter-spacing: .1em;
-      margin-bottom: .8mm;
-      text-transform: uppercase;
-    }
-    .abstract p {
-      font-size: 10.1px;
-      line-height: 1.48;
-      margin: 0 0 2.5mm;
-      text-align: justify;
-    }
-    .keywords {
-      border-top: 1px solid var(--line);
-      color: var(--canopy);
-      font: 9.4px/1.55 Arial, sans-serif;
-      margin-top: 3mm;
-      padding-top: 2mm;
-    }
-    .keywords strong { color: var(--forest); margin-right: 2mm; }
-    .truth-strip {
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font: 7.8px/1.45 Arial, sans-serif;
-      margin-top: 5mm;
-      padding-top: 2.4mm;
-    }
-    .opener-introduction {
-      border-top: 1px solid var(--line);
-      column-count: 2;
-      column-gap: 7mm;
-      margin-top: 7mm;
-      padding-top: 4mm;
-    }
-    .opener-introduction h2 { column-span: all; margin-bottom: 3mm; }
-    .opener-introduction p {
-      font-size: 9.2px;
-      line-height: 1.45;
-      margin: 0 0 2.6mm;
-      text-align: justify;
-    }
-    .article-body {
-      min-height: 263mm;
-      position: relative;
-    }
-    .running-header {
-      align-items: center;
-      border-bottom: 1px solid var(--canopy);
-      color: var(--muted);
-      display: flex;
-      font: 8.5px/1 Arial, sans-serif;
-      justify-content: space-between;
-      letter-spacing: .09em;
-      margin-bottom: 5mm;
-      padding-bottom: 2.6mm;
-      text-transform: uppercase;
-    }
-    .body-flow {
-      column-count: 2;
-      column-gap: 7.5mm;
-      column-rule: 1px solid #e4dfd3;
-    }
-    .journal-section {
-      break-inside: avoid-column;
-      margin: 0 0 5mm;
-    }
-    .journal-section.long { break-inside: auto; }
-    .journal-section h2 {
-      border-top: 1px solid var(--line);
-      color: var(--canopy);
-      font: 700 11px/1.25 Arial, sans-serif;
-      letter-spacing: .08em;
-      margin: 0 0 2.55mm;
-      padding-top: 2.2mm;
-      text-transform: uppercase;
-    }
-    .journal-section p {
-      font-size: 9.25px;
-      line-height: 1.5;
-      margin: 0 0 2.55mm;
-      text-align: justify;
-    }
-    .full-span {
-      column-span: all;
-      margin: 4mm 0 6mm;
-    }
-    table {
-      border-collapse: collapse;
-      font: 8.4px/1.35 Arial, sans-serif;
-      margin-bottom: 4mm;
-      width: 100%;
-    }
-    caption {
-      color: var(--forest);
-      font: 700 9px/1.4 Arial, sans-serif;
-      margin-bottom: 2mm;
-      text-align: left;
-    }
-    table th, .results-table th {
-      background: var(--canopy);
-      color: #f7f5ee;
-      font-weight: 700;
-      letter-spacing: .04em;
-      text-align: left;
-    }
-    .annex-table th {
-      background: #e8e4d9;
-      color: var(--forest);
-      font-weight: 700;
-      text-align: left;
-    }
-    td, th {
-      border: 1px solid var(--line);
-      padding: 2mm 1.8mm;
-      vertical-align: top;
-    }
-    tr:nth-child(even) td { background: #f5f2e9; }
-    .figure-plate {
-      break-inside: avoid;
-      margin: 5mm 0 7mm;
-    }
-    .photo-window {
-      align-items: center;
-      background: linear-gradient(145deg, #eef2e7, #faf8f1);
-      border: 1px solid var(--line);
-      display: flex;
-      flex-direction: column;
-      height: 60mm;
-      justify-content: center;
-      overflow: hidden;
-      position: relative;
-    }
-    .photo-window svg {
-      height: 100%;
-      width: 100%;
-    }
-    .photo-window .tag-label {
-      background: rgba(255, 253, 248, 0.9);
-      border: 1px solid var(--canopy);
-      color: var(--canopy);
-      font: 700 8.5px/1 Arial, sans-serif;
-      letter-spacing: 0.12em;
-      padding: 1.5mm 3.5mm;
-      position: absolute;
-      right: 4mm;
-      top: 4mm;
-      text-transform: uppercase;
-      z-index: 10;
-    }
-    figcaption {
-      border-left: 2px solid var(--canopy);
-      color: var(--forest);
-      font: 8.9px/1.5 Arial, sans-serif;
-      margin-top: 2.5mm;
-      padding-left: 3mm;
-    }
-    .callout {
-      background: #eff2e8;
-      border-left: 3px solid var(--moss);
-      font: 9px/1.48 Arial, sans-serif;
-      margin-bottom: 4mm;
-      padding: 3mm 3.5mm;
-    }
-    .callout strong {
-      color: var(--canopy);
-      display: block;
-      letter-spacing: .06em;
-      margin-bottom: 1mm;
-      text-transform: uppercase;
-    }
-    ul {
-      font: 9px/1.48 Arial, sans-serif;
-      margin: 0 0 3.5mm;
-      padding-left: 5mm;
-    }
-    li { margin-bottom: 1.7mm; }
-    .reference-section {
-      border-top: 1px solid var(--line);
-      margin-top: 6mm;
-      padding-top: 4mm;
-    }
-    .reference-section h2 {
-      color: var(--canopy);
-      font: 700 11px/1.25 Arial, sans-serif;
-      letter-spacing: .08em;
-      margin: 0 0 4mm;
-      text-transform: uppercase;
-    }
-    .reference-item {
-      font-size: 8.5px;
-      line-height: 1.5;
-      margin-bottom: 3mm;
-      text-align: justify;
-    }
-    .integrity-endnote {
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font: 7.7px/1.5 Arial, sans-serif;
-      margin-top: 6mm;
-      padding-top: 2.7mm;
-    }
-    @media screen {
-      .cover-page, .article-opener, .article-body {
-        box-shadow: 0 2mm 9mm rgba(0, 0, 0, .11);
-        margin: 8mm auto;
-        width: 210mm;
-      }
-      .article-opener, .article-body {
-        padding: 16mm 15mm 18mm;
-      }
-    }
-    @media print {
-      html, body { background: #fff; }
-      .cover-page, .article-opener, .article-body { margin: 0; }
-    }
+    :root { --forest:#10231b; --canopy:#315f45; --moss:#728347; --paper:#fffdf8; --stone:#f2eee4; --line:#cfc6b7; --muted:#59645e; --gold:#ad8438; --audit:#314752; }
+    * { box-sizing:border-box; }
+    @page { size:A4; margin:0; }
+    html, body { margin:0; background:#d9d8d2; color:var(--forest); font-family:Georgia, "Times New Roman", serif; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+    .page { background:var(--paper); break-after:page; height:297mm; overflow:hidden; padding:16mm 16mm 17mm; position:relative; width:210mm; }
+    .page:last-child { break-after:auto; }
+    .cover-page { color:#faf8f0; padding:18mm; }
+    .cover-page.starter { background:#244535; }
+    .cover-page.audit { background:linear-gradient(125deg,#172831,#344e53); }
+    .cover-page.premium { background:linear-gradient(133deg,#0d251c,#1f4e37 55%,#a27c38); }
+    .cover-brand { border-bottom:1px solid rgba(255,255,255,.35); font:700 10px Arial,sans-serif; letter-spacing:.18em; padding-bottom:5mm; text-transform:uppercase; }
+    .tier-badge { border:1px solid rgba(255,255,255,.5); display:inline-block; font:700 10px Arial,sans-serif; letter-spacing:.13em; margin-top:18mm; padding:3mm 5mm; text-transform:uppercase; }
+    .starter .tier-badge { margin-top:28mm; }
+    .premium .tier-badge { border-color:#e7cd8b; color:#f4d993; }
+    .cover-series { font:10px Arial,sans-serif; letter-spacing:.13em; margin-top:15mm; text-transform:uppercase; }
+    .cover-page h1 { font-size:42px; font-weight:400; line-height:1.12; margin:9mm 0 18mm; max-width:160mm; }
+    .cover-page.starter h1 { font-size:34px; margin-bottom:28mm; max-width:125mm; }
+    .cover-category { color:#dce7d4; font:700 10px Arial,sans-serif; letter-spacing:.15em; text-transform:uppercase; }
+    .cover-page h2 { font-size:27px; font-weight:400; line-height:1.25; max-width:154mm; }
+    .cover-rule { border-top:2px solid rgba(255,255,255,.45); margin:12mm 0 6mm; width:76mm; }
+    .cover-value { color:#e5e2d7; font:12px/1.6 Arial,sans-serif; max-width:135mm; }
+    .cover-page footer { bottom:17mm; color:#dbe0d5; font:9px/1.7 Arial,sans-serif; left:18mm; position:absolute; }
+    .running-header { align-items:center; border-bottom:1px solid var(--line); color:var(--muted); display:flex; font:8.5px Arial,sans-serif; justify-content:space-between; letter-spacing:.1em; margin-bottom:10mm; padding-bottom:3mm; text-transform:uppercase; }
+    .running-header strong { color:var(--canopy); }
+    .audit .running-header strong { color:var(--audit); }
+    .premium .running-header strong { color:var(--gold); }
+    .kicker { color:var(--canopy); font:700 10px Arial,sans-serif; letter-spacing:.17em; margin:0 0 6mm; text-transform:uppercase; }
+    .premium .kicker { color:var(--gold); }
+    .article-opener h1 { font-size:32px; font-weight:400; line-height:1.18; margin:0 0 8mm; max-width:170mm; }
+    h2 { border-top:1px solid var(--line); color:var(--canopy); font:700 12px Arial,sans-serif; letter-spacing:.08em; margin:8mm 0 4mm; padding-top:3mm; text-transform:uppercase; }
+    .audit h2 { color:var(--audit); }
+    .premium h2 { color:#795b24; }
+    p { font-size:10.5px; line-height:1.58; margin:0 0 3mm; text-align:justify; }
+    .article-opener > p:not(.kicker), .article-opener h2 ~ p { max-width:168mm; }
+    .starter-callout, .audit-card, .editorial-panel, .sufficiency-card, .cannot-conclude, .upgrade-note { border-left:4px solid var(--moss); background:#eff2e8; font:10px/1.58 Arial,sans-serif; margin:5mm 0 7mm; padding:4mm 5mm; }
+    .audit-card, .sufficiency-card, .cannot-conclude { background:#edf1f2; border-left-color:var(--audit); }
+    .editorial-panel { background:#f4efe5; border-left-color:var(--gold); }
+    .upgrade-note { background:#f4f2ea; }
+    .upgrade-note.subtle { color:var(--muted); font-size:9.5px; }
+    .starter-callout strong, .audit-card strong, .editorial-panel strong, .upgrade-note strong, .cannot-conclude strong { display:block; font-weight:700; letter-spacing:.06em; margin-bottom:2mm; text-transform:uppercase; }
+    table { border-collapse:collapse; font:8.6px/1.38 Arial,sans-serif; margin:4mm 0 7mm; width:100%; }
+    caption { color:var(--forest); font:bold 9.5px/1.45 Arial,sans-serif; margin-bottom:2mm; text-align:left; }
+    th { background:var(--canopy); color:#fffdf8; text-align:left; }
+    .audit th { background:var(--audit); }
+    .premium th { background:#6b542c; }
+    td, th { border:1px solid var(--line); padding:2.2mm; vertical-align:top; }
+    tbody tr:nth-child(even) td { background:#f6f3ea; }
+    ul { font:10px/1.52 Arial,sans-serif; margin:3mm 0 7mm; padding-left:6mm; }
+    li { margin-bottom:2.2mm; }
+    .figure-plate { margin:6mm 0 10mm; position:relative; }
+    .figure-plate svg { border:1px solid var(--line); display:block; height:62mm; width:100%; }
+    .figure-plate text { fill:var(--muted); font:11px Arial,sans-serif; text-anchor:middle; }
+    .plate-label { background:white; border:1px solid var(--line); color:var(--muted); font:700 8px Arial,sans-serif; letter-spacing:.12em; padding:2mm 3mm; position:absolute; right:4mm; top:4mm; text-transform:uppercase; z-index:1; }
+    figcaption { border-left:3px solid var(--moss); font:9.5px/1.5 Arial,sans-serif; margin-top:3mm; padding-left:4mm; }
+    .refined figcaption { border-left-color:var(--gold); }
+    .reference-item { font-size:9px; color:var(--muted); }
+    .integrity-endnote { border-top:1px solid var(--line); color:var(--muted); font:9px/1.55 Arial,sans-serif; margin-top:9mm; padding-top:4mm; }
+    .two-column { column-count:2; column-gap:8mm; }
+    @media screen { .page { box-shadow:0 2mm 8mm rgba(0,0,0,.12); margin:8mm auto; } }
+    @media print { html, body { background:white; } .page { margin:0; } }
   </style>
 </head>
-<body data-publication-edition="v7">
-  <section class="cover-page">
-    <header class="cover-top">
-      <div class="brand-lockup">
-        <svg class="brand-leaf" viewBox="0 0 40 40" aria-hidden="true">
-          <path d="M9 27C9 14 20 7 32 8C31 21 23 31 9 31Z" fill="none" stroke="#f7f5ee" stroke-width="2"/>
-          <path d="M10 30C17 23 21 18 28 12" fill="none" stroke="#f7f5ee" stroke-width="2"/>
-        </svg>
-        <span>NaLI / Nature / Evidence</span>
-      </div>
-      <span class="edition-note">${escapeHtml(article.cover.editionLine)}</span>
-    </header>
-    <div class="cover-heading">
-      <p class="cover-kicker">Field Notes Transformed With Care</p>
-      <h1>NaLI Nature <span>&amp; Evidence Journal</span></h1>
-    </div>
-    <div class="volume-issue-block">
-      <div><span>Volume</span><strong>1</strong></div>
-      <div><span>Issue</span><strong>1</strong></div>
-      <div><span>Edition</span><strong>${escapeHtml(String(article.cover.year))}</strong></div>
-    </div>
-    <svg class="cover-landscape" viewBox="0 0 800 550" preserveAspectRatio="none" aria-hidden="true">
-      <path d="M0 355C100 327 164 364 255 326C347 287 416 322 500 279C607 224 679 252 800 210V550H0Z" fill="#103b29" opacity=".7"/>
-      <path d="M0 404C121 335 201 393 294 350C391 306 467 364 573 300C661 247 728 277 800 258V550H0Z" fill="#0d3021"/>
-      <path d="M108 408C147 331 202 296 253 301C239 351 194 397 108 408Z" fill="#5d934b"/>
-      <path d="M121 404L231 312M150 383L163 344M179 359L194 326" fill="none" stroke="#b4ce70" stroke-width="3" opacity=".72"/>
-      <path d="M519 318C557 237 616 203 679 213C664 270 606 313 519 318Z" fill="#77a951"/>
-      <path d="M532 312L657 224M568 287L574 246M600 267L611 236" fill="none" stroke="#d6e6a5" stroke-width="3" opacity=".7"/>
-      <g fill="none" stroke="#c2dc8b" stroke-width="2" opacity=".54">
-         <path d="M316 182C366 148 417 151 458 184C418 194 364 201 316 182Z"/>
-         <path d="M298 200C356 160 426 163 479 198"/>
-         <path d="M272 220C346 171 442 174 503 213"/>
-      </g>
-      <g fill="none" stroke="#f0f2df" stroke-width="3" opacity=".5">
-         <path d="M584 131C603 112 623 111 640 126C657 105 679 104 698 124"/>
-         <path d="M74 216C89 200 105 201 119 212C132 196 150 196 164 211"/>
-      </g>
-    </svg>
-    <div class="cover-article">
-      <p class="category">${escapeHtml(article.metadata.articleCategory)}</p>
-      <h2>${escapeHtml(article.metadata.title)}</h2>
-    </div>
-    <footer class="publisher-band">
-      <strong>${escapeHtml(article.cover.brandNote)}</strong>
-      <span class="cover-truth-note">${escapeHtml(article.cover.truthNote)}</span>
-    </footer>
-  </section>
-
-  <section class="article-opener">
-    <header class="masthead">
-      <div class="masthead-brand">${escapeHtml(article.cover.journalTitle)}</div>
-      <div class="masthead-meta">
-        ${escapeHtml(article.cover.issueLine)}<br>
-        ${escapeHtml(article.metadata.shortCategory)}
-      </div>
-    </header>
-    <p class="article-category">${escapeHtml(article.metadata.articleCategory)}</p>
-    <h1 class="article-title">${escapeHtml(article.metadata.title)}</h1>
-    <div class="byline">
-      <strong>${escapeHtml(article.metadata.author)}</strong><br>
-      ${escapeHtml(article.metadata.affiliation)}
-    </div>
-    <div class="front-grid">
-      <aside class="article-info">
-        <h2>Article Information</h2>
-        <div class="info-row"><strong>Category</strong>${escapeHtml(article.infoBlock.category)}</div>
-        <div class="info-row"><strong>Material basis</strong>${escapeHtml(article.infoBlock.materialBasis)}</div>
-        <div class="info-row"><strong>Status</strong>${escapeHtml(article.infoBlock.status)}</div>
-        <div class="info-row"><strong>Editorial note</strong>${escapeHtml(article.metadata.editorialNote)}</div>
-      </aside>
-      <article class="abstract">
-        <h2>Abstract</h2>
-        ${renderParagraphs(article.abstract.text)}
-        <p class="keywords"><strong>Keywords</strong>${escapeHtml(article.abstract.keywords.join("; "))}</p>
-        <p class="truth-strip">${escapeHtml(article.cover.truthNote)}</p>
-      </article>
-    </div>
-    <section class="opener-introduction">
-      <h2>1. INTRODUCTION</h2>
-      ${renderParagraphs(article.introduction)}
-    </section>
-  </section>
-
-  <main class="article-body">
-    <div class="body-flow">
-      <section class="journal-section long">
-        <h2>2. LITERATURE REVIEW</h2>
-        ${renderParagraphs(article.literatureReview)}
-      </section>
-      <section class="journal-section long">
-        <h2>3. MATERIALS AND METHODS</h2>
-        <p><strong>Material and setting.</strong> ${escapeHtml(article.materialsAndMethods.objectObserved)}. ${escapeHtml(article.materialsAndMethods.location)}; ${escapeHtml(article.materialsAndMethods.time)}.</p>
-        <p><strong>Approach.</strong> ${escapeHtml(article.materialsAndMethods.method)}</p>
-        <p><strong>Editorial emphasis.</strong> ${escapeHtml(article.materialsAndMethods.profileEmphasis)}</p>
-        ${renderParagraphs(article.materialsAndMethods.observationDesign)}
-        ${renderParagraphs(article.materialsAndMethods.recordingProtocol)}
-        <p><strong>Missing methodological detail.</strong> ${escapeHtml(article.materialsAndMethods.missingDetails)}</p>
-        <p><strong>Reproducibility boundary.</strong> ${escapeHtml(article.materialsAndMethods.reproducibility)}</p>
-      </section>
-
-      <section class="journal-section long" ${breakResults}>
-        <h2>4. RESULTS AND DISCUSSION</h2>
-        <div class="full-span">
-          <table class="results-table">
-            <caption>Table 1. Reported leaf morphology characters from user-provided notes (local QA fixture).</caption>
-            <thead>
-              <tr><th>Object</th><th>Shape</th><th>Margin</th><th>Apparent colour</th><th>Source</th><th>Status</th></tr>
-            </thead>
-            <tbody>${resultRows}</tbody>
-          </table>
-        </div>
-
-        <div class="full-span">
-          <table class="stats-table">
-            <caption>Table 2. Summary measurements statistics per group (mean dimensions, local QA fixture).</caption>
-            <thead>
-              <tr><th>Group</th><th>Mean Length</th><th>Mean Width</th><th>Mean Petiole Length</th></tr>
-            </thead>
-            <tbody>${statsRows}</tbody>
-          </table>
-        </div>
-
-        ${renderParagraphs(article.results.narrative)}
-        ${renderParagraphs(article.discussion)}
-      </section>
-
-      <div class="full-span" ${breakFigures}>
-        <figure class="figure-plate">
-          <div class="photo-window">
-            <span class="tag-label">synthetic QA placeholder</span>
-            <svg viewBox="0 0 720 220" style="background:#f4f6f0; border:1px dashed var(--canopy);">
-              <!-- Leaf A Drawing (Ovate) -->
-              <g transform="translate(180, 110)">
-                <path d="M-80,0 C-40,-50 40,-50 80,0 C40,50 -40,50 -80,0 Z" fill="#4d7756" opacity="0.85" stroke="#10231b" stroke-width="1.5"/>
-                <line x1="-80" y1="0" x2="80" y2="0" stroke="#10231b" stroke-width="1.5" stroke-dasharray="3,3"/>
-                <!-- Venation -->
-                <path d="M-40,0 L-20,-15 M-20,0 L0,-18 M0,0 L20,-15 M20,0 L40,-12 M-40,0 L-20,15 M-20,0 L0,18 M0,0 L20,15 M20,0 L40,12" stroke="#fff" stroke-width="1" opacity="0.6"/>
-                <text x="0" y="-35" font-family="Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#10231b" text-anchor="middle">Daun A (Ovate / Lonjong)</text>
-                <text x="0" y="38" font-family="Arial, sans-serif" font-size="7.5" fill="#59645e" text-anchor="middle">Margin: Rata (Entire)</text>
-              </g>
-              <!-- Leaf B Drawing (Palmate) -->
-              <g transform="translate(540, 110)">
-                <!-- 5 lobed palmate leaf path approximation -->
-                <path d="M0,0 L15,-40 L5,-15 L40,-25 L15,-5 L35,25 L10,8 L15,40 L-10,12 L-35,22 L-12,-4 L-38,-28 L-5,-16 Z" fill="#7ba05a" opacity="0.85" stroke="#10231b" stroke-width="1.5"/>
-                <text x="0" y="-45" font-family="Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#10231b" text-anchor="middle">Daun B (Palmate / Menjari)</text>
-                <text x="0" y="48" font-family="Arial, sans-serif" font-size="7.5" fill="#59645e" text-anchor="middle">Margin: Bergerigi (Serrate)</text>
-              </g>
-              <text x="360" y="210" font-family="Arial, sans-serif" font-size="8" fill="#59645e" text-anchor="middle" font-style="italic">[ Figure 1 Plate - Local QA Fixture Placeholder ]</text>
-            </svg>
-          </div>
-          <figcaption>Figure 1. Leaf A/B comparative visual plate showing ovate shape with entire margin for Daun A, and palmate shape with serrated margin for Daun B. Labeled as synthetic QA placeholder for local QA testing.</figcaption>
-        </figure>
-      </div>
-
-      <div class="full-span">
-        <figure class="figure-plate">
-          <div class="photo-window">
-            <span class="tag-label">synthetic QA placeholder</span>
-            <svg viewBox="0 0 720 220" style="background:#fcfaf5; border:1px dashed var(--canopy);">
-              <!-- Diagram showing petiole, length, width measurements -->
-              <g transform="translate(360, 100)">
-                <!-- Axis grid -->
-                <rect x="-240" y="-70" width="480" height="140" fill="none" stroke="#cfc6b7" stroke-width="0.5"/>
-                <!-- Leaf shape vector outline for measurement -->
-                <path d="M-150,0 C-100,-40 20,-40 100,0 C20,40 -100,40 -150,0 Z" fill="#e8eee0" stroke="#728347" stroke-width="1.5"/>
-                <!-- Petiole line -->
-                <line x1="-210" y1="0" x2="-150" y2="0" stroke="#728347" stroke-width="2.5"/>
-                <!-- Measurement helpers -->
-                <!-- Length -->
-                <line x1="-150" y1="-50" x2="100" y2="-50" stroke="#cf2121" stroke-width="1"/>
-                <line x1="-150" y1="-45" x2="-150" y2="-55" stroke="#cf2121" stroke-width="1"/>
-                <line x1="100" y1="-45" x2="100" y2="-55" stroke="#cf2121" stroke-width="1"/>
-                <text x="-25" y="-55" font-family="Arial, sans-serif" font-size="8" fill="#cf2121" text-anchor="middle">Leaf Length (L)</text>
-                
-                <!-- Width -->
-                <line x1="0" y1="-30" x2="0" y2="30" stroke="#1c47a3" stroke-width="1"/>
-                <line x1="-5" y1="-30" x2="5" y2="-30" stroke="#1c47a3" stroke-width="1"/>
-                <line x1="-5" y1="30" x2="5" y2="30" stroke="#1c47a3" stroke-width="1"/>
-                <text x="10" y="3" font-family="Arial, sans-serif" font-size="8" fill="#1c47a3">Width (W)</text>
-
-                <!-- Petiole length -->
-                <line x1="-210" y1="20" x2="-150" y2="20" stroke="#a3631c" stroke-width="1"/>
-                <line x1="-210" y1="15" x2="-210" y2="25" stroke="#a3631c" stroke-width="1"/>
-                <line x1="-150" y1="15" x2="-150" y2="25" stroke="#a3631c" stroke-width="1"/>
-                <text x="-180" y="32" font-family="Arial, sans-serif" font-size="8" fill="#a3631c" text-anchor="middle">Petiole (P)</text>
-              </g>
-              <text x="360" y="200" font-family="Arial, sans-serif" font-size="8" fill="#59645e" text-anchor="middle" font-style="italic">[ Figure 2 Plate - Local QA Fixture Placeholder ]</text>
-            </svg>
-          </div>
-          <figcaption>Figure 2. Measurement protocol schematic defining the acquisition of leaf length (L), width (W), and petiole length (P) on specimens. Labeled as synthetic QA placeholder for local QA testing.</figcaption>
-        </figure>
-      </div>
-
-      <section class="journal-section">
-        <h2>EVIDENCE DOCUMENTATION</h2>
-        <div class="callout">
-          <strong>Documentation record [local QA fixture]</strong>
-          ${escapeHtml(article.evidence.photoSlot)} ${escapeHtml(article.evidence.measurementSlot)}
-        </div>
-        <p>${escapeHtml(article.evidence.locationSlot)}</p>
-        <p>${escapeHtml(article.evidence.timestampSlot)}</p>
-        <p>${escapeHtml(article.evidence.referenceSlot)}</p>
-      </section>
-
-      <section class="journal-section">
-        <h2>EDUCATION AND CONSERVATION RELEVANCE</h2>
-        ${renderParagraphs(article.conservationRelevance)}
-      </section>
-
-      <section class="journal-section">
-        <h2>LIMITATIONS</h2>
-        <div class="callout">
-          <strong>Cannot be concluded</strong>
-          ${escapeHtml(article.cannotBeConcluded)}
-        </div>
-        ${renderList(article.limitations)}
-      </section>
-
-      <section class="journal-section long">
-        <h2>FUTURE WORK</h2>
-        ${renderParagraphs(article.futureWork)}
-        ${renderList(article.futureDataRequired)}
-      </section>
-
-      <section class="journal-section">
-        <h2>CONCLUSIONS</h2>
-        ${renderParagraphs(article.conclusion)}
-      </section>
-
-      <section class="full-span journal-section annex-section" ${breakAnnex}>
-        <h2>ANNEXURE</h2>
-        <table class="annex-table">
-          <caption>Annex Table A1. Evidence inventory and review status (local QA fixture).</caption>
-          <thead><tr><th>ID</th><th>Type</th><th>Material summary</th><th>Status</th></tr></thead>
-          <tbody>${evidenceRows}</tbody>
-        </table>
-        
-        <table class="annex-table" style="margin-top: 4mm">
-          <caption>Annex Table A2. Raw replicate measurements per group (local QA fixture).</caption>
-          <thead><tr><th>ID</th><th>Group</th><th>Length</th><th>Width</th><th>Petiole</th><th>Shape</th><th>Margin</th></tr></thead>
-          <tbody>${replicateRows}</tbody>
-        </table>
-
-        <div class="callout" style="margin-top: 4mm">
-          <strong>Review checklist</strong>
-          ${renderList(article.annexure.checklist)}
-        </div>
-      </section>
-
-      <section class="full-span journal-section reference-section" ${breakReferences}>
-        <h2>REFERENCES</h2>
-        ${referencesListHtml}
-      </section>
-
-      <footer class="full-span integrity-endnote">
-        ${escapeHtml(PUBLIC_REPORT_DISCLAIMER)}
-      </footer>
-    </div>
-  </main>
+<body data-publication-edition="v8" data-model-tier="${escapeHtml(article.capabilities.tier)}">
+  ${cover(article)}
+  ${pages}
 </body>
 </html>`;
 }

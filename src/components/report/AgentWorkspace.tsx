@@ -42,7 +42,7 @@ import {
   pruneExpiredGuestRecoveries,
   renameGuestReportRecovery,
   listGuestReportRecoveries,
-  type GuestReportRecoverySnapshot
+  type GuestReportRecoverySnapshot,
 } from "@/lib/reports/clientRecovery";
 import { validateComposerInput } from "@/lib/reports/inputValidation";
 import { useDebouncedComposerValidation } from "@/lib/reports/useDebouncedValidation";
@@ -51,15 +51,7 @@ import { useDebouncedComposerValidation } from "@/lib/reports/useDebouncedValida
 type AgentMessage = {
   id: string;
   role: "user" | "assistant" | "system";
-  type:
-    | "plain"
-    | "plan"
-    | "progress"
-    | "report_preview"
-    | "evidence_status"
-    | "quality_status"
-    | "error"
-    | "action";
+  type: "plain" | "plan" | "progress" | "report_preview" | "evidence_status" | "quality_status" | "error" | "action";
   content: string;
   metadata?: {
     run_id?: string;
@@ -101,12 +93,14 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const [lastAttemptedQuery, setLastAttemptedQuery] = useState("");
   const [messages, setMessages] = useState<AgentMessage[]>([]);
   const [report, setReport] = useState<ReportResult | null>(null);
-  const [activeRunStatus, setActiveRunStatus] = useState<"idle" | "running" | "completed" | "failed" | "blocked">("idle");
-  
+  const [activeRunStatus, setActiveRunStatus] = useState<"idle" | "running" | "completed" | "failed" | "blocked">(
+    "idle",
+  );
+
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [recentThreads, setRecentThreads] = useState<LocalThread[]>([]);
-  
+
   // Form/Composer state
   const [query, setQuery] = useState("");
   const validationIssue = useDebouncedComposerValidation(query);
@@ -122,7 +116,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     try {
       const list = listGuestReportRecoveries();
       setSnapshots(list);
-      
+
       const latest = list.length > 0 ? list[0] : null;
       if (latest) {
         if (!(latest.status === "autosaved_draft" && initialReportId && latest.reportId === initialReportId)) {
@@ -137,9 +131,14 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       // ignore
     }
   }, [initialReportId]);
-  
+
   // App context
-  const [error, setError] = useState<{ message: string; code?: string; status?: number; retryAfterSeconds?: number } | null>(null);
+  const [error, setError] = useState<{
+    message: string;
+    code?: string;
+    status?: number;
+    retryAfterSeconds?: number;
+  } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [accessKey, setAccessKey] = useState<string | null>(null);
   const showValidation = !error && query.trim().length > 0 && validationIssue.severity !== "none";
@@ -163,7 +162,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally only reacts to retryAfterSeconds, not entire error object
   }, [error?.retryAfterSeconds]);
-  
+
   // Credits & Monetization state
   const [credits, setCredits] = useState<number | null>(null);
   const [ledgerReady, setLedgerReady] = useState(false);
@@ -174,7 +173,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const [showExportStatus, setShowExportStatus] = useState(false);
 
   // Progressive steps simulation state for optimistic UI
-  const [optimisticSteps, setOptimisticSteps] = useState<Array<{ label: string; status: "pending" | "in_progress" | "completed" }>>([]);
+  const [optimisticSteps, setOptimisticSteps] = useState<
+    Array<{ label: string; status: "pending" | "in_progress" | "completed" }>
+  >([]);
 
   // Inline feedback state
   const [inlineFeedbackSent, setInlineFeedbackSent] = useState(false);
@@ -208,10 +209,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     try {
       const stored = window.localStorage.getItem("nali-threads");
       let list: LocalThread[] = stored ? JSON.parse(stored) : [];
-      
+
       // Remove duplicate
       list = list.filter((t) => t.id !== threadId);
-      
+
       // Prepend latest
       list.unshift({
         id: threadId,
@@ -262,7 +263,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 id: "initial-user",
                 role: "user",
                 type: "plain",
-                content: localReport.mode === "start_from_zero" ? "Mulai panduan dari nol" : "Buat draf laporan berbasis bukti",
+                content:
+                  localReport.mode === "start_from_zero"
+                    ? "Mulai panduan dari nol"
+                    : "Buat draf laporan berbasis bukti",
                 created_at: localReport.created_at,
               },
               {
@@ -289,7 +293,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           if (payload.report) {
             setReport(payload.report);
             window.localStorage.setItem(`nali-report:${reportId}`, JSON.stringify(payload.report));
-            
+
             // Reconcile messages
             const serverThread = payload.report.processing_metadata?.agent_thread;
             if (serverThread && serverThread.messages) {
@@ -328,13 +332,18 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     try {
       let guestSessionId = window.localStorage.getItem("nali-guest-session-id");
       if (!guestSessionId) {
-        guestSessionId = typeof crypto !== "undefined" && "randomUUID" in crypto 
-          ? crypto.randomUUID() 
-          : `guest-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+        guestSessionId =
+          typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `guest-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
         window.localStorage.setItem("nali-guest-session-id", guestSessionId);
       }
 
-      const res = await fetch(`/api/energy/balance?guestSessionId=${encodeURIComponent(guestSessionId)}`);
+      const res = await fetch("/api/energy/balance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guestSessionId }),
+      });
       if (res.ok) {
         const data = await res.json();
         if (data.ready) {
@@ -420,53 +429,71 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     queryRef.current = query;
   }, [query]);
 
-  const handleRestoreSnapshot = useCallback((snapshot: GuestReportRecoverySnapshot) => {
-    // Restore requires user action, warn first if active input exists
-    if (queryRef.current.trim()) {
-      const confirmOverwrite = window.confirm("Apakah Anda ingin menimpa input aktif saat ini dengan draft yang dipulihkan?");
-      if (!confirmOverwrite) return;
-    }
-
-    const id = snapshot.id;
-    const storedToken = window.localStorage.getItem(`nali-report-access:${id}`) ||
-                        window.localStorage.getItem(`nali-report-access-key:${id}`) ||
-                        window.localStorage.getItem(`nali-report-key:${id}`) ||
-                        window.localStorage.getItem(`nali-report-access-token:${id}`);
-
-    // Rule 7: If snapshot has reportId but no access key, restore draft/composer state
-    if ((snapshot.status === "draft_ready" || snapshot.status === "chat_updated") && storedToken && id && !id.startsWith("temp-") && id !== "composer-autosave") {
-      router.push(`/report/${id}?token=${encodeURIComponent(storedToken)}`);
-    } else {
-      setQuery(snapshot.mainText || "");
-      setSelectedMode(snapshot.mode || "draft_from_materials");
-      setSelectedModel(snapshot.selectedModel || "peregrine");
-      if (snapshot.reportTemplate) {
-        setSelectedTemplate(snapshot.reportTemplate);
+  const handleRestoreSnapshot = useCallback(
+    (snapshot: GuestReportRecoverySnapshot) => {
+      // Restore requires user action, warn first if active input exists
+      if (queryRef.current.trim()) {
+        const confirmOverwrite = window.confirm(
+          "Apakah Anda ingin menimpa input aktif saat ini dengan draft yang dipulihkan?",
+        );
+        if (!confirmOverwrite) return;
       }
-      setIntegrityConsent(snapshot.integrityConsent || false);
-      setError(null);
-      setNotice(null);
-      composerRef.current?.focus();
-    }
-  }, [router]);
 
-  const handleRenameSnapshot = useCallback((id: string, currentTitle: string) => {
-    const newTitle = window.prompt("Masukkan nama baru untuk draft ini:", currentTitle);
-    if (newTitle === null) return;
-    const success = renameGuestReportRecovery(id, newTitle);
-    if (success) {
-      loadSnapshots();
-    } else {
-      alert("Gagal mengubah nama draft.");
-    }
-  }, [loadSnapshots]);
+      const id = snapshot.id;
+      const storedToken =
+        window.localStorage.getItem(`nali-report-access:${id}`) ||
+        window.localStorage.getItem(`nali-report-access-key:${id}`) ||
+        window.localStorage.getItem(`nali-report-key:${id}`) ||
+        window.localStorage.getItem(`nali-report-access-token:${id}`);
 
-  const handleDeleteSnapshot = useCallback((id: string) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus draft ini?")) {
-      clearGuestReportRecovery(id);
-      loadSnapshots();
-    }
-  }, [loadSnapshots]);
+      // Rule 7: If snapshot has reportId but no access key, restore draft/composer state
+      if (
+        (snapshot.status === "draft_ready" || snapshot.status === "chat_updated") &&
+        storedToken &&
+        id &&
+        !id.startsWith("temp-") &&
+        id !== "composer-autosave"
+      ) {
+        router.push(`/report/${id}?token=${encodeURIComponent(storedToken)}`);
+      } else {
+        setQuery(snapshot.mainText || "");
+        setSelectedMode(snapshot.mode || "draft_from_materials");
+        setSelectedModel(snapshot.selectedModel || "peregrine");
+        if (snapshot.reportTemplate) {
+          setSelectedTemplate(snapshot.reportTemplate);
+        }
+        setIntegrityConsent(snapshot.integrityConsent || false);
+        setError(null);
+        setNotice(null);
+        composerRef.current?.focus();
+      }
+    },
+    [router],
+  );
+
+  const handleRenameSnapshot = useCallback(
+    (id: string, currentTitle: string) => {
+      const newTitle = window.prompt("Masukkan nama baru untuk draft ini:", currentTitle);
+      if (newTitle === null) return;
+      const success = renameGuestReportRecovery(id, newTitle);
+      if (success) {
+        loadSnapshots();
+      } else {
+        alert("Gagal mengubah nama draft.");
+      }
+    },
+    [loadSnapshots],
+  );
+
+  const handleDeleteSnapshot = useCallback(
+    (id: string) => {
+      if (window.confirm("Apakah Anda yakin ingin menghapus draft ini?")) {
+        clearGuestReportRecovery(id);
+        loadSnapshots();
+      }
+    },
+    [loadSnapshots],
+  );
 
   const handleClearAllSnapshots = useCallback(() => {
     if (window.confirm("Apakah Anda yakin ingin menghapus semua draft lokal di browser ini?")) {
@@ -501,36 +528,21 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     setTimeout(() => {
       setOptimisticSteps((curr) => {
         if (curr.length === 0) return [];
-        return [
-          { ...curr[0], status: "completed" },
-          { ...curr[1], status: "in_progress" },
-          curr[2],
-          curr[3],
-        ];
+        return [{ ...curr[0], status: "completed" }, { ...curr[1], status: "in_progress" }, curr[2], curr[3]];
       });
     }, 800);
 
     setTimeout(() => {
       setOptimisticSteps((curr) => {
         if (curr.length === 0) return [];
-        return [
-          curr[0],
-          { ...curr[1], status: "completed" },
-          { ...curr[2], status: "in_progress" },
-          curr[3],
-        ];
+        return [curr[0], { ...curr[1], status: "completed" }, { ...curr[2], status: "in_progress" }, curr[3]];
       });
     }, 1800);
 
     setTimeout(() => {
       setOptimisticSteps((curr) => {
         if (curr.length === 0) return [];
-        return [
-          curr[0],
-          curr[1],
-          { ...curr[2], status: "completed" },
-          { ...curr[3], status: "in_progress" },
-        ];
+        return [curr[0], curr[1], { ...curr[2], status: "completed" }, { ...curr[3], status: "in_progress" }];
       });
     }, 2800);
   };
@@ -550,7 +562,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     setLastAttemptedQuery(trimmed);
     clearGuestReportRecovery("composer-autosave");
     setActiveRunStatus("running");
-    
+
     // Add optimistic user message
     const tempUserMsg: AgentMessage = {
       id: "opt-user",
@@ -566,9 +578,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       const guestSessionKey = "nali-guest-session-id";
       let guestSessionId = window.localStorage.getItem(guestSessionKey);
       if (!guestSessionId) {
-        guestSessionId = typeof crypto !== "undefined" && "randomUUID" in crypto 
-          ? crypto.randomUUID() 
-          : `guest-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+        guestSessionId =
+          typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `guest-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
         window.localStorage.setItem(guestSessionKey, guestSessionId);
       }
 
@@ -601,14 +614,16 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       const payload = await response.json();
       if (!response.ok || !payload.report || !payload.id) {
         // Rule 7: Abuse-blocked prompts must not become recovery drafts.
-        const isAbuseBlock = response.status === 400 && [
-          "EMPTY_DRAFT_MATERIAL",
-          "FINAL_ASSIGNMENT_WITHOUT_MATERIAL",
-          "FAKE_CITATION_REQUEST",
-          "FAKE_DATA_REQUEST",
-          "PLAGIARISM_EVASION",
-          "DO_MY_WORK"
-        ].includes(payload.code || "");
+        const isAbuseBlock =
+          response.status === 400 &&
+          [
+            "EMPTY_DRAFT_MATERIAL",
+            "FINAL_ASSIGNMENT_WITHOUT_MATERIAL",
+            "FAKE_CITATION_REQUEST",
+            "FAKE_DATA_REQUEST",
+            "PLAGIARISM_EVASION",
+            "DO_MY_WORK",
+          ].includes(payload.code || "");
 
         if (isAbuseBlock) {
           clearGuestReportRecovery(tempId);
@@ -685,7 +700,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
       // Save to history sidebar list
       saveRecentThread(reportId, generatedReport.title, generatedReport.mode, key);
-      
+
       // Update DB to include this initial conversation history
       await fetch("/api/reports/chat", {
         method: "POST",
@@ -821,7 +836,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const handleApplyProposedReport = async (proposedReport: ReportResult) => {
     if (!initialReportId || !accessKey) return;
     setError(null);
-    
+
     try {
       const response = await fetch("/api/reports/chat", {
         method: "POST",
@@ -884,7 +899,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       }
 
       if (response.ok && payload.payment_mode === "manual") {
-        setExportNotice("Permintaan ekspor tercatat sebagai pending. Export akan terbuka setelah sistem memverifikasi pembayaran.");
+        setExportNotice(
+          "Permintaan ekspor tercatat sebagai pending. Export akan terbuka setelah sistem memverifikasi pembayaran.",
+        );
         setShowExportStatus(true);
         return;
       }
@@ -982,11 +999,12 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         exportStatus: exportReadiness === "export_ready" ? "export_ready" : "preview_copy",
       });
       const title = report.title || "draft-laporan";
-      const cleanTitle = title
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, "-")
-        .replace(/-+/g, "-")
-        .trim() || "laporan";
+      const cleanTitle =
+        title
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "-")
+          .replace(/-+/g, "-")
+          .trim() || "laporan";
       const filename = `${cleanTitle}.md`;
       const blob = new Blob([md], { type: "text/plain;charset=utf-8" });
       const url = URL.createObjectURL(blob);
@@ -1010,11 +1028,12 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       });
       const clean = stripMarkdown(md);
       const title = report.title || "draft-laporan";
-      const cleanTitle = title
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, "-")
-        .replace(/-+/g, "-")
-        .trim() || "laporan";
+      const cleanTitle =
+        title
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "-")
+          .replace(/-+/g, "-")
+          .trim() || "laporan";
       const filename = `${cleanTitle}.txt`;
       const blob = new Blob([clean], { type: "text/plain;charset=utf-8" });
       const url = URL.createObjectURL(blob);
@@ -1043,7 +1062,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     return credits < estCreditCost;
   }, [ledgerReady, credits, estCreditCost]);
 
-  const isRateLimited = error?.status === 429 || (error?.retryAfterSeconds !== undefined && error.retryAfterSeconds > 0);
+  const isRateLimited =
+    error?.status === 429 || (error?.retryAfterSeconds !== undefined && error.retryAfterSeconds > 0);
 
   return (
     <div className="relative flex min-h-screen w-screen overflow-hidden bg-[#07090e] text-white">
@@ -1053,10 +1073,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-white/[0.06] bg-[#07090e]/95 backdrop-blur-2xl transition-transform duration-300 md:static md:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <div className="flex h-14 items-center justify-between px-4 border-b border-white/[0.06]">
+        <div className="flex h-14 items-center justify-between border-b border-white/[0.06] px-4">
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <span className="text-emerald-400">NaLI</span>
             <span className="text-xs text-white/30">v1.5.3</span>
@@ -1070,7 +1090,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           <Link
             href="/create-report"
             onClick={() => setSidebarOpen(false)}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/[0.04] border border-white/[0.06] px-4 py-3 text-sm font-semibold text-white/80 hover:bg-white/[0.08] hover:text-white transition duration-200"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white/80 transition duration-200 hover:bg-white/[0.08] hover:text-white"
           >
             <Plus className="h-4 w-4" />
             Mulai Baru
@@ -1078,8 +1098,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         </div>
 
         {/* Thread History list */}
-        <div className="flex-1 overflow-y-auto px-2 space-y-1">
-          <p className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white/20">Riwayat Percakapan</p>
+        <div className="flex-1 space-y-1 overflow-y-auto px-2">
+          <p className="px-3 py-2 text-xs font-semibold tracking-[0.08em] text-white/20 uppercase">
+            Riwayat Percakapan
+          </p>
           {recentThreads.length === 0 ? (
             <p className="px-3 py-4 text-xs text-white/30 italic">Belum ada percakapan</p>
           ) : (
@@ -1092,10 +1114,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 }}
                 className={cn(
                   "flex w-full flex-col gap-1 rounded-xl px-3 py-2.5 text-left text-xs transition duration-150 hover:bg-white/[0.04]",
-                  initialReportId === thread.id ? "bg-white/[0.06] border border-white/[0.04]" : ""
+                  initialReportId === thread.id ? "border border-white/[0.04] bg-white/[0.06]" : "",
                 )}
               >
-                <span className="font-semibold text-white/70 truncate">{thread.title}</span>
+                <span className="truncate font-semibold text-white/70">{thread.title}</span>
                 <div className="flex items-center justify-between text-white/40">
                   <span>{thread.mode === "start_from_zero" ? "Panduan" : "Draf"}</span>
                   <span>{thread.created_at}</span>
@@ -1109,15 +1131,15 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       {/* --- Main Workspace Content --- */}
       <div className="relative flex flex-1 flex-col overflow-hidden">
         {/* Workspace Header */}
-        <header className="flex h-14 shrink-0 items-center justify-between px-4 border-b border-white/[0.06] bg-[#07090e]/60 backdrop-blur-md z-30">
+        <header className="z-30 flex h-14 shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#07090e]/60 px-4 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 text-white/60 hover:text-white md:hidden"
-            >
+            <button onClick={() => setSidebarOpen(true)} className="p-2 text-white/60 hover:text-white md:hidden">
               <Menu className="h-5 w-5" />
             </button>
-            <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/40 hover:text-white transition-colors">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/40 transition-colors hover:text-white"
+            >
               <ArrowLeft className="h-4 w-4" />
               Keluar
             </Link>
@@ -1128,28 +1150,30 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               <button
                 type="button"
                 onClick={() => setIsUpgradeOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 px-3 py-1 font-mono text-[11px] font-semibold text-emerald-400 cursor-pointer transition"
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 font-mono text-[11px] font-semibold text-emerald-400 transition hover:bg-emerald-500/10"
               >
                 <span>⚡ {credits} Kredit</span>
               </button>
             )}
             <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 font-mono text-[11px] font-semibold text-white/60">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
               {selectedMode === "start_from_zero" ? "Fast Mode" : "Advanced Report Mode"}
             </span>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 md:px-8 space-y-6 z-10">
-          <div className={cn(
-            "mx-auto max-w-[760px] space-y-6",
-            isComposerFocused
-              ? "pb-[calc(18rem+env(safe-area-inset-bottom))] sm:pb-[calc(8.5rem+env(safe-area-inset-bottom))]"
-              : "pb-[calc(12rem+env(safe-area-inset-bottom))] sm:pb-[calc(8.5rem+env(safe-area-inset-bottom))]"
-          )}>
+        <main className="z-10 flex-1 space-y-6 overflow-x-hidden overflow-y-auto px-4 py-6 md:px-8">
+          <div
+            className={cn(
+              "mx-auto max-w-[760px] space-y-6",
+              isComposerFocused
+                ? "pb-[calc(18rem+env(safe-area-inset-bottom))] sm:pb-[calc(8.5rem+env(safe-area-inset-bottom))]"
+                : "pb-[calc(12rem+env(safe-area-inset-bottom))] sm:pb-[calc(8.5rem+env(safe-area-inset-bottom))]",
+            )}
+          >
             {messages.length === 0 ? (
               /* --- Empty State / Hero Landing --- */
-              <div className="flex flex-col items-center text-center pt-16 md:pt-24">
+              <div className="flex flex-col items-center pt-0 text-center">
                 {snapshots.length > 0 && (
                   <div className="mb-6 w-full max-w-[500px] text-left">
                     <LocalHistoryPanel
@@ -1162,21 +1186,22 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                   </div>
                 )}
                 <NaLILogoMark size="md" className="shadow-2xl shadow-[#10b981]/10" />
-                <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white md:text-5xl">
+                <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-white md:text-5xl">
                   NaLI Intelligence
                 </h1>
-                <p className="mt-3 max-w-[500px] text-base leading-6 text-white/60">
-                  Masukkan materi lapangan, tautan, lokasi, atau kueri untuk menyusun draf laporan terstruktur secara instan.
+                <p className="mt-2 max-w-[500px] text-base leading-6 text-white/60">
+                  Masukkan materi lapangan, tautan, lokasi, atau kueri untuk menyusun draf laporan terstruktur secara
+                  instan.
                 </p>
                 <div className="mt-2.5 inline-flex items-center gap-1 text-[11px] text-white/40">
                   <span>Estimasi biaya:</span>
-                  <strong className="text-white/60 font-semibold">
+                  <strong className="font-semibold text-white/60">
                     {selectedMode === "start_from_zero" ? "10 Kredit (Fast Mode)" : "20 Kredit (Advanced Mode)"}
                   </strong>
                 </div>
 
                 {/* Initial Mode Toggle */}
-                <div className="mt-8 grid grid-cols-2 gap-2 w-full max-w-[500px]">
+                <div className="mt-3 grid w-full max-w-[500px] grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setSelectedMode("draft_from_materials")}
@@ -1184,14 +1209,16 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                       "rounded-xl border p-3 text-left transition duration-200",
                       selectedMode === "draft_from_materials"
                         ? "border-[#10b981]/30 bg-[#10b981]/5 text-white"
-                        : "border-white/[0.06] bg-white/[0.02] text-white/50 hover:bg-white/[0.04]"
+                        : "border-white/[0.06] bg-white/[0.02] text-white/50 hover:bg-white/[0.04]",
                     )}
                   >
                     <span className="flex items-center gap-2 text-sm font-semibold">
                       <FileText className="h-4 w-4 text-emerald-400" />
                       Punya Bahan
                     </span>
-                    <span className="mt-1 block text-[11px] leading-4 text-white/40">Gunakan catatan, URL, atau observasi.</span>
+                    <span className="mt-1 block text-[11px] leading-4 text-white/40">
+                      Gunakan catatan, URL, atau observasi.
+                    </span>
                   </button>
 
                   <button
@@ -1201,24 +1228,28 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                       "rounded-xl border p-3 text-left transition duration-200",
                       selectedMode === "start_from_zero"
                         ? "border-[#7c3aed]/30 bg-[#7c3aed]/5 text-white"
-                        : "border-white/[0.06] bg-white/[0.02] text-white/50 hover:bg-white/[0.04]"
+                        : "border-white/[0.06] bg-white/[0.02] text-white/50 hover:bg-white/[0.04]",
                     )}
                   >
                     <span className="flex items-center gap-2 text-sm font-semibold">
                       <Compass className="h-4 w-4 text-indigo-400" />
                       Mulai dari Nol
                     </span>
-                    <span className="mt-1 block text-[11px] leading-4 text-white/40">Minta panduan, outline, dan checklist bukti.</span>
+                    <span className="mt-1 block text-[11px] leading-4 text-white/40">
+                      Minta panduan, outline, dan checklist bukti.
+                    </span>
                   </button>
                 </div>
 
                 {/* Templates Selector */}
-                <div className="mt-5 w-full max-w-[500px] text-left">
-                  <label className="block text-xs font-semibold uppercase tracking-[0.08em] text-white/40 mb-1.5">Template Laporan</label>
+                <div className="mt-2 w-full max-w-[500px] text-left">
+                  <label className="mb-1.5 block text-xs font-semibold tracking-[0.08em] text-white/40 uppercase">
+                    Template Laporan
+                  </label>
                   <select
                     value={selectedTemplate}
                     onChange={(e) => setSelectedTemplate(e.target.value)}
-                    className="w-full rounded-xl border border-white/[0.08] bg-[#07090e]/60 px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/20"
+                    className="w-full rounded-xl border border-white/[0.08] bg-[#07090e]/60 px-4 py-2.5 text-sm text-white focus:border-white/20 focus:outline-none"
                   >
                     {templates.map((tpl) => (
                       <option key={tpl} value={tpl} className="bg-[#09090b] text-white">
@@ -1252,14 +1283,14 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
                 return (
                   <div key={message.id} className={cn("flex flex-col space-y-2", isUser ? "items-end" : "items-start")}>
-                    <div className="text-white/30 text-[10px] px-2">{message.role === "user" ? "Anda" : "NaLI"}</div>
-                    
+                    <div className="px-2 text-[10px] text-white/30">{message.role === "user" ? "Anda" : "NaLI"}</div>
+
                     <div
                       className={cn(
-                        "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-xl w-full sm:w-auto sm:max-w-[85%] break-words",
+                        "w-full max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 break-words shadow-xl sm:w-auto sm:max-w-[85%]",
                         isUser
-                          ? "bg-gradient-to-r from-emerald-500/10 to-indigo-600/10 border border-white/[0.08] text-white"
-                          : "bg-white/[0.03] border border-white/[0.06] text-white/90"
+                          ? "border border-white/[0.08] bg-gradient-to-r from-emerald-500/10 to-indigo-600/10 text-white"
+                          : "border border-white/[0.06] bg-white/[0.03] text-white/90",
                       )}
                     >
                       {(() => {
@@ -1277,13 +1308,15 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                           return (
                             <div className="space-y-4">
                               <p className="whitespace-pre-wrap text-white/80">{message.content}</p>
-                              
+
                               {understanding && (
                                 <div className="rounded-xl border border-indigo-500/15 bg-indigo-500/5 p-3.5 shadow-md">
                                   <div className="flex gap-2.5">
-                                    <Compass className="h-4 w-4 mt-0.5 text-indigo-400 shrink-0" />
+                                    <Compass className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400" />
                                     <div>
-                                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-indigo-300/80">NaLI Understanding</h4>
+                                      <h4 className="text-[10px] font-bold tracking-wider text-indigo-300/80 uppercase">
+                                        NaLI Understanding
+                                      </h4>
                                       <p className="mt-1 text-xs leading-relaxed text-white/80">{understanding}</p>
                                     </div>
                                   </div>
@@ -1293,14 +1326,18 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                               {plan && plan.length > 0 && (
                                 <div className="rounded-xl border border-white/[0.06] bg-white/[0.01] p-3.5 shadow-md">
                                   <div className="flex gap-2.5">
-                                    <Sparkles className="h-4 w-4 mt-0.5 text-emerald-400 shrink-0" />
+                                    <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
                                     <div className="w-full">
-                                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-emerald-300/80">Rencana Kerja Agensi</h4>
+                                      <h4 className="text-[10px] font-bold tracking-wider text-emerald-300/80 uppercase">
+                                        Rencana Kerja Agensi
+                                      </h4>
                                       <div className="mt-2 space-y-1.5">
                                         {plan.map((step: string, sIdx: number) => (
                                           <div key={sIdx} className="flex items-center gap-2">
-                                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                                            <span className="text-xs text-white/70 font-medium leading-normal">{step}</span>
+                                            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                                            <span className="text-xs leading-normal font-medium text-white/70">
+                                              {step}
+                                            </span>
                                           </div>
                                         ))}
                                       </div>
@@ -1309,37 +1346,58 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                                 </div>
                               )}
 
-                              {(evidenceStrength || sourceCoverage || (missingEvidence && missingEvidence.length > 0) || (evidenceWarnings && evidenceWarnings.length > 0)) && (
+                              {(evidenceStrength ||
+                                sourceCoverage ||
+                                (missingEvidence && missingEvidence.length > 0) ||
+                                (evidenceWarnings && evidenceWarnings.length > 0)) && (
                                 <div className="rounded-xl border border-white/[0.06] bg-white/[0.01] p-3.5 shadow-md">
                                   <div className="flex gap-2.5">
-                                    <ShieldCheck className="h-4 w-4 mt-0.5 text-amber-400 shrink-0" />
+                                    <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
                                     <div className="w-full">
-                                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-amber-300/80">NaLI Evidence Auditor</h4>
-                                      
+                                      <h4 className="text-[10px] font-bold tracking-wider text-amber-300/80 uppercase">
+                                        NaLI Evidence Auditor
+                                      </h4>
+
                                       <div className="mt-2 flex flex-wrap gap-2">
                                         {evidenceStrength && (
-                                          <div className="inline-flex items-center gap-1 rounded-lg bg-white/[0.02] border border-white/[0.04] px-2 py-0.5 text-[10px] text-white/70">
-                                            <span className="text-white/40 font-semibold uppercase tracking-tight">Kekuatan:</span>
-                                            <span className={cn(
-                                              "font-bold ml-1",
-                                              evidenceStrength === "strong" && "text-emerald-400",
-                                              evidenceStrength === "medium" && "text-amber-400",
-                                              evidenceStrength === "weak" && "text-rose-400"
-                                            )}>
-                                              {evidenceStrength === "strong" ? "Kuat" : evidenceStrength === "medium" ? "Sedang" : "Lemah"}
+                                          <div className="inline-flex items-center gap-1 rounded-lg border border-white/[0.04] bg-white/[0.02] px-2 py-0.5 text-[10px] text-white/70">
+                                            <span className="font-semibold tracking-tight text-white/40 uppercase">
+                                              Kekuatan:
+                                            </span>
+                                            <span
+                                              className={cn(
+                                                "ml-1 font-bold",
+                                                evidenceStrength === "strong" && "text-emerald-400",
+                                                evidenceStrength === "medium" && "text-amber-400",
+                                                evidenceStrength === "weak" && "text-rose-400",
+                                              )}
+                                            >
+                                              {evidenceStrength === "strong"
+                                                ? "Kuat"
+                                                : evidenceStrength === "medium"
+                                                  ? "Sedang"
+                                                  : "Lemah"}
                                             </span>
                                           </div>
                                         )}
                                         {sourceCoverage && (
-                                          <div className="inline-flex items-center gap-1 rounded-lg bg-white/[0.02] border border-white/[0.04] px-2 py-0.5 text-[10px] text-white/70">
-                                            <span className="text-white/40 font-semibold uppercase tracking-tight">Sumber:</span>
-                                            <span className={cn(
-                                              "font-bold ml-1",
-                                              sourceCoverage === "strong" && "text-emerald-400",
-                                              sourceCoverage === "adequate" && "text-amber-400",
-                                              sourceCoverage === "limited" && "text-rose-400"
-                                            )}>
-                                              {sourceCoverage === "strong" ? "Lengkap" : sourceCoverage === "adequate" ? "Cukup" : "Terbatas"}
+                                          <div className="inline-flex items-center gap-1 rounded-lg border border-white/[0.04] bg-white/[0.02] px-2 py-0.5 text-[10px] text-white/70">
+                                            <span className="font-semibold tracking-tight text-white/40 uppercase">
+                                              Sumber:
+                                            </span>
+                                            <span
+                                              className={cn(
+                                                "ml-1 font-bold",
+                                                sourceCoverage === "strong" && "text-emerald-400",
+                                                sourceCoverage === "adequate" && "text-amber-400",
+                                                sourceCoverage === "limited" && "text-rose-400",
+                                              )}
+                                            >
+                                              {sourceCoverage === "strong"
+                                                ? "Lengkap"
+                                                : sourceCoverage === "adequate"
+                                                  ? "Cukup"
+                                                  : "Terbatas"}
                                             </span>
                                           </div>
                                         )}
@@ -1347,8 +1405,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
                                       {evidenceWarnings && evidenceWarnings.length > 0 && (
                                         <div className="mt-2.5 space-y-1 border-t border-white/[0.04] pt-2">
-                                          <span className="block text-[9px] font-bold text-rose-300/80 uppercase tracking-wider">Peringatan Integritas</span>
-                                          <ul className="list-disc pl-3.5 space-y-0.5 text-[11px] text-white/60 leading-relaxed">
+                                          <span className="block text-[9px] font-bold tracking-wider text-rose-300/80 uppercase">
+                                            Peringatan Integritas
+                                          </span>
+                                          <ul className="list-disc space-y-0.5 pl-3.5 text-[11px] leading-relaxed text-white/60">
                                             {evidenceWarnings.map((warn: string, wIdx: number) => (
                                               <li key={wIdx}>{warn}</li>
                                             ))}
@@ -1358,8 +1418,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
                                       {missingEvidence && missingEvidence.length > 0 && (
                                         <div className="mt-2.5 space-y-1 border-t border-white/[0.04] pt-2">
-                                          <span className="block text-[9px] font-bold text-amber-300/80 uppercase tracking-wider">Rekomendasi Bukti Tambahan</span>
-                                          <ul className="list-disc pl-3.5 space-y-0.5 text-[11px] text-white/60 leading-relaxed">
+                                          <span className="block text-[9px] font-bold tracking-wider text-amber-300/80 uppercase">
+                                            Rekomendasi Bukti Tambahan
+                                          </span>
+                                          <ul className="list-disc space-y-0.5 pl-3.5 text-[11px] leading-relaxed text-white/60">
                                             {missingEvidence.map((me: string, mIdx: number) => (
                                               <li key={mIdx}>{me}</li>
                                             ))}
@@ -1371,26 +1433,31 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                                 </div>
                               )}
 
-                              {isLastMessage && suggestedActions && suggestedActions.length > 0 && activeRunStatus === "idle" && (
-                                <div className="mt-3 border-t border-white/[0.04] pt-2.5">
-                                  <span className="block text-[9px] font-bold text-white/40 uppercase tracking-wider mb-2">Tindakan Lanjutan Yang Disarankan</span>
-                                  <div className="flex flex-wrap gap-2">
-                                    {suggestedActions.map((act: { label: string; prompt: string }, aIdx: number) => {
-                                      const cost = getEstimatedCreditCostFromQuery(act.prompt);
-                                      return (
-                                        <button
-                                          key={aIdx}
-                                          type="button"
-                                          onClick={() => handleQuickAction(act.prompt)}
-                                          className="inline-flex items-center min-h-[44px] rounded-full border border-white/[0.06] bg-white/[0.02] px-3.5 py-2 text-xs text-white/50 hover:bg-white/[0.06] hover:text-white transition duration-200 cursor-pointer text-left"
-                                        >
-                                          {act.label} ({cost})
-                                        </button>
-                                      );
-                                    })}
+                              {isLastMessage &&
+                                suggestedActions &&
+                                suggestedActions.length > 0 &&
+                                activeRunStatus === "idle" && (
+                                  <div className="mt-3 border-t border-white/[0.04] pt-2.5">
+                                    <span className="mb-2 block text-[9px] font-bold tracking-wider text-white/40 uppercase">
+                                      Tindakan Lanjutan Yang Disarankan
+                                    </span>
+                                    <div className="flex flex-wrap gap-2">
+                                      {suggestedActions.map((act: { label: string; prompt: string }, aIdx: number) => {
+                                        const cost = getEstimatedCreditCostFromQuery(act.prompt);
+                                        return (
+                                          <button
+                                            key={aIdx}
+                                            type="button"
+                                            onClick={() => handleQuickAction(act.prompt)}
+                                            className="inline-flex min-h-[44px] cursor-pointer items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-3.5 py-2 text-left text-xs text-white/50 transition duration-200 hover:bg-white/[0.06] hover:text-white"
+                                          >
+                                            {act.label} ({cost})
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
 
                               {isLastMessage && activeRunStatus === "idle" && (
                                 <div className="mt-2.5 flex items-center gap-1.5 text-xs text-white/35">
@@ -1408,7 +1475,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
                     {/* Inline report preview updates (Proposed Drafts) */}
                     {message.metadata?.new_report && (
-                      <div className="w-full mt-2">
+                      <div className="mt-2 w-full">
                         <ReportResultCard
                           report={message.metadata.new_report}
                           onApply={
@@ -1431,98 +1498,17 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                         />
 
                         {/* Inline feedback prompt — shows once after first report preview */}
-                        {message.type === "report_preview" && !inlineFeedbackSent && index === messages.findIndex(m => m.type === "report_preview") && (
-                          <div className="mt-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 backdrop-blur-sm">
-                            <p className="text-xs font-medium text-white/60">Apakah hasil ini membantu?</p>
-                            <div className="mt-2 flex items-center gap-2">
-                              <button
-                                type="button"
-                                disabled={inlineFeedbackSending}
-                                onClick={async () => {
-                                  setInlineFeedbackSending(true);
-                                  try {
-                                    const rid = report?.id || message.metadata?.new_report?.id;
-                                    if (rid) {
-                                      await fetch(`/api/reports/${rid}/feedback`, {
-                                        method: "POST",
-                                        headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify({
-                                          rating: "helpful",
-                                          comment: inlineFeedbackComment || "",
-                                          report_access_key: accessKey || "",
-                                        }),
-                                      });
-                                    }
-                                  } catch { /* silent */ }
-                                  setInlineFeedbackSent(true);
-                                  setInlineFeedbackSending(false);
-                                }}
-                                className="inline-flex h-7 items-center gap-1 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 text-[11px] font-medium text-emerald-300 transition hover:bg-emerald-500/15"
-                              >
-                                👍 Ya
-                              </button>
-                              <button
-                                type="button"
-                                disabled={inlineFeedbackSending}
-                                onClick={async () => {
-                                  setInlineFeedbackSending(true);
-                                  try {
-                                    const rid = report?.id || message.metadata?.new_report?.id;
-                                    if (rid) {
-                                      await fetch(`/api/reports/${rid}/feedback`, {
-                                        method: "POST",
-                                        headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify({
-                                          rating: "not_helpful",
-                                          comment: inlineFeedbackComment || "",
-                                          report_access_key: accessKey || "",
-                                        }),
-                                      });
-                                    }
-                                  } catch { /* silent */ }
-                                  setInlineFeedbackSent(true);
-                                  setInlineFeedbackSending(false);
-                                }}
-                                className="inline-flex h-7 items-center gap-1 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 text-[11px] font-medium text-white/50 transition hover:bg-white/[0.06]"
-                              >
-                                👎 Belum
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setInlineFeedbackExpanded(!inlineFeedbackExpanded)}
-                                className="text-[11px] text-white/35 transition hover:text-white/50"
-                              >
-                                Tulis feedback
-                              </button>
-                            </div>
-                            {inlineFeedbackExpanded && (
-                              <textarea
-                                value={inlineFeedbackComment}
-                                onChange={(e) => setInlineFeedbackComment(e.target.value)}
-                                placeholder="Bagian mana yang kurang jelas?"
-                                rows={2}
-                                className="mt-2 w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white/70 placeholder-white/25 outline-none resize-none"
-                              />
-                            )}
-                          </div>
-                        )}
-                        {/* Post-output paid intent prompt — shows after feedback sent */}
-                        {message.type === "report_preview" && inlineFeedbackSent && !paidIntentSent && index === messages.findIndex(m => m.type === "report_preview") && (
-                          <div className="mt-3 rounded-xl border border-emerald-500/10 bg-emerald-500/[0.03] p-3 backdrop-blur-sm">
-                            <p className="text-xs text-white/70">
-                              Draft awal sudah siap. NaLI bisa membantu merapikan struktur, memperkuat bukti, dan menyiapkan versi export.
-                            </p>
-                            <p className="mt-2 text-xs font-medium text-white/50">
-                              Jika fitur export rapi tersedia mulai Rp9.000–Rp29.000, apakah kamu tertarik?
-                            </p>
-                            <div className="mt-2 flex items-center gap-2">
-                              {(["Ya, tertarik", "Mungkin", "Belum"] as const).map((label) => (
+                        {message.type === "report_preview" &&
+                          !inlineFeedbackSent &&
+                          index === messages.findIndex((m) => m.type === "report_preview") && (
+                            <div className="mt-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 backdrop-blur-sm">
+                              <p className="text-xs font-medium text-white/60">Apakah hasil ini membantu?</p>
+                              <div className="mt-2 flex items-center gap-2">
                                 <button
-                                  key={label}
                                   type="button"
-                                  disabled={paidIntentSending}
+                                  disabled={inlineFeedbackSending}
                                   onClick={async () => {
-                                    setPaidIntentSending(true);
+                                    setInlineFeedbackSending(true);
                                     try {
                                       const rid = report?.id || message.metadata?.new_report?.id;
                                       if (rid) {
@@ -1530,28 +1516,121 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                                           method: "POST",
                                           headers: { "Content-Type": "application/json" },
                                           body: JSON.stringify({
-                                            rating: label === "Ya, tertarik" ? "helpful" : "not_helpful",
-                                            comment: `[paid_intent] ${label}`,
+                                            rating: "helpful",
+                                            comment: inlineFeedbackComment || "",
                                             report_access_key: accessKey || "",
                                           }),
                                         });
                                       }
-                                    } catch { /* silent */ }
-                                    setPaidIntentSent(true);
-                                    setPaidIntentSending(false);
+                                    } catch {
+                                      /* silent */
+                                    }
+                                    setInlineFeedbackSent(true);
+                                    setInlineFeedbackSending(false);
                                   }}
-                                  className={`inline-flex h-7 items-center rounded-lg px-3 text-[11px] font-medium transition ${
-                                    label === "Ya, tertarik"
-                                      ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/15"
-                                      : "border border-white/[0.08] bg-white/[0.03] text-white/50 hover:bg-white/[0.06]"
-                                  }`}
+                                  className="inline-flex h-7 items-center gap-1 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 text-[11px] font-medium text-emerald-300 transition hover:bg-emerald-500/15"
                                 >
-                                  {label}
+                                  👍 Ya
                                 </button>
-                              ))}
+                                <button
+                                  type="button"
+                                  disabled={inlineFeedbackSending}
+                                  onClick={async () => {
+                                    setInlineFeedbackSending(true);
+                                    try {
+                                      const rid = report?.id || message.metadata?.new_report?.id;
+                                      if (rid) {
+                                        await fetch(`/api/reports/${rid}/feedback`, {
+                                          method: "POST",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({
+                                            rating: "not_helpful",
+                                            comment: inlineFeedbackComment || "",
+                                            report_access_key: accessKey || "",
+                                          }),
+                                        });
+                                      }
+                                    } catch {
+                                      /* silent */
+                                    }
+                                    setInlineFeedbackSent(true);
+                                    setInlineFeedbackSending(false);
+                                  }}
+                                  className="inline-flex h-7 items-center gap-1 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 text-[11px] font-medium text-white/50 transition hover:bg-white/[0.06]"
+                                >
+                                  👎 Belum
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setInlineFeedbackExpanded(!inlineFeedbackExpanded)}
+                                  className="text-[11px] text-white/35 transition hover:text-white/50"
+                                >
+                                  Tulis feedback
+                                </button>
+                              </div>
+                              {inlineFeedbackExpanded && (
+                                <textarea
+                                  value={inlineFeedbackComment}
+                                  onChange={(e) => setInlineFeedbackComment(e.target.value)}
+                                  placeholder="Bagian mana yang kurang jelas?"
+                                  rows={2}
+                                  className="mt-2 w-full resize-none rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white/70 placeholder-white/25 outline-none"
+                                />
+                              )}
                             </div>
-                          </div>
-                        )}
+                          )}
+                        {/* Post-output paid intent prompt — shows after feedback sent */}
+                        {message.type === "report_preview" &&
+                          inlineFeedbackSent &&
+                          !paidIntentSent &&
+                          index === messages.findIndex((m) => m.type === "report_preview") && (
+                            <div className="mt-3 rounded-xl border border-emerald-500/10 bg-emerald-500/[0.03] p-3 backdrop-blur-sm">
+                              <p className="text-xs text-white/70">
+                                Draft awal sudah siap. NaLI bisa membantu merapikan struktur, memperkuat bukti, dan
+                                menyiapkan versi export.
+                              </p>
+                              <p className="mt-2 text-xs font-medium text-white/50">
+                                Jika fitur export rapi tersedia mulai Rp9.000–Rp29.000, apakah kamu tertarik?
+                              </p>
+                              <div className="mt-2 flex items-center gap-2">
+                                {(["Ya, tertarik", "Mungkin", "Belum"] as const).map((label) => (
+                                  <button
+                                    key={label}
+                                    type="button"
+                                    disabled={paidIntentSending}
+                                    onClick={async () => {
+                                      setPaidIntentSending(true);
+                                      try {
+                                        const rid = report?.id || message.metadata?.new_report?.id;
+                                        if (rid) {
+                                          await fetch(`/api/reports/${rid}/feedback`, {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({
+                                              rating: label === "Ya, tertarik" ? "helpful" : "not_helpful",
+                                              comment: `[paid_intent] ${label}`,
+                                              report_access_key: accessKey || "",
+                                            }),
+                                          });
+                                        }
+                                      } catch {
+                                        /* silent */
+                                      }
+                                      setPaidIntentSent(true);
+                                      setPaidIntentSending(false);
+                                    }}
+                                    className={`inline-flex h-7 items-center rounded-lg px-3 text-[11px] font-medium transition ${
+                                      label === "Ya, tertarik"
+                                        ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/15"
+                                        : "border border-white/[0.08] bg-white/[0.03] text-white/50 hover:bg-white/[0.06]"
+                                    }`}
+                                  >
+                                    {label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                       </div>
                     )}
                   </div>
@@ -1561,24 +1640,32 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
             {/* Simulated Progressive Task checklist (displayed only when running) */}
             {activeRunStatus === "running" && optimisticSteps.length > 0 && (
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-md space-y-4">
+              <div className="space-y-4 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-md">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin text-emerald-400" />
                     <span className="text-sm font-semibold">NaLI sedang memproses draf...</span>
                   </div>
                 </div>
-                <ul className="space-y-2.5 text-xs text-white/50 pl-6">
+                <ul className="space-y-2.5 pl-6 text-xs text-white/50">
                   {optimisticSteps.map((step, idx) => (
                     <li key={idx} className="flex items-center gap-2">
                       {step.status === "completed" ? (
-                        <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
                       ) : step.status === "in_progress" ? (
-                        <span className="h-4 w-4 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin shrink-0" />
+                        <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
                       ) : (
-                        <span className="h-1.5 w-1.5 rounded-full bg-white/20 shrink-0 ml-1.5 mr-1" />
+                        <span className="mr-1 ml-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white/20" />
                       )}
-                      <span className={cn(step.status === "completed" ? "text-emerald-400/80" : step.status === "in_progress" ? "text-white font-medium" : "text-white/40")}>
+                      <span
+                        className={cn(
+                          step.status === "completed"
+                            ? "text-emerald-400/80"
+                            : step.status === "in_progress"
+                              ? "font-medium text-white"
+                              : "text-white/40",
+                        )}
+                      >
                         {step.label}
                       </span>
                     </li>
@@ -1588,45 +1675,61 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             )}
 
             {/* Validation notifications */}
-            {showValidation && (() => {
-              const variant = validationIssue.severity === "error" ? "error" : "warning";
-              const nextStep = validationIssue.suggestions.join(" ");
-              let actionLabel: string | undefined = undefined;
-              let onAction: (() => void) | undefined = undefined;
+            {showValidation &&
+              (() => {
+                const variant = validationIssue.severity === "error" ? "error" : "warning";
+                const nextStep = validationIssue.suggestions.join(" ");
+                let actionLabel: string | undefined = undefined;
+                let onAction: (() => void) | undefined = undefined;
 
-              if (validationIssue.code === "TOO_SHORT" || validationIssue.code === "EMPTY_QUERY" || validationIssue.code === "QUERY_TOO_SHORT") {
-                actionLabel = "Ubah Pesan";
-                onAction = () => {
-                  composerRef.current?.focus();
-                };
-              }
+                if (
+                  validationIssue.code === "TOO_SHORT" ||
+                  validationIssue.code === "EMPTY_QUERY" ||
+                  validationIssue.code === "QUERY_TOO_SHORT"
+                ) {
+                  actionLabel = "Ubah Pesan";
+                  onAction = () => {
+                    composerRef.current?.focus();
+                  };
+                }
 
-              return (
-                <NaliAlert
-                  variant={variant}
-                  title={validationIssue.title}
-                  explanation={validationIssue.message}
-                  nextStep={nextStep}
-                  actionLabel={actionLabel}
-                  onAction={onAction}
-                />
-              );
-            })()}
+                return (
+                  <NaliAlert
+                    variant={variant}
+                    title={validationIssue.title}
+                    explanation={validationIssue.message}
+                    nextStep={nextStep}
+                    actionLabel={actionLabel}
+                    onAction={onAction}
+                  />
+                );
+              })()}
 
             {/* Error notifications */}
-            {error && (() => {
-              const normalized = normalizePublicError({
-                status: error.status,
-                code: error.code,
-                message: error.message,
-                retryAfterSeconds: error.retryAfterSeconds,
-              });
+            {error &&
+              (() => {
+                const normalized = normalizePublicError({
+                  status: error.status,
+                  code: error.code,
+                  message: error.message,
+                  retryAfterSeconds: error.retryAfterSeconds,
+                });
 
-              let actionLabel: string | undefined = undefined;
-              let onAction: (() => void) | undefined = undefined;
+                let actionLabel: string | undefined = undefined;
+                let onAction: (() => void) | undefined = undefined;
 
-              if (normalized.category === "RATE_LIMIT") {
-                if (error.retryAfterSeconds === undefined || error.retryAfterSeconds <= 0) {
+                if (normalized.category === "RATE_LIMIT") {
+                  if (error.retryAfterSeconds === undefined || error.retryAfterSeconds <= 0) {
+                    actionLabel = "Coba Lagi";
+                    onAction = () => {
+                      if (messages.length === 0) {
+                        handleInitialSubmit();
+                      } else {
+                        handleFollowUpSubmit(undefined, lastAttemptedQuery);
+                      }
+                    };
+                  }
+                } else if (normalized.category === "NETWORK_OR_SERVER") {
                   actionLabel = "Coba Lagi";
                   onAction = () => {
                     if (messages.length === 0) {
@@ -1635,103 +1738,91 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                       handleFollowUpSubmit(undefined, lastAttemptedQuery);
                     }
                   };
+                } else if (normalized.category === "INTEGRITY_BLOCK") {
+                  actionLabel = "Ubah Materi";
+                  onAction = () => {
+                    setError(null);
+                    composerRef.current?.focus();
+                  };
+                } else if (normalized.category === "WEAK_INPUT") {
+                  actionLabel = "Tambah Detail";
+                  onAction = () => {
+                    setError(null);
+                    composerRef.current?.focus();
+                  };
                 }
-              } else if (normalized.category === "NETWORK_OR_SERVER") {
-                actionLabel = "Coba Lagi";
-                onAction = () => {
-                  if (messages.length === 0) {
-                    handleInitialSubmit();
-                  } else {
-                    handleFollowUpSubmit(undefined, lastAttemptedQuery);
-                  }
-                };
-              } else if (normalized.category === "INTEGRITY_BLOCK") {
-                actionLabel = "Ubah Materi";
-                onAction = () => {
-                  setError(null);
-                  composerRef.current?.focus();
-                };
-              } else if (normalized.category === "WEAK_INPUT") {
-                actionLabel = "Tambah Detail";
-                onAction = () => {
-                  setError(null);
-                  composerRef.current?.focus();
-                };
-              }
 
-              return (
-                <NaliAlert
-                  variant={normalized.severity}
-                  title={normalized.title}
-                  explanation={normalized.explanation}
-                  nextStep={normalized.nextStep}
-                  retryAfterSeconds={error.retryAfterSeconds}
-                  actionLabel={actionLabel}
-                  onAction={onAction}
-                />
-              );
-            })()}
+                return (
+                  <NaliAlert
+                    variant={normalized.severity}
+                    title={normalized.title}
+                    explanation={normalized.explanation}
+                    nextStep={normalized.nextStep}
+                    retryAfterSeconds={error.retryAfterSeconds}
+                    actionLabel={actionLabel}
+                    onAction={onAction}
+                  />
+                );
+              })()}
 
             {/* Notice notifications */}
-            {notice && (
-              <NaliAlert
-                variant="success"
-                title="Notifikasi"
-                explanation={notice}
-              />
-            )}
+            {notice && <NaliAlert variant="success" title="Notifikasi" explanation={notice} />}
 
             <div ref={messagesEndRef} />
           </div>
         </main>
 
         {/* Bottom Composer and Control chips */}
-        <div className="absolute bottom-0 inset-x-0 z-20 bg-gradient-to-t from-[#07090e] via-[#07090e]/95 to-transparent pt-8 pb-[calc(1rem+env(safe-area-inset-bottom))] px-4 md:px-8">
+        <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#07090e] via-[#07090e]/95 to-transparent px-4 pt-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:px-8">
           <div className="mx-auto max-w-[760px] space-y-3">
             {/* Quick Action chips (only if messages exist and thread is idle) */}
-            {messages.length > 0 && activeRunStatus === "idle" && (() => {
-              const actions = report?.suggested_actions && report.suggested_actions.length > 0
-                ? report.suggested_actions
-                : [
-                    { label: "Kesimpulan Formal", prompt: "Tulis kesimpulan lebih formal" },
-                    { label: "Perpendek Ringkasan", prompt: "Buat ringkasan draf di atas menjadi lebih pendek" },
-                    { label: "Perkuat Temuan", prompt: "Perkuat analisis bagian temuan" },
-                    { label: "Tambahkan Rekomendasi", prompt: "Tambahkan poin rekomendasi praktis" }
-                  ];
-              return (
-                <div className="flex flex-wrap gap-2 py-1 justify-center md:justify-start">
-                  {actions.map((act, i) => {
-                    const cost = getEstimatedCreditCostFromQuery(act.prompt);
-                    return (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => handleQuickAction(act.prompt)}
-                        className="inline-flex items-center min-h-[44px] rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-2 text-xs text-white/50 hover:bg-white/[0.06] hover:text-white transition duration-200 cursor-pointer"
-                      >
-                        {act.label} ({cost})
-                      </button>
-                    );
-                  })}
-                </div>
-              );
-            })()}
+            {messages.length > 0 &&
+              activeRunStatus === "idle" &&
+              (() => {
+                const actions =
+                  report?.suggested_actions && report.suggested_actions.length > 0
+                    ? report.suggested_actions
+                    : [
+                        { label: "Kesimpulan Formal", prompt: "Tulis kesimpulan lebih formal" },
+                        { label: "Perpendek Ringkasan", prompt: "Buat ringkasan draf di atas menjadi lebih pendek" },
+                        { label: "Perkuat Temuan", prompt: "Perkuat analisis bagian temuan" },
+                        { label: "Tambahkan Rekomendasi", prompt: "Tambahkan poin rekomendasi praktis" },
+                      ];
+                return (
+                  <div className="flex flex-wrap justify-center gap-2 py-1 md:justify-start">
+                    {actions.map((act, i) => {
+                      const cost = getEstimatedCreditCostFromQuery(act.prompt);
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => handleQuickAction(act.prompt)}
+                          className="inline-flex min-h-[44px] cursor-pointer items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-2 text-xs text-white/50 transition duration-200 hover:bg-white/[0.06] hover:text-white"
+                        >
+                          {act.label} ({cost})
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
 
             {/* Main Input Composer form */}
             {/* Insufficient credits warning */}
             {isInsufficient && (
-              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-5 text-amber-200/80 mb-3 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xl backdrop-blur-md">
+              <div className="mb-3 flex flex-col justify-between gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-5 text-amber-200/80 shadow-xl backdrop-blur-md md:flex-row md:items-center">
                 <div>
                   <p className="font-semibold text-amber-400">Kredit Energi Tidak Cukup</p>
                   <p className="mt-0.5">
-                    Sisa kredit Anda ({credits} kredit) kurang dari estimasi biaya ({estCreditCost} kredit) untuk menjalankan instruksi ini.
+                    Sisa kredit Anda ({credits} kredit) kurang dari estimasi biaya ({estCreditCost} kredit) untuk
+                    menjalankan instruksi ini.
                   </p>
                 </div>
                 <Button
                   type="button"
                   size="sm"
                   onClick={() => setIsUpgradeOpen(true)}
-                  className="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold self-start md:self-auto"
+                  className="self-start bg-amber-500 font-bold text-zinc-950 hover:bg-amber-400 md:self-auto"
                 >
                   Upgrade / Top-up Kredit
                 </Button>
@@ -1740,11 +1831,11 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
             <form
               onSubmit={messages.length === 0 ? handleInitialSubmit : handleFollowUpSubmit}
-              className="relative group"
+              className="group relative"
             >
-              <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-indigo-600/10 to-indigo-400/10 opacity-30 blur-md transition duration-500 group-hover:opacity-50 group-focus-within:opacity-60" />
-              
-              <div className="relative flex items-end gap-2 rounded-2xl border border-white/[0.08] bg-[#07090e]/80 p-2 min-h-[48px] sm:min-h-[56px] shadow-2xl backdrop-blur-2xl transition duration-300 focus-within:border-white/[0.15] focus-within:bg-[#07090e]">
+              <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-indigo-600/10 to-indigo-400/10 opacity-30 blur-md transition duration-500 group-focus-within:opacity-60 group-hover:opacity-50" />
+
+              <div className="relative flex min-h-[48px] items-end gap-2 rounded-2xl border border-white/[0.08] bg-[#07090e]/80 p-2 shadow-2xl backdrop-blur-2xl transition duration-300 focus-within:border-white/[0.15] focus-within:bg-[#07090e] sm:min-h-[56px]">
                 <div className="flex-1 px-3 py-1">
                   <textarea
                     ref={composerRef}
@@ -1758,10 +1849,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                       isRateLimited
                         ? "Batas percobaan tercapai. Silakan tunggu..."
                         : messages.length === 0
-                        ? "Ketik catatan, topik, lokasi atau ringkasan materi observasi..."
-                        : "Ketik instruksi penyuntingan draf lanjutan (misal: 'perpendek', 'tulis kesimpulan formal')..."
+                          ? "Ketik catatan, topik, lokasi atau ringkasan materi observasi..."
+                          : "Ketik instruksi penyuntingan draf lanjutan (misal: 'perpendek', 'tulis kesimpulan formal')..."
                     }
-                    className="w-full bg-transparent text-[14px] leading-6 text-white placeholder-white/30 outline-none border-none py-1 resize-none max-h-32 disabled:opacity-50"
+                    className="max-h-32 w-full resize-none border-none bg-transparent py-1 text-[14px] leading-6 text-white placeholder-white/30 outline-none disabled:opacity-50"
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
                         e.preventDefault();
@@ -1771,17 +1862,21 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                   />
                 </div>
 
-                <div className="flex items-center gap-1.5 shrink-0 px-1">
+                <div className="flex shrink-0 items-center gap-1.5 px-1">
                   {/* Est energy cost badge */}
-                  <span className="text-[10px] font-mono text-white/35 px-2">
-                    Est: {estCreditCost} Kredit
-                  </span>
+                  <span className="px-2 font-mono text-[10px] text-white/35">Est: {estCreditCost} Kredit</span>
 
                   <button
                     type="submit"
-                    disabled={activeRunStatus === "running" || !query.trim() || isInsufficient || (messages.length === 0 && !integrityConsent) || isRateLimited}
+                    disabled={
+                      activeRunStatus === "running" ||
+                      !query.trim() ||
+                      isInsufficient ||
+                      (messages.length === 0 && !integrityConsent) ||
+                      isRateLimited
+                    }
                     aria-label="Kirim instruksi"
-                    className="inline-flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-white text-zinc-950 transition duration-200 hover:bg-white/90 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl bg-white text-zinc-950 transition duration-200 hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-30 sm:h-12 sm:w-12"
                   >
                     {activeRunStatus === "running" ? (
                       <Loader2 className="h-4 w-4 animate-spin text-zinc-950" />
@@ -1796,9 +1891,37 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             {/* Model Selector */}
             {messages.length === 0 && (
               <div className="mt-3">
-                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-white/40">
-                  Profil Pemrosesan (Model)
-                </span>
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs font-semibold tracking-[0.08em] text-white/40 uppercase">
+                    Profil Pemrosesan (Model)
+                  </span>
+                  {naliModels
+                    .filter((model) => model.id === selectedModel)
+                    .map((model) => (
+                      <details key={`${model.id}-detail`} className="relative">
+                        <summary className="cursor-pointer list-none text-[11px] font-medium text-white/55">
+                          {model.costLabel} / estimasi {model.estimatedCredits} Kredit - detail
+                        </summary>
+                        <div className="absolute right-0 bottom-full z-30 mb-2 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-white/[0.08] bg-[#07090e] p-3 shadow-2xl">
+                          <p className="text-xs leading-5 text-white/60">{model.shortDescription}</p>
+                          <p className="mt-1 text-[11px] leading-5 text-white/40">{model.pricingReadinessNote}</p>
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {model.safeCapabilities.map((capability) => (
+                              <span
+                                key={capability}
+                                className="rounded-full border border-white/[0.06] px-2 py-1 text-[10px] text-white/55"
+                              >
+                                {capability}
+                              </span>
+                            ))}
+                          </div>
+                          {model.limitations.length > 0 && (
+                            <p className="mt-2 text-[11px] leading-5 text-white/40">{model.limitations.join(" / ")}</p>
+                          )}
+                        </div>
+                      </details>
+                    ))}
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {naliModels.map((model) => {
                     const isSelected = selectedModel === model.id;
@@ -1808,10 +1931,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                         type="button"
                         onClick={() => setSelectedModel(model.id)}
                         className={cn(
-                          "flex-1 sm:flex-none inline-flex items-center justify-center rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 min-h-[44px] cursor-pointer",
+                          "inline-flex min-h-[44px] flex-1 cursor-pointer items-center justify-center rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 sm:flex-none",
                           isSelected
                             ? "border-[#6f8057] bg-[#6f8057]/15 text-white shadow-sm shadow-[#6f8057]/10"
-                            : "border-white/[0.06] bg-[#07090e]/60 text-white/40 hover:bg-white/[0.04] hover:text-white/60"
+                            : "border-white/[0.06] bg-[#07090e]/60 text-white/40 hover:bg-white/[0.04] hover:text-white/60",
                         )}
                         aria-pressed={isSelected}
                       >
@@ -1820,25 +1943,21 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     );
                   })}
                 </div>
-                <p className="mt-2 text-xs text-white/40">
-                  {selectedModel === "peregrine" && "Peregrine: cepat untuk draft awal"}
-                  {selectedModel === "obsidian" && "Obsidian: lebih kuat untuk batas klaim dan struktur"}
-                  {selectedModel === "zephyr" && "Zephyr: lebih halus untuk kejernihan dan gaya"}
-                </p>
               </div>
             )}
 
             {/* Academic Integrity consent checkbox (rendered only at start or when required) */}
             {messages.length === 0 && (
-              <label className="flex gap-2.5 items-start justify-center text-[12px] leading-5 text-white/40 hover:text-white/60 cursor-pointer transition">
+              <label className="flex cursor-pointer items-start justify-center gap-2.5 text-[12px] leading-5 text-white/40 transition hover:text-white/60">
                 <input
                   type="checkbox"
                   checked={integrityConsent}
                   onChange={(e) => setIntegrityConsent(e.target.checked)}
-                  className="mt-0.5 h-3.5 w-3.5 accent-emerald-500 rounded border-white/20 bg-transparent focus:ring-0 focus:ring-offset-0"
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-white/20 bg-transparent accent-emerald-500 focus:ring-0 focus:ring-offset-0"
                 />
                 <span>
-                  Saya menyetujui pernyataan integritas akademik NaLI. Output adalah draf/panduan awal belajar, bukan plagiarisme atau karya akhir otomatis.
+                  Saya menyetujui pernyataan integritas akademik NaLI. Output adalah draf/panduan awal belajar, bukan
+                  plagiarisme atau karya akhir otomatis.
                 </span>
               </label>
             )}
@@ -1902,16 +2021,22 @@ function ReportResultCard({
           return (
             <div className="space-y-4 text-sm leading-6 text-white/70">
               <div>
-                <span className="block text-xs font-semibold text-indigo-400 uppercase tracking-wider">Panduan Awal</span>
+                <span className="block text-xs font-semibold tracking-wider text-indigo-400 uppercase">
+                  Panduan Awal
+                </span>
                 <p className="mt-1">{guide.integrity_note}</p>
               </div>
               <div className="border-t border-white/[0.04] pt-3">
-                <span className="block text-xs font-semibold text-indigo-400 uppercase tracking-wider">Kerangka Topik</span>
+                <span className="block text-xs font-semibold tracking-wider text-indigo-400 uppercase">
+                  Kerangka Topik
+                </span>
                 <p className="mt-1">{guide.topic_framing}</p>
               </div>
               <div className="border-t border-white/[0.04] pt-3">
-                <span className="block text-xs font-semibold text-indigo-400 uppercase tracking-wider">Outline Laporan</span>
-                <ul className="mt-1.5 list-decimal pl-4 space-y-1">
+                <span className="block text-xs font-semibold tracking-wider text-indigo-400 uppercase">
+                  Outline Laporan
+                </span>
+                <ul className="mt-1.5 list-decimal space-y-1 pl-4">
                   {guide.suggested_outline.map((item, i) => (
                     <li key={i}>{item}</li>
                   ))}
@@ -1923,22 +2048,26 @@ function ReportResultCard({
           return (
             <div className="space-y-4 text-sm leading-6 text-white/70">
               <div>
-                <span className="block text-xs font-semibold text-indigo-400 uppercase tracking-wider">Checklist Bukti yang Diperlukan</span>
+                <span className="block text-xs font-semibold tracking-wider text-indigo-400 uppercase">
+                  Checklist Bukti yang Diperlukan
+                </span>
                 <ul className="mt-1.5 space-y-1.5">
                   {guide.evidence_checklist.map((item, i) => (
-                    <li key={i} className="flex gap-2 items-start">
-                      <CheckCircle2 className="h-4 w-4 text-white/35 shrink-0 mt-1" />
+                    <li key={i} className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-white/35" />
                       <span>{item}</span>
                     </li>
                   ))}
                 </ul>
               </div>
               <div className="border-t border-white/[0.04] pt-3">
-                <span className="block text-xs font-semibold text-indigo-400 uppercase tracking-wider">Pertanyaan Observasi</span>
+                <span className="block text-xs font-semibold tracking-wider text-indigo-400 uppercase">
+                  Pertanyaan Observasi
+                </span>
                 <ul className="mt-1.5 space-y-1.5">
                   {guide.observation_questions.map((item, i) => (
-                    <li key={i} className="flex gap-2 items-start">
-                      <span className="font-mono text-xs text-white/30 shrink-0 mt-0.5">{i+1}.</span>
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="mt-0.5 shrink-0 font-mono text-xs text-white/30">{i + 1}.</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -1950,7 +2079,9 @@ function ReportResultCard({
           return (
             <div className="space-y-4 text-sm leading-6 text-white/70">
               <div>
-                <span className="block text-xs font-semibold text-indigo-400 uppercase tracking-wider">Batasan Etika & Keamanan</span>
+                <span className="block text-xs font-semibold tracking-wider text-indigo-400 uppercase">
+                  Batasan Etika & Keamanan
+                </span>
                 <p className="mt-1">{guide.safety_or_ethics_note}</p>
               </div>
               <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-6 text-amber-200/80">
@@ -1970,23 +2101,31 @@ function ReportResultCard({
           return (
             <div className="space-y-4 text-sm leading-6 text-white/70">
               <div>
-                <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">Ringkasan Singkat</span>
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Ringkasan Singkat
+                </span>
                 <p className="mt-1">{draft.executive_summary}</p>
               </div>
               <div className="border-t border-white/[0.04] pt-3">
-                <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">Latar Belakang & Konteks</span>
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Latar Belakang & Konteks
+                </span>
                 <p className="mt-1">{draft.background}</p>
               </div>
               <div className="border-t border-white/[0.04] pt-3">
-                <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">Metodologi & Bahan</span>
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Metodologi & Bahan
+                </span>
                 <p className="mt-1">{draft.method_or_materials}</p>
               </div>
               <div className="border-t border-white/[0.04] pt-3">
-                <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">Temuan Utama</span>
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Temuan Utama
+                </span>
                 <ul className="mt-1.5 space-y-1.5">
                   {draft.findings.map((item, i) => (
-                    <li key={i} className="flex gap-2 items-start">
-                      <FileText className="h-4 w-4 text-white/30 shrink-0 mt-1" />
+                    <li key={i} className="flex items-start gap-2">
+                      <FileText className="mt-1 h-4 w-4 shrink-0 text-white/30" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -1994,7 +2133,9 @@ function ReportResultCard({
               </div>
               {draft.conclusion && (
                 <div className="border-t border-white/[0.04] pt-3">
-                  <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">Kesimpulan Sementara</span>
+                  <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                    Kesimpulan Sementara
+                  </span>
                   <p className="mt-1">{draft.conclusion}</p>
                 </div>
               )}
@@ -2004,7 +2145,9 @@ function ReportResultCard({
           return (
             <div className="space-y-4 text-sm leading-6 text-white/70">
               <div>
-                <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2">Evidence Table</span>
+                <span className="mb-2 block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Evidence Table
+                </span>
                 <div className="overflow-x-auto rounded-lg border border-white/[0.05] bg-white/[0.01]">
                   <table className="min-w-full text-left text-xs">
                     <thead>
@@ -2020,9 +2163,9 @@ function ReportResultCard({
                         <tr key={row.id} className="border-b border-white/[0.04] last:border-none">
                           <td className="px-3 py-2.5 font-mono text-[10px] text-white/50">{row.id}</td>
                           <td className="px-3 py-2.5 text-white/60">{row.material_type}</td>
-                          <td className="px-3 py-2.5 text-white/50 truncate max-w-[200px]">{row.summary}</td>
+                          <td className="max-w-[200px] truncate px-3 py-2.5 text-white/50">{row.summary}</td>
                           <td className="px-3 py-2.5">
-                            <span className="inline-flex rounded bg-white/[0.04] border border-white/[0.06] px-1.5 py-0.5 text-[9px] text-white/45">
+                            <span className="inline-flex rounded border border-white/[0.06] bg-white/[0.04] px-1.5 py-0.5 text-[9px] text-white/45">
                               {row.verification_status}
                             </span>
                           </td>
@@ -2033,7 +2176,9 @@ function ReportResultCard({
                 </div>
               </div>
               <div className="border-t border-white/[0.04] pt-3">
-                <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">Catatan Sumber</span>
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Catatan Sumber
+                </span>
                 <ul className="mt-1.5 space-y-1 text-xs text-white/45">
                   {draft.source_notes.map((item, i) => (
                     <li key={i}>{item}</li>
@@ -2046,15 +2191,19 @@ function ReportResultCard({
           return (
             <div className="space-y-4 text-sm leading-6 text-white/70">
               <div>
-                <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider">Confidence Note & Batasan</span>
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Confidence Note & Batasan
+                </span>
                 <p className="mt-1">{draft.uncertainty_note}</p>
               </div>
               <div>
-                <span className="block text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2">Checklist Review Mandiri</span>
+                <span className="mb-2 block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Checklist Review Mandiri
+                </span>
                 <ul className="space-y-1.5">
                   {draft.user_review_checklist.map((item, i) => (
-                    <li key={i} className="flex gap-2 items-start">
-                      <CheckCircle2 className="h-4 w-4 text-white/30 shrink-0 mt-1" />
+                    <li key={i} className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-white/30" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -2074,8 +2223,8 @@ function ReportResultCard({
   };
 
   return (
-    <div className="w-full rounded-2xl border border-white/[0.08] bg-[#07090e]/60 shadow-2xl backdrop-blur-xl overflow-hidden mt-3 z-10">
-      <div className="flex items-center justify-between px-4 py-3 bg-white/[0.02] border-b border-white/[0.06]">
+    <div className="z-10 mt-3 w-full overflow-hidden rounded-2xl border border-white/[0.08] bg-[#07090e]/60 shadow-2xl backdrop-blur-xl">
+      <div className="flex items-center justify-between border-b border-white/[0.06] bg-white/[0.02] px-4 py-3">
         <div className="flex flex-col">
           <span className="text-xs text-white/40">{report.report_type}</span>
           <span className="text-sm font-semibold text-white/80">{report.title}</span>
@@ -2085,7 +2234,7 @@ function ReportResultCard({
             <Button
               size="sm"
               onClick={onApply}
-              className="bg-emerald-500 text-zinc-950 hover:bg-emerald-400 font-bold px-3 text-[11px] h-7 cursor-pointer"
+              className="h-7 cursor-pointer bg-emerald-500 px-3 text-[11px] font-bold text-zinc-950 hover:bg-emerald-400"
             >
               Terapkan Perubahan
             </Button>
@@ -2094,13 +2243,15 @@ function ReportResultCard({
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-white/[0.04] px-1 sm:px-4 text-[11px] sm:text-xs bg-white/[0.01]">
+      <div className="flex border-b border-white/[0.04] bg-white/[0.01] px-1 text-[11px] sm:px-4 sm:text-xs">
         <button
           type="button"
           onClick={() => setActiveTab("preview")}
           className={cn(
-            "flex-1 sm:flex-initial px-2 py-3 sm:px-4 sm:py-2.5 font-medium border-b-2 transition-colors cursor-pointer min-h-[44px] flex items-center justify-center text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500",
-            activeTab === "preview" ? "border-emerald-400 text-white" : "border-transparent text-white/40 hover:text-white"
+            "flex min-h-[44px] flex-1 cursor-pointer items-center justify-center border-b-2 px-2 py-3 text-center font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none sm:flex-initial sm:px-4 sm:py-2.5",
+            activeTab === "preview"
+              ? "border-emerald-400 text-white"
+              : "border-transparent text-white/40 hover:text-white",
           )}
         >
           Isi Draft
@@ -2109,8 +2260,10 @@ function ReportResultCard({
           type="button"
           onClick={() => setActiveTab("evidence")}
           className={cn(
-            "flex-1 sm:flex-initial px-2 py-3 sm:px-4 sm:py-2.5 font-medium border-b-2 transition-colors cursor-pointer min-h-[44px] flex items-center justify-center text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500",
-            activeTab === "evidence" ? "border-emerald-400 text-white" : "border-transparent text-white/40 hover:text-white"
+            "flex min-h-[44px] flex-1 cursor-pointer items-center justify-center border-b-2 px-2 py-3 text-center font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none sm:flex-initial sm:px-4 sm:py-2.5",
+            activeTab === "evidence"
+              ? "border-emerald-400 text-white"
+              : "border-transparent text-white/40 hover:text-white",
           )}
         >
           {isGuide ? "Checklist" : "Bukti / Sumber"}
@@ -2119,8 +2272,10 @@ function ReportResultCard({
           type="button"
           onClick={() => setActiveTab("uncertainty")}
           className={cn(
-            "flex-1 sm:flex-initial px-2 py-3 sm:px-4 sm:py-2.5 font-medium border-b-2 transition-colors cursor-pointer min-h-[44px] flex items-center justify-center text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500",
-            activeTab === "uncertainty" ? "border-emerald-400 text-white" : "border-transparent text-white/40 hover:text-white"
+            "flex min-h-[44px] flex-1 cursor-pointer items-center justify-center border-b-2 px-2 py-3 text-center font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none sm:flex-initial sm:px-4 sm:py-2.5",
+            activeTab === "uncertainty"
+              ? "border-emerald-400 text-white"
+              : "border-transparent text-white/40 hover:text-white",
           )}
         >
           Integritas & Batasan
@@ -2128,19 +2283,17 @@ function ReportResultCard({
       </div>
 
       {/* Tab content panel */}
-      <div className="p-5 max-h-[380px] overflow-y-auto bg-white/[0.01]">
-        {renderTabContent()}
-      </div>
- 
+      <div className="max-h-[380px] overflow-y-auto bg-white/[0.01] p-5">{renderTabContent()}</div>
+
       {/* Actions footer bar */}
-      <div className="flex flex-wrap gap-2 px-4 py-3 bg-white/[0.02] border-t border-white/[0.06] text-xs">
+      <div className="flex flex-wrap gap-2 border-t border-white/[0.06] bg-white/[0.02] px-4 py-3 text-xs">
         <Button
           size="sm"
           variant="outline"
           onClick={onCopy}
-          className="h-11 sm:h-8 border-white/[0.08] hover:bg-white/[0.04] text-white/60 hover:text-white cursor-pointer"
+          className="h-11 cursor-pointer border-white/[0.08] text-white/60 hover:bg-white/[0.04] hover:text-white sm:h-8"
         >
-          <Clipboard className="h-3.5 w-3.5 mr-1.5" />
+          <Clipboard className="mr-1.5 h-3.5 w-3.5" />
           {copyStatus ? "Tersalin!" : "Salin Markdown"}
         </Button>
 
@@ -2149,9 +2302,9 @@ function ReportResultCard({
             size="sm"
             variant="outline"
             onClick={onCopyText}
-            className="h-11 sm:h-8 border-white/[0.08] hover:bg-white/[0.04] text-white/60 hover:text-white cursor-pointer"
+            className="h-11 cursor-pointer border-white/[0.08] text-white/60 hover:bg-white/[0.04] hover:text-white sm:h-8"
           >
-            <Clipboard className="h-3.5 w-3.5 mr-1.5" />
+            <Clipboard className="mr-1.5 h-3.5 w-3.5" />
             {copyTextStatus ? "Tersalin!" : "Salin teks biasa"}
           </Button>
         )}
@@ -2161,9 +2314,9 @@ function ReportResultCard({
             size="sm"
             variant="outline"
             onClick={onDownloadMarkdownLocal}
-            className="h-11 sm:h-8 border-white/[0.08] hover:bg-white/[0.04] text-white/60 hover:text-white cursor-pointer"
+            className="h-11 cursor-pointer border-white/[0.08] text-white/60 hover:bg-white/[0.04] hover:text-white sm:h-8"
           >
-            <Download className="h-3.5 w-3.5 mr-1.5" />
+            <Download className="mr-1.5 h-3.5 w-3.5" />
             Unduh Markdown lokal
           </Button>
         )}
@@ -2173,9 +2326,9 @@ function ReportResultCard({
             size="sm"
             variant="outline"
             onClick={onDownloadTextLocal}
-            className="h-11 sm:h-8 border-white/[0.08] hover:bg-white/[0.04] text-white/60 hover:text-white cursor-pointer"
+            className="h-11 cursor-pointer border-white/[0.08] text-white/60 hover:bg-white/[0.04] hover:text-white sm:h-8"
           >
-            <Download className="h-3.5 w-3.5 mr-1.5" />
+            <Download className="mr-1.5 h-3.5 w-3.5" />
             Unduh teks lokal
           </Button>
         )}
@@ -2186,18 +2339,18 @@ function ReportResultCard({
               size="sm"
               variant="default"
               onClick={() => onDownload("markdown")}
-              className="h-11 sm:h-8 bg-white hover:bg-white/90 text-zinc-950 cursor-pointer"
+              className="h-11 cursor-pointer bg-white text-zinc-950 hover:bg-white/90 sm:h-8"
             >
-              <Download className="h-3.5 w-3.5 mr-1.5" />
+              <Download className="mr-1.5 h-3.5 w-3.5" />
               Markdown
             </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={() => onDownload("pdf")}
-              className="h-11 sm:h-8 border-white/[0.08] hover:bg-white/[0.04] text-white/60 hover:text-white cursor-pointer"
+              className="h-11 cursor-pointer border-white/[0.08] text-white/60 hover:bg-white/[0.04] hover:text-white sm:h-8"
             >
-              <Download className="h-3.5 w-3.5 mr-1.5" />
+              <Download className="mr-1.5 h-3.5 w-3.5" />
               PDF
             </Button>
           </>
@@ -2205,34 +2358,36 @@ function ReportResultCard({
           <Button
             size="sm"
             onClick={onUnlock}
-            className="h-11 sm:h-8 bg-[#7c3aed] text-white hover:bg-[#6d28d9] cursor-pointer"
+            className="h-11 cursor-pointer bg-[#7c3aed] text-white hover:bg-[#6d28d9] sm:h-8"
           >
-            <LockKeyhole className="h-3.5 w-3.5 mr-1.5" />
+            <LockKeyhole className="mr-1.5 h-3.5 w-3.5" />
             Unlock PDF (15 Kredit / Bayar)
           </Button>
         )}
 
         {exportReadiness !== "export_ready" && (
-          <p className="w-full text-[10px] text-white/25 mt-1 italic">
+          <p className="mt-1 w-full text-[10px] text-white/25 italic">
             * PDF berbayar belum aktif di fase testing ini. Export berbayar masih terkunci.
           </p>
         )}
 
-        {showExport && exportNotice && (() => {
-          const normalized = normalizePublicError({
-            message: exportNotice,
-          });
-          return (
-            <div className="w-full mt-2">
-              <NaliAlert
-                variant={normalized.severity}
-                title={normalized.title}
-                explanation={normalized.explanation}
-                nextStep={normalized.nextStep}
-              />
-            </div>
-          );
-        })()}
+        {showExport &&
+          exportNotice &&
+          (() => {
+            const normalized = normalizePublicError({
+              message: exportNotice,
+            });
+            return (
+              <div className="mt-2 w-full">
+                <NaliAlert
+                  variant={normalized.severity}
+                  title={normalized.title}
+                  explanation={normalized.explanation}
+                  nextStep={normalized.nextStep}
+                />
+              </div>
+            );
+          })()}
       </div>
     </div>
   );
@@ -2258,17 +2413,15 @@ const LocalHistoryPanel = memo(function LocalHistoryPanel({
   if (snapshots.length === 0) return null;
 
   return (
-    <div className="mb-4 rounded-2xl border border-white/[0.06] bg-[#07090e]/40 p-3 backdrop-blur-md shadow-lg">
+    <div className="mb-4 rounded-2xl border border-white/[0.06] bg-[#07090e]/40 p-3 shadow-lg backdrop-blur-md">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between text-xs font-bold uppercase tracking-wider text-white/50 hover:text-white transition cursor-pointer min-h-[44px] px-1"
+        className="flex min-h-[44px] w-full cursor-pointer items-center justify-between px-1 text-xs font-bold tracking-wider text-white/50 uppercase transition hover:text-white"
       >
         <span className="flex items-center gap-1.5">
           📁 Riwayat lokal browser
-          <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] text-white/70">
-            {snapshots.length}
-          </span>
+          <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] text-white/70">{snapshots.length}</span>
         </span>
         <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} />
       </button>
@@ -2280,59 +2433,66 @@ const LocalHistoryPanel = memo(function LocalHistoryPanel({
               hour: "2-digit",
               minute: "2-digit",
             });
-            const statusLabel = {
-              autosaved_draft: "Autosave",
-              generation_failed: "Gagal",
-              draft_ready: "Siap",
-              chat_updated: "Chat",
-            }[item.status] || "Draft";
+            const statusLabel =
+              {
+                autosaved_draft: "Autosave",
+                generation_failed: "Gagal",
+                draft_ready: "Siap",
+                chat_updated: "Chat",
+              }[item.status] || "Draft";
 
-            const statusColors = {
-              autosaved_draft: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-              generation_failed: "bg-red-500/10 text-red-400 border-red-500/20",
-              draft_ready: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-              chat_updated: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-            }[item.status] || "bg-zinc-500/10 text-zinc-400 border-zinc-500/20";
+            const statusColors =
+              {
+                autosaved_draft: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+                generation_failed: "bg-red-500/10 text-red-400 border-red-500/20",
+                draft_ready: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+                chat_updated: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+              }[item.status] || "bg-zinc-500/10 text-zinc-400 border-zinc-500/20";
 
             return (
               <div
                 key={item.id}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-white/[0.04] bg-white/[0.01] p-2.5 hover:bg-white/[0.02] transition"
+                className="flex flex-col justify-between gap-2 rounded-xl border border-white/[0.04] bg-white/[0.01] p-2.5 transition hover:bg-white/[0.02] sm:flex-row sm:items-center"
               >
                 <div className="min-w-0 flex-1 space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-semibold text-white/80 truncate max-w-[200px]" title={item.title}>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="max-w-[200px] truncate text-xs font-semibold text-white/80" title={item.title}>
                       {item.title}
                     </span>
-                    <span className={cn("rounded border px-1.5 py-0.5 text-[9px] font-bold tracking-wide uppercase", statusColors)}>
+                    <span
+                      className={cn(
+                        "rounded border px-1.5 py-0.5 text-[9px] font-bold tracking-wide uppercase",
+                        statusColors,
+                      )}
+                    >
                       {statusLabel}
                     </span>
-                    <span className="text-[10px] text-white/30 font-mono">{timeStr}</span>
+                    <span className="font-mono text-[10px] text-white/30">{timeStr}</span>
                   </div>
-                  <p className="text-[11px] text-white/50 truncate max-w-[400px]">
+                  <p className="max-w-[400px] truncate text-[11px] text-white/50">
                     {item.mainText || "Tidak ada materi teks."}
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-1 items-center mt-1 sm:mt-0 shrink-0">
+                <div className="mt-1 flex shrink-0 flex-wrap items-center gap-1 sm:mt-0">
                   <button
                     type="button"
                     onClick={() => onRestore(item)}
-                    className="inline-flex min-h-[44px] sm:min-h-[36px] items-center justify-center rounded-lg bg-white px-3 text-[11px] font-semibold text-zinc-950 hover:bg-white/90 transition cursor-pointer"
+                    className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg bg-white px-3 text-[11px] font-semibold text-zinc-950 transition hover:bg-white/90 sm:min-h-[36px]"
                   >
                     Pulihkan
                   </button>
                   <button
                     type="button"
                     onClick={() => onRename(item.id, item.title)}
-                    className="inline-flex min-h-[44px] sm:min-h-[36px] items-center justify-center rounded-lg bg-white/5 border border-white/[0.06] px-3 text-[11px] font-semibold text-white/70 hover:bg-white/10 hover:text-white transition cursor-pointer"
+                    className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-white/[0.06] bg-white/5 px-3 text-[11px] font-semibold text-white/70 transition hover:bg-white/10 hover:text-white sm:min-h-[36px]"
                   >
                     Ganti nama
                   </button>
                   <button
                     type="button"
                     onClick={() => onDelete(item.id)}
-                    className="inline-flex min-h-[44px] sm:min-h-[36px] items-center justify-center rounded-lg bg-red-500/10 border border-red-500/20 px-3 text-[11px] font-semibold text-red-400 hover:bg-red-500/20 transition cursor-pointer"
+                    className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 px-3 text-[11px] font-semibold text-red-400 transition hover:bg-red-500/20 sm:min-h-[36px]"
                   >
                     Hapus
                   </button>
@@ -2345,7 +2505,7 @@ const LocalHistoryPanel = memo(function LocalHistoryPanel({
             <button
               type="button"
               onClick={onClearAll}
-              className="inline-flex min-h-[44px] sm:min-h-[36px] items-center justify-center rounded-lg bg-white/5 border border-white/[0.06] px-3 text-[11px] font-semibold text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition cursor-pointer"
+              className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-white/[0.06] bg-white/5 px-3 text-[11px] font-semibold text-red-400 transition hover:border-red-500/20 hover:bg-red-500/10 sm:min-h-[36px]"
             >
               Hapus semua
             </button>

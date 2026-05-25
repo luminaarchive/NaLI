@@ -1,57 +1,71 @@
+import { journalModelCapabilities, type JournalModelId } from "@/lib/reports/journalModelCapabilities";
+
 export interface NaliModel {
-  id: "peregrine" | "obsidian" | "zephyr";
+  id: JournalModelId;
   label: string;
   shortDescription: string;
   intent: string;
   safeCapabilities: string[];
+  limitations: string[];
   forbiddenClaims: string[];
+  estimatedCredits: number;
+  costLabel: "Starter" | "Evidence Audit" | "Premium";
+  pricingReadinessNote: string;
 }
 
 export const naliModels: NaliModel[] = [
   {
     id: "peregrine",
-    label: "Peregrine",
-    shortDescription: "Fast starter model for quick drafts and early structure.",
-    intent: "Struktur draf awal cepat, rendah friksi, pembantu belajar ringkas.",
-    safeCapabilities: [
-      "Struktur draf cepat",
-      "Format belajar ringkas",
-      "Penyusunan awal instan berbasis bahan",
-    ],
+    label: "Peregrine — Starter Cepat",
+    shortDescription:
+      "Untuk jawaban cepat dan draft super ringkas. Cocok untuk mulai dari catatan mentah, tapi tidak sedalam Obsidian atau sehalus Zephyr.",
+    intent: "Jawaban cepat dan draf awal yang sengaja dibatasi sebagai starter.",
+    safeCapabilities: ["Jawaban cepat", "Draft pendek", "Praktikum dasar", "Batas bukti sederhana"],
+    limitations: ["Tidak untuk jurnal panjang", "Tidak untuk audit bukti penuh", "Tidak untuk polish akademik premium"],
     forbiddenClaims: [
       "akurasi tertinggi",
       "bukti terverifikasi resmi",
       "analisis profesional matang",
       "pemeriksaan lapangan otomatis",
     ],
+    estimatedCredits: journalModelCapabilities.peregrine.estimatedCredits,
+    costLabel: journalModelCapabilities.peregrine.costLabel,
+    pricingReadinessNote: journalModelCapabilities.peregrine.pricingReadinessNote,
   },
   {
     id: "obsidian",
-    label: "Obsidian",
-    shortDescription: "Evidence-aware model for stronger structure, claim boundaries, and safer reasoning.",
-    intent: "Pemisahan batas klaim, penandaan ketidakpastian bukti, peringatan draf.",
+    label: "Obsidian — Evidence Audit",
+    shortDescription:
+      "Untuk laporan yang jauh lebih kuat dari Peregrine: audit bukti, batas klaim, risiko data, dan bagian 'yang belum bisa disimpulkan'.",
+    intent: "Audit bukti, risiko data, dan batas klaim untuk draf yang perlu ditelaah serius.",
     safeCapabilities: [
-      "Batas klaim bukti ketat",
-      "Pemisahan temuan vs interpretasi",
-      "Peringatan bukti lemah/tidak lengkap",
+      "Evidence audit",
+      "Risk register",
+      "Claim boundary",
+      "Measurement table",
+      "Cannot-conclude section",
     ],
-    forbiddenClaims: [
-      "verifikasi lapangan resmi",
-      "validasi institusi",
-      "jaminan kebenaran ilmiah mutlak",
-    ],
+    limitations: ["Tidak sehalus Zephyr untuk narasi jurnal premium"],
+    forbiddenClaims: ["verifikasi lapangan resmi", "validasi institusi", "jaminan kebenaran ilmiah mutlak"],
+    estimatedCredits: journalModelCapabilities.obsidian.estimatedCredits,
+    costLabel: journalModelCapabilities.obsidian.costLabel,
+    pricingReadinessNote: journalModelCapabilities.obsidian.pricingReadinessNote,
   },
   {
     id: "zephyr",
-    label: "Zephyr",
-    shortDescription: "Clear refinement model for natural flow, academic clarity, and user-context adaptation.",
-    intent: "Penyelarasan draf natural, perapian alur bahasa akademik, slot konteks personal.",
+    label: "Zephyr — Premium Journal Draft",
+    shortDescription:
+      "Model paling mahal dan paling kuat untuk draft jurnal panjang: narasi akademik paling halus, struktur paling rapi, dan editorial polish terbaik.",
+    intent: "Draf jurnal premium panjang dengan alur akademik dan penyuntingan paling matang.",
     safeCapabilities: [
-      "Penyelarasan alur draf (Natural Draft Pass)",
-      "Peningkatan kejelasan akademik (Academic Clarity Pass)",
-      "Adaptasi konteks personal (Make It Mine / Voice Adapter)",
-      "Penyusunan ulang berbasis bukti (Evidence-Safe Rewrite)",
+      "Full journal-style draft",
+      "Integrated discussion",
+      "Editorial polish",
+      "Refined captions",
+      "Premium structure",
+      "Reviewer-readiness checklist",
     ],
+    limitations: [],
     forbiddenClaims: [
       "Turnitin bypass",
       "Humanizer",
@@ -61,5 +75,8 @@ export const naliModels: NaliModel[] = [
       "evasi detektor",
       "skripsi otomatis lulus",
     ],
+    estimatedCredits: journalModelCapabilities.zephyr.estimatedCredits,
+    costLabel: journalModelCapabilities.zephyr.costLabel,
+    pricingReadinessNote: journalModelCapabilities.zephyr.pricingReadinessNote,
   },
 ];

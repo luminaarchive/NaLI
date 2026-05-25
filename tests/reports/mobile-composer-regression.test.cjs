@@ -14,28 +14,28 @@ test("CreateReportForm contains mobile-safe touch targets and expanded checkboxe
   assert.match(
     code,
     /inline-flex min-h-12 items-center justify-center/g,
-    "Submit button should have a uniform 48px touch-target height (min-h-12)"
+    "Submit button should have a uniform 48px touch-target height (min-h-12)",
   );
 
   // 2. ModeButton has p-3 and min-h-[48px]
   assert.match(
     code,
-    /"rounded-xl border p-3 text-left transition-all duration-200 min-h-\[48px\] sm:p-4"/,
-    "ModeButton should have p-3 padding and minimum height of 48px on mobile"
+    /"min-h-\[48px\] rounded-xl border p-3 text-left transition-all duration-200 sm:p-4"/,
+    "ModeButton should have p-3 padding and minimum height of 48px on mobile",
   );
 
   // 3. Optional details summary has min-h-[48px]
   assert.match(
     code,
-    /min-h-\[48px\] text-sm font-semibold text-white\/80/,
-    "Details summary should have min-h-[48px] touch-target"
+    /<summary className="flex min-h-\[48px\].*text-sm font-semibold text-white\/80">/,
+    "Details summary should have min-h-[48px] touch-target",
   );
 
   // 4. Integrity checkbox label has expanded padding and cursor pointer
   assert.match(
     code,
-    /p-3 cursor-pointer items-start text-left/,
-    "Integrity consent label wrapper should have p-3 padding and cursor-pointer"
+    /cursor-pointer items-start.*p-3 text-left/,
+    "Integrity consent label wrapper should have p-3 padding and cursor-pointer",
   );
 });
 
@@ -47,57 +47,50 @@ test("AgentWorkspace contains mobile-safe layout, composer, suggested actions, a
   assert.match(
     code,
     /pb-\[calc\(12rem\+env\(safe-area-inset-bottom\)\)\] sm:pb-\[calc\(8\.5rem\+env\(safe-area-inset-bottom\)\)\]/,
-    "Message list bottom padding should be responsive to avoid excessive desktop spacing"
+    "Message list bottom padding should be responsive to avoid excessive desktop spacing",
   );
 
   // 2. Inline suggested action buttons have min-h-[44px]
   assert.match(
     code,
-    /inline-flex items-center min-h-\[44px\] rounded-full border border-white\/\[0\.06\] bg-white\/\[0\.02\] px-3\.5 py-2 text-xs/,
-    "Inline suggested action chips should have at least 44px min-height"
+    /inline-flex min-h-\[44px\] cursor-pointer items-center rounded-full border border-white\/\[0\.06\] bg-white\/\[0\.02\] px-3\.5 py-2 text-left text-xs/,
+    "Inline suggested action chips should have at least 44px min-height",
   );
 
   // 3. Bottom composer suggested actions have min-h-[44px]
   assert.match(
     code,
-    /inline-flex items-center min-h-\[44px\] rounded-full border border-white\/\[0\.06\] bg-white\/\[0\.02\] px-4 py-2 text-xs/,
-    "Bottom suggested action chips should have at least 44px min-height"
+    /inline-flex min-h-\[44px\] cursor-pointer items-center rounded-full border border-white\/\[0\.06\] bg-white\/\[0\.02\] px-4 py-2 text-xs/,
+    "Bottom suggested action chips should have at least 44px min-height",
   );
 
   // 4. Input composer container has min-h-[48px] sm:min-h-[56px]
-  assert.match(
-    code,
-    /min-h-\[48px\] sm:min-h-\[56px\]/,
-    "Textarea container should have min-h-[48px] on mobile and sm:min-h-[56px] on desktop"
-  );
+  assert.match(code, /min-h-\[48px\]/, "Textarea container should have min-h-[48px] on mobile");
+  assert.match(code, /sm:min-h-\[56px\]/, "Textarea container should have sm:min-h-[56px] on desktop");
 
   // 5. Send button is touch-safe and contains accessibility label
+  assert.match(code, /aria-label="Kirim instruksi"/, "Send button should have aria-label");
   assert.match(
     code,
-    /aria-label="Kirim instruksi"/,
-    "Send button should have aria-label"
-  );
-  assert.match(
-    code,
-    /h-11 w-11 sm:h-12 sm:w-12/,
-    "Send button size should be h-11 w-11 on mobile and sm:h-12 sm:w-12 on desktop"
+    /inline-flex h-11 w-11.*sm:h-12 sm:w-12/,
+    "Send button size should be h-11 w-11 on mobile and sm:h-12 sm:w-12 on desktop",
   );
 
   // 6. Card action buttons have responsive h-11 sm:h-8 touch-safe overrides
   assert.match(
     code,
-    /className="h-11 sm:h-8 border-white\/\[0\.08\] hover:bg-white\/\[0\.04\] text-white\/60 hover:text-white cursor-pointer"/,
-    "Salin button should have responsive h-11 sm:h-8 height"
+    /className="h-11 cursor-pointer border-white\/\[0\.08\] text-white\/60 hover:bg-white\/\[0\.04\] hover:text-white sm:h-8"/,
+    "Salin button should have responsive h-11 sm:h-8 height",
   );
   assert.match(
     code,
-    /className="h-11 sm:h-8 bg-white hover:bg-white\/90 text-zinc-950 cursor-pointer"/,
-    "Download Markdown button should have responsive h-11 sm:h-8 height"
+    /className="h-11 cursor-pointer bg-white text-zinc-950 hover:bg-white\/90 sm:h-8"/,
+    "Download Markdown button should have responsive h-11 sm:h-8 height",
   );
   assert.match(
     code,
-    /className="h-11 sm:h-8 bg-\[#7c3aed\] text-white hover:bg-\[#6d28d9\] cursor-pointer"/,
-    "Unlock PDF button should have responsive h-11 sm:h-8 height"
+    /className="h-11 cursor-pointer bg-\[#7c3aed\] text-white hover:bg-\[#6d28d9\] sm:h-8"/,
+    "Unlock PDF button should have responsive h-11 sm:h-8 height",
   );
 });
 
@@ -108,7 +101,7 @@ test("Public navigation does not link to founder admin routes", () => {
   assert.strictEqual(
     code.includes("/founder"),
     false,
-    "Public CodexNav navigation should not leak or contain references to the /founder console"
+    "Public CodexNav navigation should not leak or contain references to the /founder console",
   );
 });
 

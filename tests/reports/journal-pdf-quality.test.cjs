@@ -8,6 +8,7 @@ const { buildMockResult } = require("../../src/lib/reports/reportGenerator");
 const { buildReportMarkdown } = require("../../src/lib/reports/markdown");
 const { buildReportPdfBytes } = require("../../src/lib/reports/pdf");
 const { validateJournalPdfOutputPath } = require("../../src/lib/reports/journalHtmlPdfRenderer");
+const { buildJournalArticle, mapJournalArticleToDraftReport } = require("../../src/lib/reports/journalArticleTemplate");
 
 const testInput = {
   mode: "draft_from_materials",
@@ -23,20 +24,26 @@ const testInput = {
   integrityConsent: true,
 };
 
-test("1. Journal output contract includes IMRaD-like sections", () => {
-  const report = buildMockResult(testInput, "NaLI Peregrine");
-  assert.ok(report.executive_summary.includes("Abstrak"));
-  assert.ok(report.background.includes("Pendahuluan") || report.background.includes("pengamatan"));
-  assert.ok(report.method_or_materials.includes("Metode") || report.method_or_materials.includes("Bahan"));
-  assert.ok(report.discussion.includes("Pembahasan"));
-  assert.ok(report.conclusion.includes("Kesimpulan"));
+function journalReport(model) {
+  const input = { ...testInput, selectedModel: model };
+  const label = `NaLI ${model.charAt(0).toUpperCase()}${model.slice(1)}`;
+  return mapJournalArticleToDraftReport(buildMockResult(input, label), buildJournalArticle(input, model));
+}
+
+test("1. Peregrine journal output contract is a compact starter structure", () => {
+  const report = journalReport("peregrine");
+  assert.ok(report.executive_summary.includes("Starter Brief"));
+  assert.ok(report.background.includes("Background for Practicum"));
+  assert.ok(report.method_or_materials.includes("Ringkasan deskriptif"));
+  assert.ok(report.discussion.includes("SHORT LIMITATION CHECKLIST"));
+  assert.ok(report.conclusion.includes("Starter note"));
 });
 
 test("2. Evidence placeholders are present when no photo/evidence is provided", () => {
-  const report = buildMockResult(testInput, "NaLI Peregrine");
+  const report = journalReport("peregrine");
   const markdown = buildReportMarkdown(report);
   assert.ok(markdown.includes("Foto belum disediakan"), "Must include photo evidence placeholder");
-  assert.ok(markdown.includes("Data kuantitatif belum disediakan"), "Must include measurement placeholder");
+  assert.ok(markdown.includes("tidak ditampilkan pada starter output"), "Must retain the starter measurement cap");
 });
 
 test("3. No fake DOI, citation, or species identification is fabricated", () => {
@@ -49,14 +56,17 @@ test("3. No fake DOI, citation, or species identification is fabricated", () => 
 });
 
 test("4. Peregrine, Obsidian, and Zephyr profiles produce meaningfully different outputs", () => {
-  const pReport = buildMockResult({ ...testInput, selectedModel: "peregrine" }, "NaLI Peregrine");
-  const oReport = buildMockResult({ ...testInput, selectedModel: "obsidian" }, "NaLI Obsidian");
-  const zReport = buildMockResult({ ...testInput, selectedModel: "zephyr" }, "NaLI Zephyr");
+  const pReport = journalReport("peregrine");
+  const oReport = journalReport("obsidian");
+  const zReport = journalReport("zephyr");
 
   assert.notEqual(pReport.executive_summary, oReport.executive_summary, "Peregrine and Obsidian abstracts must differ");
   assert.notEqual(oReport.executive_summary, zReport.executive_summary, "Obsidian and Zephyr abstracts must differ");
-  assert.ok(oReport.executive_summary.includes("tidak tersedianya foto bukti"), "Obsidian should explicitly state limitations");
-  assert.ok(zReport.executive_summary.includes("gaya naratif"), "Zephyr should have refined prose");
+  assert.ok(oReport.discussion.includes("DATA RISK REGISTER"), "Obsidian should expose audit risk analysis");
+  assert.ok(
+    zReport.discussion.includes("PUBLICATION-STYLE REVISION NOTES"),
+    "Zephyr should expose premium editorial work",
+  );
 });
 
 test("5. PDF builder includes headers, disclaimers, and evidence slots", async () => {

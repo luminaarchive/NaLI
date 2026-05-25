@@ -94,6 +94,7 @@ test("buildReportPrompt injects appropriate profile-specific instructions into s
 test("model selector UI is rendered under composer areas with exact label references", () => {
   const formSrc = fs.readFileSync(path.join(repoRoot, "src/components/report/CreateReportForm.tsx"), "utf8");
   const workspaceSrc = fs.readFileSync(path.join(repoRoot, "src/components/report/AgentWorkspace.tsx"), "utf8");
+  const modelSrc = fs.readFileSync(path.join(repoRoot, "src/lib/models/naliModels.ts"), "utf8");
 
   // CreateReportForm references
   assert.match(formSrc, /Pilih Profil Pemrosesan \(Model\)/);
@@ -106,35 +107,26 @@ test("model selector UI is rendered under composer areas with exact label refere
   assert.match(workspaceSrc, /setSelectedModel\(model\.id\)/);
   assert.match(workspaceSrc, /selectedModel,\s*\n\s*\}\)/); // submitted in JSON payload
 
-  // Model Descriptions check
-  assert.match(formSrc, /Peregrine: cepat untuk draft awal/);
-  assert.match(formSrc, /Obsidian: lebih kuat untuk batas klaim dan struktur/);
-  assert.match(formSrc, /Zephyr: lebih halus untuk kejernihan dan gaya/);
-
-  assert.match(workspaceSrc, /Peregrine: cepat untuk draft awal/);
-  assert.match(workspaceSrc, /Obsidian: lebih kuat untuk batas klaim dan struktur/);
-  assert.match(workspaceSrc, /Zephyr: lebih halus untuk kejernihan dan gaya/);
+  // Shared model-detail panel renders the approved differentiated registry copy.
+  assert.match(formSrc, /model\.shortDescription/);
+  assert.match(workspaceSrc, /model\.shortDescription/);
+  assert.match(modelSrc, /Peregrine — Starter Cepat/);
+  assert.match(modelSrc, /Obsidian — Evidence Audit/);
+  assert.match(modelSrc, /Zephyr — Premium Journal Draft/);
+  assert.match(modelSrc, /tidak sedalam Obsidian atau sehalus Zephyr/);
+  assert.match(modelSrc, /audit bukti, batas klaim, risiko data/);
+  assert.match(modelSrc, /Model paling mahal dan paling kuat/);
 });
 
 // ─── Test 5: Prohibited and Safe Personalization keywords ────────────────────
 
 test("Zephyr, Obsidian, and Peregrine descriptions strictly avoid unsafe cheating terms", () => {
-  const prohibited = [
-    "humanizer",
-    "turnitin",
-    "bypass",
-    "evasion",
-    "undetectable",
-    "plagiarism-proof",
-  ];
+  const prohibited = ["humanizer", "turnitin", "bypass", "evasion", "undetectable", "plagiarism-proof"];
 
   for (const model of naliModels) {
-    const rawDesc = [
-      model.label,
-      model.shortDescription,
-      model.intent,
-      model.safeCapabilities.join(" "),
-    ].join(" ").toLowerCase();
+    const rawDesc = [model.label, model.shortDescription, model.intent, model.safeCapabilities.join(" ")]
+      .join(" ")
+      .toLowerCase();
 
     for (const term of prohibited) {
       assert.ok(!rawDesc.includes(term), `Model ${model.id} config contains prohibited cheating word: ${term}`);

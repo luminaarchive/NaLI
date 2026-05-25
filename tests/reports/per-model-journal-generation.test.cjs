@@ -6,6 +6,7 @@ const test = require("node:test");
 
 const repoRoot = path.join(__dirname, "../..");
 const { validateReportRequest, buildReportPrompt } = require("../../src/lib/reports/reportGenerator");
+const { journalModelCapabilities } = require("../../src/lib/reports/journalModelCapabilities");
 
 test("1. Model IDs are routed correctly", () => {
   const pVal = validateReportRequest({
@@ -103,10 +104,10 @@ test("5. Local copy/download UI features lock public PDF export", () => {
 test("6. QA download outputs are placed outside the repository", () => {
   const tmpPath = "/tmp/nali-qa";
   const downloadsPath = path.join(require("node:os").homedir(), "Downloads/NaLI-QA");
-  
+
   const relTmp = path.relative(repoRoot, tmpPath);
   assert.ok(relTmp.startsWith(".."), "QA tmp path must be outside the repo.");
-  
+
   const relDownloads = path.relative(repoRoot, downloadsPath);
   assert.ok(relDownloads.startsWith(".."), "QA downloads path must be outside the repo.");
 
@@ -118,7 +119,18 @@ test("6. QA download outputs are placed outside the repository", () => {
       const file = path.join(downloadsPath, `nali-${model}-journal-reference-v4.${fmt}`);
       // verify that paths are valid and resolved outside the repo
       const relFile = path.relative(repoRoot, file);
-      assert.ok(relFile.startsWith(".."), "v4 QA artifact files must remain outside the repo root to avoid accidental staging.");
+      assert.ok(
+        relFile.startsWith(".."),
+        "v4 QA artifact files must remain outside the repo root to avoid accidental staging.",
+      );
     }
   }
+});
+
+test("7. V8 founder QA generator uses the monetization-gap filenames and mapped journal article", () => {
+  const source = fs.readFileSync(path.join(repoRoot, "scratch/generate_reference_journal_v8.cjs"), "utf8");
+  assert.match(source, /mapJournalArticleToDraftReport/);
+  assert.match(source, /model-gap-v8/);
+  assert.equal(journalModelCapabilities.peregrine.maxFigures, 1);
+  assert.ok(journalModelCapabilities.zephyr.maxFigures > journalModelCapabilities.obsidian.maxFigures);
 });

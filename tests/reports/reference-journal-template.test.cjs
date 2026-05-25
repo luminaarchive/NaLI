@@ -28,24 +28,25 @@ test("1. Journal article template includes cover page data", () => {
 
 test("2. Article information block exists", () => {
   const article = buildJournalArticle(testInput, "peregrine");
-  assert.equal(article.metadata.articleCategory, "Short Communication / Practicum Note");
-  assert.ok(article.metadata.editorialNote.includes("pembelajaran"));
+  assert.equal(article.metadata.articleCategory, "Starter Brief / Short Practicum Note");
+  assert.ok(article.metadata.editorialNote.includes("dibatasi"));
   assert.equal(article.infoBlock.status, "Draft article");
   assert.ok(article.infoBlock.materialBasis.includes("User-provided"));
 });
 
-test("3. Abstract/keywords/introduction/literature review/methods/results/discussion/conclusion/references exist", () => {
+test("3. Peregrine remains useful while enforcing its compact starter boundary", () => {
   const article = buildJournalArticle(testInput, "peregrine");
-  assert.ok(article.abstract.text.split(/\s+/).length >= 180, "Abstract must be substantial");
-  assert.ok(article.abstract.keywords.length >= 5);
-  assert.ok(article.introduction.split(/\n\n/).length >= 4, "Introduction must be long form");
-  assert.ok(article.literatureReview.split(/\n\n/).length >= 4, "Literature review must guide credible source collection");
+  assert.ok(article.abstract.text.split(/\s+/).length >= 45, "Starter abstract should still explain the comparison");
+  assert.ok(article.abstract.text.split(/\s+/).length < 140, "Starter abstract must remain compact");
+  assert.ok(article.abstract.keywords.length >= 3);
+  assert.match(article.introduction, /Background for Practicum/);
+  assert.match(article.literatureReview, /Background for Practicum/);
   assert.ok(article.materialsAndMethods.objectObserved.includes("Spesimen"));
   assert.ok(article.results.comparisonTable.length >= 2);
-  assert.ok(article.results.narrative.split(/\n\n/).length + article.discussion.split(/\n\n/).length >= 8, "Results and discussion must be full-length");
+  assert.equal(article.results.replicatesTable, undefined);
+  assert.equal(article.results.statsTable, undefined);
   assert.ok(article.conservationRelevance.length > 100);
-  assert.ok(article.futureWork.split(/\n\n/).length >= 2);
-  assert.ok(article.conclusion.split(/\n\n/).length >= 2, "Conclusions need a developed close");
+  assert.match(article.conclusion, /sengaja tidak berkembang/);
   assert.ok(article.references[0].includes("No references were supplied"));
 });
 
@@ -59,7 +60,7 @@ test("4. No fake DOI/ISSN/citation/species/source verification", () => {
 test("5. Evidence placeholders exist", () => {
   const article = buildJournalArticle(testInput, "peregrine");
   assert.ok(article.evidence.photoSlot.includes("Foto belum disediakan"));
-  assert.ok(article.evidence.measurementSlot.includes("Data kuantitatif belum disediakan"));
+  assert.ok(article.evidence.measurementSlot.includes("tidak ditampilkan pada starter output"));
 });
 
 test("6. Model-specific sections differ beyond model name", () => {
@@ -73,9 +74,9 @@ test("6. Model-specific sections differ beyond model name", () => {
   assert.notEqual(oArticle.metadata.editorialNote, zArticle.metadata.editorialNote);
   assert.notEqual(pArticle.discussion.split(/\s+/).length, oArticle.discussion.split(/\s+/).length);
   assert.notEqual(oArticle.discussion.split(/\s+/).length, zArticle.discussion.split(/\s+/).length);
-  assert.ok(oArticle.cannotBeConcluded.includes("Tidak dapat disimpulkan"));
-  assert.ok(zArticle.discussion.includes("narasi"));
-  assert.ok(pArticle.conservationRelevance.includes("praktikum"));
+  assert.ok(oArticle.cannotBeConcluded.includes("Cannot Be Concluded"));
+  assert.ok(zArticle.discussion.includes("Integrated Discussion"));
+  assert.match(pArticle.conservationRelevance, /praktikum/i);
 });
 
 test("7. Reference-style structure is NaLI-branded, not E-Palli/JWC-branded", () => {

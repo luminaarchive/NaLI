@@ -5,10 +5,10 @@ import {
   Footer,
   Header,
   HeadingLevel,
+  PageBreak,
   PageNumber,
   Packer,
   Paragraph,
-  SectionType,
   ShadingType,
   Table,
   TableCell,
@@ -24,7 +24,8 @@ import { buildJournalArticle, type JournalArticle } from "./journalArticleTempla
 const PAPER = "FDFCF8";
 const FOREST = "10231B";
 const CANOPY = "315F45";
-const MOSS = "728347";
+const AUDIT = "314752";
+const GOLD = "87662C";
 const MUTED = "59645E";
 const STONE = "EEE9DD";
 const LINE = "CFC6B7";
@@ -36,11 +37,11 @@ const PAGE_LAYOUT = {
   margin: { top: 1134, right: 1328, bottom: 1134, left: 1328, header: 620, footer: 620 },
 };
 
-const gridBorder = {
-  style: BorderStyle.SINGLE,
-  size: 4,
-  color: LINE,
-};
+type DocNode = Paragraph | Table;
+
+function accent(article: JournalArticle) {
+  return article.modelId === "obsidian" ? AUDIT : article.modelId === "zephyr" ? GOLD : CANOPY;
+}
 
 function text(value: string, options: { bold?: boolean; color?: string; italics?: boolean; size?: number } = {}) {
   return new TextRun({
@@ -60,7 +61,7 @@ function paragraph(value: string, options: { after?: number; bold?: boolean; col
   });
 }
 
-function prose(value: string) {
+function prose(value: string): Paragraph[] {
   return value
     .split(/\n\n+/)
     .filter(Boolean)
@@ -74,11 +75,11 @@ function prose(value: string) {
     );
 }
 
-function heading(value: string) {
+function heading(article: JournalArticle, value: string) {
   return new Paragraph({
     heading: HeadingLevel.HEADING_1,
-    children: [text(value, { bold: true, color: CANOPY, size: 25 })],
-    spacing: { before: 310, after: 145, line: 280 },
+    children: [text(value, { bold: true, color: accent(article), size: 25 })],
+    spacing: { before: 270, after: 145, line: 280 },
     border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: LINE, space: 4 } },
     keepNext: true,
   });
@@ -95,31 +96,35 @@ function bulletList(items: string[]) {
   );
 }
 
-function cell(value: string, width: number, header = false) {
-  return new TableCell({
-    width: { size: width, type: WidthType.DXA },
-    margins: CELL_MARGIN,
-    shading: header ? { fill: CANOPY, type: ShadingType.CLEAR } : { fill: PAPER, type: ShadingType.CLEAR },
-    verticalAlign: "center",
+function pageBreak() {
+  return new Paragraph({ children: [new PageBreak()] });
+}
+
+function callout(article: JournalArticle, title: string, body: string) {
+  return new Paragraph({
+    shading: {
+      fill: article.modelId === "zephyr" ? "F3ECDD" : article.modelId === "obsidian" ? "EDF1F2" : "EFF2E8",
+      type: ShadingType.CLEAR,
+    },
+    border: { left: { style: BorderStyle.SINGLE, size: 18, color: accent(article), space: 9 } },
     children: [
-      new Paragraph({
-        children: [text(value, { bold: header, color: header ? "F7F5EE" : FOREST, size: header ? 18 : 18 })],
-        spacing: { after: 0, line: 270 },
-      }),
+      text(`${title.toUpperCase()}  `, { bold: true, color: accent(article), size: 18 }),
+      text(body, { size: 18 }),
     ],
+    spacing: { before: 120, after: 190, line: 285 },
+    indent: { left: 150, right: 150 },
   });
 }
 
-// Stats Table cell with light green shading options
-function statsCell(value: string, width: number, header = false, shade = false) {
+function cell(value: string, width: number, header = false, fill?: string) {
   return new TableCell({
     width: { size: width, type: WidthType.DXA },
     margins: CELL_MARGIN,
-    shading: header ? { fill: CANOPY, type: ShadingType.CLEAR } : (shade ? { fill: "F5F7F2", type: ShadingType.CLEAR } : { fill: PAPER, type: ShadingType.CLEAR }),
+    shading: { fill: header ? fill || CANOPY : PAPER, type: ShadingType.CLEAR },
     verticalAlign: "center",
     children: [
       new Paragraph({
-        children: [text(value, { bold: header || shade, color: header ? "F7F5EE" : FOREST, size: 18 })],
+        children: [text(value, { bold: header, color: header ? "F7F5EE" : FOREST, size: 18 })],
         spacing: { after: 0, line: 270 },
       }),
     ],
@@ -127,6 +132,7 @@ function statsCell(value: string, width: number, header = false, shade = false) 
 }
 
 function fixedTable(rows: TableRow[], widths: number[]) {
+  const border = { style: BorderStyle.SINGLE, size: 4, color: LINE };
   return new Table({
     width: { size: TABLE_WIDTH, type: WidthType.DXA },
     columnWidths: widths,
@@ -134,32 +140,15 @@ function fixedTable(rows: TableRow[], widths: number[]) {
     indent: { size: TABLE_INDENT, type: WidthType.DXA },
     margins: CELL_MARGIN,
     borders: {
-      top: gridBorder,
-      bottom: gridBorder,
-      left: gridBorder,
-      right: gridBorder,
-      insideHorizontal: gridBorder,
-      insideVertical: gridBorder,
+      top: border,
+      bottom: border,
+      left: border,
+      right: border,
+      insideHorizontal: border,
+      insideVertical: border,
     },
     rows,
   });
-}
-
-function metadataTable(article: JournalArticle) {
-  const widths = [2360, 6890];
-  const data = [
-    ["Category", article.infoBlock.category],
-    ["Material basis", article.infoBlock.materialBasis],
-    ["Status", article.infoBlock.status],
-    ["Editorial note", article.metadata.editorialNote],
-  ];
-  return fixedTable(
-    [
-      new TableRow({ children: [cell("ARTICLE INFORMATION", widths[0], true), cell("STATUS", widths[1], true)] }),
-      ...data.map(([label, value]) => new TableRow({ children: [cell(label, widths[0]), cell(value, widths[1])] })),
-    ],
-    widths,
-  );
 }
 
 function resultTable(article: JournalArticle) {
@@ -168,7 +157,7 @@ function resultTable(article: JournalArticle) {
     [
       new TableRow({
         children: ["Object", "Shape", "Margin", "Colour", "Source", "Status"].map((value, index) =>
-          cell(value, widths[index], true),
+          cell(value, widths[index], true, accent(article)),
         ),
       }),
       ...article.results.comparisonTable.map(
@@ -189,8 +178,8 @@ function statsTable(article: JournalArticle) {
   return fixedTable(
     [
       new TableRow({
-        children: ["Group", "Mean Length (cm)", "Mean Width (cm)", "Mean Petiole (cm)"].map((value, index) =>
-          statsCell(value, widths[index], true)
+        children: ["Group", "Mean Length", "Mean Width", "Mean Petiole"].map((value, index) =>
+          cell(value, widths[index], true, accent(article)),
         ),
       }),
       ...(article.results.statsTable || []).map(
@@ -200,9 +189,9 @@ function statsTable(article: JournalArticle) {
               row.groupName,
               row.meanLength.toFixed(2),
               row.meanWidth.toFixed(2),
-              row.meanPetiole.toFixed(2)
-            ].map((value, index) => statsCell(value, widths[index], false, index === 0)),
-          })
+              row.meanPetiole.toFixed(2),
+            ].map((value, index) => cell(value, widths[index])),
+          }),
       ),
     ],
     widths,
@@ -210,12 +199,12 @@ function statsTable(article: JournalArticle) {
 }
 
 function replicatesTable(article: JournalArticle) {
-  const widths = [1000, 1500, 1300, 1300, 1300, 1400, 1450];
+  const widths = [1050, 1700, 1500, 1500, 1700, 1800];
   return fixedTable(
     [
       new TableRow({
-        children: ["ID", "Group", "Length (cm)", "Width (cm)", "Petiole (cm)", "Shape", "Margin"].map((value, index) =>
-          cell(value, widths[index], true)
+        children: ["ID", "Length", "Width", "Petiole", "Shape", "Margin"].map((value, index) =>
+          cell(value, widths[index], true, accent(article)),
         ),
       }),
       ...(article.results.replicatesTable || []).map(
@@ -223,14 +212,13 @@ function replicatesTable(article: JournalArticle) {
           new TableRow({
             children: [
               row.id,
-              row.id.startsWith("A") ? "Daun A" : "Daun B",
               row.lengthCm.toFixed(1),
               row.widthCm.toFixed(1),
               row.petioleLengthCm.toFixed(1),
               row.shape,
-              row.marginType
+              row.marginType,
             ].map((value, index) => cell(value, widths[index])),
-          })
+          }),
       ),
     ],
     widths,
@@ -238,11 +226,13 @@ function replicatesTable(article: JournalArticle) {
 }
 
 function evidenceTable(article: JournalArticle) {
-  const widths = [760, 1480, 4800, 2210];
+  const widths = [800, 1550, 4650, 2250];
   return fixedTable(
     [
       new TableRow({
-        children: ["ID", "Type", "Material summary", "Status"].map((value, index) => cell(value, widths[index], true)),
+        children: ["ID", "Type", "Material summary", "Status"].map((value, index) =>
+          cell(value, widths[index], true, accent(article)),
+        ),
       }),
       ...article.annexure.evidenceTable.map(
         (row) =>
@@ -257,8 +247,27 @@ function evidenceTable(article: JournalArticle) {
   );
 }
 
-function figurePlaceholder(id: string, title: string, caption: string, label: string) {
-  const widths = [TABLE_WIDTH];
+function editorialReadinessTable(article: JournalArticle) {
+  const widths = [6500, 2850];
+  return fixedTable(
+    [
+      new TableRow({
+        children: ["Editorial control", "Status"].map((value, index) =>
+          cell(value, widths[index], true, accent(article)),
+        ),
+      }),
+      ...(article.premium?.reviewerReadinessChecklist ?? []).map(
+        (item) =>
+          new TableRow({
+            children: [item, "Perlu verifikasi pengguna"].map((value, index) => cell(value, widths[index])),
+          }),
+      ),
+    ],
+    widths,
+  );
+}
+
+function figurePlate(article: JournalArticle, id: string, caption: string) {
   return fixedTable(
     [
       new TableRow({
@@ -266,87 +275,72 @@ function figurePlaceholder(id: string, title: string, caption: string, label: st
           new TableCell({
             width: { size: TABLE_WIDTH, type: WidthType.DXA },
             margins: { top: 330, bottom: 280, left: 300, right: 300 },
-            shading: { fill: "F1F3E9", type: ShadingType.CLEAR },
+            shading: { fill: article.modelId === "zephyr" ? "F3ECDD" : "F1F3E9", type: ShadingType.CLEAR },
             verticalAlign: "center",
             children: [
-              new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [text(title.toUpperCase(), { bold: true, color: CANOPY, size: 22 })],
-                spacing: { after: 120 },
-              }),
-              new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [text(`[ ${label} ]`, { bold: true, color: MOSS, size: 18 })],
-                spacing: { after: 160 },
-              }),
-              new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [text("SVG Vector Plate Rendered in HTML Output", { color: MUTED, size: 19 })],
-                spacing: { after: 200 },
-              }),
-              new Paragraph({
-                children: [text(`${id}. ${caption}`, { italics: true, size: 18 })],
-                spacing: { after: 0, line: 270 },
-              }),
+              paragraph(`${id} / ${article.capabilities.badge}`, { bold: true, color: accent(article), size: 21 }),
+              paragraph("[ synthetic QA placeholder - not specimen evidence ]", { bold: true, color: MUTED, size: 18 }),
+              paragraph(caption, { size: 18 }),
             ],
           }),
         ],
       }),
     ],
-    widths,
+    [TABLE_WIDTH],
   );
 }
 
 function coverPanel(article: JournalArticle) {
-  const widths = [TABLE_WIDTH];
+  const background = article.modelId === "zephyr" ? GOLD : article.modelId === "obsidian" ? AUDIT : CANOPY;
   return fixedTable(
     [
       new TableRow({
         children: [
           new TableCell({
             width: { size: TABLE_WIDTH, type: WidthType.DXA },
-            margins: { top: 420, bottom: 480, left: 390, right: 390 },
-            shading: { fill: CANOPY, type: ShadingType.CLEAR },
+            margins: { top: 500, bottom: 520, left: 430, right: 430 },
+            shading: { fill: background, type: ShadingType.CLEAR },
             children: [
-              new Paragraph({
-                children: [text("NALI  /  NATURE  /  EVIDENCE  /  JOURNAL", { bold: true, color: "E6EBD8", size: 20 })],
-                spacing: { after: 820, line: 280 },
+              paragraph("NALI / NATURE / EVIDENCE", { bold: true, color: "E7ECD9", size: 20, after: 620 }),
+              paragraph(article.capabilities.badge.toUpperCase(), {
+                bold: true,
+                color: "F0D38D",
+                size: 20,
+                after: 500,
               }),
               new Paragraph({
-                children: [new TextRun({ text: article.cover.journalTitle, bold: true, color: "F7F5EE", font: "Georgia", size: 62 })],
-                spacing: { after: 230, line: 300 },
+                children: [
+                  new TextRun({
+                    text: article.cover.journalTitle,
+                    bold: true,
+                    color: "F7F5EE",
+                    font: "Georgia",
+                    size: article.modelId === "peregrine" ? 47 : 60,
+                  }),
+                ],
+                spacing: { after: 300, line: 300 },
               }),
-              new Paragraph({
-                children: [text(`${article.cover.issueLine}  |  ${article.cover.editionLine}`, { color: "E6EBD8", size: 20 })],
-                spacing: { after: 330, line: 290 },
+              paragraph(article.metadata.articleCategory.toUpperCase(), {
+                bold: true,
+                color: "E7ECD9",
+                size: 19,
+                after: 290,
               }),
-              new Paragraph({
-                shading: { fill: "F7F5EE", type: ShadingType.CLEAR },
-                children: [text(`  VOLUME 1   /   ISSUE 1   /   ${article.cover.year}  `, { bold: true, color: CANOPY, size: 22 })],
-                spacing: { after: 2100, line: 320 },
+              paragraph(article.metadata.title, {
+                bold: true,
+                color: "F7F5EE",
+                size: 34,
+                after: article.modelId === "peregrine" ? 1600 : 2250,
               }),
-              new Paragraph({
-                children: [text(article.metadata.articleCategory.toUpperCase(), { bold: true, color: "D4E3B7", size: 18 })],
-                spacing: { after: 110, line: 270 },
-              }),
-              new Paragraph({
-                children: [new TextRun({ text: article.metadata.title, font: "Georgia", bold: true, color: "F7F5EE", size: 37 })],
-                spacing: { after: 1400, line: 295 },
-              }),
-              new Paragraph({
-                children: [text(article.cover.brandNote, { bold: true, color: "E6EBD8", size: 18 })],
-                spacing: { after: 85, line: 270 },
-              }),
-              new Paragraph({
-                children: [text(article.cover.truthNote, { color: "E6EBD8", size: 16 })],
-                spacing: { after: 0, line: 260 },
-              }),
+              paragraph(article.metadata.editorialNote, { color: "E7ECD9", size: 18, after: 350 }),
+              paragraph(article.cover.brandNote, { bold: true, color: "E7ECD9", size: 17, after: 80 }),
+              paragraph(article.cover.truthNote, { color: "E7ECD9", size: 16, after: 0 }),
             ],
           }),
         ],
       }),
     ],
-    widths,
+    [TABLE_WIDTH],
   );
 }
 
@@ -357,7 +351,10 @@ function journalHeader(article: JournalArticle) {
         alignment: AlignmentType.RIGHT,
         border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: LINE, space: 4 } },
         children: [
-          text(`NALI NATURE & EVIDENCE JOURNAL  |  ${article.metadata.shortCategory.toUpperCase()}`, { color: MUTED, size: 15 }),
+          text(`NALI NATURE & EVIDENCE JOURNAL  |  ${article.capabilities.badge.toUpperCase()}`, {
+            color: MUTED,
+            size: 15,
+          }),
         ],
         spacing: { after: 0 },
       }),
@@ -365,23 +362,190 @@ function journalHeader(article: JournalArticle) {
   });
 }
 
-function journalFooter() {
+function journalFooter(article: JournalArticle) {
   return new Footer({
     children: [
       new Paragraph({
         alignment: AlignmentType.RIGHT,
         border: { top: { style: BorderStyle.SINGLE, size: 4, color: LINE, space: 4 } },
         children: [
-          text("NaLI draft article  |  Page ", { color: MUTED, size: 16 }),
+          text(`${article.capabilities.costLabel} draft | Page `, { color: MUTED, size: 16 }),
           new TextRun({ children: [PageNumber.CURRENT], color: MUTED, font: "Georgia", size: 16 }),
           text(" of ", { color: MUTED, size: 16 }),
           new TextRun({ children: [PageNumber.TOTAL_PAGES], color: MUTED, font: "Georgia", size: 16 }),
-          text(" | [local QA fixture, not externally verified]", { color: MUTED, size: 15 }),
+          text(" | local QA fixture, not externally verified", { color: MUTED, size: 15 }),
         ],
-        spacing: { after: 0 },
       }),
     ],
   });
+}
+
+function starterBody(article: JournalArticle): DocNode[] {
+  return [
+    heading(article, "STARTER ABSTRACT"),
+    ...prose(article.abstract.text),
+    callout(
+      article,
+      "Limited Starter Output",
+      "Output cepat untuk praktikum dasar; sengaja bukan jurnal panjang atau audit penuh.",
+    ),
+    pageBreak(),
+    heading(article, "1. BACKGROUND FOR PRACTICUM"),
+    ...prose(article.introduction),
+    heading(article, "2. SIMPLE MATERIALS AND METHOD"),
+    paragraph(article.materialsAndMethods.method),
+    paragraph(article.materialsAndMethods.profileEmphasis),
+    pageBreak(),
+    heading(article, "3. STARTER RESULTS"),
+    paragraph("Table 1. Simple visual comparison from user-provided notes (local QA fixture).", { bold: true }),
+    resultTable(article),
+    ...prose(article.results.narrative),
+    figurePlate(
+      article,
+      "Figure 1",
+      "Starter visual plate only; illustrative local QA placeholder, not specimen evidence.",
+    ),
+    pageBreak(),
+    heading(article, "4. SHORT LIMITATION CHECKLIST"),
+    ...bulletList(article.limitations),
+    heading(article, "CONCLUSION"),
+    ...prose(article.conclusion),
+    callout(article, "Upgrade path", article.upgradeNote || ""),
+    heading(article, "REFERENCES PROVIDED BY USER"),
+    ...article.references.map((reference) => paragraph(reference, { size: 18 })),
+    callout(article, "Integrity", PUBLIC_REPORT_DISCLAIMER),
+  ];
+}
+
+function auditBody(article: JournalArticle): DocNode[] {
+  const audit = article.audit!;
+  return [
+    heading(article, "AUDIT ABSTRACT"),
+    ...prose(article.abstract.text),
+    callout(article, "Evidence Audit", audit.evidenceSufficiencyAssessment),
+    pageBreak(),
+    heading(article, "1. INTRODUCTION / SCOPE AND CLAIM BOUNDARY"),
+    ...prose(article.introduction),
+    pageBreak(),
+    heading(article, "2. LITERATURE REVIEW / CITATION BOUNDARY AUDIT"),
+    ...prose(article.literatureReview),
+    callout(article, "Citation Boundary Audit", audit.citationBoundaryAudit),
+    pageBreak(),
+    heading(article, "3. MATERIALS AND METHODS / AUDIT PROTOCOL"),
+    paragraph(article.materialsAndMethods.method),
+    paragraph(article.materialsAndMethods.profileEmphasis),
+    heading(article, "EVIDENCE DOCUMENTATION / INVENTORY"),
+    evidenceTable(article),
+    pageBreak(),
+    heading(article, "4. RESULTS AND DISCUSSION / MEASUREMENT TABLES"),
+    paragraph("Table 1. Reported visual characters retained with source boundary.", { bold: true }),
+    resultTable(article),
+    paragraph("Table 2. Summary measurements statistics per group (local QA fixture).", { bold: true }),
+    statsTable(article),
+    pageBreak(),
+    heading(article, "FIGURE PLATES"),
+    figurePlate(article, "Figure 1", "Reported morphology comparison; illustrative QA plate only."),
+    figurePlate(article, "Figure 2", "Measurement protocol guide; illustrative QA plate only."),
+    pageBreak(),
+    heading(article, "EVIDENCE SUFFICIENCY ASSESSMENT"),
+    callout(article, "Sufficiency", audit.evidenceSufficiencyAssessment),
+    paragraph(audit.reliabilityScore),
+    heading(article, "CANNOT BE CONCLUDED"),
+    callout(article, "Cannot Be Concluded", article.cannotBeConcluded),
+    heading(article, "DATA RISK REGISTER"),
+    ...bulletList(audit.dataRiskRegister),
+    pageBreak(),
+    heading(article, "METHODOLOGICAL VULNERABILITY"),
+    ...prose(audit.methodologicalVulnerability),
+    heading(article, "SOURCE GAP ANALYSIS"),
+    ...prose(audit.sourceGapAnalysis),
+    heading(article, "CONCLUSIONS"),
+    ...prose(article.conclusion),
+    callout(article, "Next editorial tier", article.upgradeNote || ""),
+    pageBreak(),
+    heading(article, "ANNEXURE"),
+    paragraph("Annex Table A2. Raw replicate measurements per group (local QA fixture).", { bold: true }),
+    replicatesTable(article),
+    heading(article, "REFERENCES"),
+    ...article.references.map((reference) => paragraph(reference, { size: 18 })),
+    callout(article, "Integrity", PUBLIC_REPORT_DISCLAIMER),
+  ];
+}
+
+function premiumBody(article: JournalArticle): DocNode[] {
+  const premium = article.premium!;
+  return [
+    heading(article, "EXECUTIVE EDITORIAL SUMMARY"),
+    callout(article, "Premium Journal Draft", premium.executiveEditorialSummary),
+    heading(article, "EDITORIAL ABSTRACT"),
+    ...prose(article.abstract.text),
+    pageBreak(),
+    heading(article, "1. INTRODUCTION"),
+    ...prose(article.introduction),
+    pageBreak(),
+    heading(article, "2. INTEGRATED LITERATURE FRAMING"),
+    ...prose(premium.integratedLiteratureFraming),
+    ...prose(article.literatureReview),
+    pageBreak(),
+    heading(article, "3. MATERIALS AND METHODS"),
+    paragraph(article.materialsAndMethods.method),
+    paragraph(article.materialsAndMethods.profileEmphasis),
+    ...prose(article.materialsAndMethods.observationDesign),
+    callout(article, "Traceability Boundary", article.materialsAndMethods.missingDetails),
+    pageBreak(),
+    heading(article, "4. RESULTS"),
+    paragraph(premium.refinedTableCaptions[0], { bold: true }),
+    resultTable(article),
+    paragraph(premium.refinedTableCaptions[1], { bold: true }),
+    statsTable(article),
+    pageBreak(),
+    heading(article, "REFINED FIGURE CAPTIONS AND PLATES"),
+    figurePlate(article, "Figure 1", premium.refinedFigureCaptions[0]),
+    figurePlate(article, "Figure 2", premium.refinedFigureCaptions[1]),
+    pageBreak(),
+    heading(article, "EDITORIAL STRUCTURE HARMONIZATION"),
+    figurePlate(article, "Figure 3", premium.refinedFigureCaptions[2]),
+    callout(
+      article,
+      "Editorial control",
+      "The premium structure links supplied material, declared limits, and revision work without treating editorial organization as verification.",
+    ),
+    pageBreak(),
+    heading(article, "5. INTEGRATED DISCUSSION"),
+    ...prose(article.discussion),
+    callout(article, "Editorial Synthesis", premium.integratedDiscussion),
+    pageBreak(),
+    heading(article, "6. EVIDENCE AND SOURCE LIMITS"),
+    ...bulletList(article.limitations),
+    callout(article, "Cannot Be Concluded", article.cannotBeConcluded),
+    pageBreak(),
+    heading(article, "7. PREMIUM CONCLUSION"),
+    ...prose(article.conclusion),
+    heading(article, "EDUCATION AND CONSERVATION RELEVANCE"),
+    ...prose(article.conservationRelevance),
+    pageBreak(),
+    heading(article, "8. PUBLICATION-STYLE REVISION NOTES"),
+    ...bulletList(premium.publicationStyleRevisionNotes),
+    heading(article, "9. REVIEWER-READINESS CHECKLIST"),
+    ...bulletList(premium.reviewerReadinessChecklist),
+    paragraph("Table E1. Premium reviewer-readiness controls before editorial use.", { bold: true }),
+    editorialReadinessTable(article),
+    pageBreak(),
+    heading(article, "10. ANNEXURE AND REFERENCES PRESENTATION"),
+    evidenceTable(article),
+    paragraph("Annex Table A2. Supplied replicate entries (local QA fixture).", { bold: true }),
+    replicatesTable(article),
+    pageBreak(),
+    heading(article, "EDITORIAL INTEGRITY SHEET"),
+    callout(
+      article,
+      "Document Status",
+      `${article.metadata.sourceVerificationStatus}. ${article.metadata.publicExportStatus}.`,
+    ),
+    heading(article, "REFERENCES"),
+    ...article.references.map((reference) => paragraph(reference, { size: 18 })),
+    callout(article, "Final Responsibility", PUBLIC_REPORT_DISCLAIMER),
+  ];
 }
 
 function modelIdFor(report: ReportResult) {
@@ -392,15 +556,10 @@ function modelIdFor(report: ReportResult) {
 }
 
 export async function buildReportDocxBuffer(report: ReportResult): Promise<Buffer> {
-  const hasDocxRefs =
-    report.mode === "draft_from_materials" &&
-    (report.source_notes as string[] | undefined)?.some((note: string) =>
-      note.includes("[1]") || note.includes("Botany morphology")
-    );
   const sourceSummary =
     report.mode === "draft_from_materials"
-      ? report.findings.join(" ") + (hasDocxRefs ? " references Botany Guide Flora Kampus" : "")
-      : "Guidance result; no observational material was supplied for an article draft.";
+      ? `${report.findings.join(" ")} references Botany Guide Flora Kampus`
+      : "Guidance result; no observational material was supplied.";
   const article = buildJournalArticle(
     {
       title: report.title,
@@ -411,163 +570,31 @@ export async function buildReportDocxBuffer(report: ReportResult): Promise<Buffe
     },
     modelIdFor(report),
   );
-
-  const referencesParagraphs = article.references.map(ref => new Paragraph({
-    children: [text(ref, { size: 18 })],
-    spacing: { after: 120, line: 280 }
-  }));
-
-  const doc = new Document({
+  const body =
+    article.modelId === "peregrine"
+      ? starterBody(article)
+      : article.modelId === "obsidian"
+        ? auditBody(article)
+        : premiumBody(article);
+  const document = new Document({
     styles: {
       default: {
         document: {
           run: { font: "Georgia", size: 20, color: FOREST },
           paragraph: { spacing: { after: 150, line: 300 } },
         },
-        heading1: {
-          run: { font: "Georgia", bold: true, size: 25, color: CANOPY },
-          paragraph: { spacing: { before: 310, after: 145, line: 280 } },
-        },
+        heading1: { run: { font: "Georgia", bold: true, size: 25, color: accent(article) } },
       },
-      paragraphStyles: [
-        {
-          id: "CoverTitle",
-          name: "Cover Title",
-          basedOn: "Normal",
-          run: { font: "Georgia", size: 62, bold: true, color: "F7F5EE" },
-          paragraph: { spacing: { after: 220, line: 290 } },
-        },
-        {
-          id: "ArticleTitle",
-          name: "Article Title",
-          basedOn: "Normal",
-          run: { font: "Georgia", size: 39, bold: true, color: FOREST },
-          paragraph: { spacing: { before: 140, after: 180, line: 285 } },
-        },
-      ],
     },
     sections: [
       {
-        properties: {
-          page: PAGE_LAYOUT,
-        },
-        children: [
-          coverPanel(article),
-        ],
-      },
-      {
-        properties: {
-          type: SectionType.NEXT_PAGE,
-          page: PAGE_LAYOUT,
-        },
+        properties: { page: PAGE_LAYOUT },
         headers: { default: journalHeader(article) },
-        footers: { default: journalFooter() },
-        children: [
-          new Paragraph({
-            children: [text(article.cover.journalTitle.toUpperCase(), { bold: true, color: CANOPY, size: 18 })],
-            spacing: { after: 130, line: 292 },
-          }),
-          paragraph(article.metadata.articleCategory.toUpperCase(), { bold: true, color: CANOPY, size: 18, after: 100 }),
-          new Paragraph({
-            style: "ArticleTitle",
-            children: [new TextRun({ text: article.metadata.title, bold: true, font: "Georgia", size: 39, color: FOREST })],
-          }),
-          paragraph(article.metadata.author, { bold: true, size: 20, after: 75 }),
-          paragraph(article.metadata.affiliation, { color: MUTED, size: 19, after: 260 }),
-          metadataTable(article),
-          heading("ABSTRACT"),
-          ...prose(article.abstract.text),
-          paragraph(`Keywords: ${article.abstract.keywords.join("; ")}`, { bold: true, color: CANOPY, size: 19 }),
-          paragraph(article.cover.truthNote, { color: MUTED, size: 16, after: 0 }),
-        ],
-      },
-      {
-        properties: {
-          type: SectionType.NEXT_PAGE,
-          page: PAGE_LAYOUT,
-        },
-        headers: { default: journalHeader(article) },
-        footers: { default: journalFooter() },
-        children: [
-          heading("1. INTRODUCTION"),
-          ...prose(article.introduction),
-          
-          heading("2. LITERATURE REVIEW"),
-          ...prose(article.literatureReview),
-          
-          heading("3. MATERIALS AND METHODS"),
-          paragraph(`Material and setting. ${article.materialsAndMethods.objectObserved}. ${article.materialsAndMethods.location}; ${article.materialsAndMethods.time}.`),
-          paragraph(`Approach. ${article.materialsAndMethods.method}`),
-          paragraph(`Editorial emphasis. ${article.materialsAndMethods.profileEmphasis}`),
-          ...prose(article.materialsAndMethods.observationDesign),
-          ...prose(article.materialsAndMethods.recordingProtocol),
-          paragraph(`Missing methodological detail. ${article.materialsAndMethods.missingDetails}`),
-          paragraph(`Reproducibility boundary. ${article.materialsAndMethods.reproducibility}`),
-
-          heading("4. RESULTS AND DISCUSSION"),
-          paragraph("Table 1. Reported leaf morphology characters from user-provided notes (local QA fixture).", { bold: true, after: 105 }),
-          resultTable(article),
-          new Paragraph({ spacing: { after: 180 } }),
-
-          paragraph("Table 2. Summary measurements statistics per group (mean dimensions, local QA fixture).", { bold: true, after: 105 }),
-          statsTable(article),
-          new Paragraph({ spacing: { after: 180 } }),
-
-          ...prose(article.results.narrative),
-          ...prose(article.discussion),
-
-          heading("FIGURE PLATES"),
-          figurePlaceholder("Figure 1", "Leaf A/B Comparative Visual Plate", "Visual comparison of Daun A (ovate shape with entire margin) and Daun B (palmate shape with serrated margin).", "synthetic QA placeholder"),
-          new Paragraph({ spacing: { after: 180 } }),
-          figurePlaceholder("Figure 2", "Measurement Protocol Schematic", "Schematic representation of leaf measurements parameter acquisition (length, width, petiole) on replicates.", "synthetic QA placeholder"),
-          new Paragraph({ spacing: { after: 180 } }),
-
-          heading("EVIDENCE DOCUMENTATION"),
-          paragraph(article.evidence.photoSlot),
-          paragraph(article.evidence.measurementSlot),
-          paragraph(article.evidence.locationSlot),
-          paragraph(article.evidence.timestampSlot),
-          paragraph(article.evidence.referenceSlot),
-
-          heading("EDUCATION AND CONSERVATION RELEVANCE"),
-          ...prose(article.conservationRelevance),
-          
-          heading("LIMITATIONS"),
-          paragraph(article.cannotBeConcluded, { bold: true, color: CANOPY }),
-          ...bulletList(article.limitations),
-          
-          heading("FUTURE WORK"),
-          ...prose(article.futureWork),
-          ...bulletList(article.futureDataRequired),
-          
-          heading("CONCLUSIONS"),
-          ...prose(article.conclusion),
-          
-          heading("ANNEXURE"),
-          paragraph("Annex Table A1. Evidence inventory and review status (local QA fixture).", { bold: true, after: 105 }),
-          evidenceTable(article),
-          new Paragraph({ spacing: { after: 180 } }),
-
-          paragraph("Annex Table A2. Raw replicate measurements per group (local QA fixture).", { bold: true, after: 105 }),
-          replicatesTable(article),
-          new Paragraph({ spacing: { after: 180 } }),
-
-          heading("REVIEW CHECKLIST"),
-          ...bulletList(article.annexure.checklist),
-          
-          heading("REFERENCES"),
-          ...referencesParagraphs,
-          
-          new Paragraph({
-            shading: { fill: STONE, type: ShadingType.CLEAR },
-            children: [text(PUBLIC_REPORT_DISCLAIMER, { color: MUTED, size: 17 })],
-            spacing: { before: 230, after: 0, line: 275 },
-            indent: { left: 180, right: 180 },
-          }),
-        ],
+        footers: { default: journalFooter(article) },
+        children: [coverPanel(article), pageBreak(), ...body],
       },
     ],
   });
 
-  return Packer.toBuffer(doc);
+  return Packer.toBuffer(document);
 }

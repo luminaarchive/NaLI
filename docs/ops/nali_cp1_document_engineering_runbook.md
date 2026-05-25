@@ -1,20 +1,20 @@
 # Operations Runbook: Document Engineering QA
 
-This procedure is for NaLI CP1 founder/admin local QA artifacts only. It must not be connected to public downloads, paid export, upload, or source verification.
+This procedure is for NaLI CP1 founder/admin local QA artifacts only. It must not be connected to public downloads, paid export, upload, payment checkout, or source verification.
 
-## Generate V7 Artifacts
+## Active V8 Generator
 
 From the repository root:
 
 ```bash
 npm install
-node scratch/generate_reference_journal_v7.cjs
+node scratch/generate_reference_journal_v8.cjs
 ls -lah ~/Downloads/NaLI-QA
 ```
 
-The script generates `peregrine`, `obsidian`, and `zephyr` outputs in `.html`, `.md`, `.txt`, `.pdf`, and `.docx` formats. It writes to `~/Downloads/NaLI-QA/`, with `/tmp/nali-qa/` as fallback.
+The V8 script generates `peregrine`, `obsidian`, and `zephyr` outputs in `.html`, `.md`, `.txt`, `.pdf`, and `.docx` formats. It writes only to `~/Downloads/NaLI-QA/`, with `/tmp/nali-qa/` as fallback. Generated documents must never be staged.
 
-If Chromium is missing on a new QA machine, install only Playwright's required local browser runtime:
+If Chromium is absent on a QA machine, install only Playwright's local rendering browser runtime:
 
 ```bash
 npx playwright install chromium
@@ -22,36 +22,49 @@ npx playwright install chromium
 
 ## Rendering Boundary
 
-- V7 PDF uses `src/lib/reports/journalHtmlTemplate.ts` and local Playwright rendering in `src/lib/reports/journalHtmlPdfRenderer.ts`.
-- Playwright is a development dependency and must not be imported by `src/app` public routes or `src/components` client components.
-- DOCX uses `src/lib/reports/journalDocxRenderer.ts` and structured article data, not a markdown dump.
-- Generation paths are restricted to `~/Downloads/NaLI-QA/` and `/tmp/nali-qa/`; generated documents must never be staged.
+- PDF uses `src/lib/reports/journalHtmlTemplate.ts` with local Playwright rendering in `src/lib/reports/journalHtmlPdfRenderer.ts`.
+- Playwright remains local QA tooling and must not be imported by public routes or client components.
+- DOCX uses `src/lib/reports/journalDocxRenderer.ts` and structured article data rather than a markdown dump.
+- The hard capability registry is `src/lib/reports/journalModelCapabilities.ts`.
+- Public/user PDF and DOCX export remains locked regardless of local founder/admin artifact generation.
 
-## Inspect Quality (V7 Quality Gate)
+## V8 Model Gap Gate
 
-For each V7 PDF, verify the following:
+| Tier      | Required PDF page target | Required visible capabilities                                                                                                                            |
+| --------- | -----------------------: | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Peregrine | 4-5 for the rich fixture | Starter badge, compact sections, one main table and one figure plate, short limitations, upgrade nudge; no audit or premium editorial sections           |
+| Obsidian  |                     7-10 | Evidence Audit badge, measurement tables, evidence sufficiency, cannot-conclude, data risk register, methodological vulnerability, subtle Zephyr note    |
+| Zephyr    |                    10-14 | Premium badge/opener, integrated discussion, refined captions, exclusive editorial figure/table, revision notes, reviewer-readiness checklist, no upsell |
 
-- **Cover page**: Premium nature-themed dark green design with NaLI logo, custom issue/edition block, and appropriate local QA fixture disclaimer.
-- **Article opener**: Desired metadata info box on the left, abstract on the right, and introduction in standard two-column academic grid.
-- **Measurements & replicates**: Actual replicates table (A1-A3, B1-B3) and summary stats (mean length, mean width, mean petiole length) are rendered.
-- **Figure plates**: Figure 1 (Leaf shapes) and Figure 2 (Measurement workflow) appear as clean inline SVG vector art.
-- **Citations**: References parsed from the rich evidence fixture; in-text citation keys mapped to standard numbered brackets `[1]` and `[2]`.
-- **Labeling**: Figures, text, and tables are labeled with approved terms (`synthetic QA placeholder`, `local QA fixture`, `not externally verified`) to prevent false validation assertions.
+The DOCX design targets are 4-6 pages for Peregrine, 9-12 for Obsidian, and 12-16 for Zephyr. Confirm DOCX layout visually only when a compatible office renderer is available; automated tests still verify structured content and tier ownership.
 
-For DOCX, open each file in Microsoft Word or LibreOffice and confirm that headings, cover block, replicates, stats, and references tables remain clean, structured, and editable.
+## Integrity Inspection
+
+For every output:
+
+- Confirm the badge and section set correspond to its tier.
+- Confirm fixture text, tables, and figures remain labeled as supplied/local QA and not externally verified.
+- Confirm no fabricated DOI, ISSN, species identity, coordinates, photo, or verified evidence is claimed.
+- Confirm source verification remains inactive and public export remains locked.
+- Confirm upgrade notes communicate real capabilities without payment activation, scarcity, or deceptive pressure.
+- Confirm requests carrying guest identifiers do not place them in URLs or ordinary request logs; the balance endpoint uses a POST body for this reason.
+
+## V7 Historical Note
+
+V7 remains a historical local document-engineering checkpoint. Its 6-page Peregrine and two 8-page paid-tier PDFs did not meet monetization differentiation requirements; use V8 for current tier QA.
 
 ## Safety Gates
 
 - Human Testing remains `PAUSED`.
 - Midtrans remains `DEFERRED`; do not activate payment here.
-- Paid launch remains `NO-GO`.
-- Public/user PDF and DOCX export remains `LOCKED` or inactive.
+- Paid Launch remains `NO-GO`.
+- Public/user PDF and DOCX export remains `LOCKED / INACTIVE`.
 - Upload and source verification remain inactive.
-- Never stage QA artifacts, temporary rendered previews, `.env.local`, service keys, payment secrets, access values, hashes, or guest session values.
+- Never stage QA artifacts, temporary previews, `.env.local`, service keys, payment secrets, access values, hashes, or guest session values.
 
 ## Verification
 
-Before committing renderer work, run:
+Before committing document differentiation work, run:
 
 ```bash
 npm run lint
