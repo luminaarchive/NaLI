@@ -16,6 +16,7 @@ import {
 import { getCostProtectionStatus } from "@/lib/usage/costProtection";
 import { logUsageEvent } from "@/lib/usage/logging";
 import { getEnergyBalance } from "@/lib/energy/ledger";
+import { evaluateModelEntitlement, PREMIUM_MODEL_LOCK_MESSAGE } from "@/lib/entitlements/modelEntitlements";
 
 const systemPrompt = [
   "You are NaLI (NatIve Learning & Intelligence) by NatIve, a professional AI field intelligence and evidence-based learning assistant.",
@@ -42,14 +43,9 @@ function getInputSize(input: {
   title: string;
   topic: string;
 }) {
-  return [
-    input.title,
-    input.mainText,
-    input.topic,
-    input.location,
-    input.fileDescription,
-    ...input.sourceUrls,
-  ].join("\n").length;
+  return [input.title, input.mainText, input.topic, input.location, input.fileDescription, ...input.sourceUrls].join(
+    "\n",
+  ).length;
 }
 
 function guardOutput(report: ReportResult) {
@@ -85,7 +81,7 @@ export async function POST(req: NextRequest) {
         code: "RATE_LIMIT",
         retryAfterSeconds: rateLimit.retryAfterSeconds,
       },
-      { headers, status: 429 }
+      { headers, status: 429 },
     );
   }
 
@@ -116,6 +112,20 @@ export async function POST(req: NextRequest) {
   }
 
   const selectedModelId = validated.data.selectedModel || "peregrine";
+  // No trusted premium entitlement resolver is active in CP1. Never derive
+  // premium access from client input or automatically seeded trial credits.
+  const entitlement = evaluateModelEntitlement(selectedModelId);
+  if (!entitlement.allowed) {
+    return NextResponse.json(
+      {
+        code: "MODEL_ENTITLEMENT_REQUIRED",
+        entitlement,
+        error: PREMIUM_MODEL_LOCK_MESSAGE,
+      },
+      { headers, status: 403 },
+    );
+  }
+
   const modelLabels: Record<string, string> = {
     peregrine: "NaLI Peregrine",
     obsidian: "NaLI Obsidian",
@@ -145,7 +155,7 @@ export async function POST(req: NextRequest) {
         requiredCredits: cost,
         balance: balanceRes.balance,
       },
-      { headers, status: 402 }
+      { headers, status: 402 },
     );
   }
 

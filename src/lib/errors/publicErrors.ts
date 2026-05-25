@@ -4,6 +4,7 @@ export type SafeErrorCategory =
   | "WEAK_INPUT"
   | "NETWORK_OR_SERVER"
   | "EXPORT_LOCKED"
+  | "MODEL_ENTITLEMENT_REQUIRED"
   | "UNAUTHORIZED"
   | "GENERIC";
 
@@ -55,7 +56,13 @@ export function normalizePublicError(options: {
   const retryAfter = options.retryAfterSeconds;
 
   // 1. RATE LIMIT / 429
-  if (status === 429 || code === "RATE_LIMIT" || code === "rate_limit" || rawMsg.toLowerCase().includes("terlalu banyak percobaan") || rawMsg.toLowerCase().includes("rate limit")) {
+  if (
+    status === 429 ||
+    code === "RATE_LIMIT" ||
+    code === "rate_limit" ||
+    rawMsg.toLowerCase().includes("terlalu banyak percobaan") ||
+    rawMsg.toLowerCase().includes("rate limit")
+  ) {
     const retryHint = retryAfter && retryAfter > 0 ? ` Coba lagi dalam ${retryAfter} detik.` : "";
     return {
       category: "RATE_LIMIT",
@@ -77,13 +84,19 @@ export function normalizePublicError(options: {
   ];
   if (
     integrityCodes.includes(code.toUpperCase()) ||
-    status === 400 && (rawMsg.toLowerCase().includes("plagiarisme") || rawMsg.toLowerCase().includes("integritas") || rawMsg.toLowerCase().includes("sitasi palsu") || rawMsg.toLowerCase().includes("data palsu"))
+    (status === 400 &&
+      (rawMsg.toLowerCase().includes("plagiarisme") ||
+        rawMsg.toLowerCase().includes("integritas") ||
+        rawMsg.toLowerCase().includes("sitasi palsu") ||
+        rawMsg.toLowerCase().includes("data palsu")))
   ) {
     return {
       category: "INTEGRITY_BLOCK",
       title: "Permintaan tidak bisa diproses",
-      explanation: "NaLI tidak dapat memproses permintaan yang bertujuan membuat sitasi palsu, data palsu, menyamarkan plagiarisme, atau melanggar integritas akademik lainnya.",
-      nextStep: "Gunakan catatan, data, atau referensi asli hasil pengamatanmu sendiri, atau buat draf panduan terlebih dahulu.",
+      explanation:
+        "NaLI tidak dapat memproses permintaan yang bertujuan membuat sitasi palsu, data palsu, menyamarkan plagiarisme, atau melanggar integritas akademik lainnya.",
+      nextStep:
+        "Gunakan catatan, data, atau referensi asli hasil pengamatanmu sendiri, atau buat draf panduan terlebih dahulu.",
       severity: "error",
     };
   }
@@ -99,24 +112,46 @@ export function normalizePublicError(options: {
     return {
       category: "WEAK_INPUT",
       title: "Data masih terlalu minim",
-      explanation: "Catatan atau bahan yang kamu masukkan masih terlalu pendek untuk dapat disusun menjadi draf laporan berbasis bukti.",
-      nextStep: "Tambahkan detail observasi seperti metode, hasil pengamatan, lokasi, atau deskripsi bahan yang lebih lengkap.",
+      explanation:
+        "Catatan atau bahan yang kamu masukkan masih terlalu pendek untuk dapat disusun menjadi draf laporan berbasis bukti.",
+      nextStep:
+        "Tambahkan detail observasi seperti metode, hasil pengamatan, lokasi, atau deskripsi bahan yang lebih lengkap.",
       severity: "info",
     };
   }
 
   // 4. EXPORT LOCKED / 402
-  if (status === 402 || code === "insufficient_credits" || code === "EXPORT_LOCKED" || rawMsg.toLowerCase().includes("kredit") || rawMsg.toLowerCase().includes("pembayaran")) {
+  if (code === "MODEL_ENTITLEMENT_REQUIRED") {
     return {
-      category: "EXPORT_LOCKED",
-      title: "Ekspor dokumen premium terkunci",
-      explanation: "Fitur ekspor dokumen rapi (Markdown/PDF) saat ini belum diaktifkan karena sistem pembayaran masih dalam tahap persiapan (Midtrans ditangguhkan).",
-      nextStep: "Draf laporan atau panduan awal tetap bisa dibaca dan disalin langsung melalui tombol 'Salin Markdown' di workspace.",
+      category: "MODEL_ENTITLEMENT_REQUIRED",
+      title: "Model premium terkunci",
+      explanation:
+        "Obsidian dan Zephyr memerlukan entitlement atau kredit premium yang terverifikasi. Akses premium dan checkout/pembayaran belum diaktifkan di CP1.",
+      nextStep: "Gunakan Peregrine untuk membuat starter draft yang tersedia saat ini.",
       severity: "locked",
     };
   }
 
-  // 5. UNAUTHORIZED / 401 / 403
+  // 5. EXPORT LOCKED / 402
+  if (
+    status === 402 ||
+    code === "insufficient_credits" ||
+    code === "EXPORT_LOCKED" ||
+    rawMsg.toLowerCase().includes("kredit") ||
+    rawMsg.toLowerCase().includes("pembayaran")
+  ) {
+    return {
+      category: "EXPORT_LOCKED",
+      title: "Ekspor dokumen premium terkunci",
+      explanation:
+        "Fitur ekspor dokumen rapi (Markdown/PDF) saat ini belum diaktifkan karena sistem pembayaran masih dalam tahap persiapan (Midtrans ditangguhkan).",
+      nextStep:
+        "Draf laporan atau panduan awal tetap bisa dibaca dan disalin langsung melalui tombol 'Salin Markdown' di workspace.",
+      severity: "locked",
+    };
+  }
+
+  // 6. UNAUTHORIZED / 401 / 403
   if (status === 401 || status === 403 || code === "UNAUTHORIZED" || code === "ACCESS_DENIED") {
     return {
       category: "UNAUTHORIZED",
@@ -127,8 +162,14 @@ export function normalizePublicError(options: {
     };
   }
 
-  // 6. SERVER / NETWORK FAILS (e.g. 502 Bad Gateway, 500, fetch errors)
-  if (status >= 500 || code === "SERVER_ERROR" || rawMsg.toLowerCase().includes("koneksi") || rawMsg.toLowerCase().includes("gagal menghubungi") || rawMsg.toLowerCase().includes("fetch")) {
+  // 7. SERVER / NETWORK FAILS (e.g. 502 Bad Gateway, 500, fetch errors)
+  if (
+    status >= 500 ||
+    code === "SERVER_ERROR" ||
+    rawMsg.toLowerCase().includes("koneksi") ||
+    rawMsg.toLowerCase().includes("gagal menghubungi") ||
+    rawMsg.toLowerCase().includes("fetch")
+  ) {
     return {
       category: "NETWORK_OR_SERVER",
       title: "Koneksi atau server bermasalah",
@@ -138,7 +179,7 @@ export function normalizePublicError(options: {
     };
   }
 
-  // 7. GENERIC / DEFAULT
+  // 8. GENERIC / DEFAULT
   return {
     category: "GENERIC",
     title: "Terjadi kesalahan",

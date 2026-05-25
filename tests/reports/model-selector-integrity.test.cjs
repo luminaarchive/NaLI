@@ -25,6 +25,10 @@ test("model configuration exposes exactly peregrine, obsidian, and zephyr with p
     assert.ok(Array.isArray(model.safeCapabilities));
     assert.ok(Array.isArray(model.forbiddenClaims));
   }
+
+  assert.equal(naliModels.find((model) => model.id === "peregrine").lockedWithoutEntitlement, false);
+  assert.equal(naliModels.find((model) => model.id === "obsidian").lockedWithoutEntitlement, true);
+  assert.equal(naliModels.find((model) => model.id === "zephyr").lockedWithoutEntitlement, true);
 });
 
 // ─── Test 2: Request Validation and Defaulting ──────────────────────────────
@@ -99,12 +103,14 @@ test("model selector UI is rendered under composer areas with exact label refere
   // CreateReportForm references
   assert.match(formSrc, /Pilih Profil Pemrosesan \(Model\)/);
   assert.match(formSrc, /form\.selectedModel\s*===\s*model\.id/);
-  assert.match(formSrc, /updateField\("selectedModel",\s*model\.id\)/);
+  assert.match(formSrc, /model\.lockedWithoutEntitlement/);
+  assert.match(formSrc, /disabled=\{isLocked\}/);
 
   // AgentWorkspace references
   assert.match(workspaceSrc, /Profil Pemrosesan \(Model\)/);
   assert.match(workspaceSrc, /selectedModel\s*===\s*model\.id/);
-  assert.match(workspaceSrc, /setSelectedModel\(model\.id\)/);
+  assert.match(workspaceSrc, /model\.lockedWithoutEntitlement/);
+  assert.match(workspaceSrc, /disabled=\{isLocked\}/);
   assert.match(workspaceSrc, /selectedModel,\s*\n\s*\}\)/); // submitted in JSON payload
 
   // Shared model-detail panel renders the approved differentiated registry copy.
@@ -116,6 +122,9 @@ test("model selector UI is rendered under composer areas with exact label refere
   assert.match(modelSrc, /tidak sedalam Obsidian atau sehalus Zephyr/);
   assert.match(modelSrc, /audit bukti, batas klaim, risiko data/);
   assert.match(modelSrc, /Model paling mahal dan paling kuat/);
+  assert.match(modelSrc, /checkout\/pembayaran tidak diaktifkan di CP1/i);
+  assert.match(formSrc, /CP1_PREMIUM_ACCESS_MESSAGE/);
+  assert.match(workspaceSrc, /CP1_PREMIUM_ACCESS_MESSAGE/);
 });
 
 // ─── Test 5: Prohibited and Safe Personalization keywords ────────────────────

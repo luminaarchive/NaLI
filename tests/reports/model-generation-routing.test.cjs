@@ -13,36 +13,38 @@ const repoRoot = path.join(__dirname, "../..");
 const validPayload = {
   mode: "draft_from_materials",
   reportTemplate: "Laporan Observasi Lingkungan",
-  mainText: "Saya mahasiswa biologi. Saya mengamati dua jenis daun di sekitar kampus. Daun A berbentuk lonjong, tepi rata, warna hijau tua. Daun B berbentuk menjari, tepi bergerigi, warna hijau muda. Bantu buatkan struktur laporan observasi dan jelaskan bukti apa yang masih perlu saya siapkan.",
+  mainText:
+    "Saya mahasiswa biologi. Saya mengamati dua jenis daun di sekitar kampus. Daun A berbentuk lonjong, tepi rata, warna hijau tua. Daun B berbentuk menjari, tepi bergerigi, warna hijau muda. Bantu buatkan struktur laporan observasi dan jelaskan bukti apa yang masih perlu saya siapkan.",
   integrityConsent: true,
   guestSessionId: "guest-session-for-routing-test",
 };
 
-// ─── Test 1: Route POST works for each model and uses safe labels ────────────
+// ─── Test 1: Route serves starter model and rejects locked premium models ────
 
-test("generation route routes each selectable model and returns safe public labels", async () => {
-  const models = ["peregrine", "obsidian", "zephyr"];
+test("generation route serves Peregrine by default and locks unentitled premium tiers", async () => {
+  const peregrineResponse = await postGenerate(
+    new Request("http://localhost/api/reports/generate", {
+      body: JSON.stringify({ ...validPayload, selectedModel: "peregrine" }),
+      method: "POST",
+    }),
+  );
+  assert.strictEqual(peregrineResponse.status, 200);
+  const peregrineBody = await peregrineResponse.json();
+  assert.ok(peregrineBody.report);
+  assert.strictEqual(peregrineBody.report.model_used, "NaLI Peregrine");
+  assert.strictEqual(peregrineBody.report.model_used.includes("OpenRouter"), false);
 
-  for (const modelId of models) {
-    const payload = { ...validPayload, selectedModel: modelId };
+  for (const modelId of ["obsidian", "zephyr"]) {
     const response = await postGenerate(
       new Request("http://localhost/api/reports/generate", {
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...validPayload, selectedModel: modelId }),
         method: "POST",
-      })
+      }),
     );
-
-    assert.strictEqual(response.status, 200);
+    assert.strictEqual(response.status, 403);
     const body = await response.json();
-    assert.ok(body.report);
-    assert.strictEqual(body.report.mode, "draft_from_materials");
-    
-    // Check that model_used contains safe public label and NO provider name
-    const modelUsed = body.report.model_used;
-    assert.match(modelUsed, /NaLI (Peregrine|Obsidian|Zephyr)/);
-    assert.strictEqual(modelUsed.includes("OpenRouter"), false);
-    assert.strictEqual(modelUsed.includes("Claude"), false);
-    assert.strictEqual(modelUsed.includes("GPT"), false);
+    assert.strictEqual(body.code, "MODEL_ENTITLEMENT_REQUIRED");
+    assert.strictEqual(body.entitlement.modelId, modelId);
   }
 });
 
@@ -54,7 +56,7 @@ test("generation route falls back to peregrine on invalid model input", async ()
     new Request("http://localhost/api/reports/generate", {
       body: JSON.stringify(payload),
       method: "POST",
-    })
+    }),
   );
 
   assert.strictEqual(response.status, 200);
@@ -95,15 +97,31 @@ test("buildReportPrompt injects correct processing profile rules without fabrica
 
   // Verify that the prompts contain NO Turnitin bypass/plagiarism evasion instructions (except in the negative warning guidelines)
   for (const prompt of [pPrompt, oPrompt, zPrompt]) {
-    if (prompt.toLowerCase().includes("turnitin") || prompt.toLowerCase().includes("humanizer") || prompt.toLowerCase().includes("bypass")) {
+    if (
+      prompt.toLowerCase().includes("turnitin") ||
+      prompt.toLowerCase().includes("humanizer") ||
+      prompt.toLowerCase().includes("bypass")
+    ) {
       assert.match(prompt, /Never use Humanizer, Turnitin-safe, or detector-bypass wording/i);
-      
+
       // Ensure no OTHER occurrences of these terms exist in the prompt
       const parts = prompt.split(/Never use Humanizer, Turnitin-safe, or detector-bypass wording/i);
       for (const part of parts) {
-        assert.strictEqual(part.toLowerCase().includes("turnitin"), false, "Should not contain Turnitin outside safety negation");
-        assert.strictEqual(part.toLowerCase().includes("humanizer"), false, "Should not contain Humanizer outside safety negation");
-        assert.strictEqual(part.toLowerCase().includes("bypass"), false, "Should not contain bypass outside safety negation");
+        assert.strictEqual(
+          part.toLowerCase().includes("turnitin"),
+          false,
+          "Should not contain Turnitin outside safety negation",
+        );
+        assert.strictEqual(
+          part.toLowerCase().includes("humanizer"),
+          false,
+          "Should not contain Humanizer outside safety negation",
+        );
+        assert.strictEqual(
+          part.toLowerCase().includes("bypass"),
+          false,
+          "Should not contain bypass outside safety negation",
+        );
       }
     }
   }
@@ -131,7 +149,7 @@ test("UI component selector buttons map exactly to the naliModels configuration 
 test("no model configuration claims source verification, pro features, or payment unlocking", () => {
   for (const model of naliModels) {
     const raw = JSON.stringify(model).toLowerCase();
-    
+
     // Prohibited marketing claims
     assert.strictEqual(raw.includes("source verification active"), false);
     assert.strictEqual(raw.includes("realtime data"), false);

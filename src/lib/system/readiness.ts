@@ -30,6 +30,12 @@ export type SystemReadiness = {
   uploadActive: false;
   uploadConfigured: boolean;
   uploadPrepared: true;
+  entitlementGate: "enabled";
+  premiumModelsLockedByDefault: true;
+  peregrineAvailable: true;
+  paymentActivation: "disabled";
+  midtrans: "deferred_inactive";
+  publicExport: "locked_inactive";
 };
 
 function hasValue(value: string | undefined) {
@@ -83,6 +89,12 @@ export function getSystemReadiness(): SystemReadiness {
     uploadActive: false,
     uploadConfigured: upload.uploadConfigured,
     uploadPrepared: upload.uploadPrepared,
+    entitlementGate: "enabled",
+    premiumModelsLockedByDefault: true,
+    peregrineAvailable: true,
+    paymentActivation: "disabled",
+    midtrans: "deferred_inactive",
+    publicExport: "locked_inactive",
   };
 }
 

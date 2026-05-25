@@ -34,7 +34,7 @@ import { UpgradeModal } from "./UpgradeModal";
 import { getEstimatedCreditCostFromQuery } from "@/lib/pricing/plans";
 import { NaliAlert } from "@/components/ui/NaliAlert";
 import { normalizePublicError } from "@/lib/errors/publicErrors";
-import { naliModels } from "@/lib/models/naliModels";
+import { CP1_PREMIUM_ACCESS_MESSAGE, naliModels } from "@/lib/models/naliModels";
 import {
   saveGuestReportRecovery,
   clearGuestReportRecovery,
@@ -109,6 +109,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const [selectedMode, setSelectedMode] = useState<"draft_from_materials" | "start_from_zero">("draft_from_materials");
   const [integrityConsent, setIntegrityConsent] = useState(false);
   const [selectedModel, setSelectedModel] = useState<"peregrine" | "obsidian" | "zephyr">("peregrine");
+  const selectedModelLocked = naliModels.some((model) => model.id === selectedModel && model.lockedWithoutEntitlement);
   const [recoverySnapshot, setRecoverySnapshot] = useState<GuestReportRecoverySnapshot | null>(null);
   const [snapshots, setSnapshots] = useState<GuestReportRecoverySnapshot[]>([]);
 
@@ -551,6 +552,15 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     if (e) e.preventDefault();
     const trimmed = (retryQuery !== undefined ? retryQuery : query).trim();
     if (!trimmed) return;
+
+    if (selectedModelLocked) {
+      setError({
+        message: CP1_PREMIUM_ACCESS_MESSAGE,
+        code: "MODEL_ENTITLEMENT_REQUIRED",
+        status: 403,
+      });
+      return;
+    }
 
     if (!integrityConsent) {
       setError({ message: "Centang pernyataan integritas akademik NaLI terlebih dahulu." });
@@ -1872,6 +1882,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                       activeRunStatus === "running" ||
                       !query.trim() ||
                       isInsufficient ||
+                      (messages.length === 0 && selectedModelLocked) ||
                       (messages.length === 0 && !integrityConsent) ||
                       isRateLimited
                     }
@@ -1925,24 +1936,33 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 <div className="flex flex-wrap gap-2">
                   {naliModels.map((model) => {
                     const isSelected = selectedModel === model.id;
+                    const isLocked = model.lockedWithoutEntitlement;
                     return (
                       <button
                         key={model.id}
                         type="button"
-                        onClick={() => setSelectedModel(model.id)}
+                        onClick={() => {
+                          if (!isLocked) setSelectedModel(model.id);
+                        }}
+                        disabled={isLocked}
+                        aria-disabled={isLocked}
                         className={cn(
-                          "inline-flex min-h-[44px] flex-1 cursor-pointer items-center justify-center rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 sm:flex-none",
+                          "inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 sm:flex-none",
                           isSelected
                             ? "border-[#6f8057] bg-[#6f8057]/15 text-white shadow-sm shadow-[#6f8057]/10"
-                            : "border-white/[0.06] bg-[#07090e]/60 text-white/40 hover:bg-white/[0.04] hover:text-white/60",
+                            : isLocked
+                              ? "cursor-not-allowed border-white/[0.06] bg-[#07090e]/60 text-white/30"
+                              : "cursor-pointer border-white/[0.06] bg-[#07090e]/60 text-white/40 hover:bg-white/[0.04] hover:text-white/60",
                         )}
                         aria-pressed={isSelected}
                       >
+                        {isLocked && <LockKeyhole className="h-3 w-3 shrink-0" aria-hidden="true" />}
                         {model.label}
                       </button>
                     );
                   })}
                 </div>
+                <p className="mt-2 text-[11px] leading-5 text-white/45">{CP1_PREMIUM_ACCESS_MESSAGE}</p>
               </div>
             )}
 

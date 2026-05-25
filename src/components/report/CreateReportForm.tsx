@@ -11,6 +11,7 @@ import {
   Compass,
   FileText,
   LinkIcon,
+  LockKeyhole,
   Loader2,
   MapPin,
   Paperclip,
@@ -21,7 +22,7 @@ import { reportTemplates, userRoles, type ReportMode, type ReportResult } from "
 import { cn } from "@/lib/utils";
 import { NaliAlert } from "@/components/ui/NaliAlert";
 import { normalizePublicError } from "@/lib/errors/publicErrors";
-import { naliModels } from "@/lib/models/naliModels";
+import { CP1_PREMIUM_ACCESS_MESSAGE, naliModels } from "@/lib/models/naliModels";
 import {
   saveGuestReportRecovery,
   clearGuestReportRecovery,
@@ -102,6 +103,9 @@ export function CreateReportForm() {
   const [snapshots, setSnapshots] = useState<GuestReportRecoverySnapshot[]>([]);
   const validationIssue = useDebouncedReportValidation(form);
   const showValidation = !error && hasMaterial(form) && validationIssue.severity !== "none";
+  const selectedModelLocked = naliModels.some(
+    (model) => model.id === form.selectedModel && model.lockedWithoutEntitlement,
+  );
 
   const [metadataResult, setMetadataResult] = useState<LocalImageMetadataResult | null>(null);
   const [metadataAlert, setMetadataAlert] = useState<{
@@ -446,6 +450,15 @@ export function CreateReportForm() {
     setError(null);
     setNotice(null);
 
+    if (selectedModelLocked) {
+      setError({
+        message: CP1_PREMIUM_ACCESS_MESSAGE,
+        code: "MODEL_ENTITLEMENT_REQUIRED",
+        status: 403,
+      });
+      return;
+    }
+
     const issue = validateReportInput(form);
     if (!issue.canSubmit) {
       setError({
@@ -652,24 +665,33 @@ export function CreateReportForm() {
             <div className="flex flex-wrap gap-2">
               {naliModels.map((model) => {
                 const isSelected = form.selectedModel === model.id;
+                const isLocked = model.lockedWithoutEntitlement;
                 return (
                   <button
                     key={model.id}
                     className={cn(
-                      "inline-flex min-h-[44px] flex-1 cursor-pointer items-center justify-center rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 sm:flex-none",
+                      "inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 sm:flex-none",
                       isSelected
                         ? "border-[#6f8057] bg-[#6f8057]/15 text-white shadow-sm shadow-[#6f8057]/10"
-                        : "border-white/[0.06] bg-[#07090e]/60 text-white/50 hover:bg-white/[0.05]",
+                        : isLocked
+                          ? "cursor-not-allowed border-white/[0.06] bg-[#07090e]/60 text-white/35"
+                          : "cursor-pointer border-white/[0.06] bg-[#07090e]/60 text-white/50 hover:bg-white/[0.05]",
                     )}
                     type="button"
-                    onClick={() => updateField("selectedModel", model.id)}
+                    onClick={() => {
+                      if (!isLocked) updateField("selectedModel", model.id);
+                    }}
+                    disabled={isLocked}
+                    aria-disabled={isLocked}
                     aria-pressed={isSelected}
                   >
+                    {isLocked && <LockKeyhole className="h-3 w-3 shrink-0" aria-hidden="true" />}
                     {model.label}
                   </button>
                 );
               })}
             </div>
+            <p className="mt-2 text-[11px] leading-5 text-white/45">{CP1_PREMIUM_ACCESS_MESSAGE}</p>
             {naliModels
               .filter((model) => model.id === form.selectedModel)
               .map((model) => (
@@ -733,6 +755,7 @@ export function CreateReportForm() {
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#09090b] transition-all hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:pointer-events-none disabled:opacity-60"
               disabled={
                 isSubmitting ||
+                selectedModelLocked ||
                 (error?.retryAfterSeconds !== undefined && error.retryAfterSeconds > 0) ||
                 !validationIssue.canSubmit
               }

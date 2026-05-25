@@ -59,9 +59,11 @@ test("AgentWorkspace tracks composer focus state and adjusts bottom padding dyna
   assert.match(code, /flex flex-wrap gap-2/, "Model selector buttons container should wrap and be compact");
   assert.match(
     code,
-    /flex-1 cursor-pointer items-center justify-center rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 sm:flex-none/,
+    /flex-1 items-center justify-center gap-1\.5 rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 sm:flex-none/,
     "Model selector buttons should fill row on mobile and display naturally on desktop",
   );
+  assert.match(code, /disabled=\{isLocked\}/, "Locked premium model buttons must be disabled on mobile.");
+  assert.match(code, /cursor-not-allowed/, "Locked premium model buttons must not imply selectable actions.");
 
   // 7. No Midtrans checkout link or payment activation is present
   assert.strictEqual(code.includes("midtransCheckoutActive = true"), false, "Midtrans/payments must not be activated");

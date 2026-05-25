@@ -11,7 +11,12 @@ export interface NaliModel {
   estimatedCredits: number;
   costLabel: "Starter" | "Evidence Audit" | "Premium";
   pricingReadinessNote: string;
+  lockedWithoutEntitlement: boolean;
+  accessLabel: "Tersedia" | "Terkunci";
 }
+
+export const CP1_PREMIUM_ACCESS_MESSAGE =
+  "Akses model premium belum aktif; checkout/pembayaran tidak diaktifkan di CP1. Peregrine tetap tersedia sebagai starter.";
 
 export const naliModels: NaliModel[] = [
   {
@@ -31,6 +36,8 @@ export const naliModels: NaliModel[] = [
     estimatedCredits: journalModelCapabilities.peregrine.estimatedCredits,
     costLabel: journalModelCapabilities.peregrine.costLabel,
     pricingReadinessNote: journalModelCapabilities.peregrine.pricingReadinessNote,
+    lockedWithoutEntitlement: false,
+    accessLabel: "Tersedia",
   },
   {
     id: "obsidian",
@@ -50,6 +57,8 @@ export const naliModels: NaliModel[] = [
     estimatedCredits: journalModelCapabilities.obsidian.estimatedCredits,
     costLabel: journalModelCapabilities.obsidian.costLabel,
     pricingReadinessNote: journalModelCapabilities.obsidian.pricingReadinessNote,
+    lockedWithoutEntitlement: true,
+    accessLabel: "Terkunci",
   },
   {
     id: "zephyr",
@@ -78,5 +87,7 @@ export const naliModels: NaliModel[] = [
     estimatedCredits: journalModelCapabilities.zephyr.estimatedCredits,
     costLabel: journalModelCapabilities.zephyr.costLabel,
     pricingReadinessNote: journalModelCapabilities.zephyr.pricingReadinessNote,
+    lockedWithoutEntitlement: true,
+    accessLabel: "Terkunci",
   },
 ];
