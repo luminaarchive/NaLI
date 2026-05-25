@@ -34,14 +34,16 @@ test("2. Article information block exists", () => {
 
 test("3. Abstract/keywords/introduction/literature review/methods/results/discussion/conclusion/references exist", () => {
   const article = buildJournalArticle(testInput, "peregrine");
-  assert.ok(article.abstract.text.length > 50);
-  assert.ok(article.abstract.keywords.length >= 3);
-  assert.ok(article.introduction.includes("Pendahuluan"));
-  assert.ok(article.literatureReview.includes("Tinjauan Pustaka"));
+  assert.ok(article.abstract.text.split(/\s+/).length >= 180, "Abstract must be substantial");
+  assert.equal(article.abstract.keywords.length, 5);
+  assert.ok(article.introduction.split(/\n\n/).length >= 3, "Introduction must be long form");
+  assert.ok(article.literatureReview.split(/\n\n/).length >= 3, "Literature review must guide credible source collection");
   assert.ok(article.materialsAndMethods.objectObserved.includes("Spesimen"));
   assert.ok(article.results.comparisonTable.length >= 2);
-  assert.ok(article.discussion.includes("Hasil dan Pembahasan"));
-  assert.ok(article.conclusion.includes("Kesimpulan"));
+  assert.ok(article.results.narrative.split(/\n\n/).length >= 2, "Results need interpretation prose");
+  assert.ok(article.discussion.split(/\n\n/).length >= 4, "Discussion must not be a mini-report");
+  assert.ok(article.conservationRelevance.length > 100);
+  assert.ok(article.futureWork.split(/\n\n/).length >= 2);
   assert.ok(article.references[0].includes("No references were supplied"));
 });
 
@@ -65,8 +67,11 @@ test("6. Model-specific sections differ beyond model name", () => {
 
   assert.notEqual(pArticle.abstract.text, oArticle.abstract.text);
   assert.notEqual(oArticle.abstract.text, zArticle.abstract.text);
-  assert.ok(oArticle.abstract.text.includes("Ketiadaan bukti foto"));
-  assert.ok(zArticle.abstract.text.includes("Laporan pengamatan mandiri ini menyajikan"));
+  assert.notEqual(pArticle.discussion.split(/\s+/).length, oArticle.discussion.split(/\s+/).length);
+  assert.notEqual(oArticle.discussion.split(/\s+/).length, zArticle.discussion.split(/\s+/).length);
+  assert.ok(oArticle.cannotBeConcluded.includes("Tidak dapat disimpulkan"));
+  assert.ok(zArticle.discussion.includes("narasi"));
+  assert.ok(pArticle.conservationRelevance.includes("praktikum"));
 });
 
 test("7. Reference-style structure is NaLI-branded, not E-Palli/JWC-branded", () => {
@@ -75,4 +80,12 @@ test("7. Reference-style structure is NaLI-branded, not E-Palli/JWC-branded", ()
   assert.equal(str.includes("E-Palli"), false);
   assert.equal(str.includes("JWC"), false);
   assert.ok(str.includes("NaLI"));
+});
+
+test("8. Draft does not convert unsupported morphological observations into biological claims", () => {
+  const combined = ["peregrine", "obsidian", "zephyr"]
+    .map((model) => JSON.stringify(buildJournalArticle(testInput, model)))
+    .join("\n");
+  assert.doesNotMatch(combined, /kandungan klorofil|laju transpirasi|identifikasi spesies terverifikasi/i);
+  assert.match(combined, /No references were supplied\. NaLI did not generate artificial references\./);
 });

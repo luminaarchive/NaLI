@@ -1,46 +1,62 @@
 # Operations Runbook: Document Engineering QA
 
-This runbook guides NaLI administrators and founders through compiling, inspecting, and troubleshooting the local journal-style PDF and DOCX QA artifacts.
+This procedure is for NaLI CP1 founder/admin local QA artifacts only. It must not be connected to public downloads, paid export, upload, or source-verification behavior.
 
----
+## Generate V5 Artifacts
 
-## 1. Compiling Local QA Artifacts
+From the repository root:
 
-Run the compiler script from the project root:
 ```bash
-node scratch/generate_qa_artifacts.cjs
+npm install
+node scratch/generate_reference_journal_v5.cjs
+ls -lah ~/Downloads/NaLI-QA
 ```
 
-This script will compile draft reports for `peregrine`, `obsidian`, and `zephyr` using the leaf morphology prompt, and save them in the following formats:
-- Markdown (`.md`)
-- Plain text (`.txt`)
-- PDF (`.pdf`)
-- DOCX (`.docx`)
+The script generates `peregrine`, `obsidian`, and `zephyr` outputs in `.html`, `.md`, `.txt`, `.pdf`, and `.docx` formats. Output is written to `~/Downloads/NaLI-QA/`, with `/tmp/nali-qa/` as a fallback.
 
-### Output Folder
-`~/Downloads/NaLI-QA/` (with fallback to `/tmp/nali-qa/`)
+If the Playwright Chromium executable is missing on a new local environment, install that development browser runtime before regenerating:
 
----
+```bash
+npx playwright install chromium
+```
 
-## 2. Dependencies & Bundle Isolation
-- Generation utilizes `pdf-lib` and `docx` JS dependencies.
-- Ensure these libraries are **never** imported inside client-side React files (`src/components/...` or `src/app/...` without a dynamic import/API handler wrap) to prevent bloating the `/create-report` client-side bundle size.
+## Rendering Boundary
 
----
+- PDF v5 uses `src/lib/reports/journalHtmlTemplate.ts` plus local Playwright rendering in `src/lib/reports/journalHtmlPdfRenderer.ts`.
+- Playwright is a development dependency and must remain out of `src/app` public routes and `src/components` client components.
+- DOCX uses the structured Word renderer in `src/lib/reports/journalDocxRenderer.ts`; it must receive structured journal content, not raw markdown.
+- `pdf-lib` is no longer the primary journal-quality PDF renderer for these local QA artifacts.
 
-## 3. Public Export Locking Gates
-- In CP1, public user-facing downloads for PDF and DOCX remain locked under `paidExportActive = false` (returned by `/api/system/readiness`).
-- Do not expose any public UI buttons for DOCX or PDF downloads.
-- Do not bypass verification status checks or configure active Midtrans checkout URLs.
+## Inspect Quality
 
----
+For each v5 PDF, confirm:
 
-## 4. Git Stage Rules (What NOT to commit)
-- Never stage or commit the files inside `~/Downloads/NaLI-QA/` or `/tmp/nali-qa/`.
-- Do not commit local environment secrets (`.env.local`).
+- Page 1 is a NaLI-branded cover with no benchmark publisher branding.
+- Page 2 contains article metadata, abstract, and keywords.
+- Body pages include structured prose, a clean results table, an intentional unfilled figure slot, annexure, and references statement.
+- There are no invented DOI, ISSN, references, species identifications, photographs, or verification claims.
 
----
+For DOCX, open or render the files in a Word-compatible page renderer and confirm the cover, metadata table, headings, results table, evidence slot, annexure, and references statement remain clean and editable.
 
-## 5. Troubleshooting
-*   **Fonts Not Rendering Correctly in PDF**: The PDF renderer uses Standard Fonts (Helvetica and Helvetica-Bold). If special botanical/unicode glyphs are used, they will fallback to `?` to avoid crashing. Keep inputs within standard ASCII/Latin ranges.
-*   **DOCX Doesn't Open**: Ensure the generated binary is intact by checking that the file size is greater than 1KB. Ensure no raw markdown strings are fed into heading/paragraph constructors.
+## Safety Gates
+
+- Human Testing remains `PAUSED`.
+- Paid launch remains `NO-GO`; do not activate Midtrans here.
+- Public/user PDF and DOCX export remains locked or inactive.
+- Upload and source verification remain inactive.
+- Never stage artifacts in `~/Downloads/NaLI-QA/` or `/tmp/nali-qa/`.
+- Never stage `.env.local`, service keys, payment secrets, report access values, hashes, or guest session values.
+
+## Verification
+
+Before committing renderer work, run:
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+npm run test:demo
+node --test tests/reports/*.test.cjs
+```
+
+Record failures honestly. A local artifact is not a published article and is not eligible for public release solely because generation succeeds.

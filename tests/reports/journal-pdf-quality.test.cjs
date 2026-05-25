@@ -7,6 +7,7 @@ const fs = require("node:fs");
 const { buildMockResult } = require("../../src/lib/reports/reportGenerator");
 const { buildReportMarkdown } = require("../../src/lib/reports/markdown");
 const { buildReportPdfBytes } = require("../../src/lib/reports/pdf");
+const { validateJournalPdfOutputPath } = require("../../src/lib/reports/journalHtmlPdfRenderer");
 
 const testInput = {
   mode: "draft_from_materials",
@@ -71,4 +72,20 @@ test("6. Public PDF remains locked in client copy operations", () => {
   const report = buildMockResult(testInput, "NaLI Peregrine");
   const markdown = buildReportMarkdown(report, { exportStatus: "preview_copy" });
   assert.ok(markdown.includes("Status export: preview_copy"), "Should state copy mode status");
+});
+
+test("7. Founder/admin journal PDF uses a Playwright local-only renderer", () => {
+  const repoRoot = path.join(__dirname, "../..");
+  const source = fs.readFileSync(path.join(repoRoot, "src/lib/reports/journalHtmlPdfRenderer.ts"), "utf8");
+  assert.match(source, /from "playwright"/);
+  assert.match(source, /printBackground:\s*true/);
+  assert.match(source, /preferCSSPageSize:\s*true/);
+});
+
+test("8. Journal PDF renderer refuses repository and public output paths", () => {
+  assert.doesNotThrow(() => validateJournalPdfOutputPath("/tmp/nali-qa/founder-draft.pdf"));
+  assert.doesNotThrow(() =>
+    validateJournalPdfOutputPath(path.join(require("node:os").homedir(), "Downloads/NaLI-QA/founder-draft.pdf")),
+  );
+  assert.throws(() => validateJournalPdfOutputPath(path.join(__dirname, "../../public/export.pdf")));
 });

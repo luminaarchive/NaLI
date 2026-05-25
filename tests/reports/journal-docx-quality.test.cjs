@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 const path = require("node:path");
 const fs = require("node:fs");
+const JSZip = require("jszip");
 
 const { buildMockResult } = require("../../src/lib/reports/reportGenerator");
 const { buildReportDocxBuffer } = require("../../src/lib/reports/journalDocxRenderer");
@@ -43,4 +44,28 @@ test("4. DOCX library dependency is not imported in client components", () => {
   const repoRoot = path.join(__dirname, "../..");
   const clientSource = fs.readFileSync(path.join(repoRoot, "src/components/report/ReportResultClient.tsx"), "utf8");
   assert.equal(clientSource.includes('from "docx"'), false, "DOCX library must not be loaded on the client side");
+});
+
+test("5. DOCX contains full article sections, clean tables, and no raw markdown dump", async () => {
+  const report = buildMockResult(testInput, "NaLI Obsidian");
+  const zip = await JSZip.loadAsync(await buildReportDocxBuffer(report));
+  const xml = await zip.file("word/document.xml").async("string");
+  const text = xml.replace(/<[^>]+>/g, " ");
+
+  for (const section of [
+    "INTRODUCTION",
+    "LITERATURE REVIEW",
+    "MATERIALS AND METHODS",
+    "RESULTS AND DISCUSSION",
+    "EVIDENCE DOCUMENTATION",
+    "LIMITATIONS",
+    "FUTURE WORK",
+    "CONCLUSIONS",
+    "ANNEXURE",
+    "REFERENCES",
+  ]) {
+    assert.match(text, new RegExp(section));
+  }
+  assert.doesNotMatch(text, /\|\s*Spesimen\s*\||#{1,3}\s/);
+  assert.match(xml, /w:type="dxa"/, "Tables must have explicit editable geometry");
 });
