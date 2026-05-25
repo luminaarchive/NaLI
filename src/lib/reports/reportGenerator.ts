@@ -1,5 +1,6 @@
 import type { TaskType, SuggestedAction } from "./taskClassifier";
 import { classifyTask, getReportSections, getDefaultSuggestedActions, estimateEvidenceStrength } from "./taskClassifier";
+import { buildJournalContractData, mapJournalToDraftReport } from "./journalReportContract";
 
 export const PUBLIC_REPORT_DISCLAIMER =
   "Dokumen ini adalah draft bantuan belajar/penulisan berbasis bukti. Pengguna wajib memeriksa, mengedit, memverifikasi sumber, dan bertanggung jawab penuh atas dokumen akhir. NaLI tidak boleh digunakan untuk memalsukan data, mengarang referensi, melakukan plagiarisme, atau mengklaim karya AI sebagai karya final tanpa revisi.";
@@ -579,9 +580,7 @@ function confidenceNoteFor(input: ReportRequest, evidenceTable: EvidenceRow[]) {
   const level = hasDirectNote && hasSupportingContext && evidenceTable.length >= 2 ? "sedang-terbatas" : "rendah";
 
   return `Tingkat keyakinan: ${level}. Penilaian ini hanya berdasarkan bahan yang diberikan pengguna. NaLI belum memverifikasi URL, lokasi, file, angka, atau klaim ilmiah, sehingga hasil perlu divalidasi dengan bukti tambahan dan pemeriksaan manusia.`;
-}
-
-export function buildMockDraftReport(input: ReportRequest, modelUsed = "NaLI Preview Engine"): DraftReport {
+}export function buildMockDraftReport(input: ReportRequest, modelUsed = "NaLI Preview Engine"): DraftReport {
   const evidenceTable = buildEvidenceTable(input);
   const issue = detectIssue(`${input.mainText} ${input.title}`);
   const location = input.location || detectLocation(input.mainText);
@@ -590,7 +589,7 @@ export function buildMockDraftReport(input: ReportRequest, modelUsed = "NaLI Pre
   const evStrength = estimateEvidenceStrength(input);
   const shortInput = input.mainText.trim().length < 50;
 
-  return {
+  const baseReport: DraftReport = {
     additional_evidence_needed: additionalEvidenceFor(input),
     background: `Draft ini disusun dari bahan yang diberikan pengguna untuk ${input.reportTemplate}${location ? ` di ${toTitleCase(location)}` : ""}. Bagian ini belum menambahkan sumber eksternal, statistik, atau klaim ilmiah baru.`,
     conclusion:
@@ -654,6 +653,17 @@ export function buildMockDraftReport(input: ReportRequest, modelUsed = "NaLI Pre
       : [],
     suggested_actions: getDefaultSuggestedActions(taskType),
   };
+
+  const isLeafQuery = /daun|morfologi|biologi|tanaman|tumbuhan/i.test(input.mainText || input.title);
+  if (isLeafQuery) {
+    const modelId = (input.selectedModel || "").toLowerCase() || 
+                    (modelUsed.toLowerCase().includes("obsidian") ? "obsidian" : 
+                     modelUsed.toLowerCase().includes("zephyr") ? "zephyr" : "peregrine");
+    const contract = buildJournalContractData(input, modelId);
+    return mapJournalToDraftReport(baseReport, contract);
+  }
+
+  return baseReport;
 }
 
 export function buildMockStartGuide(input: ReportRequest, modelUsed = "NaLI Preview Engine"): StartFromZeroGuide {

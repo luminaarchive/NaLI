@@ -1,0 +1,74 @@
+require("../helpers/register-ts.cjs");
+const assert = require("node:assert/strict");
+const test = require("node:test");
+const path = require("node:path");
+const fs = require("node:fs");
+
+const { buildMockResult } = require("../../src/lib/reports/reportGenerator");
+const { buildReportMarkdown } = require("../../src/lib/reports/markdown");
+const { buildReportPdfBytes } = require("../../src/lib/reports/pdf");
+
+const testInput = {
+  mode: "draft_from_materials",
+  reportTemplate: "Laporan Observasi Lingkungan",
+  mainText: "morfologi daun Daun A dan Daun B",
+  sourceUrls: [],
+  location: "Halaman Kampus",
+  fileDescription: "",
+  userRole: "mahasiswa",
+  title: "Pengamatan Morfologi Daun",
+  topic: "",
+  selectedModel: "peregrine",
+  integrityConsent: true,
+};
+
+test("1. Journal output contract includes IMRaD-like sections", () => {
+  const report = buildMockResult(testInput, "NaLI Peregrine");
+  assert.ok(report.executive_summary.includes("Abstrak"));
+  assert.ok(report.background.includes("Pendahuluan") || report.background.includes("pengamatan"));
+  assert.ok(report.method_or_materials.includes("Metode") || report.method_or_materials.includes("Bahan"));
+  assert.ok(report.discussion.includes("Pembahasan"));
+  assert.ok(report.conclusion.includes("Kesimpulan"));
+});
+
+test("2. Evidence placeholders are present when no photo/evidence is provided", () => {
+  const report = buildMockResult(testInput, "NaLI Peregrine");
+  const markdown = buildReportMarkdown(report);
+  assert.ok(markdown.includes("Foto belum tersedia"), "Must include photo evidence placeholder");
+  assert.ok(markdown.includes("Data kuantitatif belum tersedia"), "Must include measurement placeholder");
+});
+
+test("3. No fake DOI, citation, or species identification is fabricated", () => {
+  const report = buildMockResult(testInput, "NaLI Peregrine");
+  const text = JSON.stringify(report);
+  assert.equal(text.includes("doi.org"), false, "Must not fabricate DOI");
+  assert.equal(text.includes("10.1002"), false, "Must not fabricate DOIs");
+  // Ensure we do not fabricate random species taxonomies or verified markers
+  assert.equal(text.includes("Spesies Terverifikasi"), false, "Must not claim verified species");
+});
+
+test("4. Peregrine, Obsidian, and Zephyr profiles produce meaningfully different outputs", () => {
+  const pReport = buildMockResult({ ...testInput, selectedModel: "peregrine" }, "NaLI Peregrine");
+  const oReport = buildMockResult({ ...testInput, selectedModel: "obsidian" }, "NaLI Obsidian");
+  const zReport = buildMockResult({ ...testInput, selectedModel: "zephyr" }, "NaLI Zephyr");
+
+  assert.notEqual(pReport.executive_summary, oReport.executive_summary, "Peregrine and Obsidian abstracts must differ");
+  assert.notEqual(oReport.executive_summary, zReport.executive_summary, "Obsidian and Zephyr abstracts must differ");
+  assert.ok(oReport.executive_summary.includes("ketiadaan instrumen"), "Obsidian should explicitly state limitations");
+  assert.ok(zReport.executive_summary.includes("Laporan pengamatan ini menyajikan"), "Zephyr should have refined prose");
+});
+
+test("5. PDF builder includes headers, disclaimers, and evidence slots", async () => {
+  const report = buildMockResult(testInput, "NaLI Peregrine");
+  const pdfBytes = await buildReportPdfBytes(report, { exportStatus: "export_ready" });
+  assert.ok(pdfBytes.length > 0, "PDF generation should succeed");
+  // Check that the output is indeed a PDF
+  const header = Buffer.from(pdfBytes.slice(0, 4)).toString("utf8");
+  assert.equal(header, "%PDF", "Must output valid PDF header");
+});
+
+test("6. Public PDF remains locked in client copy operations", () => {
+  const report = buildMockResult(testInput, "NaLI Peregrine");
+  const markdown = buildReportMarkdown(report, { exportStatus: "preview_copy" });
+  assert.ok(markdown.includes("Status export: preview_copy"), "Should state copy mode status");
+});

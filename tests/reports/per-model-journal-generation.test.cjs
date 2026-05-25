@@ -101,7 +101,12 @@ test("5. Local copy/download UI features lock public PDF export", () => {
 });
 
 test("6. QA download outputs are placed outside the repository", () => {
-  const downloadsPath = "/tmp/nali-qa";
-  const relative = path.relative(repoRoot, downloadsPath);
-  assert.ok(relative.startsWith(".."), "QA outputs must be placed outside the repository root to avoid committing them to git.");
+  const tmpPath = "/tmp/nali-qa";
+  const downloadsPath = path.join(require("node:os").homedir(), "Downloads/NaLI-QA");
+  
+  const relTmp = path.relative(repoRoot, tmpPath);
+  assert.ok(relTmp.startsWith(".."), "QA tmp path must be outside the repo.");
+  
+  const relDownloads = path.relative(repoRoot, downloadsPath);
+  assert.ok(relDownloads.startsWith(".."), "QA downloads path must be outside the repo.");
 });

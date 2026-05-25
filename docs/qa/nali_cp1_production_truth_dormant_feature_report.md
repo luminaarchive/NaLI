@@ -63,12 +63,14 @@ No misleading copy or overclaims regarding live payments, file uploads, cloud sy
 
 - **Public PDF export**: LOCKED
 - **Founder/admin local QA PDF generation**: PASS
-- **Output folder used**: `/tmp/nali-qa`
+- **Output folder used**: `~/Downloads/NaLI-QA/` (with fallback to `/tmp/nali-qa`)
 - **Files generated**:
-  - `nali-peregrine-journal-qa.md`, `.txt`, `.pdf`
-  - `nali-obsidian-journal-qa.md`, `.txt`, `.pdf`
-  - `nali-zephyr-journal-qa.md`, `.txt`, `.pdf`
-- **Git Exclusions**: Confirmed. Generated files are placed in `/tmp/nali-qa` (outside the repository root directory) and are not committed to git.
+  - `nali-peregrine-journal-v2.md`, `.txt`, `.pdf`
+  - `nali-obsidian-journal-v2.md`, `.txt`, `.pdf`
+  - `nali-zephyr-journal-v2.md`, `.txt`, `.pdf`
+- **Git Exclusions**: Confirmed. Generated files are placed in `~/Downloads/NaLI-QA/` (outside the repository root directory) and are not committed to git.
+- **Note**: The previous v1 QA artifacts were too generic and have been replaced by the rich journal-style QA v2 artifacts, which properly differentiate model profiles and format tables, disclaimers, and evidence cards.
+
 
 ### Per-Model Quality Table
 
