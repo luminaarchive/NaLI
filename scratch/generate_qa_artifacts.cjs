@@ -6,6 +6,7 @@ const os = require("node:os");
 const { buildMockResult } = require("../src/lib/reports/reportGenerator");
 const { buildReportMarkdown } = require("../src/lib/reports/markdown");
 const { buildReportPdfBytes } = require("../src/lib/reports/pdf");
+const { buildReportDocxBuffer } = require("../src/lib/reports/journalDocxRenderer");
 
 const prompt = "Saya mahasiswa biologi. Tolong bantu buat draft laporan bergaya jurnal sederhana tentang pengamatan morfologi daun di sekitar kampus. Data saya: Daun A berbentuk lonjong, tepi rata, warna hijau tua. Daun B berbentuk menjari, tepi bergerigi, warna hijau muda. Lokasi umum: sekitar halaman kampus. Waktu pengamatan: pagi hari. Jangan buat sitasi palsu, DOI palsu, atau klaim verifikasi sumber. Buat struktur seperti judul, abstrak singkat, pendahuluan, metode, hasil, pembahasan, keterbatasan bukti, dan data tambahan yang masih perlu saya kumpulkan.";
 
@@ -55,14 +56,18 @@ async function run() {
     const txt = stripMarkdown(md);
     
     // Write Markdown & TXT
-    fs.writeFileSync(path.join(outputDir, `nali-${model}-journal-v2.md`), md, "utf8");
-    fs.writeFileSync(path.join(outputDir, `nali-${model}-journal-v2.txt`), txt, "utf8");
+    fs.writeFileSync(path.join(outputDir, `nali-${model}-journal-reference-v4.md`), md, "utf8");
+    fs.writeFileSync(path.join(outputDir, `nali-${model}-journal-reference-v4.txt`), txt, "utf8");
     
     // Build PDF
     const pdfBytes = await buildReportPdfBytes(report, { exportStatus: "export_ready" });
-    fs.writeFileSync(path.join(outputDir, `nali-${model}-journal-v2.pdf`), Buffer.from(pdfBytes));
+    fs.writeFileSync(path.join(outputDir, `nali-${model}-journal-reference-v4.pdf`), Buffer.from(pdfBytes));
+
+    // Build DOCX
+    const docxBuffer = await buildReportDocxBuffer(report);
+    fs.writeFileSync(path.join(outputDir, `nali-${model}-journal-reference-v4.docx`), docxBuffer);
     
-    console.log(`Generated QA v2 artifacts for model ${model} in ${outputDir}`);
+    console.log(`Generated QA v4 journal reference artifacts for model ${model} in ${outputDir}`);
   }
 }
 

@@ -1,6 +1,7 @@
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import type { ReportResult } from "@/lib/reports/reportGenerator";
 import { buildReportMarkdown, type ReportMarkdownOptions } from "@/lib/reports/markdown";
+import { buildJournalArticle, mapJournalArticleToDraftReport } from "./journalArticleTemplate";
 
 type TextStyle = {
   color: ReturnType<typeof rgb>;
@@ -17,6 +18,7 @@ const MARGIN_BOTTOM = 56;
 const BASE_TEXT = rgb(0.15, 0.15, 0.15);
 const MUTED_TEXT = rgb(0.4, 0.4, 0.4);
 const HEADING_TEXT = rgb(0.02, 0.12, 0.18);
+const ACCENT_COLOR = rgb(0.1, 0.45, 0.45); // NaLI dark teal
 
 function toPdfSafeText(value: string) {
   return value
@@ -44,18 +46,18 @@ function stripMarkdown(line: string) {
 
 function getLineStyle(line: string, fonts: { bold: PDFFont; regular: PDFFont }): TextStyle {
   if (line.startsWith("# ")) {
-    return { color: HEADING_TEXT, font: fonts.bold, lineGap: 8, size: 16 };
+    return { color: HEADING_TEXT, font: fonts.bold, lineGap: 8, size: 14 };
   }
 
   if (line.startsWith("## ")) {
-    return { color: HEADING_TEXT, font: fonts.bold, lineGap: 6, size: 12 };
+    return { color: HEADING_TEXT, font: fonts.bold, lineGap: 6, size: 11 };
   }
 
   if (line.startsWith("### ")) {
-    return { color: HEADING_TEXT, font: fonts.bold, lineGap: 5, size: 10 };
+    return { color: HEADING_TEXT, font: fonts.bold, lineGap: 5, size: 9.5 };
   }
 
-  return { color: BASE_TEXT, font: fonts.regular, lineGap: 5, size: 9 };
+  return { color: BASE_TEXT, font: fonts.regular, lineGap: 5, size: 8.5 };
 }
 
 function wrapText(text: string, font: PDFFont, size: number, maxWidth: number) {
@@ -110,23 +112,20 @@ function drawTableRow(
   colWidths: number[]
 ): { nextY: number; page: PDFPage } {
   const font = isHeader ? fonts.bold : fonts.regular;
-  const size = isHeader ? 8.5 : 8;
-  const padding = 6;
-  const lineHeight = size + 4;
+  const size = isHeader ? 8 : 7.5;
+  const padding = 5;
+  const lineHeight = size + 3;
   
-  // Wrap text for each cell
   const cellLines = cells.map((cell, idx) => wrapText(cell.trim(), font, size, colWidths[idx] - padding * 2));
   const maxLines = Math.max(...cellLines.map(lines => lines.length), 1);
   const rowHeight = maxLines * lineHeight + padding * 2;
   
-  // Page break check
   if (y - rowHeight < MARGIN_BOTTOM) {
     page = addPage(pdf);
     y = PAGE_HEIGHT - MARGIN_TOP;
   }
   
-  // Draw background
-  const bg = isHeader ? rgb(0.9, 0.93, 0.95) : (Math.floor(y) % 2 === 0 ? rgb(0.98, 0.98, 0.98) : rgb(1, 1, 1));
+  const bg = isHeader ? rgb(0.92, 0.94, 0.96) : (Math.floor(y) % 2 === 0 ? rgb(0.98, 0.98, 0.98) : rgb(1, 1, 1));
   page.drawRectangle({
     x: MARGIN_X,
     y: y - rowHeight,
@@ -137,13 +136,11 @@ function drawTableRow(
     borderWidth: 0.5
   });
   
-  // Draw cell content
   let currentX = MARGIN_X;
   for (let idx = 0; idx < cells.length; idx++) {
     const lines = cellLines[idx];
     const colWidth = colWidths[idx];
     
-    // Draw vertical separator line between columns
     if (idx > 0) {
       page.drawLine({
         start: { x: currentX, y: y },
@@ -171,259 +168,558 @@ function drawTableRow(
 }
 
 export async function buildReportPdfBytes(report: ReportResult, options: ReportMarkdownOptions = {}) {
-  const markdown = buildReportMarkdown(report, { exportStatus: options.exportStatus ?? "export_ready" });
   const pdf = await PDFDocument.create();
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
   const fonts = { bold, regular };
   const maxWidth = PAGE_WIDTH - MARGIN_X * 2;
-  
-  let page: PDFPage = addPage(pdf);
+
+  // Extract model ID for specific profiles
+  const modelId = report.model_used.toLowerCase().includes("obsidian") ? "obsidian" :
+                  report.model_used.toLowerCase().includes("zephyr") ? "zephyr" : "peregrine";
+
+  // Build the complete academic journal article object using our template
+  const isDraft = report.mode === "draft_from_materials";
+  const draftReport = isDraft ? (report as any) : null;
+  const mainText = draftReport ? (draftReport.findings || []).join("\n") + "\n" + (draftReport.preliminary_analysis || "") : report.title;
+  const location = draftReport && draftReport.method_or_materials && draftReport.method_or_materials.includes("Lokasi:") ? "Halaman Kampus" : "";
+
+  const article = buildJournalArticle(
+    {
+      title: report.title,
+      reportTemplate: report.report_type,
+      mainText,
+      location,
+      created_at: report.created_at
+    },
+    modelId
+  );
+
+  // ==========================================
+  // PAGE 1: JOURNAL COVER PAGE
+  // ==========================================
+  let page = addPage(pdf);
   let y = PAGE_HEIGHT - MARGIN_TOP;
 
-  // Draw Cover/Header Section at the top of the first page
+  // Top header rule
+  page.drawLine({
+    start: { x: MARGIN_X, y: y },
+    end: { x: PAGE_WIDTH - MARGIN_X, y: y },
+    color: ACCENT_COLOR,
+    thickness: 2,
+  });
+
+  // Journal name
+  page.drawText(article.cover.journalTitle.toUpperCase(), {
+    x: MARGIN_X,
+    y: y - 25,
+    size: 16,
+    font: bold,
+    color: HEADING_TEXT,
+  });
+
+  page.drawText(article.cover.issueLine, {
+    x: MARGIN_X,
+    y: y - 42,
+    size: 9,
+    font: regular,
+    color: MUTED_TEXT,
+  });
+
+  // Visual Theme Block (Decorative Nature Outline / Visual Placeholder)
   page.drawRectangle({
     x: MARGIN_X,
-    y: y - 75,
+    y: y - 320,
     width: PAGE_WIDTH - MARGIN_X * 2,
-    height: 75,
-    color: rgb(0.02, 0.12, 0.18),
-    borderColor: rgb(0.01, 0.08, 0.12),
+    height: 250,
+    color: rgb(0.95, 0.97, 0.96),
+    borderColor: ACCENT_COLOR,
     borderWidth: 1,
   });
 
-  page.drawText("NaLI FIELD INTELLIGENCE & LEARNING SYSTEM", {
-    x: MARGIN_X + 15,
-    y: y - 22,
-    size: 10,
+  // Visual theme text inside the decorative block
+  page.drawText("NaLI Field Observations & Flora Morphology Documentation Series", {
+    x: MARGIN_X + 24,
+    y: y - 180,
+    size: 11,
     font: bold,
-    color: rgb(1, 1, 1),
+    color: ACCENT_COLOR,
   });
 
-  page.drawText("DRAFT LAPORAN BERBASIS BUKTI - PEMBELAJARAN MANDIRI", {
-    x: MARGIN_X + 15,
-    y: y - 37,
+  page.drawText("[ Visual Evidence & Biological Pattern Draft ]", {
+    x: MARGIN_X + 24,
+    y: y - 205,
+    size: 9.5,
+    font: regular,
+    color: MUTED_TEXT,
+  });
+
+  // Metadata block on cover
+  page.drawText(`Tahun Volume: ${article.cover.year}`, {
+    x: MARGIN_X + 24,
+    y: y - 280,
+    size: 9,
+    font: regular,
+    color: BASE_TEXT,
+  });
+
+  // Article title on cover page
+  y = y - 350;
+  const coverTitleLines = wrapText(article.metadata.title, bold, 18, maxWidth);
+  for (const line of coverTitleLines) {
+    page.drawText(line, {
+      x: MARGIN_X,
+      y,
+      size: 18,
+      font: bold,
+      color: HEADING_TEXT,
+    });
+    y -= 22;
+  }
+
+  // Cover subtitle
+  y -= 8;
+  page.drawText(article.cover.coverSubtitle, {
+    x: MARGIN_X,
+    y,
+    size: 10.5,
+    font: regular,
+    color: MUTED_TEXT,
+  });
+
+  // Publisher details at the bottom of the cover page
+  page.drawText(article.cover.brandNote.toUpperCase(), {
+    x: MARGIN_X,
+    y: MARGIN_BOTTOM + 55,
+    size: 9,
+    font: bold,
+    color: ACCENT_COLOR,
+  });
+
+  // Cover disclaimer / CP1 truth note
+  const coverDisclaimerLines = wrapText(article.cover.truthNote, regular, 7.5, maxWidth);
+  let coverDisclaimerY = MARGIN_BOTTOM + 35;
+  for (const line of coverDisclaimerLines) {
+    page.drawText(line, {
+      x: MARGIN_X,
+      y: coverDisclaimerY,
+      size: 7.5,
+      font: regular,
+      color: MUTED_TEXT,
+    });
+    coverDisclaimerY -= 10;
+  }
+
+  // ==========================================
+  // PAGE 2: ARTICLE FIRST PAGE (Banner + Abstract + Metadata)
+  // ==========================================
+  page = addPage(pdf);
+  y = PAGE_HEIGHT - MARGIN_TOP;
+
+  // Running Journal Header
+  page.drawText(`${article.cover.journalTitle} | Vol. 1 No. 1 (${article.cover.year})`, {
+    x: MARGIN_X,
+    y: y - 10,
+    size: 8,
+    font: bold,
+    color: MUTED_TEXT,
+  });
+
+  page.drawText(`${article.metadata.doi} | ${article.metadata.issn}`, {
+    x: PAGE_WIDTH - MARGIN_X - bold.widthOfTextAtSize(`${article.metadata.doi} | ${article.metadata.issn}`, 8),
+    y: y - 10,
+    size: 8,
+    font: bold,
+    color: MUTED_TEXT,
+  });
+
+  page.drawLine({
+    start: { x: MARGIN_X, y: y - 16 },
+    end: { x: PAGE_WIDTH - MARGIN_X, y: y - 16 },
+    color: rgb(0.8, 0.8, 0.8),
+    thickness: 0.5,
+  });
+
+  y -= 35;
+
+  // Main Article Title
+  const titleLines = wrapText(article.metadata.title, bold, 14, maxWidth);
+  for (const line of titleLines) {
+    page.drawText(line, {
+      x: MARGIN_X,
+      y,
+      size: 14,
+      font: bold,
+      color: HEADING_TEXT,
+    });
+    y -= 18;
+  }
+
+  y -= 6;
+
+  // Author and affiliation
+  page.drawText(article.metadata.author, {
+    x: MARGIN_X,
+    y,
+    size: 9,
+    font: bold,
+    color: BASE_TEXT,
+  });
+  y -= 12;
+
+  page.drawText(article.metadata.affiliation, {
+    x: MARGIN_X,
+    y,
     size: 8,
     font: regular,
-    color: rgb(0.7, 0.8, 0.9),
+    color: MUTED_TEXT,
+  });
+  y -= 20;
+
+  // Shaded Abstract Block
+  const abstractHeaderY = y;
+  const abstractLines = wrapText(article.abstract.text, regular, 8, maxWidth - 40);
+  const abstractBoxHeight = abstractLines.length * 11 + 35;
+
+  page.drawRectangle({
+    x: MARGIN_X,
+    y: y - abstractBoxHeight,
+    width: PAGE_WIDTH - MARGIN_X * 2,
+    height: abstractBoxHeight,
+    color: rgb(0.96, 0.97, 0.98),
+    borderColor: rgb(0.85, 0.88, 0.9),
+    borderWidth: 0.5,
   });
 
-  page.drawText(`MODEL GENERATOR: ${String(report.model_used).toUpperCase()}  |  TANGGAL: ${report.created_at}`, {
-    x: MARGIN_X + 15,
-    y: y - 58,
+  page.drawText("ABSTRAK", {
+    x: MARGIN_X + 20,
+    y: abstractHeaderY - 14,
+    size: 8.5,
+    font: bold,
+    color: HEADING_TEXT,
+  });
+
+  let abstractTextY = abstractHeaderY - 26;
+  for (const line of abstractLines) {
+    page.drawText(line, {
+      x: MARGIN_X + 20,
+      y: abstractTextY,
+      size: 8,
+      font: regular,
+      color: BASE_TEXT,
+    });
+    abstractTextY -= 11;
+  }
+
+  // Keywords block
+  page.drawText(`Keywords: ${article.abstract.keywords.join(", ")}`, {
+    x: MARGIN_X + 20,
+    y: abstractHeaderY - abstractBoxHeight + 10,
     size: 7.5,
     font: bold,
-    color: rgb(0.65, 0.75, 0.85),
+    color: HEADING_TEXT,
   });
 
-  y -= 95;
+  y -= abstractBoxHeight + 15;
 
-  const lines = markdown.split(/\r?\n/);
-  let idx = 0;
+  // Article Info Box (Milestones)
+  page.drawRectangle({
+    x: MARGIN_X,
+    y: y - 55,
+    width: PAGE_WIDTH - MARGIN_X * 2,
+    height: 55,
+    color: rgb(1, 1, 1),
+    borderColor: rgb(0.85, 0.85, 0.85),
+    borderWidth: 0.5
+  });
 
-  while (idx < lines.length) {
-    const rawLine = lines[idx];
+  page.drawText(`ARTICLE INFO  |  Received: ${article.infoBlock.received}  |  Accepted: ${article.infoBlock.accepted}  |  Published: ${article.infoBlock.published}`, {
+    x: MARGIN_X + 10,
+    y: y - 14,
+    size: 7.5,
+    font: bold,
+    color: MUTED_TEXT,
+  });
 
-    // Handle empty lines
-    if (!rawLine.trim()) {
-      y -= 6;
-      idx++;
-      continue;
+  page.drawText(`Verification Status: ${article.infoBlock.verificationStatus}  |  Export Gate: ${article.infoBlock.exportStatus}`, {
+    x: MARGIN_X + 10,
+    y: y - 30,
+    size: 7.5,
+    font: regular,
+    color: MUTED_TEXT,
+  });
+
+  page.drawText(`Document Status: ${article.metadata.documentStatus}`, {
+    x: MARGIN_X + 10,
+    y: y - 44,
+    size: 7.5,
+    font: bold,
+    color: ACCENT_COLOR,
+  });
+
+  y -= 75;
+
+  // Render the academic layout body content starting from Introduction
+  const bodySections = [
+    { title: "1. PENDAHULUAN", text: article.introduction },
+    { title: "2. TINJAUAN PUSTAKA", text: article.literatureReview },
+    { title: "3. BAHAN DAN METODE", text: `Pengamatan berfokus pada ${article.materialsAndMethods.objectObserved} yang berlokasi di ${article.materialsAndMethods.location} pada ${article.materialsAndMethods.time}. Metode pengamatan menggunakan ${article.materialsAndMethods.method}. Keterbatasan penelitian meliputi: ${article.materialsAndMethods.missingDetails} Reproduksibilitas: ${article.materialsAndMethods.reproducibility}` }
+  ];
+
+  for (const section of bodySections) {
+    if (y - 30 < MARGIN_BOTTOM) {
+      page = addPage(pdf);
+      y = PAGE_HEIGHT - MARGIN_TOP;
     }
 
-    // Skip sitemaps and top header since we drew a cover banner
-    if (rawLine.startsWith("# NaLI Learn & Report") || rawLine.startsWith("## Judul Laporan")) {
-      idx++;
-      continue;
-    }
+    page.drawText(section.title, {
+      x: MARGIN_X,
+      y,
+      size: 10,
+      font: bold,
+      color: HEADING_TEXT,
+    });
+    y -= 14;
 
-    // Detect and parse Markdown Table blocks
-    if (rawLine.startsWith("|")) {
-      const tableLines: string[] = [];
-      while (idx < lines.length && lines[idx].startsWith("|")) {
-        tableLines.push(lines[idx]);
-        idx++;
-      }
-      
-      // Clean rows (remove separators)
-      const cleanRows = tableLines
-        .map(row => row.split("|").map(cell => cell.trim()).filter((_, i, arr) => i > 0 && i < arr.length - 1))
-        .filter(row => row.length > 0 && !row.every(cell => cell.startsWith("---")));
-        
-      if (cleanRows.length > 0) {
-        const numCols = cleanRows[0].length;
-        const colWidths = cleanRows[0].map((_, cIdx) => {
-          // Custom leaf comparison table column width ratios
-          if (numCols === 4) {
-            const ratios = [0.18, 0.25, 0.25, 0.32];
-            return ratios[cIdx] * maxWidth;
-          }
-          return maxWidth / numCols;
-        });
-
-        // Draw header row
-        const headerRes = drawTableRow(pdf, page, y, cleanRows[0], true, fonts, colWidths);
-        y = headerRes.nextY;
-        page = headerRes.page;
-
-        // Draw content rows
-        for (let r = 1; r < cleanRows.length; r++) {
-          const rowRes = drawTableRow(pdf, page, y, cleanRows[r], false, fonts, colWidths);
-          y = rowRes.nextY;
-          page = rowRes.page;
-        }
-        y -= 8;
-      }
-      continue;
-    }
-
-    // Detect and draw disclaimer blocks (Academic Integrity Warnings)
-    if (rawLine.includes("Dokumen ini adalah draft bantuan belajar/penulisan berbasis bukti") || 
-        rawLine.includes("PREMIUM_EXPORT_DISCLAIMER") ||
-        rawLine.includes("Draft bantuan belajar/penulisan berbasis bukti")) {
-      
-      const textClean = stripMarkdown(rawLine);
-      const textLines = wrapText(textClean, fonts.regular, 8.5, maxWidth - 24);
-      const boxHeight = textLines.length * 12 + 18;
-      
-      if (y - boxHeight < MARGIN_BOTTOM) {
-        page = addPage(pdf);
-        y = PAGE_HEIGHT - MARGIN_TOP;
-      }
-      
-      page.drawRectangle({
-        x: MARGIN_X,
-        y: y - boxHeight,
-        width: PAGE_WIDTH - MARGIN_X * 2,
-        height: boxHeight,
-        color: rgb(0.99, 0.96, 0.96),
-        borderColor: rgb(0.85, 0.35, 0.35),
-        borderWidth: 1
-      });
-      
-      // Draw small bold header
-      page.drawText("PERNYATAAN INTEGRITAS AKADEMIK & DISCLAIMER", {
-        x: MARGIN_X + 12,
-        y: y - 13,
-        font: fonts.bold,
-        size: 7.5,
-        color: rgb(0.6, 0.15, 0.15)
-      });
-      
-      let textY = y - 25;
-      for (const line of textLines) {
-        page.drawText(line, {
-          x: MARGIN_X + 12,
-          y: textY,
-          font: fonts.regular,
-          size: 8.5,
-          color: rgb(0.5, 0.1, 0.1)
-        });
-        textY -= 12;
-      }
-      y -= boxHeight + 12;
-      idx++;
-      continue;
-    }
-
-    // Detect and draw local evidence slots / photo placeholders
-    if (rawLine.includes("Evidence Slot") || rawLine.includes("Foto belum tersedia") || rawLine.includes("Data kuantitatif belum tersedia")) {
-      const textClean = stripMarkdown(rawLine);
-      const textLines = wrapText(textClean, fonts.regular, 8.5, maxWidth - 24);
-      const boxHeight = textLines.length * 12 + 22;
-      
-      if (y - boxHeight < MARGIN_BOTTOM) {
-        page = addPage(pdf);
-        y = PAGE_HEIGHT - MARGIN_TOP;
-      }
-      
-      page.drawRectangle({
-        x: MARGIN_X,
-        y: y - boxHeight,
-        width: PAGE_WIDTH - MARGIN_X * 2,
-        height: boxHeight,
-        color: rgb(0.97, 0.98, 0.97),
-        borderColor: rgb(0.4, 0.6, 0.4),
-        borderWidth: 0.8
-      });
-      
-      page.drawText("DOKUMENTASI BUKTI LOKAL (GUEST RECOVERY PREVIEW)", {
-        x: MARGIN_X + 12,
-        y: y - 12,
-        font: fonts.bold,
-        size: 7.5,
-        color: rgb(0.15, 0.35, 0.15)
-      });
-      
-      let textY = y - 24;
-      for (const line of textLines) {
-        page.drawText(line, {
-          x: MARGIN_X + 12,
-          y: textY,
-          font: fonts.regular,
-          size: 8.5,
-          color: rgb(0.1, 0.25, 0.1)
-        });
-        textY -= 12;
-      }
-      y -= boxHeight + 12;
-      idx++;
-      continue;
-    }
-
-    // Regular line processing
-    const style = getLineStyle(rawLine, fonts);
-    const text = stripMarkdown(rawLine);
-    
-    if (!text || text === "---") {
-      idx++;
-      continue;
-    }
-
-    // Draw section headers with accent lines
-    if (rawLine.startsWith("## ")) {
-      if (y - 25 < MARGIN_BOTTOM) {
-        page = addPage(pdf);
-        y = PAGE_HEIGHT - MARGIN_TOP;
-      }
-      page.drawLine({
-        start: { x: MARGIN_X, y: y },
-        end: { x: PAGE_WIDTH - MARGIN_X, y: y },
-        color: rgb(0.85, 0.87, 0.9),
-        thickness: 1
-      });
-      y -= 15;
-    }
-
-    for (const line of wrapText(text, style.font, style.size, maxWidth)) {
+    const wrappedTextLines = wrapText(section.text, regular, 8.5, maxWidth);
+    for (const line of wrappedTextLines) {
       if (y < MARGIN_BOTTOM) {
         page = addPage(pdf);
         y = PAGE_HEIGHT - MARGIN_TOP;
       }
-
       page.drawText(line, {
-        color: style.color,
-        font: style.font,
-        size: style.size,
         x: MARGIN_X,
         y,
+        size: 8.5,
+        font: regular,
+        color: BASE_TEXT,
       });
-      y -= style.size + style.lineGap;
+      y -= 12.5;
     }
-    idx++;
+    y -= 10;
   }
 
-  // Iterate pages to draw footers and header line guides
+  // ==========================================
+  // PAGE 3: RESULTS AND DISCUSSION (Table, Figures, References)
+  // ==========================================
+  if (y - 120 < MARGIN_BOTTOM) {
+    page = addPage(pdf);
+    y = PAGE_HEIGHT - MARGIN_TOP;
+  }
+
+  page.drawText("4. HASIL DAN PEMBAHASAN", {
+    x: MARGIN_X,
+    y,
+    size: 10,
+    font: bold,
+    color: HEADING_TEXT,
+  });
+  y -= 14;
+
+  const discussionLines = wrapText(article.discussion, regular, 8.5, maxWidth);
+  for (const line of discussionLines) {
+    if (y < MARGIN_BOTTOM) {
+      page = addPage(pdf);
+      y = PAGE_HEIGHT - MARGIN_TOP;
+    }
+    page.drawText(line, {
+      x: MARGIN_X,
+      y,
+      size: 8.5,
+      font: regular,
+      color: BASE_TEXT,
+    });
+    y -= 12.5;
+  }
+  y -= 12;
+
+  // Comparative table
+  page.drawText("Tabel 1: Hasil Pengamatan Perbandingan Morfologi Daun", {
+    x: MARGIN_X,
+    y,
+    size: 8.5,
+    font: bold,
+    color: HEADING_TEXT,
+  });
+  y -= 12;
+
+  const colWidths = [100, 100, 100, 100, 99.28];
+  const tableHeader = ["Spesimen", "Bentuk", "Tepi Daun", "Warna", "Status Bukti"];
+  const headerRes = drawTableRow(pdf, page, y, tableHeader, true, fonts, colWidths);
+  y = headerRes.nextY;
+  page = headerRes.page;
+
+  for (const row of article.results.comparisonTable) {
+    const rowRes = drawTableRow(pdf, page, y, [row.object, row.shape, row.margin, row.color, row.evidenceStatus], false, fonts, colWidths);
+    y = rowRes.nextY;
+    page = rowRes.page;
+  }
+
+  y -= 15;
+
+  // Figure Placeholder Boxes (No photo file available)
+  const figHeight = 85;
+  if (y - figHeight - 15 < MARGIN_BOTTOM) {
+    page = addPage(pdf);
+    y = PAGE_HEIGHT - MARGIN_TOP;
+  }
+
+  page.drawRectangle({
+    x: MARGIN_X,
+    y: y - figHeight,
+    width: PAGE_WIDTH - MARGIN_X * 2,
+    height: figHeight,
+    color: rgb(0.98, 0.98, 0.98),
+    borderColor: rgb(0.7, 0.7, 0.7),
+    borderWidth: 0.8,
+  });
+
+  page.drawText("GAMBAR 1: ELEMEN BUKTI DOKUMENTASI VISUAL (FOTO BELUM TERSEDIA)", {
+    x: MARGIN_X + 15,
+    y: y - 25,
+    size: 7.5,
+    font: bold,
+    color: MUTED_TEXT,
+  });
+
+  page.drawText("Layanan Upload File Inaktif di CP1  |  Metadata Lokal Belum Terverifikasi", {
+    x: MARGIN_X + 15,
+    y: y - 40,
+    size: 7.5,
+    font: regular,
+    color: MUTED_TEXT,
+  });
+
+  page.drawText(`Slot Lokasi: ${article.evidence.locationSlot}`, {
+    x: MARGIN_X + 15,
+    y: y - 60,
+    size: 7.5,
+    font: regular,
+    color: BASE_TEXT,
+  });
+
+  page.drawText(`Slot Waktu: ${article.evidence.timestampSlot}`, {
+    x: MARGIN_X + 15,
+    y: y - 72,
+    size: 7.5,
+    font: regular,
+    color: BASE_TEXT,
+  });
+
+  y -= figHeight + 20;
+
+  // Limitations Box callout
+  const limTextLines = wrapText("KETERBATASAN DRAF LAPORAN: " + article.limitations.join(" / "), regular, 8, maxWidth - 24);
+  const limHeight = limTextLines.length * 11 + 24;
+
+  if (y - limHeight < MARGIN_BOTTOM) {
+    page = addPage(pdf);
+    y = PAGE_HEIGHT - MARGIN_TOP;
+  }
+
+  page.drawRectangle({
+    x: MARGIN_X,
+    y: y - limHeight,
+    width: PAGE_WIDTH - MARGIN_X * 2,
+    height: limHeight,
+    color: rgb(0.99, 0.95, 0.95),
+    borderColor: rgb(0.85, 0.4, 0.4),
+    borderWidth: 1,
+  });
+
+  page.drawText("WARNING: EVIDENCE LIMITATIONS & RESEARCH INTEGRITY GATE", {
+    x: MARGIN_X + 12,
+    y: y - 12,
+    size: 7.5,
+    font: bold,
+    color: rgb(0.6, 0.15, 0.15),
+  });
+
+  let limTextY = y - 24;
+  for (const line of limTextLines) {
+    page.drawText(line, {
+      x: MARGIN_X + 12,
+      y: limTextY,
+      size: 7.5,
+      font: regular,
+      color: rgb(0.5, 0.1, 0.1),
+    });
+    limTextY -= 11;
+  }
+
+  y -= limHeight + 15;
+
+  // Conclusion and Future Data
+  const closingSections = [
+    { title: "5. KESIMPULAN", text: article.conclusion },
+    { title: "6. REFERENCES", text: article.references[0] }
+  ];
+
+  for (const section of closingSections) {
+    if (y - 30 < MARGIN_BOTTOM) {
+      page = addPage(pdf);
+      y = PAGE_HEIGHT - MARGIN_TOP;
+    }
+
+    page.drawText(section.title, {
+      x: MARGIN_X,
+      y,
+      size: 10,
+      font: bold,
+      color: HEADING_TEXT,
+    });
+    y -= 14;
+
+    const wrappedTextLines = wrapText(section.text, regular, 8.5, maxWidth);
+    for (const line of wrappedTextLines) {
+      if (y < MARGIN_BOTTOM) {
+        page = addPage(pdf);
+        y = PAGE_HEIGHT - MARGIN_TOP;
+      }
+      page.drawText(line, {
+        x: MARGIN_X,
+        y,
+        size: 8.5,
+        font: regular,
+        color: BASE_TEXT,
+      });
+      y -= 12.5;
+    }
+    y -= 10;
+  }
+
+  // Iterate pages to draw headers and footers
   const pages = pdf.getPages();
   for (let i = 0; i < pages.length; i++) {
     const p = pages[i];
+    
+    // Skip header on cover page
+    if (i > 0) {
+      p.drawLine({
+        start: { x: MARGIN_X, y: PAGE_HEIGHT - MARGIN_TOP + 12 },
+        end: { x: PAGE_WIDTH - MARGIN_X, y: PAGE_HEIGHT - MARGIN_TOP + 12 },
+        color: rgb(0.8, 0.8, 0.8),
+        thickness: 0.5,
+      });
+      
+      p.drawText(`NaLI Nature & Evidence Journal, Vol. 1, No. 1, ${article.cover.year}`, {
+        x: MARGIN_X,
+        y: PAGE_HEIGHT - MARGIN_TOP + 18,
+        size: 7.5,
+        font: regular,
+        color: MUTED_TEXT,
+      });
+    }
+
+    // Page divider and footer
     p.drawLine({
       start: { x: MARGIN_X, y: MARGIN_BOTTOM - 12 },
       end: { x: PAGE_WIDTH - MARGIN_X, y: MARGIN_BOTTOM - 12 },
-      color: rgb(0.85, 0.85, 0.85),
+      color: rgb(0.8, 0.8, 0.8),
       thickness: 0.5,
     });
-    p.drawText(`Halaman ${i + 1} dari ${pages.length}  |  Draft Laporan Akademik - NaLI Field Intelligence`, {
+
+    p.drawText(`Halaman ${i + 1} dari ${pages.length}  |  Draft Laporan Akademik - NaLI Nature & Evidence Journal`, {
       x: MARGIN_X,
       y: MARGIN_BOTTOM - 24,
       size: 7.5,

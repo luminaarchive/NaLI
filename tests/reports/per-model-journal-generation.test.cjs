@@ -109,4 +109,16 @@ test("6. QA download outputs are placed outside the repository", () => {
   
   const relDownloads = path.relative(repoRoot, downloadsPath);
   assert.ok(relDownloads.startsWith(".."), "QA downloads path must be outside the repo.");
+
+  // Check v4 file naming
+  const formats = ["md", "txt", "pdf", "docx"];
+  const models = ["peregrine", "obsidian", "zephyr"];
+  for (const model of models) {
+    for (const fmt of formats) {
+      const file = path.join(downloadsPath, `nali-${model}-journal-reference-v4.${fmt}`);
+      // verify that paths are valid and resolved outside the repo
+      const relFile = path.relative(repoRoot, file);
+      assert.ok(relFile.startsWith(".."), "v4 QA artifact files must remain outside the repo root to avoid accidental staging.");
+    }
+  }
 });

@@ -1,6 +1,6 @@
 import type { TaskType, SuggestedAction } from "./taskClassifier";
 import { classifyTask, getReportSections, getDefaultSuggestedActions, estimateEvidenceStrength } from "./taskClassifier";
-import { buildJournalContractData, mapJournalToDraftReport } from "./journalReportContract";
+import { buildJournalArticle, mapJournalArticleToDraftReport } from "./journalArticleTemplate";
 
 export const PUBLIC_REPORT_DISCLAIMER =
   "Dokumen ini adalah draft bantuan belajar/penulisan berbasis bukti. Pengguna wajib memeriksa, mengedit, memverifikasi sumber, dan bertanggung jawab penuh atas dokumen akhir. NaLI tidak boleh digunakan untuk memalsukan data, mengarang referensi, melakukan plagiarisme, atau mengklaim karya AI sebagai karya final tanpa revisi.";
@@ -659,8 +659,8 @@ function confidenceNoteFor(input: ReportRequest, evidenceTable: EvidenceRow[]) {
     const modelId = (input.selectedModel || "").toLowerCase() || 
                     (modelUsed.toLowerCase().includes("obsidian") ? "obsidian" : 
                      modelUsed.toLowerCase().includes("zephyr") ? "zephyr" : "peregrine");
-    const contract = buildJournalContractData(input, modelId);
-    return mapJournalToDraftReport(baseReport, contract);
+    const article = buildJournalArticle(input, modelId);
+    return mapJournalArticleToDraftReport(baseReport, article);
   }
 
   return baseReport;

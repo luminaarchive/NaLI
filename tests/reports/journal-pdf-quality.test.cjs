@@ -34,8 +34,8 @@ test("1. Journal output contract includes IMRaD-like sections", () => {
 test("2. Evidence placeholders are present when no photo/evidence is provided", () => {
   const report = buildMockResult(testInput, "NaLI Peregrine");
   const markdown = buildReportMarkdown(report);
-  assert.ok(markdown.includes("Foto belum tersedia"), "Must include photo evidence placeholder");
-  assert.ok(markdown.includes("Data kuantitatif belum tersedia"), "Must include measurement placeholder");
+  assert.ok(markdown.includes("Foto belum disediakan"), "Must include photo evidence placeholder");
+  assert.ok(markdown.includes("Data kuantitatif belum disediakan"), "Must include measurement placeholder");
 });
 
 test("3. No fake DOI, citation, or species identification is fabricated", () => {
@@ -54,8 +54,8 @@ test("4. Peregrine, Obsidian, and Zephyr profiles produce meaningfully different
 
   assert.notEqual(pReport.executive_summary, oReport.executive_summary, "Peregrine and Obsidian abstracts must differ");
   assert.notEqual(oReport.executive_summary, zReport.executive_summary, "Obsidian and Zephyr abstracts must differ");
-  assert.ok(oReport.executive_summary.includes("ketiadaan instrumen"), "Obsidian should explicitly state limitations");
-  assert.ok(zReport.executive_summary.includes("Laporan pengamatan ini menyajikan"), "Zephyr should have refined prose");
+  assert.ok(oReport.executive_summary.includes("Ketiadaan bukti foto"), "Obsidian should explicitly state limitations");
+  assert.ok(zReport.executive_summary.includes("Laporan pengamatan mandiri ini menyajikan"), "Zephyr should have refined prose");
 });
 
 test("5. PDF builder includes headers, disclaimers, and evidence slots", async () => {
