@@ -392,9 +392,11 @@ function modelIdFor(report: ReportResult) {
 }
 
 export async function buildReportDocxBuffer(report: ReportResult): Promise<Buffer> {
-  const hasDocxRefs = report.source_notes?.some(note =>
-    note.includes("[1]") || note.includes("Botany morphology")
-  );
+  const hasDocxRefs =
+    report.mode === "draft_from_materials" &&
+    (report.source_notes as string[] | undefined)?.some((note: string) =>
+      note.includes("[1]") || note.includes("Botany morphology")
+    );
   const sourceSummary =
     report.mode === "draft_from_materials"
       ? report.findings.join(" ") + (hasDocxRefs ? " references Botany Guide Flora Kampus" : "")
