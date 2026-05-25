@@ -904,19 +904,129 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     window.open(`/api/reports/${initialReportId}/export?${params.toString()}`, "_blank");
   };
 
-  // Local copy markdown
+  // Local copy and offline export
   const [copyStatus, setCopyStatus] = useState(false);
+  const [copyTextStatus, setCopyTextStatus] = useState(false);
+
+  function stripMarkdown(md: string): string {
+    return md
+      .replace(/^#+\s+/gm, "")
+      .replace(/\*\*|__/g, "")
+      .replace(/\*|_/g, "")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/^-\s+/gm, "")
+      .replace(/^[|+-].*[|+-]$/gm, "")
+      .replace(/\n\s*\n+/g, "\n\n")
+      .trim();
+  }
+
+  async function copyTextToClipboard(text: string): Promise<boolean> {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // Fallback
+      }
+    }
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.top = "0";
+      textArea.style.left = "0";
+      textArea.style.position = "fixed";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand("copy");
+      document.body.removeChild(textArea);
+      return successful;
+    } catch {
+      return false;
+    }
+  }
+
   const handleCopyMarkdown = async () => {
     if (!report) return;
-    try {
-      const markdown = buildReportMarkdown(report, {
-        exportStatus: exportReadiness === "export_ready" ? "export_ready" : "preview_copy",
-      });
-      await navigator.clipboard.writeText(markdown);
+    const md = buildReportMarkdown(report, {
+      exportStatus: exportReadiness === "export_ready" ? "export_ready" : "preview_copy",
+    });
+    const ok = await copyTextToClipboard(md);
+    if (ok) {
       setCopyStatus(true);
       setTimeout(() => setCopyStatus(false), 2000);
-    } catch {
+    } else {
       alert("Gagal menyalin markdown.");
+    }
+  };
+
+  const handleCopyPlainText = async () => {
+    if (!report) return;
+    const md = buildReportMarkdown(report, {
+      exportStatus: exportReadiness === "export_ready" ? "export_ready" : "preview_copy",
+    });
+    const clean = stripMarkdown(md);
+    const ok = await copyTextToClipboard(clean);
+    if (ok) {
+      setCopyTextStatus(true);
+      setTimeout(() => setCopyTextStatus(false), 2000);
+    } else {
+      alert("Gagal menyalin teks.");
+    }
+  };
+
+  const handleDownloadMarkdownLocal = () => {
+    if (!report) return;
+    try {
+      const md = buildReportMarkdown(report, {
+        exportStatus: exportReadiness === "export_ready" ? "export_ready" : "preview_copy",
+      });
+      const title = report.title || "draft-laporan";
+      const cleanTitle = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-")
+        .replace(/-+/g, "-")
+        .trim() || "laporan";
+      const filename = `${cleanTitle}.md`;
+      const blob = new Blob([md], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("Gagal mengunduh markdown.");
+    }
+  };
+
+  const handleDownloadTextLocal = () => {
+    if (!report) return;
+    try {
+      const md = buildReportMarkdown(report, {
+        exportStatus: exportReadiness === "export_ready" ? "export_ready" : "preview_copy",
+      });
+      const clean = stripMarkdown(md);
+      const title = report.title || "draft-laporan";
+      const cleanTitle = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-")
+        .replace(/-+/g, "-")
+        .trim() || "laporan";
+      const filename = `${cleanTitle}.txt`;
+      const blob = new Blob([clean], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("Gagal mengunduh teks.");
     }
   };
 
@@ -1314,6 +1424,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                           onDownload={handleDownloadExport}
                           showExport={showExportStatus}
                           exportNotice={exportNotice}
+                          copyTextStatus={copyTextStatus}
+                          onCopyText={handleCopyPlainText}
+                          onDownloadMarkdownLocal={handleDownloadMarkdownLocal}
+                          onDownloadTextLocal={handleDownloadTextLocal}
                         />
 
                         {/* Inline feedback prompt — shows once after first report preview */}
@@ -1755,6 +1869,10 @@ interface ReportResultCardProps {
   onDownload: (format: "markdown" | "pdf") => void;
   showExport: boolean;
   exportNotice: string | null;
+  copyTextStatus?: boolean;
+  onCopyText?: () => void;
+  onDownloadMarkdownLocal?: () => void;
+  onDownloadTextLocal?: () => void;
 }
 
 function ReportResultCard({
@@ -1767,6 +1885,10 @@ function ReportResultCard({
   onDownload,
   showExport,
   exportNotice,
+  copyTextStatus,
+  onCopyText,
+  onDownloadMarkdownLocal,
+  onDownloadTextLocal,
 }: ReportResultCardProps) {
   const [activeTab, setActiveTab] = useState<"preview" | "evidence" | "uncertainty">("preview");
 
@@ -2009,7 +2131,7 @@ function ReportResultCard({
       <div className="p-5 max-h-[380px] overflow-y-auto bg-white/[0.01]">
         {renderTabContent()}
       </div>
-
+ 
       {/* Actions footer bar */}
       <div className="flex flex-wrap gap-2 px-4 py-3 bg-white/[0.02] border-t border-white/[0.06] text-xs">
         <Button
@@ -2021,6 +2143,42 @@ function ReportResultCard({
           <Clipboard className="h-3.5 w-3.5 mr-1.5" />
           {copyStatus ? "Tersalin!" : "Salin Markdown"}
         </Button>
+
+        {onCopyText && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onCopyText}
+            className="h-11 sm:h-8 border-white/[0.08] hover:bg-white/[0.04] text-white/60 hover:text-white cursor-pointer"
+          >
+            <Clipboard className="h-3.5 w-3.5 mr-1.5" />
+            {copyTextStatus ? "Tersalin!" : "Salin teks biasa"}
+          </Button>
+        )}
+
+        {onDownloadMarkdownLocal && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onDownloadMarkdownLocal}
+            className="h-11 sm:h-8 border-white/[0.08] hover:bg-white/[0.04] text-white/60 hover:text-white cursor-pointer"
+          >
+            <Download className="h-3.5 w-3.5 mr-1.5" />
+            Unduh Markdown lokal
+          </Button>
+        )}
+
+        {onDownloadTextLocal && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onDownloadTextLocal}
+            className="h-11 sm:h-8 border-white/[0.08] hover:bg-white/[0.04] text-white/60 hover:text-white cursor-pointer"
+          >
+            <Download className="h-3.5 w-3.5 mr-1.5" />
+            Unduh teks lokal
+          </Button>
+        )}
 
         {exportReadiness === "export_ready" ? (
           <>
@@ -2052,6 +2210,12 @@ function ReportResultCard({
             <LockKeyhole className="h-3.5 w-3.5 mr-1.5" />
             Unlock PDF (15 Kredit / Bayar)
           </Button>
+        )}
+
+        {exportReadiness !== "export_ready" && (
+          <p className="w-full text-[10px] text-white/25 mt-1 italic">
+            * PDF berbayar belum aktif di fase testing ini. Export berbayar masih terkunci.
+          </p>
         )}
 
         {showExport && exportNotice && (() => {

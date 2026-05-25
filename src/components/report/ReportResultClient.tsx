@@ -63,7 +63,7 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
   const [accessKey, setAccessKey] = useState<string | null>(null);
   const [hasAccessKey, setHasAccessKey] = useState(false);
   const [isLoadingPersisted, setIsLoadingPersisted] = useState(true);
-  const [status, setStatus] = useState<"idle" | "copied" | "export_notice">("idle");
+  const [status, setStatus] = useState<"idle" | "copied" | "copied_markdown" | "copied_text" | "export_notice">("idle");
   const [exportNotice, setExportNotice] = useState<string | null>(null);
   const [exportReadiness, setExportReadiness] = useState<"export_ready" | "export_locked" | "unknown">("unknown");
   const [feedbackComment, setFeedbackComment] = useState("");
@@ -152,14 +152,88 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
     [exportReadiness, report],
   );
 
+  function stripMarkdown(md: string): string {
+    return md
+      .replace(/^#+\s+/gm, "")
+      .replace(/\*\*|__/g, "")
+      .replace(/\*|_/g, "")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/^-\s+/gm, "")
+      .replace(/^[|+-].*[|+-]$/gm, "")
+      .replace(/\n\s*\n+/g, "\n\n")
+      .trim();
+  }
+
+  async function copyTextToClipboard(text: string): Promise<boolean> {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // Fallback
+      }
+    }
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.top = "0";
+      textArea.style.left = "0";
+      textArea.style.position = "fixed";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand("copy");
+      document.body.removeChild(textArea);
+      return successful;
+    } catch {
+      return false;
+    }
+  }
+
   async function copyMarkdown() {
     if (!report) return;
-    try {
-      await navigator.clipboard.writeText(markdown);
-      setStatus("copied");
+    const ok = await copyTextToClipboard(markdown);
+    if (ok) {
+      setStatus("copied_markdown");
       setTimeout(() => setStatus("idle"), 2000);
-    } catch {
+    } else {
       alert("Gagal menyalin markdown.");
+    }
+  }
+
+  async function copyPlainText() {
+    if (!report) return;
+    const clean = stripMarkdown(markdown);
+    const ok = await copyTextToClipboard(clean);
+    if (ok) {
+      setStatus("copied_text");
+      setTimeout(() => setStatus("idle"), 2000);
+    } else {
+      alert("Gagal menyalin teks.");
+    }
+  }
+
+  function downloadLocalFile(content: string, ext: ".md" | ".txt") {
+    if (!report) return;
+    try {
+      const title = report.title || "draft-laporan";
+      const cleanTitle = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-")
+        .replace(/-+/g, "-")
+        .trim() || "laporan";
+      const filename = `${cleanTitle}${ext}`;
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("Gagal mengunduh file.");
     }
   }
 
@@ -379,13 +453,27 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
           ) : null}
 
           <SidebarCard title="Free Preview">
-            <p className="text-sm leading-6 text-white/40">Salin isi preview untuk ditinjau dan diedit manual.</p>
-            <Button className="mt-3 w-full" type="button" variant="outline" onClick={copyMarkdown}>
-              <Clipboard className="h-4 w-4" aria-hidden="true" />
-              Salin Preview
-            </Button>
+            <p className="text-sm leading-6 text-white/40">Gunakan opsi gratis di bawah ini untuk menyalin atau mengunduh draf secara offline.</p>
+            <div className="mt-3 space-y-2">
+              <Button className="w-full flex items-center justify-center gap-2 h-11 sm:h-9" type="button" variant="outline" onClick={copyMarkdown}>
+                <Clipboard className="h-4 w-4" aria-hidden="true" />
+                Salin Markdown
+              </Button>
+              <Button className="w-full flex items-center justify-center gap-2 h-11 sm:h-9" type="button" variant="outline" onClick={copyPlainText}>
+                <Clipboard className="h-4 w-4" aria-hidden="true" />
+                Salin teks biasa
+              </Button>
+              <Button className="w-full flex items-center justify-center gap-2 h-11 sm:h-9" type="button" variant="outline" onClick={() => downloadLocalFile(markdown, ".md")}>
+                <Download className="h-4 w-4" aria-hidden="true" />
+                Unduh Markdown lokal
+              </Button>
+              <Button className="w-full flex items-center justify-center gap-2 h-11 sm:h-9" type="button" variant="outline" onClick={() => downloadLocalFile(stripMarkdown(markdown), ".txt")}>
+                <Download className="h-4 w-4" aria-hidden="true" />
+                Unduh teks lokal
+              </Button>
+            </div>
           </SidebarCard>
-
+ 
           <SidebarCard title="Export Premium">
             {exportReadiness === "export_ready" ? (
               <>
@@ -427,7 +515,7 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
                   Export versi rapi
                 </Button>
                 <p className="mt-2 text-[11px] text-white/25">
-                  Pembayaran belum aktif di fase testing ini.
+                  PDF berbayar belum aktif di fase testing ini. Export berbayar masih terkunci.
                 </p>
                 {!accessKey ? (
                   <p className="mt-2 text-xs leading-5 text-white/30">
@@ -437,10 +525,12 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
               </>
             )}
           </SidebarCard>
-
+ 
           {status !== "idle" ? (
             <p className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm text-emerald-300">
-              {status === "copied" ? "Preview Markdown tersalin." : exportNotice}
+              {(status === "copied" || status === "copied_markdown") && "Unduh/Salin: Preview Markdown tersalin."}
+              {status === "copied_text" && "Unduh/Salin: Teks biasa tersalin."}
+              {status === "export_notice" && exportNotice}
             </p>
           ) : null}
         </aside>

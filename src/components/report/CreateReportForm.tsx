@@ -33,6 +33,7 @@ import {
 } from "@/lib/reports/clientRecovery";
 import { validateReportInput } from "@/lib/reports/inputValidation";
 import { useDebouncedReportValidation } from "@/lib/reports/useDebouncedValidation";
+import { readLocalImageMetadata, type LocalImageMetadataResult } from "@/lib/reports/localImageMetadata";
 
 type FormState = {
   mode: ReportMode;
@@ -98,6 +99,100 @@ export function CreateReportForm() {
   const [snapshots, setSnapshots] = useState<GuestReportRecoverySnapshot[]>([]);
   const validationIssue = useDebouncedReportValidation(form);
   const showValidation = !error && hasMaterial(form) && validationIssue.severity !== "none";
+
+  const [metadataResult, setMetadataResult] = useState<LocalImageMetadataResult | null>(null);
+  const [metadataAlert, setMetadataAlert] = useState<{ variant: "info" | "warning" | "error" | "success" | "locked"; title: string; explanation: string } | null>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMetadataAlert(null);
+    setMetadataResult(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const res = await readLocalImageMetadata(file);
+      if (!res.ok) {
+        setMetadataAlert({
+          variant: "error",
+          title: "Gagal membaca file",
+          explanation: res.warnings[0] || "Terjadi kesalahan saat memproses gambar.",
+        });
+      } else if (res.warnings.length > 0 && !res.capturedAt && !res.latitude) {
+        setMetadataAlert({
+          variant: "warning",
+          title: "Metadata tidak ditemukan",
+          explanation: res.warnings[0] || "Tidak ada lokasi atau waktu pengambilan foto di dalam file ini. File tidak diupload.",
+        });
+      } else if (res.warnings.length > 0) {
+        setMetadataAlert({
+          variant: "info",
+          title: "Metadata berhasil dibaca",
+          explanation: res.warnings.join(" "),
+        });
+        setMetadataResult(res);
+      } else {
+        setMetadataResult(res);
+      }
+    } catch {
+      setMetadataAlert({
+        variant: "error",
+        title: "Gagal membaca file",
+        explanation: "Terjadi kesalahan saat membaca file gambar lokal.",
+      });
+    }
+  };
+
+  const handleClearMetadata = () => {
+    setMetadataResult(null);
+    setMetadataAlert(null);
+    const input = document.getElementById("local-metadata-file") as HTMLInputElement;
+    if (input) input.value = "";
+  };
+
+  const handleApplyMetadata = () => {
+    if (!metadataResult) return;
+
+    let targetLocation = form.location;
+    let targetDesc = form.fileDescription;
+
+    const locText = metadataResult.locationText || "";
+    const dateText = metadataResult.capturedAt
+      ? `[Metadata waktu foto: ${metadataResult.capturedAt}] (File tidak diupload)`
+      : metadataResult.fileLastModifiedAt
+      ? `[Waktu modifikasi file: ${metadataResult.fileLastModifiedAt}] (File tidak diupload)`
+      : "";
+
+    let overwriteLocation = false;
+    let overwriteDesc = false;
+
+    if (locText) {
+      if (form.location.trim().length > 0) {
+        overwriteLocation = window.confirm("Kolom lokasi sudah terisi. Apakah Anda ingin menimpanya?");
+      } else {
+        overwriteLocation = true;
+      }
+    }
+
+    if (dateText) {
+      if (form.fileDescription.trim().length > 0) {
+        overwriteDesc = window.confirm("Kolom keterangan bahan sudah terisi. Apakah Anda ingin menimpanya?");
+      } else {
+        overwriteDesc = true;
+      }
+    }
+
+    setForm((curr) => ({
+      ...curr,
+      location: overwriteLocation ? locText : curr.location,
+      fileDescription: overwriteDesc ? dateText : curr.fileDescription,
+    }));
+
+    setMetadataAlert({
+      variant: "success",
+      title: "Metadata Diterapkan",
+      explanation: "Metadata foto berhasil dimasukkan ke kolom isian. File tidak diupload ke server.",
+    });
+  };
 
   const loadSnapshots = useCallback(() => {
     try {
@@ -673,7 +768,7 @@ export function CreateReportForm() {
                 />
               </label>
 
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-2 space-y-3">
                 <div className="flex flex-col gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="flex items-center gap-2 text-sm font-semibold text-white/80">
@@ -689,6 +784,81 @@ export function CreateReportForm() {
                     <UploadCloud className="h-4 w-4" aria-hidden="true" />
                     Belum aktif
                   </span>
+                </div>
+
+                {/* Local-only Image Metadata Helper */}
+                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-3">
+                  <h4 className="text-sm font-semibold text-white/80 flex items-center gap-2">
+                    <UploadCloud className="h-4 w-4 text-indigo-400/60" />
+                    Bantu isi dari metadata foto lokal
+                  </h4>
+                  <p className="text-xs text-white/40 leading-relaxed">
+                    Pilih foto dari perangkatmu untuk membaca metadata lokal seperti waktu atau koordinat jika tersedia. File tidak diupload.
+                  </p>
+                  
+                  <div className="flex flex-wrap items-center gap-3">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="local-metadata-file"
+                      className="sr-only"
+                      onChange={handleFileChange}
+                    />
+                    <label
+                      htmlFor="local-metadata-file"
+                      className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/10 px-4 text-xs font-semibold text-white hover:bg-white/15 transition focus-within:ring-2 focus-within:ring-indigo-500"
+                    >
+                      Baca metadata lokal
+                    </label>
+                    {metadataResult && (
+                      <button
+                        type="button"
+                        onClick={handleClearMetadata}
+                        className="text-xs text-red-400 hover:text-red-300 font-medium cursor-pointer min-h-[32px]"
+                      >
+                        Hapus pilihan
+                      </button>
+                    )}
+                  </div>
+
+                  {metadataAlert && (
+                    <div className="pt-2">
+                      <NaliAlert
+                        variant={metadataAlert.variant}
+                        title={metadataAlert.title}
+                        explanation={metadataAlert.explanation}
+                      />
+                    </div>
+                  )}
+
+                  {metadataResult && metadataResult.ok && (
+                    <div className="rounded-lg bg-white/[0.02] border border-white/[0.04] p-3 text-xs space-y-3">
+                      <p className="font-semibold text-white/70">Pratinjau Metadata Gambar:</p>
+                      <ul className="space-y-1 text-white/40 list-disc list-inside">
+                        <li>Nama File: <span className="text-white/60">{metadataResult.fileName}</span></li>
+                        <li>Ukuran: <span className="text-white/60">{(metadataResult.fileSizeBytes ? (metadataResult.fileSizeBytes / 1024 / 1024).toFixed(2) : "0.00")} MB</span></li>
+                        {metadataResult.capturedAt && (
+                          <li>Waktu Pengambilan: <span className="text-emerald-400 font-mono">{metadataResult.capturedAt}</span></li>
+                        )}
+                        {!metadataResult.capturedAt && metadataResult.fileLastModifiedAt && (
+                          <li>Modifikasi File: <span className="text-white/60 font-mono">{metadataResult.fileLastModifiedAt}</span> <span className="text-white/25">(bukan waktu pengamatan)</span></li>
+                        )}
+                        {metadataResult.locationText && (
+                          <li>Lokasi: <span className="text-emerald-400">{metadataResult.locationText}</span></li>
+                        )}
+                      </ul>
+                      <button
+                        type="button"
+                        onClick={handleApplyMetadata}
+                        className="inline-flex min-h-[36px] items-center justify-center rounded-lg bg-emerald-500 text-zinc-950 px-3 text-xs font-bold hover:bg-emerald-400 transition cursor-pointer"
+                      >
+                        Gunakan sebagai isian awal
+                      </button>
+                      <p className="text-[10px] text-white/20 italic">
+                        * Metadata bisa hilang, salah, atau dimodifikasi. Tetap perlu verifikasi manual.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

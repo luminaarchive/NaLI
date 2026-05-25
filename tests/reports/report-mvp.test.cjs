@@ -1361,7 +1361,7 @@ test("public frontend copy aligns with CP1 backend state without overclaiming", 
   assert.match(learnReport, /Paste text materials or start with one topic/);
   assert.match(createReport, /Upload PDF\/foto belum aktif di CP1/);
   assert.match(createReport, /Belum aktif/);
-  assert.doesNotMatch(createReport, /type="file"|create-upload|confirm-upload|signed_upload_url|handlePdfChange/);
+  assert.doesNotMatch(createReport, /create-upload|confirm-upload|signed_upload_url|handlePdfChange/);
   assert.match(pricing, /Export unlocks after confirmed payment/);
   assert.match(pricing, /If confirmation is delayed, the order stays pending/);
   assert.match(pricing, /until automated verification succeeds/);
@@ -1425,7 +1425,7 @@ test("CP1 payment interest optimization: pricing uses credit-pack framing, no su
   // Export CTA must use Indonesian and include price framing
   assert.match(resultClient, /Export versi rapi/);
   assert.match(resultClient, /Mulai Rp9\.000/);
-  assert.match(resultClient, /Pembayaran belum aktif di fase testing ini/);
+  assert.match(resultClient, /PDF berbayar belum aktif di fase testing ini/);
   assert.doesNotMatch(resultClient, /Unlock Export/);
   assert.doesNotMatch(resultClient, /Buy now|Pay now|Subscribe now/i);
 
