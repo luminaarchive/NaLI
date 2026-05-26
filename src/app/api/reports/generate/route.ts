@@ -18,6 +18,10 @@ import { logUsageEvent } from "@/lib/usage/logging";
 import { getEnergyBalance } from "@/lib/energy/ledger";
 import { evaluateModelEntitlement, PREMIUM_MODEL_LOCK_MESSAGE } from "@/lib/entitlements/modelEntitlements";
 import { resolveInternalPremiumQaEntitlement } from "@/lib/entitlements/internalEntitlementResolver";
+import {
+  recordPremiumEntitlementAttempt,
+  type PremiumEntitlementAuditDecision,
+} from "@/lib/entitlements/premiumEntitlementAudit";
 
 const systemPrompt = [
   "You are NaLI (NatIve Learning & Intelligence) by NatIve, a professional AI field intelligence and evidence-based learning assistant.",
@@ -51,6 +55,16 @@ function getInputSize(input: {
 
 function guardOutput(report: ReportResult) {
   return guardReportOutput(report, { sourceVerificationActive: false });
+}
+
+function hasClientSuppliedPremiumClaim(input: Record<string, unknown>) {
+  return [
+    "internalPremiumQaToken",
+    "localStoragePremiumEntitlement",
+    "premiumAccess",
+    "verifiedPremiumCredit",
+    "verifiedPremiumEntitlement",
+  ].some((field) => Object.prototype.hasOwnProperty.call(input, field));
 }
 
 export async function POST(req: NextRequest) {
@@ -119,6 +133,24 @@ export async function POST(req: NextRequest) {
   const entitlement = evaluateModelEntitlement(selectedModelId, {
     verifiedInternalPremiumQaEntitlement: internalPremiumQa?.allowed === true,
   });
+  if (selectedModelId !== "peregrine") {
+    const auditDecision: PremiumEntitlementAuditDecision = internalPremiumQa?.allowed
+      ? "allowed_internal_qa"
+      : internalPremiumQa?.status === "invalid"
+        ? "denied_invalid_entitlement"
+        : hasClientSuppliedPremiumClaim(input)
+          ? "denied_public_premium_inactive"
+          : "denied_missing_entitlement";
+
+    await recordPremiumEntitlementAttempt({
+      decision: auditDecision,
+      integrityStatus: "allowed",
+      modelId: selectedModelId,
+      rateStatus: "allowed",
+      request: req,
+    });
+  }
+
   if (!entitlement.allowed) {
     return NextResponse.json(
       {

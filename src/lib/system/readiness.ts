@@ -33,6 +33,7 @@ export type SystemReadiness = {
   uploadPrepared: true;
   entitlementGate: "enabled";
   internalPremiumQaResolver: "configured" | "unconfigured";
+  premiumEntitlementAudit: "enabled";
   premiumModelsLockedByDefault: true;
   peregrineAvailable: true;
   publicPremiumActivation: "disabled";
@@ -94,6 +95,7 @@ export function getSystemReadiness(): SystemReadiness {
     uploadPrepared: upload.uploadPrepared,
     entitlementGate: "enabled",
     internalPremiumQaResolver: getInternalPremiumQaResolverStatus(),
+    premiumEntitlementAudit: "enabled",
     premiumModelsLockedByDefault: true,
     peregrineAvailable: true,
     publicPremiumActivation: "disabled",

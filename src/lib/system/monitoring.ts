@@ -45,6 +45,17 @@ export interface FounderMonitoringData {
     pendingCount: number;
     totalAmountIdr: number;
   };
+  premiumEntitlementSummary: {
+    internalQaUnlocks: number;
+    invalidEntitlementAttempts: number;
+    lastEventAt: string | null;
+    missingEntitlementAttempts: number;
+    blockedByModel: {
+      obsidian: number;
+      zephyr: number;
+    };
+    publicPremiumInactiveAttempts: number;
+  };
 }
 
 export function classifyComment(comment: string) {
@@ -109,6 +120,18 @@ export async function getFounderMonitoringData(): Promise<FounderMonitoringData>
     totalAmountIdr: 0,
   };
 
+  const premiumEntitlementSummary = {
+    internalQaUnlocks: 0,
+    invalidEntitlementAttempts: 0,
+    lastEventAt: null as string | null,
+    missingEntitlementAttempts: 0,
+    blockedByModel: {
+      obsidian: 0,
+      zephyr: 0,
+    },
+    publicPremiumInactiveAttempts: 0,
+  };
+
   if (!supabase) {
     return {
       readiness,
@@ -116,6 +139,7 @@ export async function getFounderMonitoringData(): Promise<FounderMonitoringData>
       feedbackSummary,
       usageSummary,
       paymentsSummary,
+      premiumEntitlementSummary,
     };
   }
 
@@ -260,6 +284,38 @@ export async function getFounderMonitoringData(): Promise<FounderMonitoringData>
         }
       }
     }
+
+    // 6. Fetch fixed-field premium entitlement audit signals. Return aggregates only.
+    const { data: premiumEvents, error: premiumEventsErr } = await supabase
+      .from("report_events")
+      .select("event_type, metadata, created_at")
+      .order("created_at", { ascending: false });
+
+    if (premiumEvents && !premiumEventsErr) {
+      for (const event of premiumEvents) {
+        if (event.event_type !== "PREMIUM_ENTITLEMENT_ATTEMPT") continue;
+
+        const metadata =
+          event.metadata && typeof event.metadata === "object" && !Array.isArray(event.metadata)
+            ? (event.metadata as Record<string, unknown>)
+            : {};
+        const decision = typeof metadata.decision === "string" ? metadata.decision : "";
+        const modelId = typeof metadata.model_id === "string" ? metadata.model_id : "";
+
+        if (!premiumEntitlementSummary.lastEventAt && typeof event.created_at === "string") {
+          premiumEntitlementSummary.lastEventAt = event.created_at;
+        }
+
+        if (decision === "allowed_internal_qa") premiumEntitlementSummary.internalQaUnlocks++;
+        if (decision === "denied_invalid_entitlement") premiumEntitlementSummary.invalidEntitlementAttempts++;
+        if (decision === "denied_missing_entitlement") premiumEntitlementSummary.missingEntitlementAttempts++;
+        if (decision === "denied_public_premium_inactive") premiumEntitlementSummary.publicPremiumInactiveAttempts++;
+
+        const wasBlocked = decision.startsWith("denied_");
+        if (wasBlocked && modelId === "obsidian") premiumEntitlementSummary.blockedByModel.obsidian++;
+        if (wasBlocked && modelId === "zephyr") premiumEntitlementSummary.blockedByModel.zephyr++;
+      }
+    }
   } catch (err) {
     console.error("Error gathering founder monitoring data:", err);
   }
@@ -270,5 +326,6 @@ export async function getFounderMonitoringData(): Promise<FounderMonitoringData>
     feedbackSummary,
     usageSummary,
     paymentsSummary,
+    premiumEntitlementSummary,
   };
 }

@@ -100,6 +100,7 @@ test("safe readiness status states that the entitlement gate is enabled while ac
 
   assert.equal(response.status, 200);
   assert.equal(body.entitlementGate, "enabled");
+  assert.equal(body.premiumEntitlementAudit, "enabled");
   assert.equal(body.premiumModelsLockedByDefault, true);
   assert.equal(body.peregrineAvailable, true);
   assert.equal(body.publicPremiumActivation, "disabled");

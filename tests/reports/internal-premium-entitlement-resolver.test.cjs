@@ -121,6 +121,7 @@ test("safe readiness exposes resolver configuration without grant material or ac
     const unconfiguredBody = await (await getReadiness()).json();
     assert.equal(unconfiguredBody.internalPremiumQaResolver, "unconfigured");
     assert.equal(unconfiguredBody.entitlementGate, "enabled");
+    assert.equal(unconfiguredBody.premiumEntitlementAudit, "enabled");
     assert.equal(unconfiguredBody.premiumModelsLockedByDefault, true);
     assert.equal(unconfiguredBody.publicPremiumActivation, "disabled");
     assert.equal(unconfiguredBody.paymentActivation, "disabled");
@@ -130,6 +131,7 @@ test("safe readiness exposes resolver configuration without grant material or ac
     const configuredBody = await (await getReadiness()).json();
     const serialized = JSON.stringify(configuredBody);
     assert.equal(configuredBody.internalPremiumQaResolver, "configured");
+    assert.equal(configuredBody.premiumEntitlementAudit, "enabled");
     assert.doesNotMatch(serialized, new RegExp(internalQaToken));
     assert.doesNotMatch(serialized, /NALI_FOUNDER_ADMIN_TOKEN|x-nali-internal-premium-qa-token/i);
   } finally {

@@ -93,6 +93,14 @@ test("Monitoring summary and feedback analyzer degrades safely on empty DB", asy
   assert.strictEqual(data.feedbackSummary.total, 0);
   assert.strictEqual(data.usageSummary.apiLogsCount, 0);
   assert.strictEqual(data.paymentsSummary.total, 0);
+  assert.deepEqual(data.premiumEntitlementSummary, {
+    internalQaUnlocks: 0,
+    invalidEntitlementAttempts: 0,
+    lastEventAt: null,
+    missingEntitlementAttempts: 0,
+    blockedByModel: { obsidian: 0, zephyr: 0 },
+    publicPremiumInactiveAttempts: 0,
+  });
 });
 
 test("Dashboard helper does not leak raw guest sessions, hashes, or env secrets", async () => {
@@ -118,6 +126,55 @@ test("Dashboard helper does not leak raw guest sessions, hashes, or env secrets"
   const serialized = JSON.stringify(data);
   assert.doesNotMatch(serialized, /SECRET_SESSION_HASH/);
   assert.doesNotMatch(serialized, /SECRET_ACCESS_TOKEN/);
+});
+
+test("Founder monitoring aggregates premium entitlement decisions without returning event material", async () => {
+  mockSelectFn = (table) => {
+    if (table === "report_events") {
+      return {
+        data: [
+          {
+            created_at: "2026-05-26T08:00:00.000Z",
+            event_type: "PREMIUM_ENTITLEMENT_ATTEMPT",
+            metadata: {
+              decision: "allowed_internal_qa",
+              model_id: "zephyr",
+              raw_cookie: "DO_NOT_RETURN_RAW_COOKIE",
+              token: "DO_NOT_RETURN_TOKEN",
+            },
+          },
+          {
+            created_at: "2026-05-26T07:00:00.000Z",
+            event_type: "PREMIUM_ENTITLEMENT_ATTEMPT",
+            metadata: { decision: "denied_invalid_entitlement", model_id: "obsidian" },
+          },
+          {
+            created_at: "2026-05-26T06:00:00.000Z",
+            event_type: "PREMIUM_ENTITLEMENT_ATTEMPT",
+            metadata: { decision: "denied_missing_entitlement", model_id: "obsidian" },
+          },
+          {
+            created_at: "2026-05-26T05:00:00.000Z",
+            event_type: "PREMIUM_ENTITLEMENT_ATTEMPT",
+            metadata: { decision: "denied_public_premium_inactive", model_id: "zephyr" },
+          },
+        ],
+        error: null,
+      };
+    }
+    return { data: [], error: null };
+  };
+
+  const data = await getFounderMonitoringData();
+  assert.deepEqual(data.premiumEntitlementSummary, {
+    internalQaUnlocks: 1,
+    invalidEntitlementAttempts: 1,
+    lastEventAt: "2026-05-26T08:00:00.000Z",
+    missingEntitlementAttempts: 1,
+    blockedByModel: { obsidian: 2, zephyr: 1 },
+    publicPremiumInactiveAttempts: 1,
+  });
+  assert.doesNotMatch(JSON.stringify(data), /DO_NOT_RETURN_RAW_COOKIE|DO_NOT_RETURN_TOKEN/);
 });
 
 test("Readiness truth preserves Midtrans DEFERRED and Paid Launch NO-GO flags", () => {

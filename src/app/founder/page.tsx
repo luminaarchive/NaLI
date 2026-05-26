@@ -17,7 +17,7 @@ import {
   Terminal,
   Info,
 } from "lucide-react";
-import { getFounderMonitoringData } from "@/lib/system/monitoring";
+import { getFounderMonitoringData, verifyFounderToken } from "@/lib/system/monitoring";
 import { computeReportQualityMemory } from "@/lib/quality/reportQualityMemory";
 
 export const dynamic = "force-dynamic";
@@ -32,10 +32,9 @@ export const metadata: Metadata = {
 
 async function loginFounderAction(formData: FormData) {
   "use server";
-  const token = formData.get("token") as string;
-  const adminToken = process.env.NALI_FOUNDER_ADMIN_TOKEN;
+  const token = String(formData.get("token") ?? "");
 
-  if (adminToken && token === adminToken) {
+  if (verifyFounderToken(token).authorized) {
     const cookieStore = await cookies();
     cookieStore.set("founder_token", token, {
       httpOnly: true,
@@ -55,23 +54,18 @@ async function logoutFounderAction() {
   redirect("/founder");
 }
 
-export default async function FounderPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ token?: string }>;
-}) {
-  const params = await searchParams;
-  const adminToken = process.env.NALI_FOUNDER_ADMIN_TOKEN;
+export default async function FounderPage() {
+  const founderAccess = verifyFounderToken(undefined);
 
   // 1. Check if founder console configured
-  if (!adminToken) {
+  if (!founderAccess.configured) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#09090b] text-white/90 p-6">
-        <div className="max-w-md w-full text-center border border-red-500/20 bg-red-950/20 p-6 rounded-2xl backdrop-blur-xl">
+        <div className="w-full max-w-[28rem] text-center border border-red-500/20 bg-red-950/20 p-6 rounded-2xl backdrop-blur-xl">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
           <h1 className="text-xl font-bold mt-4">Founder Console Not Configured</h1>
           <p className="mt-2 text-sm text-white/60">
-            The internal founder monitoring console is not configured in this environment (missing NALI_FOUNDER_ADMIN_TOKEN).
+            The internal founder monitoring console does not have a server-side access credential configured.
           </p>
         </div>
       </div>
@@ -81,20 +75,18 @@ export default async function FounderPage({
   // 2. Perform authentication check
   const cookieStore = await cookies();
   const cookieToken = cookieStore.get("founder_token")?.value;
-  const queryToken = params.token;
-
-  const isAuthorized = (queryToken === adminToken) || (cookieToken === adminToken);
+  const isAuthorized = verifyFounderToken(cookieToken).authorized;
 
   if (!isAuthorized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#09090b] text-white/90 p-6">
-        <div className="max-w-md w-full border border-white/[0.08] bg-white/[0.02] p-8 rounded-2xl backdrop-blur-xl shadow-2xl">
+        <div className="w-full max-w-[28rem] border border-white/[0.08] bg-white/[0.02] p-8 rounded-2xl backdrop-blur-xl shadow-2xl">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.08] mx-auto">
             <Lock className="h-6 w-6 text-[#6f8057]" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-center mt-4">Founder Admin Console</h1>
           <p className="mt-2 text-sm text-center text-white/50">
-            Please enter your NALI_FOUNDER_ADMIN_TOKEN to access health metrics and feedback.
+            Enter the internal founder access credential to review health metrics and feedback.
           </p>
           <form action={loginFounderAction} className="mt-6 space-y-4">
             <div>
@@ -258,6 +250,41 @@ export default async function FounderPage({
                     </table>
                   </div>
                 )}
+              </div>
+            </section>
+
+            {/* PREMIUM ENTITLEMENT AUDIT */}
+            <section className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 backdrop-blur-sm">
+              <div className="flex items-center gap-2 border-b border-white/[0.08] pb-3">
+                <Lock className="h-5 w-5 text-[#6f8057]" />
+                <h2 className="text-lg font-semibold">Premium Entitlement Attempts</h2>
+              </div>
+              <p className="mt-3 text-sm text-white/50">
+                Internal QA model access signals only. These counts do not represent payment or public premium access.
+              </p>
+              <div className="mt-4 grid gap-4 grid-cols-2 sm:grid-cols-4">
+                <MetricCard label="Missing Entitlement" value={data.premiumEntitlementSummary.missingEntitlementAttempts} />
+                <MetricCard label="Invalid Entitlement" value={data.premiumEntitlementSummary.invalidEntitlementAttempts} status={data.premiumEntitlementSummary.invalidEntitlementAttempts > 0 ? "warning" : "neutral"} />
+                <MetricCard label="Internal QA Unlocks" value={data.premiumEntitlementSummary.internalQaUnlocks} status="success" />
+                <MetricCard label="Public Premium Inactive" value={data.premiumEntitlementSummary.publicPremiumInactiveAttempts} />
+              </div>
+              <div className="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.01] p-4 text-sm text-white/60 space-y-2">
+                <div className="flex justify-between">
+                  <span>Blocked Obsidian attempts</span>
+                  <span className="font-semibold text-white">{data.premiumEntitlementSummary.blockedByModel.obsidian}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Blocked Zephyr attempts</span>
+                  <span className="font-semibold text-white">{data.premiumEntitlementSummary.blockedByModel.zephyr}</span>
+                </div>
+                <div className="flex justify-between gap-3 border-t border-white/[0.06] pt-2">
+                  <span>Last safe event</span>
+                  <span className="text-right font-mono text-xs text-white/80">
+                    {data.premiumEntitlementSummary.lastEventAt
+                      ? new Date(data.premiumEntitlementSummary.lastEventAt).toLocaleString()
+                      : "No audited attempts recorded."}
+                  </span>
+                </div>
               </div>
             </section>
 
