@@ -67,7 +67,7 @@ test("a direct API bypass attempt cannot generate Obsidian or Zephyr without ent
 
   const routeSource = fs.readFileSync(path.join(repoRoot, "src/app/api/reports/generate/route.ts"), "utf8");
   const guardPosition = routeSource.indexOf("evaluateModelEntitlement(selectedModelId,");
-  const reportBalancePosition = routeSource.indexOf("evaluateReportGenerationAccess({");
+  const reportBalancePosition = routeSource.indexOf("await getPublicReportAccess(input, requestedPublicReportType)");
   assert.ok(guardPosition > -1);
   assert.ok(reportBalancePosition > guardPosition);
   assert.ok(guardPosition < routeSource.indexOf("requestOpenRouterJson({"));

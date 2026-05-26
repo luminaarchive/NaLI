@@ -327,7 +327,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     } catch {
       // ignore
     }
-
   }, [initialReportId, loadSnapshots]);
 
   // Debounced local composer autosave in AgentWorkspace
@@ -352,15 +351,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [
-    query,
-    selectedMode,
-    selectedTemplate,
-    integrityConsent,
-    initialReportId,
-    report?.title,
-    loadSnapshots,
-  ]);
+  }, [query, selectedMode, selectedTemplate, integrityConsent, initialReportId, report?.title, loadSnapshots]);
 
   const queryRef = useRef(query);
   useEffect(() => {
@@ -928,7 +919,11 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             <span className="text-emerald-400">NaLI</span>
             <span className="text-xs text-white/30">v1.5.3</span>
           </Link>
-          <button onClick={() => setSidebarOpen(false)} className="p-1 text-white/40 hover:text-white md:hidden">
+          <button
+            aria-label="Tutup riwayat"
+            className="inline-flex h-11 w-11 items-center justify-center text-white/40 hover:text-white md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -980,7 +975,11 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         {/* Workspace Header */}
         <header className="z-30 flex h-14 shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#07090e]/60 px-4 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <button onClick={() => setSidebarOpen(true)} className="p-2 text-white/60 hover:text-white md:hidden">
+            <button
+              aria-label="Buka riwayat"
+              className="inline-flex h-11 w-11 items-center justify-center text-white/60 hover:text-white md:hidden"
+              onClick={() => setSidebarOpen(true)}
+            >
               <Menu className="h-5 w-5" />
             </button>
             <Link
@@ -993,6 +992,18 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            <Link
+              href="/pricing"
+              className="hidden min-h-[44px] items-center px-3 text-xs font-semibold text-white/45 transition hover:text-white sm:inline-flex"
+            >
+              Harga
+            </Link>
+            <Link
+              href="/learn-report"
+              className="hidden min-h-[44px] items-center px-3 text-xs font-semibold text-white/45 transition hover:text-white md:inline-flex"
+            >
+              Panduan
+            </Link>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 font-mono text-[11px] font-semibold text-white/60">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
               {selectedMode === "start_from_zero" ? "Panduan Awal" : "Laporan NaLI"}
@@ -1024,12 +1035,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                   </div>
                 )}
                 <NaLILogoMark size="md" className="shadow-2xl shadow-[#10b981]/10" />
-                <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-white md:text-5xl">
-                  NaLI Intelligence
-                </h1>
+                <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-white md:text-5xl">Buat Laporan</h1>
                 <p className="mt-2 max-w-[500px] text-base leading-6 text-white/60">
-                  Masukkan materi lapangan, tautan, lokasi, atau kueri untuk menyusun draf laporan terstruktur secara
-                  instan.
+                  Masukkan materi atau topik untuk menyusun draf laporan dengan batas bukti yang jelas.
                 </p>
                 <p className="mt-2.5 max-w-[500px] text-[11px] leading-5 text-white/40">
                   Jalur starter gratis tersedia terbatas dan tetap dibatasi laju penggunaan. Paket Laporan belum aktif

@@ -22,6 +22,8 @@ import {
   type PremiumEntitlementAuditDecision,
 } from "@/lib/entitlements/premiumEntitlementAudit";
 import { evaluateReportGenerationAccess, type PublicReportType } from "@/lib/billing/reportBalances";
+import { getReportBalance, normalizeReportOwner } from "@/lib/billing/reportBalanceLedger";
+import { getGuestSessionIdHash, isUsableGuestSessionId } from "@/lib/reports/access";
 
 const systemPrompt = [
   "You are NaLI (NatIve Learning & Intelligence) by NatIve, a professional AI field intelligence and evidence-based learning assistant.",
@@ -69,6 +71,31 @@ function hasClientSuppliedPremiumClaim(input: Record<string, unknown>) {
 
 function getRequestedPublicReportType(input: Record<string, unknown>): PublicReportType {
   return input.reportType === "basic" || input.reportType === "pro" ? input.reportType : "starter_free";
+}
+
+async function getPublicReportAccess(input: Record<string, unknown>, reportType: PublicReportType) {
+  if (reportType === "starter_free") {
+    return {
+      access: evaluateReportGenerationAccess({ reportType }),
+      balanceSource: "starter_free" as const,
+    };
+  }
+
+  const owner = isUsableGuestSessionId(input.guestSessionId)
+    ? normalizeReportOwner({ ownerId: getGuestSessionIdHash(input.guestSessionId), ownerType: "guest" })
+    : null;
+  const persistedBalance = await getReportBalance(owner);
+
+  return {
+    access: evaluateReportGenerationAccess({
+      balance: {
+        ...persistedBalance.balance,
+        paidBalanceVerified: persistedBalance.ok && persistedBalance.source === "database",
+      },
+      reportType,
+    }),
+    balanceSource: persistedBalance.source,
+  };
 }
 
 export async function POST(req: NextRequest) {
@@ -169,15 +196,32 @@ export async function POST(req: NextRequest) {
 
   const internalPremiumQaAllowed = selectedModelId !== "peregrine" && internalPremiumQa?.allowed === true;
   if (!internalPremiumQaAllowed) {
-    const reportAccess = evaluateReportGenerationAccess({
-      reportType: getRequestedPublicReportType(input),
-    });
+    const requestedPublicReportType = getRequestedPublicReportType(input);
+    const { access: reportAccess, balanceSource } = await getPublicReportAccess(input, requestedPublicReportType);
 
     if (!reportAccess.allowed) {
       return NextResponse.json(
         {
           code: "REPORT_BALANCE_REQUIRED",
           error: "Laporan kamu habis. Pilih paket untuk lanjut. Pembayaran dan checkout belum aktif di CP1.",
+          paymentActivation: "disabled",
+          reason: "laporan_habis",
+          reportAccess,
+        },
+        { headers, status: 403 },
+      );
+    }
+
+    if (requestedPublicReportType !== "starter_free") {
+      return NextResponse.json(
+        {
+          balanceSource,
+          code: "PUBLIC_PAID_GENERATION_INACTIVE",
+          error:
+            "Paket Laporan belum aktif untuk penggunaan publik di CP1. Pembayaran dan checkout tetap dinonaktifkan.",
+          paymentActivation: "disabled",
+          publicPremiumActivation: "disabled",
+          reason: "payment_not_active",
           reportAccess,
         },
         { headers, status: 403 },

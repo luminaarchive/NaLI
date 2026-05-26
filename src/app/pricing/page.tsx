@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowRight, ShieldCheck } from "lucide-react";
+import { PricingCards } from "@/components/report/PricingCards";
+import { PublicAppShell } from "@/components/ui/PublicAppShell";
 import { siteMetadata } from "@/lib/seo/siteMetadata";
-import { Badge } from "@/components/ui/Badge";
-import { ButtonLink } from "@/components/ui/Button";
 
 export const metadata: Metadata = {
   title: siteMetadata.routes.pricing.title,
@@ -10,28 +12,25 @@ export const metadata: Metadata = {
     canonical: `${siteMetadata.canonicalBase}/pricing`,
   },
 };
-import { SiteFooter } from "@/components/ui/SiteNav";
-import { PricingShell } from "@/components/ui/PricingShell";
-import { PricingCards } from "@/components/report/PricingCards";
-import { Clock3 } from "lucide-react";
 
 export default function PricingPage() {
   return (
-    <PricingShell>
-      <main className="relative z-10">
-        {/* Header */}
-        <section className="border-b border-white/[0.06] px-4 pt-28 pb-14 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1160px]">
-            <Badge tone="green">Beta paket laporan</Badge>
-            <h1 className="mt-4 max-w-[720px] text-4xl font-bold tracking-tight text-white sm:text-5xl">
+    <PublicAppShell>
+      <main>
+        <section className="px-4 pt-12 pb-10 sm:px-6 sm:pt-16 sm:pb-12">
+          <div className="mx-auto max-w-[1040px]">
+            <span className="inline-flex min-h-8 items-center rounded-full border border-[#c9dccb] bg-[#edf5e9] px-3 py-1 text-xs font-semibold text-[#326043]">
+              Paket Laporan CP1
+            </span>
+            <h1 className="mt-5 max-w-[680px] text-4xl font-semibold tracking-tight text-[#10231b] sm:text-5xl">
               Paket Laporan NaLI
             </h1>
-            <p className="mt-5 max-w-[720px] text-lg leading-8 text-white/50">
-              Pilih kapasitas laporan berdasarkan kebutuhan: laporan cepat atau laporan lengkap. Unit produk NaLI adalah
-              Laporan, bukan pilihan mesin pemrosesan.
+            <p className="mt-4 max-w-[680px] text-base leading-7 text-[#53675e] sm:text-lg">
+              Siapkan kapasitas untuk laporan cepat atau laporan lengkap. NaLI menggunakan satu unit yang mudah
+              dipahami: Laporan.
             </p>
-            <div className="mt-4 rounded-xl border border-amber-500/15 bg-amber-500/[0.04] p-3 max-w-[720px]">
-              <p className="text-xs leading-5 text-amber-300/70">
+            <div className="mt-6 max-w-[680px] rounded-2xl border border-[#eadab6] bg-[#fff9eb] p-4">
+              <p className="text-sm leading-6 text-[#725522]">
                 Pembayaran dan checkout belum aktif di CP1. Paket Laporan ditampilkan untuk persiapan pricing, tanpa
                 membuat pembelian atau saldo laporan.
               </p>
@@ -39,18 +38,16 @@ export default function PricingPage() {
           </div>
         </section>
 
-        {/* Pricing Cards Component */}
-        <section className="px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1160px]">
+        <section className="px-4 pb-12 sm:px-6">
+          <div className="mx-auto max-w-[1040px]">
             <PricingCards />
           </div>
         </section>
 
-        {/* Report usage rules */}
-        <section className="border-t border-white/[0.06] px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[720px]">
-            <h3 className="text-xl font-semibold text-white text-center">Aturan penggunaan Laporan</h3>
-            <p className="mt-2 text-xs text-white/40 text-center">
+        <section className="border-t border-[#dbe5da] px-4 py-12 sm:px-6">
+          <div className="mx-auto max-w-[760px]">
+            <h2 className="text-center text-xl font-semibold text-[#10231b]">Aturan penggunaan Laporan</h2>
+            <p className="mt-2 text-center text-sm text-[#64786f]">
               Disiapkan sekarang untuk peluncuran mendatang, tetap tidak aktif di CP1.
             </p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -60,54 +57,40 @@ export default function PricingPage() {
                 { label: "Edit manual hasil", detail: "Tidak menggunakan laporan tambahan" },
                 { label: "Salin hasil yang sama", detail: "Tidak menggunakan laporan tambahan" },
               ].map((item) => (
-                <div key={item.label} className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
+                <div key={item.label} className="rounded-2xl border border-[#dbe5da] bg-white px-4 py-4">
                   <div>
-                    <p className="text-sm font-medium text-white/80">{item.label}</p>
-                    <p className="text-[11px] text-white/35 mt-0.5">{item.detail}</p>
+                    <p className="text-sm font-semibold text-[#10231b]">{item.label}</p>
+                    <p className="mt-1 text-xs leading-5 text-[#64786f]">{item.detail}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <p className="mt-4 text-[11px] text-white/30 text-center">
+            <p className="mt-5 text-center text-xs leading-5 text-[#64786f]">
               Kegagalan server atau blok integritas/rate limit tidak memotong laporan.
             </p>
           </div>
         </section>
 
-        {/* Segment Copy */}
-        <section className="border-t border-white/[0.06] px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[720px] text-center">
-            <h3 className="text-xl font-semibold text-white">Cocok untuk</h3>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              {[
-                "Mahasiswa praktikum dan observasi lapangan",
-                "Mahasiswa lingkungan, geografi, biologi",
-                "Laporan KKN / kegiatan kampus",
-                "Staf NGO/CSR junior yang butuh draft laporan cepat",
-              ].map((segment) => (
-                <div key={segment} className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-sm text-white/60 text-left">
-                  {segment}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Try MVP */}
-        <section className="border-t border-white/[0.06] px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mx-auto grid max-w-[1160px] gap-4 md:grid-cols-[1fr_auto] md:items-center">
+        <section className="border-t border-[#dbe5da] px-4 py-12 sm:px-6">
+          <div className="mx-auto flex max-w-[1040px] flex-col gap-5 rounded-3xl border border-[#dbe5da] bg-white p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
             <div>
-              <Clock3 className="h-6 w-6 text-white/30" aria-hidden="true" />
-              <h2 className="mt-4 text-3xl font-semibold text-white">Coba workspace NaLI terlebih dahulu.</h2>
-              <p className="mt-3 max-w-[720px] text-sm leading-7 text-white/40">
-                Penyusunan kerangka awal dan draf laporan berbasis bukti memerlukan material observasi pengguna yang sesungguhnya. Coba secara gratis hari ini.
+              <ShieldCheck className="h-6 w-6 text-[#326043]" aria-hidden="true" />
+              <h2 className="mt-3 text-2xl font-semibold text-[#10231b]">Mulai dengan jalur starter gratis.</h2>
+              <p className="mt-2 max-w-[620px] text-sm leading-6 text-[#64786f]">
+                Draf awal membutuhkan materi pengguna dan selalu menampilkan batas bukti. Tidak ada pembelian yang
+                diproses di CP1.
               </p>
             </div>
-            <ButtonLink href="/create-report">Buka Workspace</ButtonLink>
+            <Link
+              href="/create-report"
+              className="inline-flex min-h-[48px] shrink-0 items-center justify-center gap-2 rounded-full bg-[#163929] px-6 text-sm font-semibold text-white transition hover:bg-[#214b38]"
+            >
+              Buat Laporan
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
           </div>
         </section>
       </main>
-      <SiteFooter />
-    </PricingShell>
+    </PublicAppShell>
   );
 }

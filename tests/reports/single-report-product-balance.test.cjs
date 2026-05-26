@@ -169,13 +169,20 @@ test("public generation is a neutral starter report and client engine hints cann
   const lockedBody = await lockedPaidType.json();
   assert.equal(lockedBody.code, "REPORT_BALANCE_REQUIRED");
   assert.equal(lockedBody.reportAccess.requiresPurchase, true);
+  assert.equal(lockedBody.reason, "laporan_habis");
+  assert.equal(lockedBody.paymentActivation, "disabled");
+  assert.doesNotMatch(JSON.stringify(lockedBody), /midtrans|checkout_url|snap_token|secret|service_role/i);
+
+  const route = fs.readFileSync(path.join(repoRoot, "src/app/api/reports/generate/route.ts"), "utf8");
+  assert.match(route, /getReportBalance/);
+  assert.match(route, /normalizeReportOwner/);
+  assert.doesNotMatch(route, /consumeReport\(|recordPurchaseLedgerEvent\(/);
 });
 
 test("normal public screens hide internal model names, credits, and active payment actions", () => {
-  const publicFiles = [
-    "src/components/report/AgentWorkspace.tsx",
-    "src/components/report/CreateReportForm.tsx",
-  ].map((file) => fs.readFileSync(path.join(repoRoot, file), "utf8"));
+  const publicFiles = ["src/components/report/AgentWorkspace.tsx", "src/components/report/CreateReportForm.tsx"].map(
+    (file) => fs.readFileSync(path.join(repoRoot, file), "utf8"),
+  );
   const pricing = fs.readFileSync(path.join(repoRoot, "src/components/report/PricingCards.tsx"), "utf8");
   const results = fs.readFileSync(path.join(repoRoot, "src/components/report/ReportResultClient.tsx"), "utf8");
   const combinedPublicComposer = publicFiles.join("\n");
@@ -201,6 +208,11 @@ test("readiness exposes report architecture while payment, premium, upload, and 
   assert.equal(body.singleReportProduct, "enabled");
   assert.equal(body.reportPackagesConfigured, true);
   assert.equal(body.reportBalanceArchitecture, "enabled");
+  assert.ok(["configured", "unavailable"].includes(body.reportBalancePersistence));
+  assert.equal(body.reportLedger, "enabled");
+  assert.equal(body.idempotencyProtection, "enabled");
+  assert.equal(body.minimalLandingRefresh, "enabled");
+  assert.equal(body.appShell, "enabled");
   assert.equal(body.paymentActivation, "disabled");
   assert.equal(body.publicPremiumActivation, "disabled");
   assert.equal(body.midtrans, "deferred_inactive");

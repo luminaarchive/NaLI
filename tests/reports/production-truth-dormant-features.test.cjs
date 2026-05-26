@@ -90,14 +90,13 @@ test("13. No fake source, citation, or DOI encouragement exists in prompts or ge
 
 test("14. No Midtrans/payment activation is enabled by default in system configurations", () => {
   const readinessLib = fs.readFileSync(path.join(repoRoot, "src/lib/system/readiness.ts"), "utf8");
-  assert.match(readinessLib, /paidCheckoutActive:\s*exportActive/);
+  assert.match(readinessLib, /paidCheckoutActive:\s*false/);
+  assert.match(readinessLib, /creditPurchaseActive:\s*false/);
+  assert.match(readinessLib, /paidExportActive:\s*false/);
 });
 
 test("15. No raw provider names or API secrets in public components", () => {
-  const appSource = [
-    "src/components/report/CreateReportForm.tsx",
-    "src/components/report/ReportResultClient.tsx",
-  ]
+  const appSource = ["src/components/report/CreateReportForm.tsx", "src/components/report/ReportResultClient.tsx"]
     .map((file) => fs.readFileSync(path.join(repoRoot, file), "utf8"))
     .join("\n");
   assert.doesNotMatch(appSource, /OPENROUTER_API_KEY|SUPABASE_SERVICE_ROLE_KEY/);

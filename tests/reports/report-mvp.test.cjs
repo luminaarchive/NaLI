@@ -885,7 +885,10 @@ test("CP1 event and cost logging migration adds service-role-only tables safely"
   assert.match(sql, /status TEXT NOT NULL DEFAULT 'skipped' CHECK \(status IN \('success', 'failed', 'skipped'\)\)/);
   assert.match(sql, /report_events_service_role_all/);
   assert.match(sql, /api_usage_logs_service_role_all/);
-  assert.doesNotMatch(sql, /GRANT\s+(?:SELECT|INSERT|UPDATE|DELETE)\s+ON\s+public\.(?:report_events|api_usage_logs)\s+TO\s+(?:anon|authenticated)/i);
+  assert.doesNotMatch(
+    sql,
+    /GRANT\s+(?:SELECT|INSERT|UPDATE|DELETE)\s+ON\s+public\.(?:report_events|api_usage_logs)\s+TO\s+(?:anon|authenticated)/i,
+  );
   assert.doesNotMatch(sql, /DROP TABLE|DROP COLUMN|DELETE FROM public\.reports/i);
 });
 
@@ -910,7 +913,10 @@ test("CP1 operational logger sanitizes sensitive metadata and degrades safely", 
     const serialized = JSON.stringify(sanitized);
 
     assert.equal(sanitized.safe_status, "pending");
-    assert.doesNotMatch(serialized, /guest-session-secret-value|report-access-key|signature-secret-value|snap-token-value|aaaaaaaa/);
+    assert.doesNotMatch(
+      serialized,
+      /guest-session-secret-value|report-access-key|signature-secret-value|snap-token-value|aaaaaaaa/,
+    );
 
     const eventResult = await logReportEvent({
       eventType: "REPORT_CREATED",
@@ -953,7 +959,10 @@ test("CP1 readiness and founder admin surfaces include only safe operational cou
     adminPageSource,
     /guest_session_id_hash|report_access_token_hash|snap_token|signature_key|MIDTRANS_SERVER_KEY|SUPABASE_SERVICE_ROLE_KEY/,
   );
-  assert.doesNotMatch(adminPageSource, /provider_alias|model_alias|estimated_cost|estimated_input_tokens|estimated_output_tokens/);
+  assert.doesNotMatch(
+    adminPageSource,
+    /provider_alias|model_alias|estimated_cost|estimated_input_tokens|estimated_output_tokens/,
+  );
 });
 
 test("CP1 basic public templates include the required minimum three templates", () => {
@@ -1302,6 +1311,8 @@ test("provider names and payment-unit wording are absent from public UI source",
 
 test("public frontend copy aligns with CP1 backend state without overclaiming", () => {
   const homepage = fs.readFileSync(path.join(repoRoot, "src/app/page.tsx"), "utf8");
+  const homeLauncher = fs.readFileSync(path.join(repoRoot, "src/components/report/HomeQueryBox.tsx"), "utf8");
+  const publicShell = fs.readFileSync(path.join(repoRoot, "src/components/ui/PublicAppShell.tsx"), "utf8");
   const featureShowcase = fs.readFileSync(path.join(repoRoot, "src/components/ui/CodexFeatureShowcase.tsx"), "utf8");
   const productPreview = fs.readFileSync(path.join(repoRoot, "src/components/ui/CodexProductPreview.tsx"), "utf8");
   const learnReport = fs.readFileSync(path.join(repoRoot, "src/app/learn-report/page.tsx"), "utf8");
@@ -1311,6 +1322,8 @@ test("public frontend copy aligns with CP1 backend state without overclaiming", 
   const resultClient = fs.readFileSync(path.join(repoRoot, "src/components/report/ReportResultClient.tsx"), "utf8");
   const publicSource = [
     homepage,
+    homeLauncher,
+    publicShell,
     featureShowcase,
     productPreview,
     learnReport,
@@ -1319,44 +1332,27 @@ test("public frontend copy aligns with CP1 backend state without overclaiming", 
     fieldIntelligence,
     resultClient,
   ].join("\n");
+  const publicLanding = [homepage, homeLauncher, publicShell].join("\n");
 
-  // Existing homepage assertions (kept)
-  assert.match(homepage, /Source Notes: Labeled/);
-  assert.match(homepage, /Turn notes, source URLs, context, and observations/);
-
-  // CP1 Conversion Polish: bilingual headline
-  assert.match(homepage, /Ubah catatan berantakan menjadi laporan berbasis bukti/);
-  assert.match(homepage, /Turn messy notes into structured evidence-based reports/);
-
-  // CP1 Conversion Polish: use-case cards
-  assert.match(homepage, /Yang bisa kamu lakukan sekarang/);
-  assert.match(homepage, /Laporan Observasi Lingkungan/);
-  assert.match(homepage, /Laporan Praktikum Biologi/);
-  assert.match(homepage, /Laporan Kegiatan \/ KKN/);
-  assert.match(homepage, /Cek Kualitas Bukti/);
-
-  // CP1 Conversion Polish: how NaLI works
-  assert.match(homepage, /Cara kerja NaLI/);
-  assert.match(homepage, /Masukkan bahan/);
-  assert.match(homepage, /NaLI menyusun draft/);
-  assert.match(homepage, /Periksa dan lanjutkan/);
-
-  // CP1 Conversion Polish: integrity section
-  assert.match(homepage, /Dibuat untuk membantu, bukan memalsukan/);
-  assert.match(homepage, /Tidak membuat data palsu/);
-  assert.match(homepage, /Tidak membuat sitasi palsu/);
-
-  // CP1 Conversion Polish: controlled testing CTA
-  assert.match(homepage, /Bantu uji NaLI CP1/);
-
-  // CP1 Conversion Polish: CTA links
-  assert.match(homepage, /Mulai buat laporan/);
-  assert.match(homepage, /Lihat paket Laporan/);
-  assert.match(homepage, /href="\/create-report"/);
+  // CP1 Minimal App Shell: direct launcher and concise evidence-honest copy.
+  assert.match(homepage, /Mau bikin laporan apa\?/);
+  assert.match(homepage, /batas bukti yang jelas/);
+  assert.match(homepage, /Bukti yang belum tersedia tetap ditandai, bukan dibuat-buat/);
+  assert.match(publicLanding, /Buat Laporan/);
+  assert.match(publicLanding, /href="\/create-report"/);
   assert.match(homepage, /href="\/pricing"/);
+  assert.match(homeLauncher, /Laporan Observasi/);
+  assert.match(homeLauncher, /Praktikum Biologi/);
+  assert.match(homeLauncher, /Laporan KKN/);
+  assert.match(homeLauncher, /Cek Batas Bukti/);
+  assert.match(homepage, /Cara kerja singkat/);
+  assert.match(homepage, /NaLI menyusun draft/);
+  assert.match(homepage, /AI inference bukan bukti lapangan/);
+  assert.match(homepage, /CP1: pembayaran belum aktif/);
+  assert.match(homepage, /Upload belum aktif/);
+  assert.match(homepage, /Source verification belum aktif/);
+  assert.doesNotMatch(homepage, /CodexProductPreview|CodexFeatureShowcase|FluidVideoBackground/);
 
-  assert.match(featureShowcase, /PDF\/DOCX terkunci di CP1/);
-  assert.match(featureShowcase, /Source notes labeled/);
   assert.match(learnReport, /Mulai dari satu topik/);
   assert.match(learnReport, /Paste text materials or start with one topic/);
   assert.match(createReport, /Upload PDF\/foto belum aktif di CP1/);
@@ -1397,11 +1393,13 @@ test("CP1 public pricing uses report packages with no public checkout or fake ba
   assert.match(pricingCards, /Paket Laporan/);
   assert.match(pricingCards, /Pembayaran dan checkout belum aktif di CP1/);
   assert.match(pricingCards, /Laporan kamu habis\. Pilih paket untuk lanjut/);
-  assert.doesNotMatch(pricingCards + pricing + resultClient + workspace, /fetch\(["']\/api\/payments\/create|Kredit|credits|Peregrine|Obsidian|Zephyr/i);
+  assert.doesNotMatch(
+    pricingCards + pricing + resultClient + workspace,
+    /fetch\(["']\/api\/payments\/create|Kredit|credits|Peregrine|Obsidian|Zephyr/i,
+  );
   assert.match(resultClient, /PDF\/DOCX publik tetap terkunci/);
   assert.match(workspace, /Buat Laporan/);
 });
-
 
 test("export and payment routes enforce Sprint 0 gatekeeping in source", () => {
   const paymentRoute = fs.readFileSync(path.join(repoRoot, "src/app/api/payments/create/route.ts"), "utf8");
@@ -1892,7 +1890,7 @@ test("persisted report access key handoff, localStorage keys, and safety", () =>
 
 test("agentic answer quality, classifier, and mobile responsiveness in UI", () => {
   const repoRoot = path.join(__dirname, "../..");
-  
+
   // 1. Load the task classifier functions
   const {
     classifyTask,
@@ -1936,14 +1934,19 @@ test("agentic answer quality, classifier, and mobile responsiveness in UI", () =
 
   // Assertion 9: Suggested actions for environmental observation task type
   const envActions = getDefaultSuggestedActions("environmental_observation_report");
-  assert.ok(envActions.some(act => act.label === "Perkuat bukti"));
+  assert.ok(envActions.some((act) => act.label === "Perkuat bukti"));
 
   // Assertion 10: Sections template for biology practicum task type
   const bioSections = getReportSections("biology_practicum_report");
   assert.ok(bioSections.includes("Alat dan Bahan"));
 
   // Assertion 11: Weak input audit strength estimation
-  const weakAudit = estimateEvidenceStrength({ mainText: "Sungai kotor.", sourceUrls: [], location: "", fileDescription: "" });
+  const weakAudit = estimateEvidenceStrength({
+    mainText: "Sungai kotor.",
+    sourceUrls: [],
+    location: "",
+    fileDescription: "",
+  });
   assert.equal(weakAudit.strength, "weak");
   assert.equal(weakAudit.coverage, "limited");
 
@@ -1953,7 +1956,7 @@ test("agentic answer quality, classifier, and mobile responsiveness in UI", () =
     mainText: longText,
     sourceUrls: ["https://example.com/river-data"],
     location: "Sungai Ciliwung",
-    fileDescription: "Foto kondisi sungai"
+    fileDescription: "Foto kondisi sungai",
   });
   assert.equal(strongAudit.strength, "strong");
   assert.equal(strongAudit.coverage, "strong");
@@ -1969,7 +1972,7 @@ test("agentic answer quality, classifier, and mobile responsiveness in UI", () =
     sourceUrls: [],
     location: "",
     fileDescription: "",
-    integrityConsent: true
+    integrityConsent: true,
   };
   const mockDraft = buildMockDraftReport(mockInput);
   assert.ok(mockDraft.understanding);
@@ -1979,12 +1982,12 @@ test("agentic answer quality, classifier, and mobile responsiveness in UI", () =
 
   // Assertion 14: Short input warning check in mock draft report
   const shortMockDraft = buildMockDraftReport({ ...mockInput, mainText: "sungai" });
-  assert.ok(shortMockDraft.evidence_warnings.some(w => w.includes("sangat pendek")));
+  assert.ok(shortMockDraft.evidence_warnings.some((w) => w.includes("sangat pendek")));
 
   // Assertion 15: Mock Start From Zero Guide contains agentic fields
   const mockStartInput = {
     ...mockInput,
-    mode: "start_from_zero"
+    mode: "start_from_zero",
   };
   const mockStart = buildMockStartGuide(mockStartInput);
   assert.ok(mockStart.understanding);

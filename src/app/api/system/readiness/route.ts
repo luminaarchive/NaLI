@@ -46,7 +46,9 @@ export async function GET() {
         apiUsageLogs: TableReadiness;
         feedback: TableReadiness;
         payments: TableReadiness;
+        reportBalances: TableReadiness;
         reportEvents: TableReadiness;
+        reportLedgerEvents: TableReadiness;
         reports: TableReadiness;
         status: "attempted";
         usageEvents: TableReadiness;
@@ -56,20 +58,25 @@ export async function GET() {
 
   if (supabase) {
     try {
-      const [reports, feedback, usageEvents, payments, reportEvents, apiUsageLogs] = await Promise.all([
-        countTable(supabase, "reports"),
-        countTable(supabase, "report_feedback"),
-        countTable(supabase, "usage_events"),
-        countTable(supabase, "payments"),
-        countTable(supabase, "report_events"),
-        countTable(supabase, "api_usage_logs"),
-      ]);
+      const [reports, feedback, usageEvents, payments, reportEvents, apiUsageLogs, reportBalances, reportLedgerEvents] =
+        await Promise.all([
+          countTable(supabase, "reports"),
+          countTable(supabase, "report_feedback"),
+          countTable(supabase, "usage_events"),
+          countTable(supabase, "payments"),
+          countTable(supabase, "report_events"),
+          countTable(supabase, "api_usage_logs"),
+          countTable(supabase, "report_balances"),
+          countTable(supabase, "report_ledger_events"),
+        ]);
 
       dbStatus = {
         apiUsageLogs,
         feedback,
         payments,
+        reportBalances,
         reportEvents,
+        reportLedgerEvents,
         reports,
         status: "attempted",
         usageEvents,

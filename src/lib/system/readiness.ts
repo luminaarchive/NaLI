@@ -43,6 +43,11 @@ export type SystemReadiness = {
   singleReportProduct: "enabled";
   reportPackagesConfigured: true;
   reportBalanceArchitecture: "enabled";
+  reportBalancePersistence: "configured" | "unavailable";
+  reportLedger: "enabled";
+  idempotencyProtection: "enabled";
+  minimalLandingRefresh: "enabled";
+  appShell: "enabled";
   uploadApi: "inactive_blocked";
   sourceVerification: "inactive";
 };
@@ -70,23 +75,21 @@ export function getSystemReadiness(): SystemReadiness {
       ? "production"
       : "sandbox";
 
-  const exportActive = supabaseConfigured && midtransConfigured;
-
   return {
     adminViewEnabled: env.admin.viewEnabled,
     costProtectionActive: costProtection.costProtectionActive,
     costProtectionConfigured: costProtection.costProtectionConfigured,
     costProtectionPrepared: costProtection.costProtectionPrepared,
     exportGatePrepared: true,
-    exportGateStatus: exportActive ? "active" : "prepared_locked",
+    exportGateStatus: "prepared_locked",
     fileUploadActive: false,
     maintenanceSecretConfigured: purge.maintenanceSecretConfigured,
     midtransConfigured,
     midtransProductionMode,
     midtransEnvironment,
-    paidCheckoutActive: exportActive,
-    creditPurchaseActive: exportActive,
-    paidExportActive: supabaseConfigured,
+    paidCheckoutActive: false,
+    creditPurchaseActive: false,
+    paidExportActive: false,
     naliLockPrepared: true,
     openRouterConfigured,
     professionalFieldIntelligence: "positioning_only",
@@ -110,6 +113,11 @@ export function getSystemReadiness(): SystemReadiness {
     singleReportProduct: "enabled",
     reportPackagesConfigured: true,
     reportBalanceArchitecture: "enabled",
+    reportBalancePersistence: supabaseConfigured ? "configured" : "unavailable",
+    reportLedger: "enabled",
+    idempotencyProtection: "enabled",
+    minimalLandingRefresh: "enabled",
+    appShell: "enabled",
     uploadApi: "inactive_blocked",
     sourceVerification: "inactive",
   };

@@ -1,21 +1,24 @@
 # NaLI CP1 Single Report Product + Report Balance Architecture QA Report
 
+> Persistence update: `report_balances` and `report_ledger_events` are now prepared by the additive CP1 report ledger
+> migration. Payment, public paid generation, and balance top-ups remain inactive.
+
 ## Status
 
-| Area | Status |
-| --- | --- |
-| Human Testing | PAUSED |
-| Midtrans | DEFERRED |
-| Paid Launch | NO-GO |
-| Public/user PDF/DOCX export | LOCKED / INACTIVE |
-| Upload API | INACTIVE / BLOCKED |
-| Source verification | INACTIVE |
-| Entitlement Gate | IMPLEMENTED / GO |
-| Internal Premium QA Resolver | IMPLEMENTED / GO |
-| User-facing model selector | REMOVED / HIDDEN |
-| Report Balance Architecture | IMPLEMENTED |
-| Payment Activation | NOT IMPLEMENTED |
-| Public Premium Activation | NOT IMPLEMENTED |
+| Area                         | Status             |
+| ---------------------------- | ------------------ |
+| Human Testing                | PAUSED             |
+| Midtrans                     | DEFERRED           |
+| Paid Launch                  | NO-GO              |
+| Public/user PDF/DOCX export  | LOCKED / INACTIVE  |
+| Upload API                   | INACTIVE / BLOCKED |
+| Source verification          | INACTIVE           |
+| Entitlement Gate             | IMPLEMENTED / GO   |
+| Internal Premium QA Resolver | IMPLEMENTED / GO   |
+| User-facing model selector   | REMOVED / HIDDEN   |
+| Report Balance Architecture  | IMPLEMENTED        |
+| Payment Activation           | NOT IMPLEMENTED    |
+| Public Premium Activation    | NOT IMPLEMENTED    |
 
 ## Objective
 
@@ -25,11 +28,11 @@ The future public unit is **Laporan**. This sprint configures packages and deter
 
 ## Package Configuration
 
-| Package | Prepared Price | Included Unit | Public Copy | Activation |
-| --- | ---: | ---: | --- | --- |
-| Basic | Rp15.000 | 5 | 5 laporan cepat | Inactive |
-| Pro | Rp49.000 | 5 | 5 laporan lengkap | Inactive |
-| Pro Bundle | Rp89.000 | 10 | 10 laporan lengkap | Inactive |
+| Package    | Prepared Price | Included Unit | Public Copy        | Activation |
+| ---------- | -------------: | ------------: | ------------------ | ---------- |
+| Basic      |       Rp15.000 |             5 | 5 laporan cepat    | Inactive   |
+| Pro        |       Rp49.000 |             5 | 5 laporan lengkap  | Inactive   |
+| Pro Bundle |       Rp89.000 |            10 | 10 laporan lengkap | Inactive   |
 
 No package is connected to checkout or Midtrans in CP1.
 
@@ -52,7 +55,8 @@ The ledger vocabulary is prepared as typed server configuration:
 - `refund_report`
 - `generation_failed_no_charge`
 
-No database balance migration is introduced in this sprint because payment activation and verified public purchase persistence remain intentionally inactive.
+A later additive persistence sprint introduced server-managed balance and ledger tables initialized at zero only. It does
+not activate payment, grant a paid balance, or activate public paid generation.
 
 ## Server Safety
 
@@ -73,14 +77,14 @@ No database balance migration is introduced in this sprint because payment activ
 
 ## Verification Record
 
-| Check | Result |
-| --- | --- |
-| `npm run lint` | PASS |
-| `npm run typecheck` | PASS |
-| `npm run build` | PASS |
-| `npm run check:i18n` | PASS, 398 keys matched |
-| `npm run test:demo` | PASS, 5/5 tests |
-| `node --test tests/reports/*.test.cjs` | PASS, 311/311 tests |
+| Check                                  | Result                 |
+| -------------------------------------- | ---------------------- |
+| `npm run lint`                         | PASS                   |
+| `npm run typecheck`                    | PASS                   |
+| `npm run build`                        | PASS                   |
+| `npm run check:i18n`                   | PASS, 398 keys matched |
+| `npm run test:demo`                    | PASS, 5/5 tests        |
+| `node --test tests/reports/*.test.cjs` | PASS, 311/311 tests    |
 
 The report suite verifies package configuration, zero paid default balance, no-charge rules, neutral public starter routing, rejection of public hidden-engine attempts, entitlement compatibility, V8 internal renderer differentiation, locked public PDF/DOCX export, and mobile-source regressions.
 

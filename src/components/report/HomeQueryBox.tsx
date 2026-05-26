@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Search, FileText, Compass, Sparkles } from "lucide-react";
+import { ArrowRight, Search, FileText, FlaskConical, Leaf, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function HomeQueryBox() {
@@ -66,7 +66,7 @@ export function HomeQueryBox() {
         mainText: trimmed,
         mode: inferredMode,
         reportTemplate: "Laporan Observasi Lingkungan",
-      })
+      }),
     );
 
     router.push(`/create-report?q=${encodeURIComponent(trimmed)}&mode=${inferredMode}`);
@@ -80,72 +80,87 @@ export function HomeQueryBox() {
   };
 
   return (
-    <div className="mt-5 w-full max-w-[640px] px-4">
-      <form onSubmit={handleSearchSubmit} className="relative group">
-        {/* Glow backdrop on hover */}
-        <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[#10b981]/20 via-[#7c3aed]/20 to-[#06b6d4]/20 opacity-30 blur-md transition duration-500 group-hover:opacity-60 group-focus-within:opacity-70" />
-
-        <div className="relative flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-[#07090e]/60 p-1.5 shadow-2xl backdrop-blur-xl transition duration-300 focus-within:border-white/[0.15] focus-within:bg-[#07090e]/85">
-          <div className="flex flex-1 items-center gap-2 px-3">
-            <Search className="h-5 w-5 shrink-0 text-white/30" />
+    <div className="mt-8 w-full max-w-[680px]">
+      <form onSubmit={handleSearchSubmit} className="group relative">
+        <div className="flex min-h-[72px] flex-col gap-2 rounded-lg border border-[#d9d2c3] bg-white p-2 shadow-[0_12px_32px_rgba(16,35,27,0.06)] transition-colors focus-within:border-[#315f45] sm:flex-row sm:items-center">
+          <div className="flex w-full flex-1 items-center gap-2 px-3">
+            <Search className="h-5 w-5 shrink-0 text-[#6a756e]" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Tulis catatan, topik, lokasi, atau sumbermu..."
-              className="w-full bg-transparent text-[15px] font-medium text-white placeholder-white/35 outline-none border-none py-2"
+              placeholder="Tulis topik laporanmu..."
+              aria-label="Tulis topik laporanmu"
+              className="w-full border-none bg-transparent py-3 text-[15px] font-medium text-[#10231b] outline-none placeholder:text-[#7b847e]"
             />
           </div>
 
           <button
             type="submit"
-            className="inline-flex h-9 shrink-0 items-center gap-1 rounded-xl bg-white px-4 text-sm font-semibold text-[#09090b] transition duration-200 hover:bg-white/90 active:scale-95 cursor-pointer"
+            className="inline-flex min-h-[52px] w-full shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md bg-[#315f45] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#274d38] sm:w-auto"
           >
-            Mulai
+            Buat Laporan
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
       </form>
 
-      {/* Chips */}
-      <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5 text-xs text-white/50">
+      <p className="mt-3 text-center text-xs text-[#6a756e]">
+        Contoh: observasi kualitas air sungai di sekitar sekolah
+      </p>
+
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs text-[#315f45]">
         <button
           type="button"
-          onClick={() => selectChip("Punya catatan", "draft_from_materials")}
+          onClick={() => selectChip("Laporan Observasi", "draft_from_materials", "Laporan observasi lingkungan: ")}
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 transition duration-200 hover:bg-white/[0.06] hover:text-white cursor-pointer",
-            selectedMode === "draft_from_materials" && "border-[#10b981]/30 bg-[#10b981]/5 text-white"
+            "inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-md border border-[#d9d2c3] bg-white/70 px-3 transition-colors hover:bg-[#eef2e8]",
+            selectedMode === "draft_from_materials" && "border-[#9eb99e] bg-[#eef2e8]",
           )}
         >
-          <FileText className="h-3.5 w-3.5 text-[#10b981]" />
-          Punya catatan
+          <Leaf className="h-3.5 w-3.5" />
+          Laporan Observasi
         </button>
 
         <button
           type="button"
-          onClick={() => selectChip("Belum punya bahan", "start_from_zero", "Aku mau mulai laporan tapi belum punya bahan.")}
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 transition duration-200 hover:bg-white/[0.06] hover:text-white cursor-pointer",
-            selectedMode === "start_from_zero" && "border-[#7c3aed]/30 bg-[#7c3aed]/5 text-white"
-          )}
+          onClick={() => selectChip("Praktikum Biologi", "draft_from_materials", "Laporan praktikum biologi: ")}
+          className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-md border border-[#d9d2c3] bg-white/70 px-3 transition-colors hover:bg-[#eef2e8]"
         >
-          <Compass className="h-3.5 w-3.5 text-[#7c3aed]" />
-          Belum punya bahan
+          <FlaskConical className="h-3.5 w-3.5" />
+          Praktikum Biologi
         </button>
 
         <button
           type="button"
-          onClick={() => selectChip("Observasi lingkungan", "draft_from_materials", "Laporan observasi lingkungan dan keanekaragaman hayati")}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 transition duration-200 hover:bg-white/[0.06] hover:text-white cursor-pointer"
+          onClick={() => selectChip("Laporan KKN", "draft_from_materials", "Laporan kegiatan KKN: ")}
+          className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-md border border-[#d9d2c3] bg-white/70 px-3 transition-colors hover:bg-[#eef2e8]"
         >
-          <Sparkles className="h-3.5 w-3.5 text-[#06b6d4]" />
-          Observasi lingkungan
+          <FileText className="h-3.5 w-3.5" />
+          Laporan KKN
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            selectChip(
+              "Cek Batas Bukti",
+              "start_from_zero",
+              "Bantu saya memahami batas bukti untuk laporan yang akan saya siapkan.",
+            )
+          }
+          className={cn(
+            "inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-md border border-[#d9d2c3] bg-white/70 px-3 transition-colors hover:bg-[#eef2e8]",
+            selectedMode === "start_from_zero" && "border-[#9eb99e] bg-[#eef2e8]",
+          )}
+        >
+          <ClipboardCheck className="h-3.5 w-3.5" />
+          Cek Batas Bukti
         </button>
       </div>
 
-      {/* Helper text */}
-      <p className="mt-3.5 text-center text-xs leading-5 text-white/40 max-w-[480px] mx-auto">
-        Punya bahan? NaLI buatkan draf. Belum punya bahan? NaLI buatkan panduan mulai.
+      <p className="mx-auto mt-4 max-w-[500px] text-center text-xs leading-5 text-[#6a756e]">
+        Kamu tetap diminta menyetujui integritas akademik sebelum draft dibuat.
       </p>
     </div>
   );

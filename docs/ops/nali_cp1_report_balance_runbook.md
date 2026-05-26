@@ -1,19 +1,23 @@
 # NaLI CP1 Report Balance Runbook
 
+> Persistence update: this runbook is complemented by
+> `docs/ops/nali_cp1_report_balance_ledger_runbook.md`, which defines the additive server-only ledger persistence
+> layer. No payment or public paid generation has been activated.
+
 ## Operational State
 
-| Control | Required State |
-| --- | --- |
-| Human Testing | PAUSED |
-| Midtrans | DEFERRED |
-| Paid Launch | NO-GO |
-| Public/user PDF/DOCX export | LOCKED / INACTIVE |
-| Upload API | INACTIVE / BLOCKED |
-| Source verification | INACTIVE |
-| Entitlement Gate | IMPLEMENTED / GO |
-| Internal Premium QA Resolver | IMPLEMENTED / GO |
-| Payment Activation | NOT IMPLEMENTED |
-| Public Premium Activation | NOT IMPLEMENTED |
+| Control                      | Required State     |
+| ---------------------------- | ------------------ |
+| Human Testing                | PAUSED             |
+| Midtrans                     | DEFERRED           |
+| Paid Launch                  | NO-GO              |
+| Public/user PDF/DOCX export  | LOCKED / INACTIVE  |
+| Upload API                   | INACTIVE / BLOCKED |
+| Source verification          | INACTIVE           |
+| Entitlement Gate             | IMPLEMENTED / GO   |
+| Internal Premium QA Resolver | IMPLEMENTED / GO   |
+| Payment Activation           | NOT IMPLEMENTED    |
+| Public Premium Activation    | NOT IMPLEMENTED    |
 
 ## Public Product Contract
 
@@ -24,11 +28,11 @@
 
 ## Configured Packages
 
-| ID | Display | Prepared Price | Included Reports | Public Copy |
-| --- | --- | ---: | ---: | --- |
-| `basic` | Basic | Rp15.000 | 5 | 5 laporan cepat |
-| `pro` | Pro | Rp49.000 | 5 | 5 laporan lengkap |
-| `pro_bundle` | Pro Bundle | Rp89.000 | 10 | 10 laporan lengkap |
+| ID           | Display    | Prepared Price | Included Reports | Public Copy        |
+| ------------ | ---------- | -------------: | ---------------: | ------------------ |
+| `basic`      | Basic      |       Rp15.000 |                5 | 5 laporan cepat    |
+| `pro`        | Pro        |       Rp49.000 |                5 | 5 laporan lengkap  |
+| `pro_bundle` | Pro Bundle |       Rp89.000 |               10 | 10 laporan lengkap |
 
 These are configuration and copy readiness only. Do not add a live buy action, checkout redirect, webhook success transition, or report credit grant until separately authorized.
 
@@ -43,14 +47,14 @@ Default CP1 behavior:
 
 Charge rules:
 
-| Action | Balance Effect |
-| --- | --- |
-| New successful paid report generation | Consume 1 report |
-| Regenerate from scratch after successful paid generation | Consume 1 report |
-| Manual edit of an existing report | No consumption |
-| Copy/download of the same result | No consumption |
-| Server generation failure | `generation_failed_no_charge` |
-| Integrity or rate-limit block | `generation_failed_no_charge` |
+| Action                                                   | Balance Effect                |
+| -------------------------------------------------------- | ----------------------------- |
+| New successful paid report generation                    | Consume 1 report              |
+| Regenerate from scratch after successful paid generation | Consume 1 report              |
+| Manual edit of an existing report                        | No consumption                |
+| Copy/download of the same result                         | No consumption                |
+| Server generation failure                                | `generation_failed_no_charge` |
+| Integrity or rate-limit block                            | `generation_failed_no_charge` |
 
 ## Ledger Vocabulary
 
@@ -66,7 +70,9 @@ refund_report
 generation_failed_no_charge
 ```
 
-Persistent `report_balances` and `report_ledger_events` storage is deferred in this sprint. Payment is not active, and introducing public balance truth before an authorized purchase path would risk creating misleading entitlement state.
+Persistent `report_balances` and `report_ledger_events` storage is prepared through an additive, server-managed
+migration. Rows start at zero; the current public route does not grant balances or consume paid reports. Payment remains
+inactive, and purchase/top-up truth must only be connected after an authorized payment implementation exists.
 
 ## API Rules
 
