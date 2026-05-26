@@ -15,13 +15,13 @@ import {
 } from "@/lib/reports/reportGenerator";
 import { getCostProtectionStatus } from "@/lib/usage/costProtection";
 import { logUsageEvent } from "@/lib/usage/logging";
-import { getEnergyBalance } from "@/lib/energy/ledger";
 import { evaluateModelEntitlement, PREMIUM_MODEL_LOCK_MESSAGE } from "@/lib/entitlements/modelEntitlements";
 import { resolveInternalPremiumQaEntitlement } from "@/lib/entitlements/internalEntitlementResolver";
 import {
   recordPremiumEntitlementAttempt,
   type PremiumEntitlementAuditDecision,
 } from "@/lib/entitlements/premiumEntitlementAudit";
+import { evaluateReportGenerationAccess, type PublicReportType } from "@/lib/billing/reportBalances";
 
 const systemPrompt = [
   "You are NaLI (NatIve Learning & Intelligence) by NatIve, a professional AI field intelligence and evidence-based learning assistant.",
@@ -65,6 +65,10 @@ function hasClientSuppliedPremiumClaim(input: Record<string, unknown>) {
     "verifiedPremiumCredit",
     "verifiedPremiumEntitlement",
   ].some((field) => Object.prototype.hasOwnProperty.call(input, field));
+}
+
+function getRequestedPublicReportType(input: Record<string, unknown>): PublicReportType {
+  return input.reportType === "basic" || input.reportType === "pro" ? input.reportType : "starter_free";
 }
 
 export async function POST(req: NextRequest) {
@@ -163,12 +167,29 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const modelLabels: Record<string, string> = {
-    peregrine: "NaLI Peregrine",
+  const internalPremiumQaAllowed = selectedModelId !== "peregrine" && internalPremiumQa?.allowed === true;
+  if (!internalPremiumQaAllowed) {
+    const reportAccess = evaluateReportGenerationAccess({
+      reportType: getRequestedPublicReportType(input),
+    });
+
+    if (!reportAccess.allowed) {
+      return NextResponse.json(
+        {
+          code: "REPORT_BALANCE_REQUIRED",
+          error: "Laporan kamu habis. Pilih paket untuk lanjut. Pembayaran dan checkout belum aktif di CP1.",
+          reportAccess,
+        },
+        { headers, status: 403 },
+      );
+    }
+  }
+
+  const internalQaLabels: Record<string, string> = {
     obsidian: "NaLI Obsidian",
     zephyr: "NaLI Zephyr",
   };
-  const modelLabel = modelLabels[selectedModelId] || "NaLI Peregrine";
+  const modelLabel = internalPremiumQaAllowed ? internalQaLabels[selectedModelId] : "NaLI Starter Report";
 
   const costProtection = await getCostProtectionStatus();
   if (costProtection.active) {
@@ -178,21 +199,6 @@ export async function POST(req: NextRequest) {
         status: "cost_protection_active",
       },
       { headers, status: 429 },
-    );
-  }
-
-  // Check balance before calling OpenRouter if energy ledger is ready
-  const cost = validated.data.mode === "start_from_zero" ? 10 : 20;
-  const balanceRes = await getEnergyBalance(input.guestSessionId);
-  if (balanceRes.ready && balanceRes.balance < cost) {
-    return NextResponse.json(
-      {
-        error: "insufficient_credits",
-        message: `Kredit tidak cukup untuk melakukan aksi ini. Diperlukan ${cost} kredit, sisa Anda ${balanceRes.balance} kredit.`,
-        requiredCredits: cost,
-        balance: balanceRes.balance,
-      },
-      { headers, status: 402 },
     );
   }
 

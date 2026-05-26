@@ -85,7 +85,7 @@ test("4. Tier narrative similarity stays below a broad-overlap threshold", () =>
 
 test("5. Public PDF/DOCX remains locked and V8 output destination stays outside repo", () => {
   const client = fs.readFileSync(path.join(repoRoot, "src/components/report/ReportResultClient.tsx"), "utf8");
-  assert.match(client, /PDF berbayar belum aktif/);
+  assert.match(client, /PDF\/DOCX publik tetap terkunci/);
   assert.doesNotMatch(client, /Unduh DOCX/);
   const generatorPath = path.join(repoRoot, "scratch/generate_reference_journal_v8.cjs");
   assert.equal(fs.existsSync(generatorPath), true, "the V8 external-artifact generator must be checked in");

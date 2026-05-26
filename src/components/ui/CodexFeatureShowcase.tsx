@@ -219,10 +219,10 @@ function ExportMockup() {
         ))}
       </div>
       <div className="my-5 h-px bg-white/[0.08]" />
-      <button className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-violet-600 px-4 text-sm font-semibold text-white transition hover:brightness-110">
+      <div className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 text-sm font-semibold text-white/50">
         <Download className="h-4 w-4" />
-        Export Markdown/PDF →
-      </button>
+        PDF/DOCX terkunci di CP1
+      </div>
     </MockupShell>
   );
 }
@@ -295,7 +295,7 @@ export function CodexFeatureShowcase() {
       />
 
       <FeatureBlock
-        body="Preview tetap terbuka untuk diperiksa. Export Markdown atau PDF aktif setelah pembayaran dikonfirmasi."
+        body="Preview tetap terbuka untuk diperiksa. PDF/DOCX publik tetap terkunci di CP1 dan checkout belum aktif."
         href="/pricing"
         link="Pelajari export gate"
         mockup={<ExportMockup />}

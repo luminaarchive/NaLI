@@ -67,12 +67,13 @@ test("a direct API bypass attempt cannot generate Obsidian or Zephyr without ent
 
   const routeSource = fs.readFileSync(path.join(repoRoot, "src/app/api/reports/generate/route.ts"), "utf8");
   const guardPosition = routeSource.indexOf("evaluateModelEntitlement(selectedModelId,");
+  const reportBalancePosition = routeSource.indexOf("evaluateReportGenerationAccess({");
   assert.ok(guardPosition > -1);
-  assert.ok(guardPosition < routeSource.indexOf("getEnergyBalance(input.guestSessionId)"));
+  assert.ok(reportBalancePosition > guardPosition);
   assert.ok(guardPosition < routeSource.indexOf("requestOpenRouterJson({"));
 });
 
-test("selector configuration and client submission paths keep premium models locked in CP1", () => {
+test("internal tier configuration stays locked while public clients expose no model selector", () => {
   const models = Object.fromEntries(naliModels.map((model) => [model.id, model]));
   assert.equal(models.peregrine.lockedWithoutEntitlement, false);
   assert.equal(models.obsidian.lockedWithoutEntitlement, true);
@@ -80,18 +81,11 @@ test("selector configuration and client submission paths keep premium models loc
 
   const formSource = fs.readFileSync(path.join(repoRoot, "src/components/report/CreateReportForm.tsx"), "utf8");
   const workspaceSource = fs.readFileSync(path.join(repoRoot, "src/components/report/AgentWorkspace.tsx"), "utf8");
-  const modelSource = fs.readFileSync(path.join(repoRoot, "src/lib/models/naliModels.ts"), "utf8");
-
   for (const source of [formSource, workspaceSource]) {
-    assert.match(source, /model\.lockedWithoutEntitlement/);
-    assert.match(source, /disabled=\{isLocked\}/);
-    assert.match(source, /CP1_PREMIUM_ACCESS_MESSAGE/);
+    assert.doesNotMatch(source, /selectedModel|naliModels|Peregrine|Obsidian|Zephyr|CP1_PREMIUM_ACCESS_MESSAGE/);
     assert.match(source, /min-h-\[44px\]/);
+    assert.match(source, /Buat Laporan/);
   }
-
-  assert.match(modelSource, /checkout\/pembayaran tidak diaktifkan di CP1/i);
-  assert.match(formSource, /MODEL_ENTITLEMENT_REQUIRED/);
-  assert.match(workspaceSource, /MODEL_ENTITLEMENT_REQUIRED/);
 });
 
 test("safe readiness status states that the entitlement gate is enabled while activation remains off", async () => {
@@ -107,4 +101,6 @@ test("safe readiness status states that the entitlement gate is enabled while ac
   assert.equal(body.paymentActivation, "disabled");
   assert.equal(body.midtrans, "deferred_inactive");
   assert.equal(body.publicExport, "locked_inactive");
+  assert.equal(body.singleReportProduct, "enabled");
+  assert.equal(body.reportBalanceArchitecture, "enabled");
 });

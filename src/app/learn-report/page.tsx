@@ -109,7 +109,7 @@ export default function LearnReportPage() {
               {[
                 ["Bring notes, source URLs, location, or context", "Paste text materials or start with one topic."],
                 ["NaLI structures the evidence", "Evidence summary, uncertainty notes, and structured sections."],
-                ["Review, verify, and export", "Check the draft, mark confidence, then export."],
+                ["Review and verify", "Check the draft and mark confidence before using any result."],
               ].map(([title, text], i) => (
                 <div key={title} className="text-center">
                   <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-sm font-semibold text-white/60">
@@ -127,7 +127,7 @@ export default function LearnReportPage() {
         <section className="px-4 py-12 sm:px-6 lg:px-8">
           <div className="mx-auto flex max-w-[600px] flex-wrap justify-center gap-3">
             <Badge tone="cyan" className="px-4 py-2 text-sm">
-              Markdown/PDF Export
+              PDF/DOCX Public Locked
             </Badge>
             <Badge tone="amber" className="px-4 py-2 text-sm">
               Export Gate

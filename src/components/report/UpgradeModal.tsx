@@ -1,17 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { X } from "lucide-react";
-import { PricingCards } from "./PricingCards";
+import { LockKeyhole, X } from "lucide-react";
 
 interface UpgradeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  reportId?: string | null;
-  reportAccessKey?: string | null;
 }
 
-export function UpgradeModal({ isOpen, onClose, reportId, reportAccessKey }: UpgradeModalProps) {
+export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Close on Escape key press
@@ -53,9 +50,9 @@ export function UpgradeModal({ isOpen, onClose, reportId, reportAccessKey }: Upg
         {/* Header */}
         <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/[0.06]">
           <div>
-            <h2 className="text-2xl font-bold text-white">NaLI Monetization</h2>
+            <h2 className="text-2xl font-bold text-white">Paket Laporan NaLI</h2>
             <p className="text-xs text-white/40 mt-1">
-              Tambahkan kredit energi untuk melanjutkan penyuntingan draf berkualitas tinggi.
+              Laporan kamu habis. Pilih paket untuk lanjut.
             </p>
           </div>
           <button
@@ -66,12 +63,12 @@ export function UpgradeModal({ isOpen, onClose, reportId, reportAccessKey }: Upg
           </button>
         </div>
 
-        {/* Pricing Content */}
-        <PricingCards
-          reportId={reportId}
-          reportAccessKey={reportAccessKey}
-          onSuccess={onClose}
-        />
+        <div className="rounded-xl border border-amber-500/15 bg-amber-500/[0.04] p-5 text-sm leading-7 text-amber-200/70">
+          <p className="flex items-start gap-2">
+            <LockKeyhole className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" />
+            Pembayaran dan checkout belum aktif di CP1. Paket Laporan hanya ditampilkan sebagai persiapan arsitektur.
+          </p>
+        </div>
       </div>
     </div>
   );

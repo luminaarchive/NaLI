@@ -40,6 +40,11 @@ export type SystemReadiness = {
   paymentActivation: "disabled";
   midtrans: "deferred_inactive";
   publicExport: "locked_inactive";
+  singleReportProduct: "enabled";
+  reportPackagesConfigured: true;
+  reportBalanceArchitecture: "enabled";
+  uploadApi: "inactive_blocked";
+  sourceVerification: "inactive";
 };
 
 function hasValue(value: string | undefined) {
@@ -102,6 +107,11 @@ export function getSystemReadiness(): SystemReadiness {
     paymentActivation: "disabled",
     midtrans: "deferred_inactive",
     publicExport: "locked_inactive",
+    singleReportProduct: "enabled",
+    reportPackagesConfigured: true,
+    reportBalanceArchitecture: "enabled",
+    uploadApi: "inactive_blocked",
+    sourceVerification: "inactive",
   };
 }
 

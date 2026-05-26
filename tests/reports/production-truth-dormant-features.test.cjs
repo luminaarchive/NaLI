@@ -34,12 +34,13 @@ test("5. Local Markdown/TXT copy/download options exist in client UI", () => {
 
 test("6. Public PDF/payment remains locked", () => {
   const clientSource = fs.readFileSync(path.join(repoRoot, "src/components/report/ReportResultClient.tsx"), "utf8");
-  assert.ok(clientSource.includes("PDF berbayar belum aktif di fase testing ini. Export berbayar masih terkunci."));
+  assert.ok(clientSource.includes("PDF/DOCX publik tetap terkunci / inactive di CP1."));
+  assert.doesNotMatch(clientSource, /\/api\/payments\/create/);
 });
 
 test("7. Pricing/upgrade copy does not claim paid launch active", () => {
   const pricingSource = fs.readFileSync(path.join(repoRoot, "src/app/pricing/page.tsx"), "utf8");
-  assert.ok(pricingSource.includes("Pembayaran otomatis belum aktif di fase testing ini"));
+  assert.ok(pricingSource.includes("Pembayaran dan checkout belum aktif di CP1"));
 });
 
 test("8. Field Intelligence page remains positioning-only", () => {

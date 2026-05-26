@@ -93,29 +93,20 @@ test("buildReportPrompt injects appropriate profile-specific instructions into s
   assert.match(zPrompt, /Prioritize clarity, flow/);
 });
 
-// ─── Test 4: Model Selector UI Static Integrity ──────────────────────────────
+// ─── Test 4: Single report public UI and internal-only tier registry ─────────
 
-test("model selector UI is rendered under composer areas with exact label references", () => {
+test("public composer hides model selector while internal registry remains for server QA", () => {
   const formSrc = fs.readFileSync(path.join(repoRoot, "src/components/report/CreateReportForm.tsx"), "utf8");
   const workspaceSrc = fs.readFileSync(path.join(repoRoot, "src/components/report/AgentWorkspace.tsx"), "utf8");
   const modelSrc = fs.readFileSync(path.join(repoRoot, "src/lib/models/naliModels.ts"), "utf8");
 
-  // CreateReportForm references
-  assert.match(formSrc, /Pilih Profil Pemrosesan \(Model\)/);
-  assert.match(formSrc, /form\.selectedModel\s*===\s*model\.id/);
-  assert.match(formSrc, /model\.lockedWithoutEntitlement/);
-  assert.match(formSrc, /disabled=\{isLocked\}/);
+  for (const source of [formSrc, workspaceSrc]) {
+    assert.doesNotMatch(source, /Pilih Profil Pemrosesan|Profil Pemrosesan|selectedModel|naliModels/);
+    assert.doesNotMatch(source, /Peregrine|Obsidian|Zephyr|Haiku|Sonnet/);
+    assert.match(source, /Buat Laporan/);
+  }
 
-  // AgentWorkspace references
-  assert.match(workspaceSrc, /Profil Pemrosesan \(Model\)/);
-  assert.match(workspaceSrc, /selectedModel\s*===\s*model\.id/);
-  assert.match(workspaceSrc, /model\.lockedWithoutEntitlement/);
-  assert.match(workspaceSrc, /disabled=\{isLocked\}/);
-  assert.match(workspaceSrc, /selectedModel,\s*\n\s*\}\)/); // submitted in JSON payload
-
-  // Shared model-detail panel renders the approved differentiated registry copy.
-  assert.match(formSrc, /model\.shortDescription/);
-  assert.match(workspaceSrc, /model\.shortDescription/);
+  // Internal-only differentiated registry remains for routing and QA artifacts.
   assert.match(modelSrc, /Peregrine — Starter Cepat/);
   assert.match(modelSrc, /Obsidian — Evidence Audit/);
   assert.match(modelSrc, /Zephyr — Premium Journal Draft/);
@@ -123,8 +114,6 @@ test("model selector UI is rendered under composer areas with exact label refere
   assert.match(modelSrc, /audit bukti, batas klaim, risiko data/);
   assert.match(modelSrc, /Model paling mahal dan paling kuat/);
   assert.match(modelSrc, /checkout\/pembayaran tidak diaktifkan di CP1/i);
-  assert.match(formSrc, /CP1_PREMIUM_ACCESS_MESSAGE/);
-  assert.match(workspaceSrc, /CP1_PREMIUM_ACCESS_MESSAGE/);
 });
 
 // ─── Test 5: Prohibited and Safe Personalization keywords ────────────────────
@@ -145,7 +134,7 @@ test("Zephyr, Obsidian, and Peregrine descriptions strictly avoid unsafe cheatin
 
 // ─── Test 6: Mobile Class layout regression & Logo Verification ──────────────
 
-test("model selector elements preserve mobile safe-area paddings and keep touch targets accessible", () => {
+test("single-report controls preserve mobile safe-area paddings and touch targets", () => {
   const formSrc = fs.readFileSync(path.join(repoRoot, "src/components/report/CreateReportForm.tsx"), "utf8");
   const workspaceSrc = fs.readFileSync(path.join(repoRoot, "src/components/report/AgentWorkspace.tsx"), "utf8");
 
@@ -153,9 +142,8 @@ test("model selector elements preserve mobile safe-area paddings and keep touch 
   assert.match(formSrc, /min-h-\[44px\]/);
   assert.match(workspaceSrc, /min-h-\[44px\]/);
 
-  // Ensure flex responsive layout class is used
-  assert.match(formSrc, /flex\s+flex-wrap\s+gap-2/);
-  assert.match(workspaceSrc, /flex\s+flex-wrap\s+gap-2/);
+  assert.match(formSrc, /min-h-12/);
+  assert.match(workspaceSrc, /h-11 w-11/);
 
   // Ensure mobile form safe-bottom padding classes are untouched
   assert.match(formSrc, /safe-bottom/);

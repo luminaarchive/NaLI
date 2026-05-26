@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState, useMemo, useCallback, memo } from "react";
+import { FormEvent, useEffect, useRef, useState, useCallback, memo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -30,11 +30,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import type { ReportResult, DraftReport, StartFromZeroGuide } from "@/lib/reports/reportGenerator";
 import { buildReportMarkdown } from "@/lib/reports/markdown";
-import { UpgradeModal } from "./UpgradeModal";
-import { getEstimatedCreditCostFromQuery } from "@/lib/pricing/plans";
 import { NaliAlert } from "@/components/ui/NaliAlert";
 import { normalizePublicError } from "@/lib/errors/publicErrors";
-import { CP1_PREMIUM_ACCESS_MESSAGE, naliModels } from "@/lib/models/naliModels";
 import {
   saveGuestReportRecovery,
   clearGuestReportRecovery,
@@ -108,8 +105,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<string>("Laporan Observasi Lingkungan");
   const [selectedMode, setSelectedMode] = useState<"draft_from_materials" | "start_from_zero">("draft_from_materials");
   const [integrityConsent, setIntegrityConsent] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<"peregrine" | "obsidian" | "zephyr">("peregrine");
-  const selectedModelLocked = naliModels.some((model) => model.id === selectedModel && model.lockedWithoutEntitlement);
   const [recoverySnapshot, setRecoverySnapshot] = useState<GuestReportRecoverySnapshot | null>(null);
   const [snapshots, setSnapshots] = useState<GuestReportRecoverySnapshot[]>([]);
 
@@ -164,15 +159,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally only reacts to retryAfterSeconds, not entire error object
   }, [error?.retryAfterSeconds]);
 
-  // Credits & Monetization state
-  const [credits, setCredits] = useState<number | null>(null);
-  const [ledgerReady, setLedgerReady] = useState(false);
-  const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
-
-  const [exportReadiness, setExportReadiness] = useState<"export_ready" | "export_locked" | "unknown">("unknown");
-  const [exportNotice, setExportNotice] = useState<string | null>(null);
-  const [showExportStatus, setShowExportStatus] = useState(false);
-
   // Progressive steps simulation state for optimistic UI
   const [optimisticSteps, setOptimisticSteps] = useState<
     Array<{ label: string; status: "pending" | "in_progress" | "completed" }>
@@ -183,10 +169,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const [inlineFeedbackExpanded, setInlineFeedbackExpanded] = useState(false);
   const [inlineFeedbackComment, setInlineFeedbackComment] = useState("");
   const [inlineFeedbackSending, setInlineFeedbackSending] = useState(false);
-
-  // Paid intent signal state (UI-only, uses feedback API)
-  const [paidIntentSent, setPaidIntentSent] = useState(false);
-  const [paidIntentSending, setPaidIntentSending] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -302,9 +284,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               window.localStorage.setItem(`nali-messages:${reportId}`, JSON.stringify(serverThread.messages));
             }
           }
-          if (payload.export_readiness) {
-            setExportReadiness(payload.export_readiness);
-          }
         }
       }
     } catch {
@@ -329,40 +308,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     scrollToBottom();
   }, [messages, optimisticSteps, activeRunStatus]);
 
-  const fetchBalance = async () => {
-    try {
-      let guestSessionId = window.localStorage.getItem("nali-guest-session-id");
-      if (!guestSessionId) {
-        guestSessionId =
-          typeof crypto !== "undefined" && "randomUUID" in crypto
-            ? crypto.randomUUID()
-            : `guest-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-        window.localStorage.setItem("nali-guest-session-id", guestSessionId);
-      }
-
-      const res = await fetch("/api/energy/balance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guestSessionId }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.ready) {
-          setCredits(data.balance);
-          setLedgerReady(true);
-        } else {
-          setLedgerReady(false);
-        }
-      }
-    } catch {
-      // ignore
-    }
-  };
-
   // Load thread list on mount
   useEffect(() => {
     loadRecentThreads();
-    fetchBalance();
 
     try {
       pruneExpiredGuestRecoveries();
@@ -380,15 +328,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       // ignore
     }
 
-    const params = new URLSearchParams(window.location.search);
-    const itemType = params.get("item_type");
-    const itemId = params.get("item_id");
-    if (itemType && itemId) {
-      setIsUpgradeOpen(true);
-      // Clear query params
-      const newUrl = window.location.pathname;
-      window.history.replaceState(null, "", newUrl);
-    }
   }, [initialReportId, loadSnapshots]);
 
   // Debounced local composer autosave in AgentWorkspace
@@ -402,7 +341,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         id: "composer-autosave",
         title: report?.title || selectedTemplate || "Autosave Draft Laporan",
         mode: selectedMode,
-        selectedModel: selectedModel,
         mainText: query,
         reportTemplate: selectedTemplate,
         integrityConsent: integrityConsent,
@@ -417,7 +355,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   }, [
     query,
     selectedMode,
-    selectedModel,
     selectedTemplate,
     integrityConsent,
     initialReportId,
@@ -459,7 +396,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       } else {
         setQuery(snapshot.mainText || "");
         setSelectedMode(snapshot.mode || "draft_from_materials");
-        setSelectedModel(snapshot.selectedModel || "peregrine");
         if (snapshot.reportTemplate) {
           setSelectedTemplate(snapshot.reportTemplate);
         }
@@ -512,7 +448,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       setMessages([]);
       setAccessKey(null);
     }
-    fetchBalance();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialReportId]);
 
@@ -553,15 +488,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     const trimmed = (retryQuery !== undefined ? retryQuery : query).trim();
     if (!trimmed) return;
 
-    if (selectedModelLocked) {
-      setError({
-        message: CP1_PREMIUM_ACCESS_MESSAGE,
-        code: "MODEL_ENTITLEMENT_REQUIRED",
-        status: 403,
-      });
-      return;
-    }
-
     if (!integrityConsent) {
       setError({ message: "Centang pernyataan integritas akademik NaLI terlebih dahulu." });
       return;
@@ -600,7 +526,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         id: tempId,
         title: selectedTemplate || "Draft Laporan",
         mode: selectedMode,
-        selectedModel: selectedModel,
         mainText: trimmed,
         reportTemplate: selectedTemplate,
         integrityConsent: integrityConsent,
@@ -617,7 +542,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           reportTemplate: selectedTemplate,
           integrityConsent: true,
           guestSessionId,
-          selectedModel,
         }),
       });
 
@@ -640,18 +564,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           clearGuestReportRecovery("composer-autosave");
         }
 
-        if (response.status === 402) {
-          setError({
-            message: payload.message ?? "Kredit energi Anda tidak cukup.",
-            code: "insufficient_credits",
-            status: response.status,
-          });
-          fetchBalance();
-          setMessages([]);
-          setActiveRunStatus("idle");
-          setOptimisticSteps([]);
-          return;
-        }
         setError({
           message: payload.error ?? "NaLI gagal membuat draf laporan awal.",
           code: payload.code,
@@ -673,7 +585,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         id: reportId,
         title: generatedReport.title || selectedTemplate || "Draft Laporan",
         mode: selectedMode,
-        selectedModel: selectedModel,
         mainText: trimmed,
         reportTemplate: selectedTemplate,
         integrityConsent: integrityConsent,
@@ -724,7 +635,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
       // Replace URL to point to this report
       window.history.pushState(null, "", `/report/${reportId}`);
-      fetchBalance();
     } catch {
       setError({
         message: "Koneksi gagal. Periksa jaringan Anda.",
@@ -783,18 +693,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
       const payload = await response.json();
       if (!response.ok) {
-        if (response.status === 402) {
-          setError({
-            message: payload.message ?? "Kredit energi Anda tidak cukup.",
-            code: "insufficient_credits",
-            status: response.status,
-          });
-          fetchBalance();
-          setMessages((curr) => curr.filter((msg) => msg.id !== userMsgId));
-          setActiveRunStatus("idle");
-          setOptimisticSteps([]);
-          return;
-        }
         setError({
           message: payload.error ?? "NaLI gagal memproses kueri lanjutan Anda.",
           code: payload.code,
@@ -818,14 +716,11 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       if (payload.messages) {
         setMessages(payload.messages);
         window.localStorage.setItem(`nali-messages:${initialReportId}`, JSON.stringify(payload.messages));
-        fetchBalance();
-
         // Also update recovery snapshot to reflect "chat_updated" status and the latest mainText
         saveGuestReportRecovery({
           id: initialReportId,
           title: report?.title || "Draft Laporan",
           mode: selectedMode,
-          selectedModel: selectedModel,
           mainText: trimmed,
           status: "chat_updated",
           timestamp: Date.now(),
@@ -886,51 +781,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     setQuery(actionText);
   };
 
-  // Premium export actions
-  const handleExportUnlock = async () => {
-    setExportNotice(null);
-    if (!initialReportId || !accessKey) return;
-
-    try {
-      const response = await fetch("/api/payments/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          export_type: "markdown",
-          report_access_key: accessKey,
-          report_id: initialReportId,
-        }),
-      });
-      const payload = await response.json();
-
-      if (response.ok && payload.snap_url) {
-        window.location.href = payload.snap_url;
-        return;
-      }
-
-      if (response.ok && payload.payment_mode === "manual") {
-        setExportNotice(
-          "Permintaan ekspor tercatat sebagai pending. Export akan terbuka setelah sistem memverifikasi pembayaran.",
-        );
-        setShowExportStatus(true);
-        return;
-      }
-
-      setExportNotice(payload.error ?? "Pembayaran ekspor premium belum dapat dihubungkan saat ini.");
-      setShowExportStatus(true);
-    } catch {
-      setExportNotice("Terjadi kesalahan. Gagal menghubungi gateway pembayaran.");
-      setShowExportStatus(true);
-    }
-  };
-
-  const handleDownloadExport = (format: "markdown" | "pdf") => {
-    if (!initialReportId || !accessKey) return;
-    const params = new URLSearchParams({ token: accessKey });
-    if (format === "pdf") params.set("format", "pdf");
-    window.open(`/api/reports/${initialReportId}/export?${params.toString()}`, "_blank");
-  };
-
   // Local copy and offline export
   const [copyStatus, setCopyStatus] = useState(false);
   const [copyTextStatus, setCopyTextStatus] = useState(false);
@@ -976,7 +826,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const handleCopyMarkdown = async () => {
     if (!report) return;
     const md = buildReportMarkdown(report, {
-      exportStatus: exportReadiness === "export_ready" ? "export_ready" : "preview_copy",
+      exportStatus: "preview_copy",
     });
     const ok = await copyTextToClipboard(md);
     if (ok) {
@@ -990,7 +840,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const handleCopyPlainText = async () => {
     if (!report) return;
     const md = buildReportMarkdown(report, {
-      exportStatus: exportReadiness === "export_ready" ? "export_ready" : "preview_copy",
+      exportStatus: "preview_copy",
     });
     const clean = stripMarkdown(md);
     const ok = await copyTextToClipboard(clean);
@@ -1006,7 +856,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     if (!report) return;
     try {
       const md = buildReportMarkdown(report, {
-        exportStatus: exportReadiness === "export_ready" ? "export_ready" : "preview_copy",
+        exportStatus: "preview_copy",
       });
       const title = report.title || "draft-laporan";
       const cleanTitle =
@@ -1034,7 +884,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     if (!report) return;
     try {
       const md = buildReportMarkdown(report, {
-        exportStatus: exportReadiness === "export_ready" ? "export_ready" : "preview_copy",
+        exportStatus: "preview_copy",
       });
       const clean = stripMarkdown(md);
       const title = report.title || "draft-laporan";
@@ -1058,19 +908,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       alert("Gagal mengunduh teks.");
     }
   };
-
-  // Heuristic cost calculation
-  const estCreditCost = useMemo(() => {
-    if (messages.length === 0) {
-      return selectedMode === "start_from_zero" ? 10 : 20;
-    }
-    return getEstimatedCreditCostFromQuery(query);
-  }, [messages.length, selectedMode, query]);
-
-  const isInsufficient = useMemo(() => {
-    if (!ledgerReady || credits === null) return false;
-    return credits < estCreditCost;
-  }, [ledgerReady, credits, estCreditCost]);
 
   const isRateLimited =
     error?.status === 429 || (error?.retryAfterSeconds !== undefined && error.retryAfterSeconds > 0);
@@ -1156,18 +993,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            {ledgerReady && credits !== null && (
-              <button
-                type="button"
-                onClick={() => setIsUpgradeOpen(true)}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 font-mono text-[11px] font-semibold text-emerald-400 transition hover:bg-emerald-500/10"
-              >
-                <span>⚡ {credits} Kredit</span>
-              </button>
-            )}
             <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 font-mono text-[11px] font-semibold text-white/60">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-              {selectedMode === "start_from_zero" ? "Fast Mode" : "Advanced Report Mode"}
+              {selectedMode === "start_from_zero" ? "Panduan Awal" : "Laporan NaLI"}
             </span>
           </div>
         </header>
@@ -1203,12 +1031,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                   Masukkan materi lapangan, tautan, lokasi, atau kueri untuk menyusun draf laporan terstruktur secara
                   instan.
                 </p>
-                <div className="mt-2.5 inline-flex items-center gap-1 text-[11px] text-white/40">
-                  <span>Estimasi biaya:</span>
-                  <strong className="font-semibold text-white/60">
-                    {selectedMode === "start_from_zero" ? "10 Kredit (Fast Mode)" : "20 Kredit (Advanced Mode)"}
-                  </strong>
-                </div>
+                <p className="mt-2.5 max-w-[500px] text-[11px] leading-5 text-white/40">
+                  Jalur starter gratis tersedia terbatas dan tetap dibatasi laju penggunaan. Paket Laporan belum aktif
+                  di CP1.
+                </p>
 
                 {/* Initial Mode Toggle */}
                 <div className="mt-3 grid w-full max-w-[500px] grid-cols-2 gap-2">
@@ -1452,19 +1278,16 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                                       Tindakan Lanjutan Yang Disarankan
                                     </span>
                                     <div className="flex flex-wrap gap-2">
-                                      {suggestedActions.map((act: { label: string; prompt: string }, aIdx: number) => {
-                                        const cost = getEstimatedCreditCostFromQuery(act.prompt);
-                                        return (
-                                          <button
-                                            key={aIdx}
-                                            type="button"
-                                            onClick={() => handleQuickAction(act.prompt)}
-                                            className="inline-flex min-h-[44px] cursor-pointer items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-3.5 py-2 text-left text-xs text-white/50 transition duration-200 hover:bg-white/[0.06] hover:text-white"
-                                          >
-                                            {act.label} ({cost})
-                                          </button>
-                                        );
-                                      })}
+                                      {suggestedActions.map((act: { label: string; prompt: string }, aIdx: number) => (
+                                        <button
+                                          key={aIdx}
+                                          type="button"
+                                          onClick={() => handleQuickAction(act.prompt)}
+                                          className="inline-flex min-h-[44px] cursor-pointer items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-3.5 py-2 text-left text-xs text-white/50 transition duration-200 hover:bg-white/[0.06] hover:text-white"
+                                        >
+                                          {act.label}
+                                        </button>
+                                      ))}
                                     </div>
                                   </div>
                                 )}
@@ -1496,11 +1319,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                           }
                           copyStatus={copyStatus}
                           onCopy={handleCopyMarkdown}
-                          exportReadiness={exportReadiness}
-                          onUnlock={handleExportUnlock}
-                          onDownload={handleDownloadExport}
-                          showExport={showExportStatus}
-                          exportNotice={exportNotice}
                           copyTextStatus={copyTextStatus}
                           onCopyText={handleCopyPlainText}
                           onDownloadMarkdownLocal={handleDownloadMarkdownLocal}
@@ -1587,58 +1405,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                                   className="mt-2 w-full resize-none rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white/70 placeholder-white/25 outline-none"
                                 />
                               )}
-                            </div>
-                          )}
-                        {/* Post-output paid intent prompt — shows after feedback sent */}
-                        {message.type === "report_preview" &&
-                          inlineFeedbackSent &&
-                          !paidIntentSent &&
-                          index === messages.findIndex((m) => m.type === "report_preview") && (
-                            <div className="mt-3 rounded-xl border border-emerald-500/10 bg-emerald-500/[0.03] p-3 backdrop-blur-sm">
-                              <p className="text-xs text-white/70">
-                                Draft awal sudah siap. NaLI bisa membantu merapikan struktur, memperkuat bukti, dan
-                                menyiapkan versi export.
-                              </p>
-                              <p className="mt-2 text-xs font-medium text-white/50">
-                                Jika fitur export rapi tersedia mulai Rp9.000–Rp29.000, apakah kamu tertarik?
-                              </p>
-                              <div className="mt-2 flex items-center gap-2">
-                                {(["Ya, tertarik", "Mungkin", "Belum"] as const).map((label) => (
-                                  <button
-                                    key={label}
-                                    type="button"
-                                    disabled={paidIntentSending}
-                                    onClick={async () => {
-                                      setPaidIntentSending(true);
-                                      try {
-                                        const rid = report?.id || message.metadata?.new_report?.id;
-                                        if (rid) {
-                                          await fetch(`/api/reports/${rid}/feedback`, {
-                                            method: "POST",
-                                            headers: { "Content-Type": "application/json" },
-                                            body: JSON.stringify({
-                                              rating: label === "Ya, tertarik" ? "helpful" : "not_helpful",
-                                              comment: `[paid_intent] ${label}`,
-                                              report_access_key: accessKey || "",
-                                            }),
-                                          });
-                                        }
-                                      } catch {
-                                        /* silent */
-                                      }
-                                      setPaidIntentSent(true);
-                                      setPaidIntentSending(false);
-                                    }}
-                                    className={`inline-flex h-7 items-center rounded-lg px-3 text-[11px] font-medium transition ${
-                                      label === "Ya, tertarik"
-                                        ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/15"
-                                        : "border border-white/[0.08] bg-white/[0.03] text-white/50 hover:bg-white/[0.06]"
-                                    }`}
-                                  >
-                                    {label}
-                                  </button>
-                                ))}
-                              </div>
                             </div>
                           )}
                       </div>
@@ -1800,44 +1566,19 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                       ];
                 return (
                   <div className="flex flex-wrap justify-center gap-2 py-1 md:justify-start">
-                    {actions.map((act, i) => {
-                      const cost = getEstimatedCreditCostFromQuery(act.prompt);
-                      return (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => handleQuickAction(act.prompt)}
-                          className="inline-flex min-h-[44px] cursor-pointer items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-2 text-xs text-white/50 transition duration-200 hover:bg-white/[0.06] hover:text-white"
-                        >
-                          {act.label} ({cost})
-                        </button>
-                      );
-                    })}
+                    {actions.map((act, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleQuickAction(act.prompt)}
+                        className="inline-flex min-h-[44px] cursor-pointer items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-2 text-xs text-white/50 transition duration-200 hover:bg-white/[0.06] hover:text-white"
+                      >
+                        {act.label}
+                      </button>
+                    ))}
                   </div>
                 );
               })()}
-
-            {/* Main Input Composer form */}
-            {/* Insufficient credits warning */}
-            {isInsufficient && (
-              <div className="mb-3 flex flex-col justify-between gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-5 text-amber-200/80 shadow-xl backdrop-blur-md md:flex-row md:items-center">
-                <div>
-                  <p className="font-semibold text-amber-400">Kredit Energi Tidak Cukup</p>
-                  <p className="mt-0.5">
-                    Sisa kredit Anda ({credits} kredit) kurang dari estimasi biaya ({estCreditCost} kredit) untuk
-                    menjalankan instruksi ini.
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => setIsUpgradeOpen(true)}
-                  className="self-start bg-amber-500 font-bold text-zinc-950 hover:bg-amber-400 md:self-auto"
-                >
-                  Upgrade / Top-up Kredit
-                </Button>
-              </div>
-            )}
 
             <form
               onSubmit={messages.length === 0 ? handleInitialSubmit : handleFollowUpSubmit}
@@ -1873,20 +1614,15 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 </div>
 
                 <div className="flex shrink-0 items-center gap-1.5 px-1">
-                  {/* Est energy cost badge */}
-                  <span className="px-2 font-mono text-[10px] text-white/35">Est: {estCreditCost} Kredit</span>
-
                   <button
                     type="submit"
                     disabled={
                       activeRunStatus === "running" ||
                       !query.trim() ||
-                      isInsufficient ||
-                      (messages.length === 0 && selectedModelLocked) ||
                       (messages.length === 0 && !integrityConsent) ||
                       isRateLimited
                     }
-                    aria-label="Kirim instruksi"
+                    aria-label={selectedMode === "draft_from_materials" ? "Buat Laporan" : "Buat Panduan Awal"}
                     className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl bg-white text-zinc-950 transition duration-200 hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-30 sm:h-12 sm:w-12"
                   >
                     {activeRunStatus === "running" ? (
@@ -1899,71 +1635,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               </div>
             </form>
 
-            {/* Model Selector */}
             {messages.length === 0 && (
-              <div className="mt-3">
-                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-xs font-semibold tracking-[0.08em] text-white/40 uppercase">
-                    Profil Pemrosesan (Model)
-                  </span>
-                  {naliModels
-                    .filter((model) => model.id === selectedModel)
-                    .map((model) => (
-                      <details key={`${model.id}-detail`} className="relative">
-                        <summary className="cursor-pointer list-none text-[11px] font-medium text-white/55">
-                          {model.costLabel} / estimasi {model.estimatedCredits} Kredit - detail
-                        </summary>
-                        <div className="absolute right-0 bottom-full z-30 mb-2 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-white/[0.08] bg-[#07090e] p-3 shadow-2xl">
-                          <p className="text-xs leading-5 text-white/60">{model.shortDescription}</p>
-                          <p className="mt-1 text-[11px] leading-5 text-white/40">{model.pricingReadinessNote}</p>
-                          <div className="mt-2 flex flex-wrap gap-1.5">
-                            {model.safeCapabilities.map((capability) => (
-                              <span
-                                key={capability}
-                                className="rounded-full border border-white/[0.06] px-2 py-1 text-[10px] text-white/55"
-                              >
-                                {capability}
-                              </span>
-                            ))}
-                          </div>
-                          {model.limitations.length > 0 && (
-                            <p className="mt-2 text-[11px] leading-5 text-white/40">{model.limitations.join(" / ")}</p>
-                          )}
-                        </div>
-                      </details>
-                    ))}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {naliModels.map((model) => {
-                    const isSelected = selectedModel === model.id;
-                    const isLocked = model.lockedWithoutEntitlement;
-                    return (
-                      <button
-                        key={model.id}
-                        type="button"
-                        onClick={() => {
-                          if (!isLocked) setSelectedModel(model.id);
-                        }}
-                        disabled={isLocked}
-                        aria-disabled={isLocked}
-                        className={cn(
-                          "inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 sm:flex-none",
-                          isSelected
-                            ? "border-[#6f8057] bg-[#6f8057]/15 text-white shadow-sm shadow-[#6f8057]/10"
-                            : isLocked
-                              ? "cursor-not-allowed border-white/[0.06] bg-[#07090e]/60 text-white/30"
-                              : "cursor-pointer border-white/[0.06] bg-[#07090e]/60 text-white/40 hover:bg-white/[0.04] hover:text-white/60",
-                        )}
-                        aria-pressed={isSelected}
-                      >
-                        {isLocked && <LockKeyhole className="h-3 w-3 shrink-0" aria-hidden="true" />}
-                        {model.label}
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="mt-2 text-[11px] leading-5 text-white/45">{CP1_PREMIUM_ACCESS_MESSAGE}</p>
-              </div>
+              <p className="text-center text-[11px] leading-5 text-white/40">
+                Buat Laporan dengan jalur starter gratis terbatas. Paket Laporan lengkap belum aktif di CP1.
+              </p>
             )}
 
             {/* Academic Integrity consent checkbox (rendered only at start or when required) */}
@@ -1984,15 +1659,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           </div>
         </div>
       </div>
-      {/* Upgrade Modal */}
-      {isUpgradeOpen && (
-        <UpgradeModal
-          isOpen={isUpgradeOpen}
-          onClose={() => setIsUpgradeOpen(false)}
-          reportId={initialReportId || (report ? report.id : null)}
-          reportAccessKey={accessKey}
-        />
-      )}
     </div>
   );
 }
@@ -2003,11 +1669,6 @@ interface ReportResultCardProps {
   onApply?: () => void;
   copyStatus: boolean;
   onCopy: () => void;
-  exportReadiness: "export_ready" | "export_locked" | "unknown";
-  onUnlock: () => void;
-  onDownload: (format: "markdown" | "pdf") => void;
-  showExport: boolean;
-  exportNotice: string | null;
   copyTextStatus?: boolean;
   onCopyText?: () => void;
   onDownloadMarkdownLocal?: () => void;
@@ -2019,11 +1680,6 @@ function ReportResultCard({
   onApply,
   copyStatus,
   onCopy,
-  exportReadiness,
-  onUnlock,
-  onDownload,
-  showExport,
-  exportNotice,
   copyTextStatus,
   onCopyText,
   onDownloadMarkdownLocal,
@@ -2353,61 +2009,10 @@ function ReportResultCard({
           </Button>
         )}
 
-        {exportReadiness === "export_ready" ? (
-          <>
-            <Button
-              size="sm"
-              variant="default"
-              onClick={() => onDownload("markdown")}
-              className="h-11 cursor-pointer bg-white text-zinc-950 hover:bg-white/90 sm:h-8"
-            >
-              <Download className="mr-1.5 h-3.5 w-3.5" />
-              Markdown
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onDownload("pdf")}
-              className="h-11 cursor-pointer border-white/[0.08] text-white/60 hover:bg-white/[0.04] hover:text-white sm:h-8"
-            >
-              <Download className="mr-1.5 h-3.5 w-3.5" />
-              PDF
-            </Button>
-          </>
-        ) : (
-          <Button
-            size="sm"
-            onClick={onUnlock}
-            className="h-11 cursor-pointer bg-[#7c3aed] text-white hover:bg-[#6d28d9] sm:h-8"
-          >
-            <LockKeyhole className="mr-1.5 h-3.5 w-3.5" />
-            Unlock PDF (15 Kredit / Bayar)
-          </Button>
-        )}
-
-        {exportReadiness !== "export_ready" && (
-          <p className="mt-1 w-full text-[10px] text-white/25 italic">
-            * PDF berbayar belum aktif di fase testing ini. Export berbayar masih terkunci.
-          </p>
-        )}
-
-        {showExport &&
-          exportNotice &&
-          (() => {
-            const normalized = normalizePublicError({
-              message: exportNotice,
-            });
-            return (
-              <div className="mt-2 w-full">
-                <NaliAlert
-                  variant={normalized.severity}
-                  title={normalized.title}
-                  explanation={normalized.explanation}
-                  nextStep={normalized.nextStep}
-                />
-              </div>
-            );
-          })()}
+        <p className="mt-1 flex w-full items-start gap-1.5 text-[10px] leading-5 text-white/30 italic">
+          <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          PDF/DOCX publik tetap terkunci / inactive di CP1. Gunakan salinan Markdown atau teks lokal di atas.
+        </p>
       </div>
     </div>
   );

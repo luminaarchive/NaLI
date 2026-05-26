@@ -21,23 +21,23 @@ const validPayload = {
 
 // ─── Test 1: Route serves starter model and rejects locked premium models ────
 
-test("generation route serves Peregrine by default and locks unentitled premium tiers", async () => {
+test("generation route serves a neutral public starter report and locks unentitled internal premium tiers", async () => {
   const peregrineResponse = await postGenerate(
     new Request("http://localhost/api/reports/generate", {
-      body: JSON.stringify({ ...validPayload, selectedModel: "peregrine" }),
+      body: JSON.stringify(validPayload),
       method: "POST",
     }),
   );
   assert.strictEqual(peregrineResponse.status, 200);
   const peregrineBody = await peregrineResponse.json();
   assert.ok(peregrineBody.report);
-  assert.strictEqual(peregrineBody.report.model_used, "NaLI Peregrine");
+  assert.strictEqual(peregrineBody.report.model_used, "NaLI Starter Report");
   assert.strictEqual(peregrineBody.report.model_used.includes("OpenRouter"), false);
 
   for (const modelId of ["obsidian", "zephyr"]) {
     const response = await postGenerate(
       new Request("http://localhost/api/reports/generate", {
-        body: JSON.stringify({ ...validPayload, selectedModel: modelId }),
+        body: JSON.stringify({ ...validPayload, guestSessionId: `${validPayload.guestSessionId}-${modelId}`, selectedModel: modelId }),
         method: "POST",
       }),
     );
@@ -50,7 +50,7 @@ test("generation route serves Peregrine by default and locks unentitled premium 
 
 // ─── Test 2: Invalid selectedModel fallback ──────────────────────────────────
 
-test("generation route falls back to peregrine on invalid model input", async () => {
+test("generation route hides invalid public engine input behind the neutral starter report", async () => {
   const payload = { ...validPayload, selectedModel: "invalid-fake-model" };
   const response = await postGenerate(
     new Request("http://localhost/api/reports/generate", {
@@ -62,7 +62,7 @@ test("generation route falls back to peregrine on invalid model input", async ()
   assert.strictEqual(response.status, 200);
   const body = await response.json();
   assert.ok(body.report);
-  assert.strictEqual(body.report.model_used, "NaLI Peregrine");
+  assert.strictEqual(body.report.model_used, "NaLI Starter Report");
 });
 
 // ─── Test 3: Prompt Profile Injection Rules ──────────────────────────────────
@@ -127,21 +127,22 @@ test("buildReportPrompt injects correct processing profile rules without fabrica
   }
 });
 
-// ─── Test 4: UI Model IDs map strictly to backend configuration IDs ──────────
+// ─── Test 4: Internal IDs are absent from the public composer ────────────────
 
-test("UI component selector buttons map exactly to the naliModels configuration IDs", () => {
+test("internal model registry remains available for QA but public composer exposes one report action", () => {
   const formSrc = fs.readFileSync(path.join(repoRoot, "src/components/report/CreateReportForm.tsx"), "utf8");
   const workspaceSrc = fs.readFileSync(path.join(repoRoot, "src/components/report/AgentWorkspace.tsx"), "utf8");
 
   const configIds = naliModels.map((m) => m.id);
 
-  // Asserts selector updates match configIds
   assert.ok(configIds.includes("peregrine"));
   assert.ok(configIds.includes("obsidian"));
   assert.ok(configIds.includes("zephyr"));
 
-  assert.match(formSrc, /form\.selectedModel\s*===\s*model\.id/);
-  assert.match(workspaceSrc, /selectedModel\s*===\s*model\.id/);
+  for (const source of [formSrc, workspaceSrc]) {
+    assert.doesNotMatch(source, /selectedModel|naliModels|Peregrine|Obsidian|Zephyr/);
+    assert.match(source, /Buat Laporan/);
+  }
 });
 
 // ─── Test 5: No model configuration makes false capability claims ─────────────

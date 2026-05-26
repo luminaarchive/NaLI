@@ -5,15 +5,14 @@ const test = require("node:test");
 
 const repoRoot = path.join(__dirname, "../..");
 
-test("guest energy balance identifiers are not exposed in request URLs", () => {
+test("legacy energy balance is not requested by the public single-report workspace", () => {
   const workspace = fs.readFileSync(path.join(repoRoot, "src/components/report/AgentWorkspace.tsx"), "utf8");
   const route = fs.readFileSync(path.join(repoRoot, "src/app/api/energy/balance/route.ts"), "utf8");
 
   assert.doesNotMatch(workspace, /\/api\/energy\/balance\?guestSessionId=/);
-  assert.match(workspace, /fetch\("\/api\/energy\/balance",\s*\{/);
-  assert.match(workspace, /method:\s*"POST"/);
-  assert.match(workspace, /body:\s*JSON\.stringify\(\{\s*guestSessionId\s*\}\)/);
+  assert.doesNotMatch(workspace, /\/api\/energy\/balance|Kredit|credits/i);
 
+  // Dormant endpoint remains privacy-safe while it is not connected to the public product.
   assert.match(route, /export async function POST\(req: NextRequest\)/);
   assert.doesNotMatch(route, /searchParams\.get\("guestSessionId"\)/);
 });

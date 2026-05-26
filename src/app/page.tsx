@@ -169,7 +169,7 @@ export default function HomePage() {
                 className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-white/20 px-8 text-[16px] font-medium text-white transition duration-200 hover:-translate-y-px hover:bg-white/[0.05] hover:border-white/30 sm:w-auto"
                 href="/pricing"
               >
-                Lihat paket kredit
+                Lihat paket Laporan
               </Link>
             </div>
           </div>

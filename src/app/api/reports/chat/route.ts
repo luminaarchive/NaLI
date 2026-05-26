@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPersistedReport, updatePersistedReport, recordEnergyLedgerEntry, UUID_NAMESPACE } from "@/lib/reports/persistence";
+import { getPersistedReport, updatePersistedReport } from "@/lib/reports/persistence";
 import { evaluateIntegrityPolicy } from "@/lib/integrity/policy";
 import { checkRateLimit, RATE_LIMITED_MESSAGE, rateLimitHeaders } from "@/lib/rateLimit/limit";
 import { requestOpenRouterJson } from "@/lib/ai/openrouter";
 import { guardReportOutput } from "@/lib/integrity/outputGuard";
 import { containsForbiddenWording, normalizeProviderResult, buildMockResult, type ReportResult } from "@/lib/reports/reportGenerator";
-import { getEnergyBalance } from "@/lib/energy/ledger";
-import { getEstimatedCreditCostFromQuery } from "@/lib/pricing/plans";
-import { getGuestSessionIdHash } from "@/lib/reports/access";
-import { v5 as uuidv5 } from "uuid";
 import { classifyChatAction } from "@/lib/reports/taskClassifier";
 
 const systemPrompt = [
@@ -174,22 +170,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Proses sebelumnya sedang berjalan. Mohon tunggu." },
         { headers, status: 409 }
-      );
-    }
-
-    // 6.5 Check balance before running the task
-    const guestSessionId = body.guestSessionId || reportInput?.guestSessionId;
-    const queryCost = getEstimatedCreditCostFromQuery(newQuery);
-    const balanceRes = await getEnergyBalance(guestSessionId);
-    if (balanceRes.ready && balanceRes.balance < queryCost) {
-      return NextResponse.json(
-        {
-          error: "insufficient_credits",
-          message: `Kredit tidak cukup untuk melakukan aksi ini. Diperlukan ${queryCost} kredit, sisa Anda ${balanceRes.balance} kredit.`,
-          requiredCredits: queryCost,
-          balance: balanceRes.balance,
-        },
-        { headers, status: 402 }
       );
     }
 
@@ -392,20 +372,6 @@ export async function POST(req: NextRequest) {
         agentThread: thread,
       });
       runSaved = true;
-
-      // Option A success-only debit
-      if (balanceRes.ready) {
-        const guestSessionIdHash = persisted.guest_session_id_hash || getGuestSessionIdHash(guestSessionId);
-        const debitId = uuidv5(`debit:chat:${activeRunId}`, UUID_NAMESPACE);
-        await recordEnergyLedgerEntry({
-          id: debitId,
-          amount: -queryCost,
-          guestSessionIdHash,
-          reason: `debit:chat:${activeRunId}`,
-          reportId,
-          type: "debit",
-        });
-      }
 
       return NextResponse.json({
         success: true,

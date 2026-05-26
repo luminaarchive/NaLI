@@ -55,15 +55,11 @@ test("AgentWorkspace tracks composer focus state and adjusts bottom padding dyna
   );
   assert.match(code, /min-h-\[44px\]/, "Suggested action buttons must keep a minimum touch target height of 44px");
 
-  // 6. Model selector remains compact and desktop responsive layout classes exist
-  assert.match(code, /flex flex-wrap gap-2/, "Model selector buttons container should wrap and be compact");
-  assert.match(
-    code,
-    /flex-1 items-center justify-center gap-1\.5 rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 sm:flex-none/,
-    "Model selector buttons should fill row on mobile and display naturally on desktop",
-  );
-  assert.match(code, /disabled=\{isLocked\}/, "Locked premium model buttons must be disabled on mobile.");
-  assert.match(code, /cursor-not-allowed/, "Locked premium model buttons must not imply selectable actions.");
+  // 6. Public mobile flow shows one report action without internal tier buttons
+  assert.match(code, /Buat Laporan/);
+  assert.match(code, /aria-label=\{selectedMode === "draft_from_materials" \? "Buat Laporan" : "Buat Panduan Awal"\}/);
+  assert.match(code, /Paket Laporan lengkap belum aktif di CP1/);
+  assert.doesNotMatch(code, /selectedModel|naliModels|Peregrine|Obsidian|Zephyr/);
 
   // 7. No Midtrans checkout link or payment activation is present
   assert.strictEqual(code.includes("midtransCheckoutActive = true"), false, "Midtrans/payments must not be activated");

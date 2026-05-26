@@ -1351,29 +1351,25 @@ test("public frontend copy aligns with CP1 backend state without overclaiming", 
 
   // CP1 Conversion Polish: CTA links
   assert.match(homepage, /Mulai buat laporan/);
-  assert.match(homepage, /Lihat paket kredit/);
+  assert.match(homepage, /Lihat paket Laporan/);
   assert.match(homepage, /href="\/create-report"/);
   assert.match(homepage, /href="\/pricing"/);
 
-  assert.match(featureShowcase, /Export Markdown\/PDF/);
+  assert.match(featureShowcase, /PDF\/DOCX terkunci di CP1/);
   assert.match(featureShowcase, /Source notes labeled/);
   assert.match(learnReport, /Mulai dari satu topik/);
   assert.match(learnReport, /Paste text materials or start with one topic/);
   assert.match(createReport, /Upload PDF\/foto belum aktif di CP1/);
   assert.match(createReport, /Belum aktif/);
   assert.doesNotMatch(createReport, /create-upload|confirm-upload|signed_upload_url|handlePdfChange/);
-  assert.match(pricing, /Export unlocks after confirmed payment/);
-  assert.match(pricing, /If confirmation is delayed, the order stays pending/);
-  assert.match(pricing, /until automated verification succeeds/);
+  assert.match(pricing, /Paket Laporan NaLI/);
+  assert.match(pricing, /Pembayaran dan checkout belum aktif di CP1/);
+  assert.doesNotMatch(pricing, /Export unlocks after confirmed payment|automated verification succeeds/);
 
-  // CP1 Conversion Polish: pricing testing-phase note
-  assert.match(pricing, /Pembayaran otomatis belum aktif di fase testing ini/);
-
-  assert.match(resultClient, /Download Markdown/);
-  assert.match(resultClient, /Download PDF/);
-  assert.match(resultClient, /Export versi rapi/);
-  assert.match(resultClient, /pending/);
-  assert.match(resultClient, /sistem memverifikasi/);
+  assert.match(resultClient, /Unduh Markdown lokal/);
+  assert.match(resultClient, /Unduh teks lokal/);
+  assert.match(resultClient, /PDF\/DOCX publik tetap terkunci \/ inactive di CP1/);
+  assert.doesNotMatch(resultClient, /\/api\/payments\/create|Download PDF|Export versi rapi/);
   assert.match(resultClient, /Idea Mode/);
   assert.match(resultClient, /User-Evidence Report/);
   assert.doesNotMatch(resultClient, /model_used/);
@@ -1387,57 +1383,23 @@ test("public frontend copy aligns with CP1 backend state without overclaiming", 
   );
 });
 
-test("CP1 payment interest optimization: pricing uses credit-pack framing, no subscription implication", () => {
-  const plans = fs.readFileSync(path.join(repoRoot, "src/lib/pricing/plans.ts"), "utf8");
+test("CP1 public pricing uses report packages with no public checkout or fake balance", () => {
+  const packages = fs.readFileSync(path.join(repoRoot, "src/lib/billing/reportPackages.ts"), "utf8");
   const pricing = fs.readFileSync(path.join(repoRoot, "src/app/pricing/page.tsx"), "utf8");
   const pricingCards = fs.readFileSync(path.join(repoRoot, "src/components/report/PricingCards.tsx"), "utf8");
   const resultClient = fs.readFileSync(path.join(repoRoot, "src/components/report/ReportResultClient.tsx"), "utf8");
   const workspace = fs.readFileSync(path.join(repoRoot, "src/components/report/AgentWorkspace.tsx"), "utf8");
 
-  // Plans must NOT show '/ bln' (subscription framing)
-  assert.doesNotMatch(plans, /\/ bln/);
-
-  // Pricing page must have one-time value anchors section
-  assert.match(pricing, /Mulai dari pembayaran kecil/);
-  assert.match(pricing, /Target harga rilis berbayar/);
-  assert.match(pricing, /Rp5\.000/);
-  assert.match(pricing, /Rp9\.000/);
-  assert.match(pricing, /Rp19\.000/);
-  assert.match(pricing, /Rp29\.000/);
-  assert.match(pricing, /Rencana harga CP1/);
-
-  // Pricing page must have segment copy
-  assert.match(pricing, /Cocok untuk/);
-  assert.match(pricing, /praktikum/);
-  assert.match(pricing, /geografi/);
-  assert.match(pricing, /NGO\/CSR/);
-
-  // PricingCards must use credit-pack framing not subscription
-  assert.match(pricingCards, /Pilih Paket Kredit/);
-  assert.doesNotMatch(pricingCards, /Kredit Bulanan/);
-  assert.match(pricingCards, /Selama fase testing/);
-  assert.match(pricingCards, /Recurring billing.*belum aktif/);
-
-  // Pricing header must not use 'langganan' subscription language
-  assert.doesNotMatch(pricing, /langganan kredit bulanan/);
-  assert.match(pricing, /Paket kredit dan top-up instan/);
-
-  // Export CTA must use Indonesian and include price framing
-  assert.match(resultClient, /Export versi rapi/);
-  assert.match(resultClient, /Mulai Rp9\.000/);
-  assert.match(resultClient, /PDF berbayar belum aktif di fase testing ini/);
-  assert.doesNotMatch(resultClient, /Unlock Export/);
-  assert.doesNotMatch(resultClient, /Buy now|Pay now|Subscribe now/i);
-
-  // AgentWorkspace must have paid intent prompt (UI-only, no fake payment)
-  assert.match(workspace, /paid_intent/);
-  assert.match(workspace, /Ya, tertarik/);
-  assert.match(workspace, /Mungkin/);
-  assert.match(workspace, /Rp9\.000/);
-  assert.doesNotMatch(workspace, /payment_success|unlock_export|create_payment/i);
-
-  // No unlimited claims in pricing plans (disclaimer mentions 'unlimited' to deny it, which is fine)
-  assert.doesNotMatch(plans, /unlimited/i);
+  assert.match(packages, /id:\s*"basic"[\s\S]*priceIdr:\s*15_000[\s\S]*publicCopy:\s*"5 laporan cepat"/);
+  assert.match(packages, /id:\s*"pro"[\s\S]*priceIdr:\s*49_000[\s\S]*publicCopy:\s*"5 laporan lengkap"/);
+  assert.match(packages, /id:\s*"pro_bundle"[\s\S]*priceIdr:\s*89_000[\s\S]*publicCopy:\s*"10 laporan lengkap"/);
+  assert.match(pricing, /Paket Laporan NaLI|Aturan penggunaan Laporan/);
+  assert.match(pricingCards, /Paket Laporan/);
+  assert.match(pricingCards, /Pembayaran dan checkout belum aktif di CP1/);
+  assert.match(pricingCards, /Laporan kamu habis\. Pilih paket untuk lanjut/);
+  assert.doesNotMatch(pricingCards + pricing + resultClient + workspace, /fetch\(["']\/api\/payments\/create|Kredit|credits|Peregrine|Obsidian|Zephyr/i);
+  assert.match(resultClient, /PDF\/DOCX publik tetap terkunci/);
+  assert.match(workspace, /Buat Laporan/);
 });
 
 
@@ -1477,10 +1439,9 @@ test("export and payment routes enforce Sprint 0 gatekeeping in source", () => {
   assert.match(readinessRoute, /countTable\(supabase, "payments"\)/);
   assert.match(readinessRoute, /midtransProductionMode/);
   assert.doesNotMatch(readinessRoute, /anonKeyProjectRef|serviceKeyProjectRef/);
-  assert.match(resultClient, /exportReadiness/);
-  assert.match(resultClient, /Download Markdown/);
-  assert.match(resultClient, /Download PDF/);
-  assert.match(resultClient, /Export versi rapi/);
+  assert.match(resultClient, /Unduh Markdown lokal/);
+  assert.match(resultClient, /PDF\/DOCX publik tetap terkunci/);
+  assert.doesNotMatch(resultClient, /exportReadiness|Download PDF|Export versi rapi|\/api\/payments\/create/);
 
   const exportSmoke = fs.readFileSync(path.join(repoRoot, "scripts/smoke-paid-export-production.mjs"), "utf8");
   assert.match(exportSmoke, /unpaidPdfExportLocked/);

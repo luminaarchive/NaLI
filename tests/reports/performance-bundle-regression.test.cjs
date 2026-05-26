@@ -68,13 +68,12 @@ test("no new unapproved dependencies in package.json", () => {
   assert.ok(!deps.includes("@next/bundle-analyzer"), "package.json must not include bundle analyzer");
 });
 
-// ─── Test 6: Dynamic imports/lazy rendering verification ────────────────────
+// ─── Test 6: Public upgrade UI is removed from the single-report composer ───
 
-test("UpgradeModal in AgentWorkspace is lazy-rendered conditionally", () => {
+test("AgentWorkspace does not mount a credit or checkout upgrade modal", () => {
   const workspaceSrc = fs.readFileSync(path.join(repoRoot, "src/components/report/AgentWorkspace.tsx"), "utf8");
 
-  // Statically check for conditional render
-  assert.ok(workspaceSrc.includes("{isUpgradeOpen && ("), "AgentWorkspace must conditionally render UpgradeModal on demand");
+  assert.doesNotMatch(workspaceSrc, /UpgradeModal|isUpgradeOpen|Kredit|\/api\/payments\/create/);
 });
 
 // ─── Test 7: Payment/Midtrans remains deferred ──────────────────────────────

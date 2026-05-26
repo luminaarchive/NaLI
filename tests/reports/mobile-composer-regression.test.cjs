@@ -68,8 +68,12 @@ test("AgentWorkspace contains mobile-safe layout, composer, suggested actions, a
   assert.match(code, /min-h-\[48px\]/, "Textarea container should have min-h-[48px] on mobile");
   assert.match(code, /sm:min-h-\[56px\]/, "Textarea container should have sm:min-h-[56px] on desktop");
 
-  // 5. Send button is touch-safe and contains accessibility label
-  assert.match(code, /aria-label="Kirim instruksi"/, "Send button should have aria-label");
+  // 5. Submit button is touch-safe and announces the public report action
+  assert.match(
+    code,
+    /aria-label=\{selectedMode === "draft_from_materials" \? "Buat Laporan" : "Buat Panduan Awal"\}/,
+    "Submit button should announce the selected public report action",
+  );
   assert.match(
     code,
     /inline-flex h-11 w-11.*sm:h-12 sm:w-12/,
@@ -82,16 +86,9 @@ test("AgentWorkspace contains mobile-safe layout, composer, suggested actions, a
     /className="h-11 cursor-pointer border-white\/\[0\.08\] text-white\/60 hover:bg-white\/\[0\.04\] hover:text-white sm:h-8"/,
     "Salin button should have responsive h-11 sm:h-8 height",
   );
-  assert.match(
-    code,
-    /className="h-11 cursor-pointer bg-white text-zinc-950 hover:bg-white\/90 sm:h-8"/,
-    "Download Markdown button should have responsive h-11 sm:h-8 height",
-  );
-  assert.match(
-    code,
-    /className="h-11 cursor-pointer bg-\[#7c3aed\] text-white hover:bg-\[#6d28d9\] sm:h-8"/,
-    "Unlock PDF button should have responsive h-11 sm:h-8 height",
-  );
+  assert.match(code, /Unduh Markdown lokal/);
+  assert.match(code, /PDF\/DOCX publik tetap terkunci \/ inactive di CP1/);
+  assert.doesNotMatch(code, /Unlock PDF|\/api\/payments\/create|Kredit/);
 });
 
 test("Public navigation does not link to founder admin routes", () => {

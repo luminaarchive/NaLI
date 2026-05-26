@@ -91,12 +91,13 @@ test("3. Prompts forbid fake citations, data, and DOIs", () => {
 
 test("4. Safe model labels exist in routes", () => {
   const generateRouteSource = fs.readFileSync(path.join(repoRoot, "src/app/api/reports/generate/route.ts"), "utf8");
-  assert.match(generateRouteSource, /"NaLI Peregrine"|"NaLI Obsidian"|"NaLI Zephyr"/);
+  assert.match(generateRouteSource, /"NaLI Starter Report"/);
+  assert.match(generateRouteSource, /"NaLI Obsidian"|"NaLI Zephyr"/);
 });
 
 test("5. Local copy/download UI features lock public PDF export", () => {
   const clientSource = fs.readFileSync(path.join(repoRoot, "src/components/report/ReportResultClient.tsx"), "utf8");
-  assert.match(clientSource, /PDF berbayar belum aktif/);
+  assert.match(clientSource, /PDF\/DOCX publik tetap terkunci/);
   assert.match(clientSource, /Unduh Markdown lokal/);
   assert.match(clientSource, /Unduh teks lokal/);
 });

@@ -25,8 +25,8 @@ export const siteMetadata = {
       description: "Mulai menyusun draf laporan lingkungan dengan template terstruktur, pengisian konteks opsional (Make It Mine), dan pengawasan kejujuran klaim akademik.",
     },
     pricing: {
-      title: "Daftar Paket Kredit Beta & Ekspor — NaLI",
-      description: "Informasi estimasi paket kredit NaLI Energy dan persiapan rilis berbayar. Gateway pembayaran otomatis Midtrans dinonaktifkan di fase uji coba ini.",
+      title: "Daftar Paket Laporan Beta — NaLI",
+      description: "Informasi paket Laporan NaLI untuk persiapan rilis berbayar. Pembayaran dan checkout belum aktif di CP1.",
     },
     fieldIntelligence: {
       title: "Field Intelligence & Observasi Lapangan Profesional — NaLI",

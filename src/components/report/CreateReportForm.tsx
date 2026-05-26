@@ -11,7 +11,6 @@ import {
   Compass,
   FileText,
   LinkIcon,
-  LockKeyhole,
   Loader2,
   MapPin,
   Paperclip,
@@ -22,7 +21,6 @@ import { reportTemplates, userRoles, type ReportMode, type ReportResult } from "
 import { cn } from "@/lib/utils";
 import { NaliAlert } from "@/components/ui/NaliAlert";
 import { normalizePublicError } from "@/lib/errors/publicErrors";
-import { CP1_PREMIUM_ACCESS_MESSAGE, naliModels } from "@/lib/models/naliModels";
 import {
   saveGuestReportRecovery,
   clearGuestReportRecovery,
@@ -46,7 +44,6 @@ type FormState = {
   location: string;
   fileDescription: string;
   integrityConsent: boolean;
-  selectedModel: "peregrine" | "obsidian" | "zephyr";
 };
 
 const initialForm: FormState = {
@@ -59,7 +56,6 @@ const initialForm: FormState = {
   sourceUrls: "",
   title: "",
   userRole: "pengguna",
-  selectedModel: "peregrine",
 };
 
 const guestSessionKey = "nali-guest-session-id";
@@ -103,9 +99,6 @@ export function CreateReportForm() {
   const [snapshots, setSnapshots] = useState<GuestReportRecoverySnapshot[]>([]);
   const validationIssue = useDebouncedReportValidation(form);
   const showValidation = !error && hasMaterial(form) && validationIssue.severity !== "none";
-  const selectedModelLocked = naliModels.some(
-    (model) => model.id === form.selectedModel && model.lockedWithoutEntitlement,
-  );
 
   const [metadataResult, setMetadataResult] = useState<LocalImageMetadataResult | null>(null);
   const [metadataAlert, setMetadataAlert] = useState<{
@@ -264,7 +257,6 @@ export function CreateReportForm() {
       } else {
         setForm({
           mode: snapshot.mode || "draft_from_materials",
-          selectedModel: snapshot.selectedModel || "peregrine",
           mainText: snapshot.mainText || "",
           reportTemplate: snapshot.reportTemplate || "Laporan Observasi Lingkungan",
           location: snapshot.location || "",
@@ -407,7 +399,6 @@ export function CreateReportForm() {
         id: "composer-autosave",
         title: form.title || "Autosave Draft Laporan",
         mode: form.mode,
-        selectedModel: form.selectedModel,
         mainText: form.mainText,
         reportTemplate: form.reportTemplate,
         location: form.location,
@@ -425,7 +416,6 @@ export function CreateReportForm() {
     form.mainText,
     form.title,
     form.mode,
-    form.selectedModel,
     form.reportTemplate,
     form.location,
     form.sourceUrls,
@@ -450,15 +440,6 @@ export function CreateReportForm() {
     setError(null);
     setNotice(null);
 
-    if (selectedModelLocked) {
-      setError({
-        message: CP1_PREMIUM_ACCESS_MESSAGE,
-        code: "MODEL_ENTITLEMENT_REQUIRED",
-        status: 403,
-      });
-      return;
-    }
-
     const issue = validateReportInput(form);
     if (!issue.canSubmit) {
       setError({
@@ -479,7 +460,6 @@ export function CreateReportForm() {
         id: tempId,
         title: form.title || "Draft Laporan",
         mode: form.mode,
-        selectedModel: form.selectedModel,
         mainText: form.mainText,
         reportTemplate: form.reportTemplate,
         location: form.location,
@@ -564,7 +544,6 @@ export function CreateReportForm() {
         id: reportId,
         title: payload.report.title || "Draft Laporan",
         mode: form.mode,
-        selectedModel: form.selectedModel,
         mainText: form.mainText,
         reportTemplate: form.reportTemplate,
         location: form.location,
@@ -658,67 +637,12 @@ export function CreateReportForm() {
             />
           </label>
 
-          <div className="mt-3">
-            <span className="mb-2 block text-xs font-semibold tracking-[0.08em] text-white/40 uppercase">
-              Pilih Profil Pemrosesan (Model)
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {naliModels.map((model) => {
-                const isSelected = form.selectedModel === model.id;
-                const isLocked = model.lockedWithoutEntitlement;
-                return (
-                  <button
-                    key={model.id}
-                    className={cn(
-                      "inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 sm:flex-none",
-                      isSelected
-                        ? "border-[#6f8057] bg-[#6f8057]/15 text-white shadow-sm shadow-[#6f8057]/10"
-                        : isLocked
-                          ? "cursor-not-allowed border-white/[0.06] bg-[#07090e]/60 text-white/35"
-                          : "cursor-pointer border-white/[0.06] bg-[#07090e]/60 text-white/50 hover:bg-white/[0.05]",
-                    )}
-                    type="button"
-                    onClick={() => {
-                      if (!isLocked) updateField("selectedModel", model.id);
-                    }}
-                    disabled={isLocked}
-                    aria-disabled={isLocked}
-                    aria-pressed={isSelected}
-                  >
-                    {isLocked && <LockKeyhole className="h-3 w-3 shrink-0" aria-hidden="true" />}
-                    {model.label}
-                  </button>
-                );
-              })}
-            </div>
-            <p className="mt-2 text-[11px] leading-5 text-white/45">{CP1_PREMIUM_ACCESS_MESSAGE}</p>
-            {naliModels
-              .filter((model) => model.id === form.selectedModel)
-              .map((model) => (
-                <div
-                  key={`${model.id}-detail`}
-                  className="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3"
-                >
-                  <p className="text-xs leading-5 text-white/60">{model.shortDescription}</p>
-                  <p className="mt-2 text-xs font-medium text-white/70">
-                    {model.costLabel} / estimasi {model.estimatedCredits} Kredit
-                  </p>
-                  <p className="mt-1 text-[11px] leading-5 text-white/40">{model.pricingReadinessNote}</p>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {model.safeCapabilities.map((capability) => (
-                      <span
-                        key={capability}
-                        className="rounded-full border border-white/[0.06] px-2 py-1 text-[10px] text-white/55"
-                      >
-                        {capability}
-                      </span>
-                    ))}
-                  </div>
-                  {model.limitations.length > 0 && (
-                    <p className="mt-2 text-[11px] leading-5 text-white/40">{model.limitations.join(" / ")}</p>
-                  )}
-                </div>
-              ))}
+          <div className="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+            <p className="text-xs font-semibold tracking-[0.08em] text-white/55 uppercase">Satu Alur Laporan</p>
+            <p className="mt-1 text-xs leading-5 text-white/50">
+              Jalur starter gratis tersedia terbatas dan tetap mengikuti batas penggunaan. Paket Laporan lengkap belum
+              aktif di CP1.
+            </p>
           </div>
 
           <label className="mt-3 flex cursor-pointer items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-left">
@@ -755,7 +679,6 @@ export function CreateReportForm() {
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#09090b] transition-all hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:pointer-events-none disabled:opacity-60"
               disabled={
                 isSubmitting ||
-                selectedModelLocked ||
                 (error?.retryAfterSeconds !== undefined && error.retryAfterSeconds > 0) ||
                 !validationIssue.canSubmit
               }
@@ -768,7 +691,7 @@ export function CreateReportForm() {
               ) : (
                 <Compass className="h-4 w-4" aria-hidden="true" />
               )}
-              {isDraft ? "Buat Draf Berbasis Bahan" : "Buat Panduan Mulai"}
+              {isDraft ? "Buat Laporan" : "Buat Panduan Awal"}
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>

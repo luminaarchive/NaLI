@@ -177,7 +177,7 @@ test("UI Integration - Local copy/export labels and locks are preserved", () => 
   const clientCode = fs.readFileSync(clientPath, "utf-8");
 
   // Must preserve lock copy
-  assert.ok(clientCode.includes("PDF berbayar belum aktif di fase testing ini. Export berbayar masih terkunci."));
+  assert.ok(clientCode.includes("PDF/DOCX publik tetap terkunci / inactive di CP1."));
   
   // Must render local export copy
   assert.ok(clientCode.includes("Unduh Markdown lokal"));
@@ -197,7 +197,7 @@ test("UI Integration - Local copy/export labels and locks are preserved", () => 
   assert.ok(workspaceCode.includes("Unduh Markdown lokal"));
   assert.ok(workspaceCode.includes("Unduh teks lokal"));
   assert.ok(workspaceCode.includes("Salin teks biasa"));
-  assert.ok(workspaceCode.includes("PDF berbayar belum aktif di fase testing ini. Export berbayar masih terkunci."));
+  assert.ok(workspaceCode.includes("PDF/DOCX publik tetap terkunci / inactive di CP1."));
 });
 
 test("System safety - no Midtrans or paid activation", () => {

@@ -22,19 +22,18 @@ export default function PricingPage() {
         {/* Header */}
         <section className="border-b border-white/[0.06] px-4 pt-28 pb-14 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[1160px]">
-            <Badge tone="green">Beta pricing</Badge>
+            <Badge tone="green">Beta paket laporan</Badge>
             <h1 className="mt-4 max-w-[720px] text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              NaLI Monetization
+              Paket Laporan NaLI
             </h1>
             <p className="mt-5 max-w-[720px] text-lg leading-8 text-white/50">
-              Paket kredit dan top-up instan untuk menyusun draf laporan terstruktur secara akademis dan berbasis bukti.
-            </p>
-            <p className="mt-3 text-xs text-white/35 max-w-[720px]">
-              Export unlocks after confirmed payment. If confirmation is delayed, the order stays pending until automated verification succeeds.
+              Pilih kapasitas laporan berdasarkan kebutuhan: laporan cepat atau laporan lengkap. Unit produk NaLI adalah
+              Laporan, bukan pilihan mesin pemrosesan.
             </p>
             <div className="mt-4 rounded-xl border border-amber-500/15 bg-amber-500/[0.04] p-3 max-w-[720px]">
               <p className="text-xs leading-5 text-amber-300/70">
-                Pembayaran otomatis belum aktif di fase testing ini. Paket kredit ditampilkan untuk simulasi harga dan persiapan rilis berbayar.
+                Pembayaran dan checkout belum aktif di CP1. Paket Laporan ditampilkan untuk persiapan pricing, tanpa
+                membuat pembelian atau saldo laporan.
               </p>
             </div>
           </div>
@@ -47,31 +46,30 @@ export default function PricingPage() {
           </div>
         </section>
 
-        {/* One-Time Value Anchors */}
+        {/* Report usage rules */}
         <section className="border-t border-white/[0.06] px-4 py-14 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[720px]">
-            <h3 className="text-xl font-semibold text-white text-center">Mulai dari pembayaran kecil</h3>
+            <h3 className="text-xl font-semibold text-white text-center">Aturan penggunaan Laporan</h3>
             <p className="mt-2 text-xs text-white/40 text-center">
-              Target harga rilis berbayar — belum aktif di fase testing ini.
+              Disiapkan sekarang untuk peluncuran mendatang, tetap tidak aktif di CP1.
             </p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               {[
-                { label: "Export Markdown", price: "Rp5.000–9.000", credits: "5–10 kredit" },
-                { label: "Export PDF laporan pendek", price: "Rp9.000", credits: "15 kredit" },
-                { label: "Laporan praktikum / observasi rapi", price: "Rp19.000", credits: "~20 kredit" },
-                { label: "Report + evidence check", price: "Rp29.000", credits: "~30 kredit" },
+                { label: "Buat laporan baru", detail: "Menggunakan 1 laporan setelah berhasil dibuat" },
+                { label: "Buat ulang dari awal", detail: "Menggunakan 1 laporan setelah berhasil dibuat" },
+                { label: "Edit manual hasil", detail: "Tidak menggunakan laporan tambahan" },
+                { label: "Salin hasil yang sama", detail: "Tidak menggunakan laporan tambahan" },
               ].map((item) => (
-                <div key={item.label} className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
+                <div key={item.label} className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
                   <div>
                     <p className="text-sm font-medium text-white/80">{item.label}</p>
-                    <p className="text-[11px] text-white/35 mt-0.5">{item.credits}</p>
+                    <p className="text-[11px] text-white/35 mt-0.5">{item.detail}</p>
                   </div>
-                  <span className="text-sm font-bold text-emerald-400/80">{item.price}</span>
                 </div>
               ))}
             </div>
             <p className="mt-4 text-[11px] text-white/30 text-center">
-              Rencana harga CP1. Harga final dapat berubah sebelum rilis berbayar.
+              Kegagalan server atau blok integritas/rate limit tidak memotong laporan.
             </p>
           </div>
         </section>

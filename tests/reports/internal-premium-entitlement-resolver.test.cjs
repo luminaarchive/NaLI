@@ -153,6 +153,6 @@ test("the server consumes internal QA authorization after rate limits and integr
 
   for (const publicClientSource of [formSource, workspaceSource]) {
     assert.doesNotMatch(publicClientSource, /internalPremiumQa|internal-premium-qa|founder_token/i);
-    assert.match(publicClientSource, /disabled=\{isLocked\}/);
+    assert.doesNotMatch(publicClientSource, /selectedModel|naliModels|Peregrine|Obsidian|Zephyr/);
   }
 });

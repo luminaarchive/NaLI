@@ -61,11 +61,8 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
   const [report, setReport] = useState<ReportResult | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [accessKey, setAccessKey] = useState<string | null>(null);
-  const [hasAccessKey, setHasAccessKey] = useState(false);
   const [isLoadingPersisted, setIsLoadingPersisted] = useState(true);
-  const [status, setStatus] = useState<"idle" | "copied" | "copied_markdown" | "copied_text" | "export_notice">("idle");
-  const [exportNotice, setExportNotice] = useState<string | null>(null);
-  const [exportReadiness, setExportReadiness] = useState<"export_ready" | "export_locked" | "unknown">("unknown");
+  const [status, setStatus] = useState<"idle" | "copied" | "copied_markdown" | "copied_text">("idle");
   const [feedbackComment, setFeedbackComment] = useState("");
   const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "sent" | "fallback" | "error">("idle");
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
@@ -76,14 +73,11 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
     const key = getStoredReportAccessKey(reportId);
     if (key) {
       setAccessKey(key);
-      setHasAccessKey(true);
       const tkStorageKey = "nali-report-access-" + "to" + "ken" + `:${reportId}`;
       window.localStorage.setItem(`nali-report-access:${reportId}`, key);
       window.localStorage.setItem(tkStorageKey, key);
       window.localStorage.setItem(`nali-report-key:${reportId}`, key);
       window.localStorage.setItem(`nali-report-access-key:${reportId}`, key);
-    } else {
-      setHasAccessKey(false);
     }
 
     const stored = window.localStorage.getItem(`nali-report:${reportId}`);
@@ -108,15 +102,11 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
 
         const payload = (await response.json()) as {
           report?: ReportResult;
-          export_readiness?: "export_ready" | "export_locked";
         };
 
         if (active && payload.report) {
           setReport(payload.report);
           window.localStorage.setItem(`nali-report:${reportId}`, JSON.stringify(payload.report));
-        }
-        if (active && payload.export_readiness) {
-          setExportReadiness(payload.export_readiness);
         }
       } catch {
         // LocalStorage fallback remains available when persistence is not configured.
@@ -146,10 +136,10 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
     () =>
       report
         ? buildReportMarkdown(report, {
-            exportStatus: exportReadiness === "export_ready" ? "export_ready" : "preview_copy",
+            exportStatus: "preview_copy",
           })
         : "",
-    [exportReadiness, report],
+    [report],
   );
 
   function stripMarkdown(md: string): string {
@@ -235,61 +225,6 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
     } catch {
       alert("Gagal mengunduh file.");
     }
-  }
-
-  async function requestPremiumExport() {
-    setExportNotice(null);
-
-    if (!report || !accessKey) {
-      setExportNotice("Export premium membutuhkan laporan tersimpan dari sesi ini.");
-      setStatus("export_notice");
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/payments/create", {
-        body: JSON.stringify({
-          export_type: "markdown",
-          report_access_key: accessKey,
-          report_id: reportId,
-        }),
-        headers: { "Content-Type": "application/json" },
-        method: "POST",
-      });
-      const payload = (await response.json()) as {
-        error?: string;
-        message?: string;
-        payment_mode?: "manual";
-        snap_url?: string;
-        status?: string;
-      };
-
-      if (response.ok && payload.snap_url) {
-        window.location.href = payload.snap_url;
-        return;
-      }
-
-      if (response.ok && payload.payment_mode === "manual") {
-        setExportNotice(
-          "Permintaan unlock tercatat sebagai pending. Export tetap terkunci sampai sistem memverifikasi pembayaran.",
-        );
-        setStatus("export_notice");
-        return;
-      }
-
-      setExportNotice(payload.error ?? payload.message ?? "Export premium belum bisa diproses saat ini.");
-      setStatus("export_notice");
-    } catch {
-      setExportNotice("Export premium belum bisa diproses saat ini.");
-      setStatus("export_notice");
-    }
-  }
-
-  function openPremiumExport(format: "markdown" | "pdf") {
-    if (!accessKey) return;
-    const params = new URLSearchParams({ [accessParamName]: accessKey });
-    if (format === "pdf") params.set("format", "pdf");
-    window.open(`/api/reports/${reportId}/export?${params.toString()}`, "_blank");
   }
 
   async function submitFeedback() {
@@ -474,63 +409,20 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
             </div>
           </SidebarCard>
  
-          <SidebarCard title="Export Premium">
-            {exportReadiness === "export_ready" ? (
-              <>
-                <p className="text-sm leading-6 text-white/40">Export premium telah aktif untuk laporan ini.</p>
-                <Button
-                  className="mt-3 w-full"
-                  disabled={!accessKey}
-                  type="button"
-                  variant="default"
-                  onClick={() => openPremiumExport("markdown")}
-                >
-                  <Download className="h-4 w-4" aria-hidden="true" />
-                  Download Markdown
-                </Button>
-                <Button
-                  className="mt-2 w-full"
-                  disabled={!accessKey}
-                  type="button"
-                  variant="outline"
-                  onClick={() => openPremiumExport("pdf")}
-                >
-                  <Download className="h-4 w-4" aria-hidden="true" />
-                  Download PDF
-                </Button>
-              </>
-            ) : (
-              <>
-                <p className="text-sm leading-6 text-white/40">
-                  Export versi rapi tersedia setelah pembayaran dikonfirmasi. Mulai Rp9.000 saat pembayaran aktif.
-                </p>
-                <Button
-                  className="mt-3 w-full"
-                  disabled={!accessKey}
-                  type="button"
-                  variant="default"
-                  onClick={requestPremiumExport}
-                >
-                  <LockKeyhole className="h-4 w-4" aria-hidden="true" />
-                  Export versi rapi
-                </Button>
-                <p className="mt-2 text-[11px] text-white/25">
-                  PDF berbayar belum aktif di fase testing ini. Export berbayar masih terkunci.
-                </p>
-                {!accessKey ? (
-                  <p className="mt-2 text-xs leading-5 text-white/30">
-                    Export membutuhkan laporan tersimpan dari sesi ini.
-                  </p>
-                ) : null}
-              </>
-            )}
+          <SidebarCard title="Export">
+            <p className="flex items-start gap-2 text-sm leading-6 text-white/40">
+              <LockKeyhole className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" />
+              PDF/DOCX publik tetap terkunci / inactive di CP1. Pembayaran dan checkout belum aktif.
+            </p>
+            <p className="mt-2 text-[11px] leading-5 text-white/30">
+              Gunakan salinan atau unduhan Markdown/TXT lokal pada panel di atas.
+            </p>
           </SidebarCard>
  
           {status !== "idle" ? (
             <p className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm text-emerald-300">
               {(status === "copied" || status === "copied_markdown") && "Unduh/Salin: Preview Markdown tersalin."}
               {status === "copied_text" && "Unduh/Salin: Teks biasa tersalin."}
-              {status === "export_notice" && exportNotice}
             </p>
           ) : null}
         </aside>
