@@ -4,6 +4,7 @@ export type RequiredModelEntitlement = "none" | "premium_model_entitlement_or_cr
 export type ModelEntitlementStatus =
   | "starter_available"
   | "locked_by_default"
+  | "verified_internal_qa_entitlement"
   | "verified_entitlement"
   | "verified_credit";
 
@@ -14,6 +15,7 @@ export type VerifiedPremiumAccess = {
    */
   verifiedPremiumCredit?: boolean;
   verifiedPremiumEntitlement?: boolean;
+  verifiedInternalPremiumQaEntitlement?: boolean;
 };
 
 export type ModelEntitlementResult = {
@@ -44,6 +46,16 @@ export function evaluateModelEntitlement(
       modelId,
       reason: "starter_model_available_by_default",
       requiredEntitlement: "none",
+    };
+  }
+
+  if (trustedAccess.verifiedInternalPremiumQaEntitlement) {
+    return {
+      allowed: true,
+      entitlementStatus: "verified_internal_qa_entitlement",
+      modelId,
+      reason: "trusted_internal_premium_qa_entitlement_confirmed",
+      requiredEntitlement: "premium_model_entitlement_or_credit",
     };
   }
 

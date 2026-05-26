@@ -3,6 +3,7 @@ import { getPurgeReadiness } from "@/lib/maintenance/purge";
 import { isMidtransConfigured, isMidtransProduction } from "@/lib/payments/midtrans";
 import { getReportUploadReadiness } from "@/lib/reports/uploads";
 import { getCostProtectionReadiness, getCostProtectionStatus } from "@/lib/usage/costProtection";
+import { getInternalPremiumQaResolverStatus } from "@/lib/entitlements/internalEntitlementResolver";
 
 export type SystemReadiness = {
   adminViewEnabled: boolean;
@@ -31,8 +32,10 @@ export type SystemReadiness = {
   uploadConfigured: boolean;
   uploadPrepared: true;
   entitlementGate: "enabled";
+  internalPremiumQaResolver: "configured" | "unconfigured";
   premiumModelsLockedByDefault: true;
   peregrineAvailable: true;
+  publicPremiumActivation: "disabled";
   paymentActivation: "disabled";
   midtrans: "deferred_inactive";
   publicExport: "locked_inactive";
@@ -90,8 +93,10 @@ export function getSystemReadiness(): SystemReadiness {
     uploadConfigured: upload.uploadConfigured,
     uploadPrepared: upload.uploadPrepared,
     entitlementGate: "enabled",
+    internalPremiumQaResolver: getInternalPremiumQaResolverStatus(),
     premiumModelsLockedByDefault: true,
     peregrineAvailable: true,
+    publicPremiumActivation: "disabled",
     paymentActivation: "disabled",
     midtrans: "deferred_inactive",
     publicExport: "locked_inactive",

@@ -38,6 +38,10 @@ test("Peregrine is available by default while premium models require a trusted e
     const credited = evaluateModelEntitlement(modelId, { verifiedPremiumCredit: true });
     assert.equal(credited.allowed, true);
     assert.equal(credited.entitlementStatus, "verified_credit");
+
+    const internalQa = evaluateModelEntitlement(modelId, { verifiedInternalPremiumQaEntitlement: true });
+    assert.equal(internalQa.allowed, true);
+    assert.equal(internalQa.entitlementStatus, "verified_internal_qa_entitlement");
   }
 });
 
@@ -62,7 +66,7 @@ test("a direct API bypass attempt cannot generate Obsidian or Zephyr without ent
   }
 
   const routeSource = fs.readFileSync(path.join(repoRoot, "src/app/api/reports/generate/route.ts"), "utf8");
-  const guardPosition = routeSource.indexOf("evaluateModelEntitlement(selectedModelId)");
+  const guardPosition = routeSource.indexOf("evaluateModelEntitlement(selectedModelId,");
   assert.ok(guardPosition > -1);
   assert.ok(guardPosition < routeSource.indexOf("getEnergyBalance(input.guestSessionId)"));
   assert.ok(guardPosition < routeSource.indexOf("requestOpenRouterJson({"));
@@ -98,6 +102,7 @@ test("safe readiness status states that the entitlement gate is enabled while ac
   assert.equal(body.entitlementGate, "enabled");
   assert.equal(body.premiumModelsLockedByDefault, true);
   assert.equal(body.peregrineAvailable, true);
+  assert.equal(body.publicPremiumActivation, "disabled");
   assert.equal(body.paymentActivation, "disabled");
   assert.equal(body.midtrans, "deferred_inactive");
   assert.equal(body.publicExport, "locked_inactive");

@@ -1,5 +1,6 @@
 import { getOptionalSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getSystemReadiness } from "./readiness";
+export { verifyFounderToken } from "./founderAuthorization";
 
 export interface FounderMonitoringData {
   readiness: ReturnType<typeof getSystemReadiness>;
@@ -58,18 +59,6 @@ export function classifyComment(comment: string) {
     rateLimit: c.includes("rate limit") || c.includes("terlalu banyak") || c.includes("429") || c.includes("limit") || c.includes("kuota"),
   };
 }
-
-export function verifyFounderToken(token: string | undefined): { authorized: boolean; configured: boolean } {
-  const adminToken = process.env.NALI_FOUNDER_ADMIN_TOKEN;
-  if (!adminToken) {
-    return { authorized: false, configured: false };
-  }
-  return {
-    authorized: token === adminToken,
-    configured: true,
-  };
-}
-
 
 export async function getFounderMonitoringData(): Promise<FounderMonitoringData> {
   const readiness = getSystemReadiness();

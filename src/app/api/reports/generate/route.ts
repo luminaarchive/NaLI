@@ -17,6 +17,7 @@ import { getCostProtectionStatus } from "@/lib/usage/costProtection";
 import { logUsageEvent } from "@/lib/usage/logging";
 import { getEnergyBalance } from "@/lib/energy/ledger";
 import { evaluateModelEntitlement, PREMIUM_MODEL_LOCK_MESSAGE } from "@/lib/entitlements/modelEntitlements";
+import { resolveInternalPremiumQaEntitlement } from "@/lib/entitlements/internalEntitlementResolver";
 
 const systemPrompt = [
   "You are NaLI (NatIve Learning & Intelligence) by NatIve, a professional AI field intelligence and evidence-based learning assistant.",
@@ -112,15 +113,19 @@ export async function POST(req: NextRequest) {
   }
 
   const selectedModelId = validated.data.selectedModel || "peregrine";
-  // No trusted premium entitlement resolver is active in CP1. Never derive
-  // premium access from client input or automatically seeded trial credits.
-  const entitlement = evaluateModelEntitlement(selectedModelId);
+  const internalPremiumQa = selectedModelId === "peregrine" ? null : resolveInternalPremiumQaEntitlement(req.headers);
+  // This server-validated QA entitlement opens model access only. Public
+  // payment, export, upload, and source verification remain independently locked.
+  const entitlement = evaluateModelEntitlement(selectedModelId, {
+    verifiedInternalPremiumQaEntitlement: internalPremiumQa?.allowed === true,
+  });
   if (!entitlement.allowed) {
     return NextResponse.json(
       {
         code: "MODEL_ENTITLEMENT_REQUIRED",
         entitlement,
         error: PREMIUM_MODEL_LOCK_MESSAGE,
+        internalPremiumQaStatus: internalPremiumQa?.status,
       },
       { headers, status: 403 },
     );
