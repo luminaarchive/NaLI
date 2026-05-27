@@ -2,7 +2,6 @@
 
 import { FormEvent, useEffect, useRef, useState, useCallback, memo } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -26,7 +25,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FluidVideoBackground } from "@/components/ui/FluidVideoBackground";
-import { NaLILogoMark } from "@/components/ui/NaLILogoMark";
+import { NaLILogo, NaLILogoMark } from "@/components/ui/NaLILogo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { ReportResult, DraftReport, StartFromZeroGuide } from "@/lib/reports/reportGenerator";
@@ -57,7 +56,6 @@ type AgentMessage = {
     evidence_strength?: "weak" | "medium" | "strong";
     source_coverage?: "limited" | "adequate" | "strong";
     academic_integrity?: "safe" | "warning" | "blocked";
-    credit_cost?: number;
     mode_label?: "fast" | "advanced_report" | "deep_intelligence";
     template_id?: string;
     warning_codes?: string[];
@@ -916,26 +914,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         )}
       >
         <div className="flex h-14 items-center justify-between border-b border-[#14261c] px-4">
-          <Link aria-label="NaLI beranda" className="flex items-center gap-2 group min-h-[44px]" href="/">
-            <span className="relative h-7 w-7 overflow-hidden rounded-md border border-[#14261c] bg-[#08100c] flex items-center justify-center transition-all duration-300 group-hover:border-[#00FFB3]/40">
-              <Image
-                alt="NaLI Logo Mark"
-                className="object-cover mix-blend-screen p-0.5 transition-transform duration-300 group-hover:scale-105"
-                fill
-                src="/assets/nali-mark.jpg"
-                unoptimized
-              />
-            </span>
-            <span className="relative h-4 w-12 overflow-hidden flex items-center justify-center">
-              <Image
-                alt="NaLI Logo Wordmark"
-                className="object-contain mix-blend-screen transition-transform duration-300"
-                fill
-                src="/assets/nali-wordmark.jpg"
-                unoptimized
-              />
-            </span>
-          </Link>
+          <NaLILogo size={28} variant="light" />
           <button
             aria-label="Tutup riwayat"
             className="inline-flex h-11 w-11 items-center justify-center text-white/40 hover:text-white md:hidden"
@@ -1051,12 +1030,12 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     />
                   </div>
                 )}
-                <NaLILogoMark size="md" className="shadow-2xl shadow-[#10b981]/10" />
-                <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-white md:text-5xl">Buat Laporan</h1>
-                <p className="mt-2 max-w-[500px] text-base leading-6 text-white/60">
+                <NaLILogoMark variant="light" size={52} className="drop-shadow-[0_4px_18px_rgba(0,255,179,0.12)]" />
+                <h1 className="mt-2 font-serif text-4xl font-semibold text-[#f5f0e8] md:text-5xl">Buat Laporan</h1>
+                <p className="mt-2 max-w-[500px] text-base leading-6 text-[#a1b3a8]">
                   Masukkan materi atau topik untuk menyusun draf laporan dengan batas bukti yang jelas.
                 </p>
-                <p className="mt-2.5 max-w-[500px] text-[11px] leading-5 text-white/40">
+                <p className="mt-2.5 max-w-[500px] text-[11px] leading-5 text-[#a1b3a8]/70">
                   Jalur starter gratis tersedia terbatas dan tetap dibatasi laju penggunaan. Paket Laporan belum aktif
                   di CP1.
                 </p>
@@ -1069,15 +1048,15 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     className={cn(
                       "rounded-xl border p-3 text-left transition duration-200",
                       selectedMode === "draft_from_materials"
-                        ? "border-[#10b981]/30 bg-[#10b981]/5 text-white"
-                        : "border-white/[0.06] bg-white/[0.02] text-white/50 hover:bg-white/[0.04]",
+                        ? "border-[#00FFB3]/30 bg-[#00FFB3]/5 text-[#f5f0e8]"
+                        : "border-[#14261c] bg-[#08100c] text-[#a1b3a8] hover:bg-[#14261c]/40",
                     )}
                   >
                     <span className="flex items-center gap-2 text-sm font-semibold">
-                      <FileText className="h-4 w-4 text-emerald-400" />
+                      <FileText className="h-4 w-4 text-[#00FFB3]" />
                       Punya Bahan
                     </span>
-                    <span className="mt-1 block text-[11px] leading-4 text-white/40">
+                    <span className="mt-1 block text-[11px] leading-4 text-[#a1b3a8]/70">
                       Gunakan catatan, URL, atau observasi.
                     </span>
                   </button>
@@ -1088,15 +1067,15 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     className={cn(
                       "rounded-xl border p-3 text-left transition duration-200",
                       selectedMode === "start_from_zero"
-                        ? "border-[#7c3aed]/30 bg-[#7c3aed]/5 text-white"
-                        : "border-white/[0.06] bg-white/[0.02] text-white/50 hover:bg-white/[0.04]",
+                        ? "border-[#00FFB3]/30 bg-[#00FFB3]/5 text-[#f5f0e8]"
+                        : "border-[#14261c] bg-[#08100c] text-[#a1b3a8] hover:bg-[#14261c]/40",
                     )}
                   >
                     <span className="flex items-center gap-2 text-sm font-semibold">
-                      <Compass className="h-4 w-4 text-indigo-400" />
+                      <Compass className="h-4 w-4 text-[#00FFB3]" />
                       Mulai dari Nol
                     </span>
-                    <span className="mt-1 block text-[11px] leading-4 text-white/40">
+                    <span className="mt-1 block text-[11px] leading-4 text-[#a1b3a8]/70">
                       Minta panduan, outline, dan checklist bukti.
                     </span>
                   </button>
@@ -1104,7 +1083,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
                 {/* Templates Selector */}
                 <div className="mt-2 w-full max-w-[500px] text-left">
-                  <label className="mb-1.5 block text-xs font-semibold tracking-[0.08em] text-white/40 uppercase">
+                  <label className="mb-1.5 block text-xs font-semibold tracking-[0.08em] text-[#a1b3a8] uppercase">
                     Template Laporan
                   </label>
                   <select
@@ -1113,7 +1092,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     className="w-full rounded-xl border border-[#14261c] bg-[#08100c]/60 px-4 py-2.5 text-sm text-[#f5f0e8] focus:border-[#00FFB3]/30 focus:outline-none"
                   >
                     {templates.map((tpl) => (
-                      <option key={tpl} value={tpl} className="bg-[#09090b] text-white">
+                      <option key={tpl} value={tpl} className="bg-[#08100c] text-[#f5f0e8]">
                         {tpl}
                       </option>
                     ))}
@@ -1150,7 +1129,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                       className={cn(
                         "w-full max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 break-words shadow-xl sm:w-auto sm:max-w-[85%]",
                         isUser
-                          ? "border border-white/[0.08] bg-gradient-to-r from-emerald-500/10 to-indigo-600/10 text-white"
+                          ? "border border-[#00FFB3]/15 bg-[#00FFB3]/5 text-[#f5f0e8]"
                           : "border border-white/[0.06] bg-white/[0.03] text-white/90",
                       )}
                     >
@@ -1171,11 +1150,11 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                               <p className="whitespace-pre-wrap text-white/80">{message.content}</p>
 
                               {understanding && (
-                                <div className="rounded-xl border border-indigo-500/15 bg-indigo-500/5 p-3.5 shadow-md">
+                                <div className="rounded-xl border border-[#00FFB3]/15 bg-[#00FFB3]/5 p-3.5 shadow-md">
                                   <div className="flex gap-2.5">
-                                    <Compass className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400" />
+                                    <Compass className="mt-0.5 h-4 w-4 shrink-0 text-[#00FFB3]" />
                                     <div>
-                                      <h4 className="text-[10px] font-bold tracking-wider text-indigo-300/80 uppercase">
+                                      <h4 className="text-[10px] font-bold tracking-wider text-[#00FFB3]/80 uppercase">
                                         NaLI Understanding
                                       </h4>
                                       <p className="mt-1 text-xs leading-relaxed text-white/80">{understanding}</p>
@@ -1319,7 +1298,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
                               {isLastMessage && activeRunStatus === "idle" && (
                                 <div className="mt-2.5 flex items-center gap-1.5 text-xs text-white/35">
-                                  <ArrowRight className="h-3 w-3 shrink-0 animate-pulse text-indigo-400" />
+                                  <ArrowRight className="h-3 w-3 shrink-0 animate-pulse text-[#00FFB3]" />
                                   <span>Ketik pesan lanjutan atau gunakan tombol di atas untuk merevisi.</span>
                                 </div>
                               )}
@@ -1609,7 +1588,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               onSubmit={messages.length === 0 ? handleInitialSubmit : handleFollowUpSubmit}
               className="group relative"
             >
-              <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-indigo-600/10 to-indigo-400/10 opacity-30 blur-md transition duration-500 group-focus-within:opacity-60 group-hover:opacity-50" />
+              <div className="absolute -inset-0.5 rounded-2xl bg-[#00FFB3]/10 opacity-30 blur-md transition duration-500 group-focus-within:opacity-60 group-hover:opacity-50" />
 
               <div className="relative flex min-h-[48px] items-end gap-2 rounded-2xl border border-[#14261c] bg-[#08100c]/80 p-2 shadow-2xl backdrop-blur-2xl transition duration-300 focus-within:border-[#00FFB3]/30 focus-within:bg-[#08100c] sm:min-h-[56px]">
                 <div className="flex-1 px-3 py-1">
@@ -1722,19 +1701,19 @@ function ReportResultCard({
           return (
             <div className="space-y-4 text-sm leading-6 text-white/70">
               <div>
-                <span className="block text-xs font-semibold tracking-wider text-indigo-400 uppercase">
+                <span className="block text-xs font-semibold tracking-wider text-[#00FFB3] uppercase">
                   Panduan Awal
                 </span>
                 <p className="mt-1">{guide.integrity_note}</p>
               </div>
               <div className="border-t border-white/[0.04] pt-3">
-                <span className="block text-xs font-semibold tracking-wider text-indigo-400 uppercase">
+                <span className="block text-xs font-semibold tracking-wider text-[#00FFB3] uppercase">
                   Kerangka Topik
                 </span>
                 <p className="mt-1">{guide.topic_framing}</p>
               </div>
               <div className="border-t border-white/[0.04] pt-3">
-                <span className="block text-xs font-semibold tracking-wider text-indigo-400 uppercase">
+                <span className="block text-xs font-semibold tracking-wider text-[#00FFB3] uppercase">
                   Outline Laporan
                 </span>
                 <ul className="mt-1.5 list-decimal space-y-1 pl-4">
@@ -1749,7 +1728,7 @@ function ReportResultCard({
           return (
             <div className="space-y-4 text-sm leading-6 text-white/70">
               <div>
-                <span className="block text-xs font-semibold tracking-wider text-indigo-400 uppercase">
+                <span className="block text-xs font-semibold tracking-wider text-[#00FFB3] uppercase">
                   Checklist Bukti yang Diperlukan
                 </span>
                 <ul className="mt-1.5 space-y-1.5">
@@ -1762,7 +1741,7 @@ function ReportResultCard({
                 </ul>
               </div>
               <div className="border-t border-white/[0.04] pt-3">
-                <span className="block text-xs font-semibold tracking-wider text-indigo-400 uppercase">
+                <span className="block text-xs font-semibold tracking-wider text-[#00FFB3] uppercase">
                   Pertanyaan Observasi
                 </span>
                 <ul className="mt-1.5 space-y-1.5">
@@ -1780,7 +1759,7 @@ function ReportResultCard({
           return (
             <div className="space-y-4 text-sm leading-6 text-white/70">
               <div>
-                <span className="block text-xs font-semibold tracking-wider text-indigo-400 uppercase">
+                <span className="block text-xs font-semibold tracking-wider text-[#00FFB3] uppercase">
                   Batasan Etika & Keamanan
                 </span>
                 <p className="mt-1">{guide.safety_or_ethics_note}</p>
@@ -2096,7 +2075,7 @@ const LocalHistoryPanel = memo(function LocalHistoryPanel({
                 autosaved_draft: "bg-amber-500/10 text-amber-400 border-amber-500/20",
                 generation_failed: "bg-red-500/10 text-red-400 border-red-500/20",
                 draft_ready: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-                chat_updated: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+                chat_updated: "border-[#00FFB3]/20 bg-[#00FFB3]/10 text-[#00FFB3]",
               }[item.status] || "bg-zinc-500/10 text-zinc-400 border-zinc-500/20";
 
             return (

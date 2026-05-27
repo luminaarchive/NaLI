@@ -23,6 +23,7 @@ export const metadata: Metadata = {
   },
 };
 import type { LucideIcon } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { PublicAppShell } from "@/components/ui/PublicAppShell";
@@ -49,12 +50,12 @@ const features = [
   {
     icon: Database,
     title: "Intelligence Fusion",
-    description: "Gabungkan temuan lapangan dengan data ilmiah untuk kredibilitas optimal.",
+    description: "Strukturkan temuan lapangan bersama bahan dan sumber yang diberikan pengguna.",
   },
   {
     icon: Fingerprint,
     title: "Laporan Biodiversitas",
-    description: "Generate laporan terstruktur dari catatan lapanganmu secara instan.",
+    description: "Susun draft laporan terstruktur dari catatan lapanganmu dengan batas bukti.",
   },
   {
     icon: Archive,
@@ -111,6 +112,21 @@ export default function LearnReportPage() {
                 text="NaLI creates an observation guide, evidence checklist, source search checklist, and initial outline."
               />
             </div>
+            <Alert className="mt-8 border-[#14261c] bg-[#08100c] p-5 text-left">
+              <AlertDescription className="space-y-3 text-xs leading-6 text-[#a1b3a8]">
+                <p>
+                  Dokumen ini adalah draft bantuan belajar/penulisan berbasis bukti. Pengguna wajib memeriksa,
+                  mengedit, memverifikasi sumber, dan bertanggung jawab penuh atas dokumen akhir. NaLI tidak boleh
+                  digunakan untuk memalsukan data, mengarang referensi, melakukan plagiarisme, atau mengklaim karya
+                  AI sebagai karya final tanpa revisi.
+                </p>
+                <p>
+                  Panduan ini belum menjadi draft laporan berbasis bukti karena bahan observasi atau sumber belum
+                  tersedia. Pengguna perlu mengumpulkan data, catatan, foto, sumber, atau hasil pengamatan terlebih
+                  dahulu sebelum NaLI dapat menyusun draft laporan.
+                </p>
+              </AlertDescription>
+            </Alert>
           </div>
         </section>
 
@@ -182,7 +198,7 @@ export default function LearnReportPage() {
                   <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-[#14261c] bg-[#08100c] text-sm font-bold text-[#00FFB3] shadow-[0_0_15px_rgba(0,255,179,0.05)]">
                     {i + 1}
                   </div>
-                  <h3 className="text-sm font-bold text-[#f5f0e8]">{title}</h3>
+                  <h3 className="font-serif text-sm font-bold text-[#f5f0e8]">{title}</h3>
                   <p className="text-xs leading-6 text-[#a1b3a8]">{text}</p>
                 </div>
               ))}
@@ -194,7 +210,7 @@ export default function LearnReportPage() {
         <section className="border-t border-[#14261c] px-4 py-12 sm:px-6 lg:px-8 bg-[#030604]/20">
           <div className="mx-auto flex max-w-[600px] flex-wrap justify-center gap-3">
             <Badge tone="teal" className="px-4 py-2 text-xs">
-              PDF/DOCX Public Locked
+              PDF/DOCX publik terkunci di CP1
             </Badge>
             <Badge tone="amber" className="px-4 py-2 text-xs">
               Export Gate

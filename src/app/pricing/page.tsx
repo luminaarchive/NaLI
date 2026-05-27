@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { PricingCards } from "@/components/report/PricingCards";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PublicAppShell } from "@/components/ui/PublicAppShell";
 import { siteMetadata } from "@/lib/seo/siteMetadata";
 
@@ -20,12 +21,11 @@ export default function PricingPage() {
         {/* Header section */}
         <section className="px-4 pt-16 pb-10 sm:px-6 sm:pt-24 sm:pb-12 lg:px-8">
           <div className="mx-auto max-w-[1040px]">
-            {/* Top Warning Banner */}
-            <div className="mb-8 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-5 text-sm leading-6 text-amber-200">
-              <p className="font-semibold text-center">
-                NaLI saat ini dalam public alpha non-paid. Pembayaran dan checkout belum aktif di CP1. Paket berbayar akan dibuka setelah alpha selesai.
-              </p>
-            </div>
+            <Alert className="mb-8 border-[#00FFB3]/25 bg-[#00FFB3]/8 p-5 text-[#00FFB3]">
+              <AlertDescription className="text-center leading-6 text-[#f5f0e8]/80">
+                NaLI saat ini dalam <strong className="text-[#00FFB3]">public alpha non-paid</strong>. Pembayaran dan checkout belum aktif di CP1. Paket berbayar akan dibuka setelah alpha selesai. Semua pengguna mendapatkan akses preview gratis saat ini.
+              </AlertDescription>
+            </Alert>
 
             <span className="inline-flex min-h-8 items-center rounded-full border border-[#00FFB3]/25 bg-[#00FFB3]/5 px-3.5 py-1 text-xs font-bold tracking-wider text-[#00FFB3] uppercase">
               Paket Laporan CP1

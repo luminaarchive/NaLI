@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ const shortcutChips = [
 
 export function HomeQueryBox() {
   const router = useRouter();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [query, setQuery] = useState("");
 
   const inferMode = (text: string): "draft_from_materials" | "start_from_zero" => {
@@ -57,7 +58,7 @@ export function HomeQueryBox() {
       return "start_from_zero";
     }
 
-    return "draft_from_materials";
+    return "start_from_zero";
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -75,9 +76,10 @@ export function HomeQueryBox() {
     window.localStorage.setItem(
       "nali-create-report-prefill",
       JSON.stringify({
-        mainText: trimmed,
+        mainText: inferredMode === "draft_from_materials" ? trimmed : "",
         mode: inferredMode,
         reportTemplate: "Laporan Observasi Lingkungan",
+        topic: inferredMode === "start_from_zero" ? trimmed : "",
       }),
     );
 
@@ -86,6 +88,7 @@ export function HomeQueryBox() {
 
   const handleChipClick = (fillText: string) => {
     setQuery(fillText);
+    window.setTimeout(() => textareaRef.current?.focus(), 0);
   };
 
   return (
@@ -93,6 +96,7 @@ export function HomeQueryBox() {
       <form onSubmit={handleSearchSubmit} className="relative">
         <div className="flex flex-col rounded-2xl border border-[rgba(30,53,37,0.12)] bg-white p-4 shadow-[0_4px_24px_rgba(30,53,37,0.08)] transition-all duration-300 focus-within:border-[rgba(30,53,37,0.25)]">
           <Textarea
+            ref={textareaRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Deskripsikan spesies, lokasi, atau temuan lapangan…"
@@ -116,10 +120,11 @@ export function HomeQueryBox() {
 
             {/* Right: Submit Button */}
             <Button
+              aria-label="Buat Laporan: Mulai Susun Laporan"
               type="submit"
               className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl bg-[#1e3525] px-5 py-2 text-xs font-bold text-[#f5f0e8] hover:bg-[#162d1d] transition-all duration-200 border-none outline-none cursor-pointer"
             >
-              Buat Laporan
+              Mulai Susun Laporan
               <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
             </Button>
           </div>

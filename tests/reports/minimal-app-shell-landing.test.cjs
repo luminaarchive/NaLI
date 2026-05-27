@@ -18,8 +18,12 @@ test("homepage is a NaLI-original minimal report launcher without public engines
   const shell = read("src/components/ui/PublicAppShell.tsx");
   const combined = `${page}\n${queryBox}\n${shell}`;
 
+  assert.doesNotMatch(page, /SAFETY ASSERTIONS REQUIRED BY AUTOMATED TESTS/);
   assert.match(page, /Mau bikin laporan apa\?/);
   assert.match(page, /batas bukti/i);
+  assert.match(page, /aria-label="Batas bukti"/);
+  assert.match(page, /Learn &amp; Report/);
+  assert.match(page, /Field Intelligence/);
   assert.match(queryBox, /Tulis topik laporanmu/);
   assert.match(queryBox, /Buat Laporan/);
   assert.match(combined, /Laporan Observasi/);
@@ -43,6 +47,9 @@ test("homepage is a NaLI-original minimal report launcher without public engines
   assert.doesNotMatch(shell, /href="\/system"/);
   assert.match(shell, /Integritas Akademik/);
   assert.match(shell, /function FooterGroup[\s\S]*min-h-\[44px\]/);
+  assert.match(shell, /NaLILogo/);
+  assert.match(shell, /SheetDescription/);
+  assert.doesNotMatch(shell, /nali-mark\.jpg|nali-wordmark\.jpg|next\/image/);
 });
 
 test("pricing and create-report keep Laporan language, inactive actions, and mobile-sized controls", () => {
@@ -55,13 +62,32 @@ test("pricing and create-report keep Laporan language, inactive actions, and mob
   assert.match(cards, /Belum aktif/);
   assert.match(cards, /disabled/);
   assert.match(cards, /Pembayaran dan checkout belum aktif di CP1/);
+  assert.match(pricing, /<Alert/);
   assert.match(workspace, /Buat Laporan/);
   assert.match(workspace, /jalur starter gratis/i);
+  assert.match(workspace, /NaLILogo/);
+  assert.doesNotMatch(workspace, /nali-mark\.jpg|nali-wordmark\.jpg/);
   assert.match(publicCopy, /min-h-\[44px\]|h-11/);
   assert.doesNotMatch(
     publicCopy,
     /Peregrine|Obsidian|Zephyr|Haiku|Sonnet|Kredit|credits|fetch\(["']\/api\/payments\/create/i,
   );
+});
+
+test("logo and Tailwind v4 theme use vector branding and Next-hosted font variables", () => {
+  const logoPath = path.join(repoRoot, "src/components/ui/NaLILogo.tsx");
+  const globalCss = read("src/app/globals.css");
+  const layout = read("src/app/layout.tsx");
+
+  assert.equal(fs.existsSync(logoPath), true, "NaLILogo inline SVG component must exist");
+  const logo = fs.readFileSync(logoPath, "utf8");
+
+  assert.match(logo, /<svg/);
+  assert.match(logo, /NaLILogoMark/);
+  assert.doesNotMatch(globalCss, /fonts\.googleapis\.com/);
+  assert.match(globalCss, /--font-sans:\s*var\(--font-plus-jakarta-sans\)/);
+  assert.match(globalCss, /--radius:\s*0\.75rem/);
+  assert.doesNotMatch(layout, /\bGeist\b/);
 });
 
 test("readiness exposes ledger and app-shell preparation while every activation remains disabled", async () => {

@@ -24,7 +24,7 @@ export function FluidVideoBackground() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-0 h-screen w-screen overflow-hidden bg-[#07090e]"
+      className="pointer-events-none fixed inset-0 z-0 h-screen w-screen overflow-hidden bg-[#060b08]"
     >
       <div className="absolute inset-0 h-full w-full">
         {showVideo ? (
@@ -64,7 +64,7 @@ export function FluidVideoBackground() {
             width: "min(70vw, 700px)",
             height: "min(70vw, 700px)",
             background:
-              "radial-gradient(circle, rgba(16,185,129,0.34) 0%, rgba(16,185,129,0) 70%)",
+              "radial-gradient(circle, rgba(0,255,179,0.25) 0%, rgba(0,255,179,0) 70%)",
             filter: "blur(60px)",
             animation: prefersReducedMotion
               ? "none"
@@ -80,7 +80,7 @@ export function FluidVideoBackground() {
             width: "min(80vw, 800px)",
             height: "min(80vw, 800px)",
             background:
-              "radial-gradient(circle, rgba(6,182,212,0.28) 0%, rgba(6,182,212,0) 70%)",
+              "radial-gradient(circle, rgba(0,255,179,0.12) 0%, rgba(0,255,179,0) 70%)",
             filter: "blur(70px)",
             animation: prefersReducedMotion
               ? "none"
@@ -96,7 +96,7 @@ export function FluidVideoBackground() {
             width: "min(65vw, 650px)",
             height: "min(65vw, 650px)",
             background:
-              "radial-gradient(circle, rgba(124,58,237,0.28) 0%, rgba(124,58,237,0) 70%)",
+              "radial-gradient(circle, rgba(0,255,179,0.10) 0%, rgba(0,255,179,0) 70%)",
             filter: "blur(60px)",
             animation: prefersReducedMotion
               ? "none"
@@ -112,7 +112,7 @@ export function FluidVideoBackground() {
             width: "min(50vw, 500px)",
             height: "min(50vw, 500px)",
             background:
-              "radial-gradient(circle, rgba(20,184,166,0.16) 0%, rgba(20,184,166,0) 70%)",
+              "radial-gradient(circle, rgba(0,255,179,0.10) 0%, rgba(0,255,179,0) 70%)",
             filter: "blur(80px)",
             animation: prefersReducedMotion
               ? "none"
@@ -125,7 +125,7 @@ export function FluidVideoBackground() {
         className="pointer-events-none absolute inset-0 h-full w-full"
         style={{
           background:
-            "radial-gradient(ellipse 80% 60% at 50% 40%, transparent 30%, rgba(7,9,14,0.5) 65%, rgba(7,9,14,0.92) 100%)",
+            "radial-gradient(ellipse 80% 60% at 50% 40%, transparent 30%, rgba(6,11,8,0.5) 65%, rgba(6,11,8,0.92) 100%)",
         }}
       />
 

@@ -216,7 +216,7 @@ function CapabilityCard({
         <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#14261c] bg-[#14261c]/40 transition-colors duration-300 group-hover:bg-[#00FFB3]/10">
           <Icon className="h-5 w-5 text-[#00FFB3]" aria-hidden="true" />
         </div>
-        <h3 className="mt-4 text-base font-bold text-[#f5f0e8]">{title}</h3>
+        <h3 className="mt-4 font-serif text-base font-bold text-[#f5f0e8]">{title}</h3>
         <p className="mt-3 text-xs leading-6 text-[#a1b3a8]">{text}</p>
       </div>
     </div>
@@ -229,7 +229,7 @@ function BoundaryCard({ icon: Icon, text, title }: { icon: LucideIcon; text: str
       <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#14261c] bg-[#14261c]/40">
         <Icon className="h-5 w-5 text-[#00FFB3]/70" aria-hidden="true" />
       </div>
-      <h3 className="mt-4 text-base font-bold text-[#f5f0e8]">{title}</h3>
+      <h3 className="mt-4 font-serif text-base font-bold text-[#f5f0e8]">{title}</h3>
       <p className="mt-3 text-xs leading-6 text-[#a1b3a8]">{text}</p>
     </div>
   );

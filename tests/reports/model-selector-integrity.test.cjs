@@ -137,6 +137,7 @@ test("Zephyr, Obsidian, and Peregrine descriptions strictly avoid unsafe cheatin
 test("single-report controls preserve mobile safe-area paddings and touch targets", () => {
   const formSrc = fs.readFileSync(path.join(repoRoot, "src/components/report/CreateReportForm.tsx"), "utf8");
   const workspaceSrc = fs.readFileSync(path.join(repoRoot, "src/components/report/AgentWorkspace.tsx"), "utf8");
+  const backgroundSrc = fs.readFileSync(path.join(repoRoot, "src/components/ui/FluidVideoBackground.tsx"), "utf8");
 
   // Ensure 44px+ touch-target compatibility
   assert.match(formSrc, /min-h-\[44px\]/);
@@ -149,8 +150,11 @@ test("single-report controls preserve mobile safe-area paddings and touch target
   assert.match(formSrc, /safe-bottom/);
   assert.match(workspaceSrc, /safe-area-inset-bottom/);
 
-  // Ensure NaLILogoMark is imported and rendered instead of wrong Sparkles icon
-  assert.match(workspaceSrc, /import\s+\{\s*NaLILogoMark\s*\}\s+from\s+"@\/components\/ui\/NaLILogoMark"/);
-  assert.match(workspaceSrc, /<NaLILogoMark\s+size="md"/);
+  // Ensure the shared inline SVG logo is rendered instead of raster assets or an unrelated icon.
+  assert.match(workspaceSrc, /import\s+\{\s*NaLILogo,\s*NaLILogoMark\s*\}\s+from\s+"@\/components\/ui\/NaLILogo"/);
+  assert.match(workspaceSrc, /<NaLILogoMark\s+variant="light"/);
+  assert.doesNotMatch(workspaceSrc, /nali-mark\.jpg|nali-wordmark\.jpg/);
+  assert.match(backgroundSrc, /#060b08/);
+  assert.doesNotMatch(backgroundSrc, /#07090e|rgba\(124,58,237|rgba\(6,182,212/);
   assert.ok(!workspaceSrc.includes('<Sparkles className="h-7 w-7 text-white animate-pulse" />'));
 });
