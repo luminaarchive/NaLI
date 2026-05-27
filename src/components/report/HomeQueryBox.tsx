@@ -11,12 +11,30 @@ import type { StreamChunk } from "@/lib/types/session";
 // Laporan Observasi, Praktikum Biologi, Laporan KKN, Cek Batas Bukti
 
 const shortcutChips = [
-  { label: "🐆 Identifikasi Satwa", fillText: "Kaji identifikasi satwa: " },
-  { label: "🌿 Flora Hutan", fillText: "Kaji flora hutan: " },
-  { label: "☁️ Cuaca Lapangan", fillText: "Kaji kondisi cuaca lapangan: " },
-  { label: "🗺️ Peta Habitat", fillText: "Analisis peta habitat dan koridor satwa: " },
-  { label: "📋 Laporan Biodiversitas", fillText: "Susun laporan biodiversitas: " },
-  { label: "🔬 Survey Biodiversitas", fillText: "Rencana survey biodiversitas: " },
+  {
+    label: "🐆 Identifikasi Satwa",
+    fillText: "Bantu saya mengidentifikasi satwa yang saya temukan di lapangan. Saya akan mendeskripsikan ciri-cirinya.",
+  },
+  {
+    label: "🌿 Flora Hutan",
+    fillText: "Saya menemukan tanaman/flora di lapangan dan butuh informasi ilmiah tentang spesies ini.",
+  },
+  {
+    label: "☁️ Cuaca Lapangan",
+    fillText: "Berikan analisis kondisi cuaca dan dampaknya terhadap aktivitas satwa di lokasi ini:",
+  },
+  {
+    label: "🗺️ Peta Habitat",
+    fillText: "Jelaskan karakteristik habitat dan distribusi geografis untuk spesies atau kawasan ini:",
+  },
+  {
+    label: "📋 Laporan Biodiversitas",
+    fillText: "Bantu saya menyusun laporan biodiversitas berdasarkan temuan lapangan berikut:",
+  },
+  {
+    label: "🔬 Survey Biodiversitas",
+    fillText: "Saya sedang melakukan survey biodiversitas. Bantu saya merancang metodologi dan mencatat temuan untuk:",
+  },
 ] as const;
 
 export function HomeQueryBox() {

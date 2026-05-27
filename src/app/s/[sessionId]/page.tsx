@@ -15,6 +15,16 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MarkdownRenderer } from "@/components/report/MarkdownRenderer";
 import type { StreamChunk } from "@/lib/types/session";
+import { WorkflowSteps } from "@/components/session/WorkflowSteps";
+
+const WORKFLOW_STEPS = [
+  { id: 1, label: "Memvalidasi input observasi", duration: 800 },
+  { id: 2, label: "Mencocokkan dengan database spesies", duration: 1200 },
+  { id: 3, label: "Menerapkan Intelligence Fusion Logic", duration: 1500 },
+  { id: 4, label: "Memeriksa batas bukti", duration: 600 },
+  { id: 5, label: "Menyusun laporan", duration: 1000 },
+];
+
 
 // ─── Types (client-side only) ──────────────────────────────────
 interface SessionMessage {
@@ -497,16 +507,8 @@ export default function SessionPage() {
                 <div className="mt-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-[#14261c] bg-[#1e3525]">
                   <NaLILogoMark variant="light" size={14} />
                 </div>
-                <div className="rounded-2xl rounded-bl-sm border border-[#14261c] bg-[#08100c] px-4 py-3">
-                  <div className="flex h-5 items-center gap-1.5">
-                    {[0, 1, 2].map((i) => (
-                      <div
-                        key={i}
-                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#00FFB3]/60"
-                        style={{ animationDelay: `${i * 150}ms` }}
-                      />
-                    ))}
-                  </div>
+                <div className="rounded-2xl rounded-bl-sm border border-[#14261c] bg-[#08100c] px-4 py-4 max-w-[75%]">
+                  <WorkflowSteps steps={WORKFLOW_STEPS} />
                 </div>
               </div>
             )}

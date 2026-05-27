@@ -2,23 +2,23 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { ArrowRight, Menu } from "lucide-react";
+import { ArrowRight, Menu, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NaLILogo } from "@/components/ui/NaLILogo";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-
-const navigation = [
-  { href: "/create-report", label: "Buat Laporan" },
-  { href: "/pricing", label: "Harga" },
-  { href: "/learn-report", label: "Panduan" },
-  { href: "/#status", label: "Status" },
-] as const;
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 interface PublicAppShellProps {
   children: ReactNode;
   isHomepage?: boolean;
 }
+
 
 export function PublicAppShell({ children, isHomepage = false }: PublicAppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -45,20 +45,93 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
           <NaLILogo size={30} variant={logoVariant} />
 
           <nav aria-label="Navigasi utama" className="hidden items-center gap-6 md:flex">
-            {navigation.map((item) => (
-              <Link
-                className={cn(
-                  "text-sm transition-colors",
-                  isHomepage
-                    ? "text-[#1e3525]/65 hover:text-[#1e3525]"
-                    : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
-                )}
-                href={item.href}
-                key={item.href}
+            <Link
+              className={cn(
+                "text-sm transition-colors font-medium",
+                isHomepage
+                  ? "text-[#1e3525]/65 hover:text-[#1e3525]"
+                  : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
+              )}
+              href="/create-report"
+            >
+              Buat Laporan
+            </Link>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "flex items-center gap-1 text-sm font-medium transition-colors outline-none cursor-pointer",
+                    isHomepage
+                      ? "text-[#1e3525]/65 hover:text-[#1e3525]"
+                      : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
+                  )}
+                >
+                  Fitur
+                  <ChevronDown className="h-3 w-3 stroke-[2.5] opacity-70" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="start"
+                className="mt-1 w-48 rounded-xl border p-1 shadow-lg bg-[#08100c] border-[#14261c] text-[#f5f0e8]"
               >
-                {item.label}
-              </Link>
-            ))}
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/species"
+                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-[#a1b3a8] transition-colors hover:bg-[#14261c] hover:text-[#f5f0e8] focus:bg-[#14261c] focus:text-[#f5f0e8]"
+                  >
+                    <span>🔬</span>
+                    <span>Spesies Intelligence</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/field-report"
+                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-[#a1b3a8] transition-colors hover:bg-[#14261c] hover:text-[#f5f0e8] focus:bg-[#14261c] focus:text-[#f5f0e8]"
+                  >
+                    <span>📋</span>
+                    <span>Field Report Builder</span>
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Link
+              className={cn(
+                "text-sm transition-colors font-medium",
+                isHomepage
+                  ? "text-[#1e3525]/65 hover:text-[#1e3525]"
+                  : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
+              )}
+              href="/pricing"
+            >
+              Harga
+            </Link>
+
+            <Link
+              className={cn(
+                "text-sm transition-colors font-medium",
+                isHomepage
+                  ? "text-[#1e3525]/65 hover:text-[#1e3525]"
+                  : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
+              )}
+              href="/learn-report"
+            >
+              Panduan
+            </Link>
+
+            <Link
+              className={cn(
+                "text-sm transition-colors font-medium",
+                isHomepage
+                  ? "text-[#1e3525]/65 hover:text-[#1e3525]"
+                  : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
+              )}
+              href="/#status"
+            >
+              Status
+            </Link>
           </nav>
 
           <div className="hidden items-center gap-3 md:flex">
@@ -107,21 +180,78 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
                 <SheetDescription className="sr-only">Navigasi halaman publik NaLI</SheetDescription>
               </SheetHeader>
               <nav aria-label="Navigasi seluler" className="flex flex-col gap-1 px-4 pt-3">
-                {navigation.map((item) => (
-                  <Link
-                    className={cn(
-                      "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors",
-                      isHomepage
-                        ? "text-[#1e3525] hover:bg-[#1e3525]/5"
-                        : "text-[#f5f0e8] hover:bg-white/5",
-                    )}
-                    href={item.href}
-                    key={item.href}
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                <Link
+                  className={cn(
+                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors",
+                    isHomepage
+                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
+                      : "text-[#f5f0e8] hover:bg-white/5",
+                  )}
+                  href="/create-report"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Buat Laporan
+                </Link>
+                <Link
+                  className={cn(
+                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors pl-6",
+                    isHomepage
+                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
+                      : "text-[#f5f0e8] hover:bg-white/5",
+                  )}
+                  href="/species"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  🔬 Spesies Intelligence
+                </Link>
+                <Link
+                  className={cn(
+                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors pl-6",
+                    isHomepage
+                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
+                      : "text-[#f5f0e8] hover:bg-white/5",
+                  )}
+                  href="/field-report"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  📋 Field Report Builder
+                </Link>
+                <Link
+                  className={cn(
+                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors",
+                    isHomepage
+                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
+                      : "text-[#f5f0e8] hover:bg-white/5",
+                  )}
+                  href="/pricing"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Harga
+                </Link>
+                <Link
+                  className={cn(
+                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors",
+                    isHomepage
+                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
+                      : "text-[#f5f0e8] hover:bg-white/5",
+                  )}
+                  href="/learn-report"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Panduan
+                </Link>
+                <Link
+                  className={cn(
+                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors",
+                    isHomepage
+                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
+                      : "text-[#f5f0e8] hover:bg-white/5",
+                  )}
+                  href="/#status"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Status
+                </Link>
                 <div className="mt-5 flex flex-col gap-2 border-t border-current/10 pt-5">
                   <Link
                     className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-current/20 text-sm font-medium"
@@ -162,6 +292,8 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
               label="Produk"
               links={[
                 { href: "/create-report", label: "Buat Laporan" },
+                { href: "/species", label: "Spesies" },
+                { href: "/field-report", label: "Field Report" },
                 { href: "/pricing", label: "Harga" },
                 { href: "/learn-report", label: "Panduan" },
               ]}
