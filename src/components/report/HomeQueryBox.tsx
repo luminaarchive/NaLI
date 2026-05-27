@@ -3,10 +3,9 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Plus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import type { StreamChunk } from "@/lib/types/session";
 
 // Required by safety tests:
 // Laporan Observasi, Praktikum Biologi, Laporan KKN, Cek Batas Bukti
@@ -24,6 +23,8 @@ export function HomeQueryBox() {
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [query, setQuery] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   const inferMode = (text: string): "draft_from_materials" | "start_from_zero" => {
     const lower = text.toLowerCase();
@@ -61,18 +62,9 @@ export function HomeQueryBox() {
     return "start_from_zero";
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = query.trim();
-
-    if (!trimmed) {
-      router.push("/create-report");
-      return;
-    }
-
+  /** Fallback: save prefill and go to /create-report (original behavior) */
+  const fallbackToCreateReport = (trimmed: string) => {
     const inferredMode = inferMode(trimmed);
-
-    // Save prefill to local storage for CreateReportForm
     window.localStorage.setItem(
       "nali-create-report-prefill",
       JSON.stringify({
@@ -82,8 +74,90 @@ export function HomeQueryBox() {
         topic: inferredMode === "start_from_zero" ? trimmed : "",
       }),
     );
-
     router.push(`/create-report?q=${encodeURIComponent(trimmed)}&mode=${inferredMode}`);
+  };
+
+  const handleSearchSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = query.trim();
+
+    if (!trimmed) {
+      router.push("/create-report");
+      return;
+    }
+
+    // Try session-based flow first
+    if (isCreating) return;
+    setIsCreating(true);
+    setCreateError(null);
+
+    try {
+      const res = await fetch("/api/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: trimmed }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({})) as { fallback?: boolean; error?: string };
+        // If fallback flag is set (table missing), go to /create-report
+        if (errData.fallback) {
+          fallbackToCreateReport(trimmed);
+          return;
+        }
+        throw new Error(errData.error ?? "Gagal memulai percakapan");
+      }
+
+      // Read SSE stream just long enough to get session_created
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        fallbackToCreateReport(trimmed);
+        return;
+      }
+
+      let redirected = false;
+      while (!redirected) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const text = decoder.decode(value, { stream: true });
+        const lines = text.split("\n");
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          try {
+            const chunk = JSON.parse(line.slice(6)) as StreamChunk;
+            if (chunk.type === "session_created" && chunk.sessionId) {
+              void reader.cancel();
+              router.push(`/s/${chunk.sessionId}`);
+              redirected = true;
+              break;
+            }
+            if (chunk.type === "error") {
+              throw new Error(chunk.error ?? "Terjadi kesalahan");
+            }
+          } catch (parseErr) {
+            if (parseErr instanceof Error && (parseErr.message.includes("Terjadi") || parseErr.message.includes("Gagal"))) {
+              throw parseErr;
+            }
+            // Skip malformed SSE lines
+          }
+        }
+      }
+
+      // If we never got a session_created event, fall back
+      if (!redirected) {
+        fallbackToCreateReport(trimmed);
+      }
+    } catch (err) {
+      // Show inline error, re-enable form
+      setCreateError(
+        err instanceof Error ? err.message : "Gagal memulai percakapan. Coba lagi.",
+      );
+      setIsCreating(false);
+    }
   };
 
   const handleChipClick = (fillText: string) => {
@@ -102,13 +176,14 @@ export function HomeQueryBox() {
             placeholder="Deskripsikan spesies, lokasi, atau temuan lapangan…"
             aria-label="Tulis topik laporanmu"
             rows={3}
+            disabled={isCreating}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 handleSearchSubmit(e);
               }
             }}
-            className="w-full resize-none border-none bg-transparent p-0 text-[15px] font-medium text-[#1e3525] outline-none placeholder:text-[#4a6455]/50 focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[80px]"
+            className="w-full resize-none border-none bg-transparent p-0 text-[15px] font-medium text-[#1e3525] outline-none placeholder:text-[#4a6455]/50 focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[80px] disabled:opacity-60"
           />
           
           <div className="mt-4 flex items-center justify-between border-t border-[#1e3525]/8 pt-3">
@@ -122,13 +197,28 @@ export function HomeQueryBox() {
             <Button
               aria-label="Buat Laporan: Mulai Susun Laporan"
               type="submit"
-              className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl bg-[#1e3525] px-5 py-2 text-xs font-bold text-[#f5f0e8] hover:bg-[#162d1d] transition-all duration-200 border-none outline-none cursor-pointer"
+              disabled={isCreating}
+              className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl bg-[#1e3525] px-5 py-2 text-xs font-bold text-[#f5f0e8] hover:bg-[#162d1d] transition-all duration-200 border-none outline-none cursor-pointer disabled:opacity-60"
             >
-              Mulai Susun Laporan
-              <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
+              {isCreating ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-3 w-3 animate-spin rounded-full border border-[#f5f0e8]/40 border-t-[#f5f0e8]" />
+                  Memproses…
+                </span>
+              ) : (
+                <>
+                  Mulai Susun Laporan
+                  <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
+                </>
+              )}
             </Button>
           </div>
         </div>
+
+        {/* Error message below composer */}
+        {createError && (
+          <p className="mt-2 text-center text-xs text-red-600">{createError}</p>
+        )}
       </form>
 
       {/* Shortcut Chips */}
@@ -137,8 +227,9 @@ export function HomeQueryBox() {
           <button
             key={chip.label}
             type="button"
+            disabled={isCreating}
             onClick={() => handleChipClick(chip.fillText)}
-            className="inline-flex min-h-[36px] cursor-pointer items-center justify-center rounded-full border border-[#1e3525]/20 bg-white/40 px-3.5 text-xs text-[#1e3525]/70 transition-all duration-200 hover:border-[#1e3525]/50 hover:text-[#1e3525]"
+            className="inline-flex min-h-[36px] cursor-pointer items-center justify-center rounded-full border border-[#1e3525]/20 bg-white/40 px-3.5 text-xs text-[#1e3525]/70 transition-all duration-200 hover:border-[#1e3525]/50 hover:text-[#1e3525] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {chip.label}
           </button>
