@@ -54,3 +54,4 @@ nali-playwright-console-*.md
 
 /tests/fixtures/golden-set/**/*.jpg
 /tests/fixtures/golden-set/**/*.mp3
+/scratch
