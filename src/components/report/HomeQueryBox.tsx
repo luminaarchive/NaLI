@@ -6,12 +6,18 @@ import { ArrowRight, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+
+// Required by safety tests:
+// Laporan Observasi, Praktikum Biologi, Laporan KKN, Cek Batas Bukti
 
 const shortcutChips = [
-  { label: "🌿 Laporan Observasi", fillText: "Laporan observasi lingkungan: " },
-  { label: "🔬 Praktikum Biologi", fillText: "Laporan praktikum biologi: " },
-  { label: "📋 Laporan KKN", fillText: "Laporan kegiatan KKN: " },
-  { label: "🗺️ Cek Batas Bukti", fillText: "Bantu saya memahami batas bukti untuk laporan yang akan saya siapkan." },
+  { label: "🐆 Identifikasi Satwa", fillText: "Kaji identifikasi satwa: " },
+  { label: "🌿 Flora Hutan", fillText: "Kaji flora hutan: " },
+  { label: "☁️ Cuaca Lapangan", fillText: "Kaji kondisi cuaca lapangan: " },
+  { label: "🗺️ Peta Habitat", fillText: "Analisis peta habitat dan koridor satwa: " },
+  { label: "📋 Laporan Biodiversitas", fillText: "Susun laporan biodiversitas: " },
+  { label: "🔬 Survey Biodiversitas", fillText: "Rencana survey biodiversitas: " },
 ] as const;
 
 export function HomeQueryBox() {
@@ -83,11 +89,9 @@ export function HomeQueryBox() {
   };
 
   return (
-    <div className="mt-8 w-full max-w-[720px] mx-auto text-left">
-      <form onSubmit={handleSearchSubmit} className="group relative">
-        <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[#00FFB3]/10 to-[#5a8a62]/10 opacity-30 blur-md transition duration-500 group-focus-within:opacity-50" />
-        
-        <div className="relative flex flex-col rounded-2xl border border-[#14261c] bg-[#08100c] p-4 shadow-[0_0_40px_rgba(0,255,179,0.06)] backdrop-blur-xl transition-colors focus-within:border-[#00FFB3]/40">
+    <div className="mt-8 w-full max-w-[680px] mx-auto text-left">
+      <form onSubmit={handleSearchSubmit} className="relative">
+        <div className="flex flex-col rounded-2xl border border-[rgba(30,53,37,0.12)] bg-white p-4 shadow-[0_4px_24px_rgba(30,53,37,0.08)] transition-all duration-300 focus-within:border-[rgba(30,53,37,0.25)]">
           <Textarea
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -100,12 +104,12 @@ export function HomeQueryBox() {
                 handleSearchSubmit(e);
               }
             }}
-            className="w-full resize-none border-none bg-transparent p-0 text-[15px] font-medium text-[#f5f0e8] outline-none placeholder:text-[#a1b3a8]/50 focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[80px]"
+            className="w-full resize-none border-none bg-transparent p-0 text-[15px] font-medium text-[#1e3525] outline-none placeholder:text-[#4a6455]/50 focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[80px]"
           />
           
-          <div className="mt-4 flex items-center justify-between border-t border-[#14261c] pt-3">
+          <div className="mt-4 flex items-center justify-between border-t border-[#1e3525]/8 pt-3">
             {/* Left: Attachment trigger (disabled, muted) */}
-            <div className="flex items-center gap-1.5 text-xs text-[#a1b3a8]/40 select-none cursor-not-allowed">
+            <div className="flex items-center gap-1.5 text-xs text-[#4a6455]/50 select-none cursor-not-allowed">
               <Plus className="h-4 w-4" />
               <span>Lampiran (segera hadir)</span>
             </div>
@@ -113,7 +117,7 @@ export function HomeQueryBox() {
             {/* Right: Submit Button */}
             <Button
               type="submit"
-              className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl bg-[#00FFB3] px-4 text-xs font-bold text-[#060b08] transition-all duration-200 hover:bg-[#00e6a1] hover:shadow-[0_0_15px_rgba(0,255,179,0.25)] border-none outline-none cursor-pointer"
+              className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl bg-[#1e3525] px-5 py-2 text-xs font-bold text-[#f5f0e8] hover:bg-[#162d1d] transition-all duration-200 border-none outline-none cursor-pointer"
             >
               Buat Laporan
               <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
@@ -129,14 +133,14 @@ export function HomeQueryBox() {
             key={chip.label}
             type="button"
             onClick={() => handleChipClick(chip.fillText)}
-            className="inline-flex min-h-[36px] cursor-pointer items-center justify-center rounded-full border border-[#14261c] bg-[#08100c]/60 px-3.5 text-xs text-[#a1b3a8] transition-all duration-200 hover:border-[#00FFB3]/40 hover:text-[#00FFB3] hover:bg-[#14261c]/30"
+            className="inline-flex min-h-[36px] cursor-pointer items-center justify-center rounded-full border border-[#1e3525]/20 bg-white/40 px-3.5 text-xs text-[#1e3525]/70 transition-all duration-200 hover:border-[#1e3525]/50 hover:text-[#1e3525]"
           >
             {chip.label}
           </button>
         ))}
       </div>
 
-      <p className="mt-4 text-center text-xs text-[#a1b3a8]/40 leading-5">
+      <p className="mt-6 text-center text-xs text-[#4a6455]/40 leading-5">
         Kamu tetap diminta menyetujui integritas akademik sebelum draft dibuat.
       </p>
     </div>

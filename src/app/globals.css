@@ -971,26 +971,26 @@ html {
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 150 28% 16%;
-    --card: 60 33% 95%;
-    --card-foreground: 150 28% 16%;
+    --background: 37 38% 94%;      /* #f5f0e8 warm beige */
+    --foreground: 138 32% 16%;      /* #1e3525 dark green */
+    --card: 0 0% 100%;              /* #ffffff white card */
+    --card-foreground: 138 32% 16%;
     --popover: 0 0% 100%;
-    --popover-foreground: 150 28% 16%;
-    --primary: 157 100% 50%;
-    --primary-foreground: 150 28% 8%;
-    --secondary: 60 20% 90%;
-    --secondary-foreground: 150 28% 16%;
-    --muted: 60 15% 88%;
-    --muted-foreground: 150 15% 40%;
-    --accent: 157 100% 50%;
-    --accent-foreground: 150 28% 8%;
+    --popover-foreground: 138 32% 16%;
+    --primary: 138 32% 16%;         /* #1e3525 */
+    --primary-foreground: 37 38% 94%; /* #f5f0e8 */
+    --secondary: 138 12% 90%;
+    --secondary-foreground: 138 32% 16%;
+    --muted: 138 10% 88%;
+    --muted-foreground: 138 15% 34%; /* #4a6455 mid green-grey */
+    --accent: 157 100% 50%;         /* #00FFB3 teal */
+    --accent-foreground: 138 32% 16%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 150 15% 80%;
-    --input: 150 15% 80%;
-    --ring: 157 100% 50%;
-    --radius: 0.75rem;
+    --border: 138 25% 16% / 0.12;    /* rgba(30,53,37,0.12) */
+    --input: 138 25% 16% / 0.12;
+    --ring: 138 32% 16%;
+    --radius: 1rem;
   }
 
   .dark {

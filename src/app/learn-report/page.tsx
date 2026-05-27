@@ -5,6 +5,12 @@ import {
   Compass,
   FileText,
   ShieldCheck,
+  Database,
+  Fingerprint,
+  Archive,
+  Layers3,
+  ClipboardCheck,
+  Route,
 } from "lucide-react";
 import type { Metadata } from "next";
 import { siteMetadata } from "@/lib/seo/siteMetadata";
@@ -39,6 +45,39 @@ const outputs = [
   "draft berbasis bahan",
 ];
 
+const features = [
+  {
+    icon: Database,
+    title: "Intelligence Fusion",
+    description: "Gabungkan temuan lapangan dengan data ilmiah untuk kredibilitas optimal.",
+  },
+  {
+    icon: Fingerprint,
+    title: "Laporan Biodiversitas",
+    description: "Generate laporan terstruktur dari catatan lapanganmu secara instan.",
+  },
+  {
+    icon: Archive,
+    title: "Laporan Tersimpan",
+    description: "Semua laporanmu tersimpan aman secara lokal dan bisa diakses kapan saja.",
+  },
+  {
+    icon: Layers3,
+    title: "Dual Mode",
+    description: "Mode Publik untuk belajar mandiri, Mode Profesional untuk riset mendalam.",
+  },
+  {
+    icon: ClipboardCheck,
+    title: "13 Profil Pengguna",
+    description: "Disesuaikan untuk berbagai peran, dari ranger kehutanan hingga fotografer satwa liar.",
+  },
+  {
+    icon: Route,
+    title: "Pilot Mountains",
+    description: "Mulai dari 5 gunung prioritas konservasi tinggi di Indonesia.",
+  },
+] as const;
+
 export default function LearnReportPage() {
   return (
     <PublicAppShell>
@@ -71,6 +110,35 @@ export default function LearnReportPage() {
                 title="Starting from scratch"
                 text="NaLI creates an observation guide, evidence checklist, source search checklist, and initial outline."
               />
+            </div>
+          </div>
+        </section>
+
+        {/* Fitur Utama Sistem NaLI */}
+        <section className="border-t border-[#14261c] bg-[#030604]/20 px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1000px]">
+            <p className="text-center text-xs font-bold tracking-widest text-[#00FFB3] uppercase">
+              Fitur Utama
+            </p>
+            <h2 className="mt-3 text-center text-2xl font-serif font-bold text-[#f5f0e8] sm:text-3xl">
+              Kemampuan Inteligensi NaLI
+            </h2>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {features.map((feature) => {
+                const Icon = feature.icon;
+                return (
+                  <div
+                    key={feature.title}
+                    className="rounded-2xl border border-[#14261c] bg-[#08100c] p-6 backdrop-blur-sm transition-all duration-300 hover:border-[#00FFB3]/25 hover:bg-[#0b1a12] group"
+                  >
+                    <div className="h-10 w-10 rounded-xl bg-[#14261c]/40 flex items-center justify-center transition-colors duration-300 group-hover:bg-[#00FFB3]/10 mb-4 w-fit">
+                      <Icon className="h-5 w-5 text-[#00FFB3]" />
+                    </div>
+                    <h3 className="font-serif text-lg font-bold text-[#f5f0e8]">{feature.title}</h3>
+                    <p className="mt-2 text-xs leading-6 text-[#a1b3a8]">{feature.description}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>

@@ -78,15 +78,15 @@ export default async function RootLayout({
   const language = await getServerLanguage();
 
   return (
-    <html data-scroll-behavior="smooth" lang={language} className={cn("dark font-sans", geist.variable)}>
+    <html data-scroll-behavior="smooth" lang={language} className={cn("font-sans", geist.variable)}>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <meta name="theme-color" content="#060b08" />
+        <meta name="theme-color" content="#f5f0e8" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
-      <body className={`${lora.variable} ${plusJakartaSans.variable} flex min-h-screen flex-col overflow-x-hidden bg-[#060b08] font-sans antialiased text-[#f5f0e8]`}>
+      <body className={cn(lora.variable, plusJakartaSans.variable, "flex min-h-screen flex-col overflow-x-hidden bg-background text-foreground font-sans antialiased")}>
         <I18nProvider initialLanguage={language}>{children}</I18nProvider>
       </body>
     </html>
