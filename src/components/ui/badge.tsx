@@ -2,7 +2,7 @@ import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
-  tone?: "dark" | "green" | "cyan" | "amber" | "paper" | "glass";
+  tone?: "dark" | "green" | "cyan" | "amber" | "paper" | "glass" | "teal";
 };
 
 const tones = {
@@ -12,6 +12,7 @@ const tones = {
   glass: "border-white/[0.08] bg-white/[0.04] text-white/60 backdrop-blur-sm",
   green: "border-emerald-400/20 bg-emerald-400/10 text-emerald-300",
   paper: "border-white/10 bg-white/5 text-white/50",
+  teal: "border-[#00FFB3]/25 bg-[#00FFB3]/10 text-[#00FFB3]",
 };
 
 export function Badge({ className, tone = "paper", ...props }: BadgeProps) {

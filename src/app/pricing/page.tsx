@@ -16,74 +16,80 @@ export const metadata: Metadata = {
 export default function PricingPage() {
   return (
     <PublicAppShell>
-      <main>
-        <section className="px-4 pt-12 pb-10 sm:px-6 sm:pt-16 sm:pb-12">
+      <main className="flex-1">
+        {/* Header section */}
+        <section className="px-4 pt-16 pb-10 sm:px-6 sm:pt-24 sm:pb-12 lg:px-8">
           <div className="mx-auto max-w-[1040px]">
-            <span className="inline-flex min-h-8 items-center rounded-full border border-[#c9dccb] bg-[#edf5e9] px-3 py-1 text-xs font-semibold text-[#326043]">
+            {/* Top Warning Banner */}
+            <div className="mb-8 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-5 text-sm leading-6 text-amber-200">
+              <p className="font-semibold text-center">
+                NaLI saat ini dalam public alpha non-paid. Pembayaran dan checkout belum aktif di CP1. Paket berbayar akan dibuka setelah alpha selesai.
+              </p>
+            </div>
+
+            <span className="inline-flex min-h-8 items-center rounded-full border border-[#00FFB3]/25 bg-[#00FFB3]/5 px-3.5 py-1 text-xs font-bold tracking-wider text-[#00FFB3] uppercase">
               Paket Laporan CP1
             </span>
-            <h1 className="mt-5 max-w-[680px] text-4xl font-semibold tracking-tight text-[#10231b] sm:text-5xl">
+            <h1 className="mt-6 max-w-[680px] text-4xl font-serif font-bold tracking-tight text-[#f5f0e8] sm:text-5xl">
               Paket Laporan NaLI
             </h1>
-            <p className="mt-4 max-w-[680px] text-base leading-7 text-[#53675e] sm:text-lg">
+            <p className="mt-4 max-w-[680px] text-sm leading-6 text-[#a1b3a8]">
               Siapkan kapasitas untuk laporan cepat atau laporan lengkap. NaLI menggunakan satu unit yang mudah
               dipahami: Laporan.
             </p>
-            <div className="mt-6 max-w-[680px] rounded-2xl border border-[#eadab6] bg-[#fff9eb] p-4">
-              <p className="text-sm leading-6 text-[#725522]">
-                Pembayaran dan checkout belum aktif di CP1. Paket Laporan ditampilkan untuk persiapan pricing, tanpa
-                membuat pembelian atau saldo laporan.
-              </p>
-            </div>
           </div>
         </section>
 
-        <section className="px-4 pb-12 sm:px-6">
+        {/* Pricing Cards Grid */}
+        <section className="px-4 pb-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[1040px]">
             <PricingCards />
           </div>
         </section>
 
-        <section className="border-t border-[#dbe5da] px-4 py-12 sm:px-6">
+        {/* Usage Rules */}
+        <section className="border-t border-[#14261c] px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[760px]">
-            <h2 className="text-center text-xl font-semibold text-[#10231b]">Aturan penggunaan Laporan</h2>
-            <p className="mt-2 text-center text-sm text-[#64786f]">
+            <h2 className="text-center text-2xl font-serif font-bold text-[#f5f0e8] tracking-tight">Aturan penggunaan Laporan</h2>
+            <p className="mt-2 text-center text-xs text-[#a1b3a8]/60">
               Disiapkan sekarang untuk peluncuran mendatang, tetap tidak aktif di CP1.
             </p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
               {[
                 { label: "Buat laporan baru", detail: "Menggunakan 1 laporan setelah berhasil dibuat" },
                 { label: "Buat ulang dari awal", detail: "Menggunakan 1 laporan setelah berhasil dibuat" },
                 { label: "Edit manual hasil", detail: "Tidak menggunakan laporan tambahan" },
                 { label: "Salin hasil yang sama", detail: "Tidak menggunakan laporan tambahan" },
               ].map((item) => (
-                <div key={item.label} className="rounded-2xl border border-[#dbe5da] bg-white px-4 py-4">
+                <div key={item.label} className="rounded-2xl border border-[#14261c] bg-[#08100c]/40 px-5 py-5 transition-all duration-300 hover:border-[#00FFB3]/25">
                   <div>
-                    <p className="text-sm font-semibold text-[#10231b]">{item.label}</p>
-                    <p className="mt-1 text-xs leading-5 text-[#64786f]">{item.detail}</p>
+                    <p className="text-sm font-bold text-[#f5f0e8]">{item.label}</p>
+                    <p className="mt-2 text-xs leading-5 text-[#a1b3a8]/70">{item.detail}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <p className="mt-5 text-center text-xs leading-5 text-[#64786f]">
+            <p className="mt-6 text-center text-xs leading-5 text-[#a1b3a8]/50">
               Kegagalan server atau blok integritas/rate limit tidak memotong laporan.
             </p>
           </div>
         </section>
 
-        <section className="border-t border-[#dbe5da] px-4 py-12 sm:px-6">
-          <div className="mx-auto flex max-w-[1040px] flex-col gap-5 rounded-3xl border border-[#dbe5da] bg-white p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
-            <div>
-              <ShieldCheck className="h-6 w-6 text-[#326043]" aria-hidden="true" />
-              <h2 className="mt-3 text-2xl font-semibold text-[#10231b]">Mulai dengan jalur starter gratis.</h2>
-              <p className="mt-2 max-w-[620px] text-sm leading-6 text-[#64786f]">
+        {/* Call to action */}
+        <section className="border-t border-[#14261c] px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto flex max-w-[1040px] flex-col gap-6 rounded-3xl border border-[#14261c] bg-[#08100c]/60 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8 relative overflow-hidden group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-[#00FFB3]/5 to-transparent opacity-0 transition duration-500 group-hover:opacity-100" />
+            <div className="relative z-10 space-y-2">
+              <ShieldCheck className="h-6 w-6 text-[#00FFB3]" aria-hidden="true" />
+              <h2 className="text-2xl font-serif font-bold text-[#f5f0e8] tracking-tight">Mulai dengan jalur starter gratis.</h2>
+              <p className="max-w-[620px] text-xs leading-5 text-[#a1b3a8]">
                 Draf awal membutuhkan materi pengguna dan selalu menampilkan batas bukti. Tidak ada pembelian yang
                 diproses di CP1.
               </p>
             </div>
             <Link
               href="/create-report"
-              className="inline-flex min-h-[48px] shrink-0 items-center justify-center gap-2 rounded-full bg-[#163929] px-6 text-sm font-semibold text-white transition hover:bg-[#214b38]"
+              className="inline-flex min-h-[48px] shrink-0 items-center justify-center gap-2 rounded-xl bg-[#00FFB3] px-6 text-xs font-bold text-[#060b08] hover:bg-[#00e6a1] hover:shadow-[0_0_15px_rgba(0,255,179,0.25)] transition-all duration-200 relative z-10"
             >
               Buat Laporan
               <ArrowRight className="h-4 w-4" aria-hidden="true" />

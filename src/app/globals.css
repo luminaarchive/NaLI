@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -43,13 +45,15 @@
   --spacing-md: 24px;
   --spacing-gutter: 24px;
 
-  --font-headline-md: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
+  --font-sans: var(--font-plus-jakarta-sans), system-ui, sans-serif;
+  --font-serif: var(--font-lora), Georgia, serif;
+  --font-headline-md: var(--font-serif);
   --font-data-sm: "IBM Plex Mono", "SFMono-Regular", "Cascadia Mono", monospace;
-  --font-label-caps: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
-  --font-display-lg-mobile: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
-  --font-body-md: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
-  --font-display-lg: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
-  --font-body-sm: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
+  --font-label-caps: var(--font-sans);
+  --font-display-lg-mobile: var(--font-serif);
+  --font-body-md: var(--font-sans);
+  --font-display-lg: var(--font-serif);
+  --font-body-sm: var(--font-sans);
   --font-data-lg: "IBM Plex Mono", "SFMono-Regular", "Cascadia Mono", monospace;
 
   --text-headline-md: 24px;
@@ -135,6 +139,7 @@
   --nali-space-16: 64px;
   --nali-space-20: 80px;
   --nali-space-24: 96px;
+
 }
 
 body {
@@ -964,76 +969,52 @@ html {
   }
 }
 
-:root {
-  --background: #07090e;
-  --foreground: #ffffff;
-  --card: #0f1117;
-  --card-foreground: #ffffff;
-  --popover: #0f1117;
-  --popover-foreground: #ffffff;
-  --primary: #10b981;
-  --primary-foreground: #ffffff;
-  --secondary: #1a1d27;
-  --secondary-foreground: #ffffff;
-  --muted: #1a1d27;
-  --muted-foreground: rgba(255, 255, 255, 0.5);
-  --accent: #252833;
-  --accent-foreground: #ffffff;
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: #06b6d4;
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: #0f1117;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #10b981;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1a1d27;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #06b6d4;
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
-
 @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 150 28% 16%;
+    --card: 60 33% 95%;
+    --card-foreground: 150 28% 16%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 28% 16%;
+    --primary: 157 100% 50%;
+    --primary-foreground: 150 28% 8%;
+    --secondary: 60 20% 90%;
+    --secondary-foreground: 150 28% 16%;
+    --muted: 60 15% 88%;
+    --muted-foreground: 150 15% 40%;
+    --accent: 157 100% 50%;
+    --accent-foreground: 150 28% 8%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 150 15% 80%;
+    --input: 150 15% 80%;
+    --ring: 157 100% 50%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 150 35% 4%;       /* #060b08 deep forest */
+    --foreground: 60 33% 95%;       /* #f5f0e8 warm beige */
+    --card: 150 35% 8%;             /* #08100c */
+    --card-foreground: 60 33% 95%;
+    --popover: 150 35% 7%;
+    --popover-foreground: 60 33% 95%;
+    --primary: 157 100% 50%;        /* #00FFB3 neon teal */
+    --primary-foreground: 150 28% 8%;
+    --secondary: 150 28% 14%;       /* #14261c */
+    --secondary-foreground: 60 33% 85%;
+    --muted: 150 28% 12%;
+    --muted-foreground: 150 15% 55%; /* #a1b3a8 */
+    --accent: 157 100% 50%;
+    --accent-foreground: 150 28% 8%;
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 150 28% 14%;          /* #14261c */
+    --input: 150 28% 12%;
+    --ring: 157 100% 50%;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }

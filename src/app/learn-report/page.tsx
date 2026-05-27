@@ -17,10 +17,9 @@ export const metadata: Metadata = {
   },
 };
 import type { LucideIcon } from "lucide-react";
-import { Badge } from "@/components/ui/Badge";
-import { ButtonLink } from "@/components/ui/Button";
-import { SiteFooter } from "@/components/ui/SiteNav";
-import { LearnReportShell } from "@/components/ui/LearnReportShell";
+import { Badge } from "@/components/ui/badge";
+import { ButtonLink } from "@/components/ui/button";
+import { PublicAppShell } from "@/components/ui/PublicAppShell";
 
 const users = ["siswa SMP/SMA", "mahasiswa", "guru/dosen muda", "pekerja lapangan", "NGO/CSR junior", "peneliti junior", "komunitas alam"];
 
@@ -42,19 +41,19 @@ const outputs = [
 
 export default function LearnReportPage() {
   return (
-    <LearnReportShell>
-      <main className="relative z-10">
+    <PublicAppShell>
+      <main className="relative z-10 flex-1">
         {/* Hero */}
         <section className="px-4 pt-28 pb-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[800px] text-center">
-            <Badge tone="green">Public Mode</Badge>
-            <h1 className="mt-5 text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              NaLI Learn & Report
+            <Badge tone="teal" className="px-3.5 py-1 text-xs">Public Mode</Badge>
+            <h1 className="mt-5 text-4xl font-serif font-bold tracking-tight text-[#f5f0e8] sm:text-5xl">
+              NaLI Learn &amp; Report
             </h1>
-            <p className="mx-auto mt-5 max-w-[560px] text-base leading-7 text-white/50 sm:text-lg">
+            <p className="mx-auto mt-5 max-w-[560px] text-sm leading-6 text-[#a1b3a8]">
               Build evidence-based reports from your materials, or get guided when starting from scratch.
             </p>
-            <p className="mx-auto mt-3 max-w-[560px] text-sm leading-6 text-white/40">
+            <p className="mx-auto mt-3 max-w-[560px] text-xs leading-5 text-[#a1b3a8]/60">
               Mulai dari satu topik. NaLI akan memberi label jika bukti masih lemah.
             </p>
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
@@ -77,19 +76,19 @@ export default function LearnReportPage() {
         </section>
 
         {/* Report templates */}
-        <section className="border-t border-white/[0.06] px-4 py-16 sm:px-6 lg:px-8">
+        <section className="border-t border-[#14261c] px-4 py-16 sm:px-6 lg:px-8 bg-[#030604]/20">
           <div className="mx-auto max-w-[800px]">
-            <p className="text-center text-xs font-medium tracking-widest text-white/30 uppercase">
+            <p className="text-center text-xs font-bold tracking-widest text-[#00FFB3] uppercase">
               Report Templates
             </p>
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               {templates.map((t) => (
                 <div
                   key={t}
-                  className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 text-center backdrop-blur-sm"
+                  className="rounded-2xl border border-[#14261c] bg-[#08100c] p-6 text-center backdrop-blur-sm transition-all duration-300 hover:border-[#00FFB3]/35 hover:bg-[#0b1a12] group"
                 >
-                  <FileText className="mx-auto h-5 w-5 text-indigo-400/60" aria-hidden="true" />
-                  <p className="mt-3 text-sm font-semibold text-white/80">{t}</p>
+                  <FileText className="mx-auto h-5 w-5 text-[#00FFB3]/60 transition-transform duration-300 group-hover:scale-105" aria-hidden="true" />
+                  <p className="mt-4 text-xs font-bold text-[#f5f0e8]">{t}</p>
                 </div>
               ))}
             </div>
@@ -97,12 +96,12 @@ export default function LearnReportPage() {
         </section>
 
         {/* Workflow */}
-        <section className="px-4 py-16 sm:px-6 lg:px-8">
+        <section className="border-t border-[#14261c] px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[800px]">
-            <p className="text-center text-xs font-medium tracking-widest text-white/30 uppercase">
+            <p className="text-center text-xs font-bold tracking-widest text-[#00FFB3] uppercase">
               Workflow
             </p>
-            <h2 className="mt-4 text-center text-2xl font-semibold text-white sm:text-3xl">
+            <h2 className="mt-4 text-center text-2xl font-serif font-bold text-[#f5f0e8] sm:text-3xl">
               From notes to structured report
             </h2>
             <div className="mt-10 grid gap-6 md:grid-cols-3">
@@ -111,12 +110,12 @@ export default function LearnReportPage() {
                 ["NaLI structures the evidence", "Evidence summary, uncertainty notes, and structured sections."],
                 ["Review and verify", "Check the draft and mark confidence before using any result."],
               ].map(([title, text], i) => (
-                <div key={title} className="text-center">
-                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-sm font-semibold text-white/60">
+                <div key={title} className="text-center space-y-3">
+                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-[#14261c] bg-[#08100c] text-sm font-bold text-[#00FFB3] shadow-[0_0_15px_rgba(0,255,179,0.05)]">
                     {i + 1}
                   </div>
-                  <h3 className="mt-4 text-sm font-semibold text-white">{title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-white/40">{text}</p>
+                  <h3 className="text-sm font-bold text-[#f5f0e8]">{title}</h3>
+                  <p className="text-xs leading-6 text-[#a1b3a8]">{text}</p>
                 </div>
               ))}
             </div>
@@ -124,29 +123,29 @@ export default function LearnReportPage() {
         </section>
 
         {/* Export Gate */}
-        <section className="px-4 py-12 sm:px-6 lg:px-8">
+        <section className="border-t border-[#14261c] px-4 py-12 sm:px-6 lg:px-8 bg-[#030604]/20">
           <div className="mx-auto flex max-w-[600px] flex-wrap justify-center gap-3">
-            <Badge tone="cyan" className="px-4 py-2 text-sm">
+            <Badge tone="teal" className="px-4 py-2 text-xs">
               PDF/DOCX Public Locked
             </Badge>
-            <Badge tone="amber" className="px-4 py-2 text-sm">
+            <Badge tone="amber" className="px-4 py-2 text-xs">
               Export Gate
             </Badge>
           </div>
         </section>
 
         {/* Who it's for */}
-        <section className="border-t border-white/[0.06] px-4 py-16 sm:px-6 lg:px-8">
+        <section className="border-t border-[#14261c] px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[800px] text-center">
-            <p className="text-xs font-medium tracking-widest text-white/30 uppercase">
+            <p className="text-xs font-bold tracking-widest text-[#00FFB3] uppercase">
               Built for
             </p>
-            <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
+            <h2 className="mt-3 text-2xl font-serif font-bold text-[#f5f0e8] sm:text-3xl">
               Users who need structured, reviewable reports.
             </h2>
             <div className="mt-8 flex flex-wrap justify-center gap-2">
               {users.map((user) => (
-                <Badge className="min-h-9 px-4 text-sm" key={user} tone="glass">
+                <Badge className="min-h-9 px-4 text-xs font-semibold" key={user} tone="glass">
                   {user}
                 </Badge>
               ))}
@@ -155,22 +154,22 @@ export default function LearnReportPage() {
         </section>
 
         {/* Outputs */}
-        <section className="border-t border-white/[0.06] px-4 py-16 sm:px-6 lg:px-8">
+        <section className="border-t border-[#14261c] px-4 py-16 sm:px-6 lg:px-8 bg-[#030604]/20">
           <div className="mx-auto max-w-[1000px]">
-            <p className="text-center text-xs font-medium tracking-widest text-white/30 uppercase">
+            <p className="text-center text-xs font-bold tracking-widest text-[#00FFB3] uppercase">
               Outputs
             </p>
-            <h2 className="mt-3 text-center text-2xl font-semibold text-white sm:text-3xl">
+            <h2 className="mt-3 text-center text-2xl font-serif font-bold text-[#f5f0e8] sm:text-3xl">
               What NaLI can build without exceeding the evidence.
             </h2>
             <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {outputs.map((item) => (
                 <div
-                  className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 backdrop-blur-sm"
+                  className="rounded-2xl border border-[#14261c] bg-[#08100c] p-5 backdrop-blur-sm transition-all duration-300 hover:border-[#00FFB3]/25 hover:bg-[#0b1a12] group"
                   key={item}
                 >
-                  <FileText className="h-5 w-5 text-white/30" aria-hidden="true" />
-                  <p className="mt-3 text-sm font-semibold leading-6 text-white/70">{item}</p>
+                  <FileText className="h-5 w-5 text-[#00FFB3]/60 group-hover:scale-105 transition-transform" aria-hidden="true" />
+                  <p className="mt-4 text-xs font-bold leading-6 text-[#f5f0e8]">{item}</p>
                 </div>
               ))}
             </div>
@@ -178,16 +177,17 @@ export default function LearnReportPage() {
         </section>
 
         {/* Academic Integrity */}
-        <section className="px-4 py-16 sm:px-6 lg:px-8">
+        <section className="border-t border-[#14261c] px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[800px]">
-            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-8 backdrop-blur-xl">
-              <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+            <div className="rounded-2xl border border-[#14261c] bg-[#08100c] p-8 backdrop-blur-xl relative overflow-hidden group shadow-[0_0_24px_rgba(0,255,179,0.02)]">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#00FFB3]/5 to-transparent opacity-0 transition duration-500 group-hover:opacity-100 animate-pulse" />
+              <div className="relative z-10 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
                 <div>
-                  <ShieldCheck className="h-6 w-6 text-indigo-400/60" aria-hidden="true" />
-                  <h2 className="mt-4 text-2xl font-semibold text-white">
+                  <ShieldCheck className="h-6 w-6 text-[#00FFB3]" aria-hidden="true" />
+                  <h2 className="mt-4 text-2xl font-serif font-bold text-[#f5f0e8]">
                     Academic integrity stays upfront.
                   </h2>
-                  <p className="mt-3 text-sm leading-7 text-white/40">
+                  <p className="mt-3 text-xs leading-6 text-[#a1b3a8]">
                     NaLI creates evidence-based drafts. Users remain responsible for final review,
                     verification, and submission.
                   </p>
@@ -196,22 +196,22 @@ export default function LearnReportPage() {
                   {["Not final work", "No fake citations", "No fabricated data", "Human review required"].map(
                     (item) => (
                       <p
-                        className="flex gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-sm font-semibold leading-6 text-white/70"
+                        className="flex gap-2 rounded-xl border border-[#14261c] bg-[#0b1a12] p-4 text-xs font-semibold leading-5 text-[#a1b3a8]"
                         key={item}
                       >
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400/60" aria-hidden="true" />
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#00FFB3]/80" aria-hidden="true" />
                         <span>{item}</span>
                       </p>
                     ),
                   )}
                 </div>
               </div>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <ButtonLink href="/create-report">
+              <div className="relative z-10 mt-8 flex flex-col gap-3 sm:flex-row">
+                <ButtonLink href="/create-report" className="bg-[#00FFB3] text-[#060b08] hover:bg-[#00e6a1] hover:shadow-[0_0_15px_rgba(0,255,179,0.25)] border-none">
                   Build Draft
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </ButtonLink>
-                <ButtonLink href="/create-report?mode=start_from_zero" variant="glass">
+                <ButtonLink href="/create-report?mode=start_from_zero" variant="glass" className="border-[#14261c] bg-[#14261c]/40 text-[#f5f0e8] hover:bg-[#14261c]/60">
                   Start from Scratch
                 </ButtonLink>
               </div>
@@ -219,8 +219,7 @@ export default function LearnReportPage() {
           </div>
         </section>
       </main>
-      <SiteFooter />
-    </LearnReportShell>
+    </PublicAppShell>
   );
 }
 
@@ -238,13 +237,13 @@ function PathCard({
   title: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 text-left backdrop-blur-sm transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.05]">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.04]">
-        <Icon className="h-5 w-5 text-white/60" aria-hidden="true" />
+    <div className="rounded-2xl border border-[#14261c] bg-[#08100c] p-6 text-left backdrop-blur-sm transition-all duration-300 hover:border-[#00FFB3]/35 hover:bg-[#0b1a12] group hover:shadow-[0_0_20px_rgba(0,255,179,0.08)]">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#14261c] bg-[#14261c]/40 transition-colors group-hover:bg-[#00FFB3]/10">
+        <Icon className="h-5 w-5 text-[#00FFB3]" aria-hidden="true" />
       </div>
-      <h2 className="mt-4 text-xl font-semibold text-white">{title}</h2>
-      <p className="mt-3 text-sm leading-7 text-white/40">{text}</p>
-      <ButtonLink className="mt-5" href={href}>
+      <h2 className="mt-5 text-xl font-serif font-bold text-[#f5f0e8]">{title}</h2>
+      <p className="mt-3 text-xs leading-6 text-[#a1b3a8]">{text}</p>
+      <ButtonLink className="mt-6 bg-[#00FFB3] text-[#060b08] hover:bg-[#00e6a1] hover:shadow-[0_0_15px_rgba(0,255,179,0.25)] border-none" href={href}>
         {cta}
         <ArrowRight className="h-4 w-4" aria-hidden="true" />
       </ButtonLink>

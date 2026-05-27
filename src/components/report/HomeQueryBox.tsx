@@ -2,15 +2,22 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Search, FileText, FlaskConical, Leaf, ClipboardCheck } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ArrowRight, Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+
+const shortcutChips = [
+  { label: "🌿 Laporan Observasi", fillText: "Laporan observasi lingkungan: " },
+  { label: "🔬 Praktikum Biologi", fillText: "Laporan praktikum biologi: " },
+  { label: "📋 Laporan KKN", fillText: "Laporan kegiatan KKN: " },
+  { label: "🗺️ Cek Batas Bukti", fillText: "Bantu saya memahami batas bukti untuk laporan yang akan saya siapkan." },
+] as const;
 
 export function HomeQueryBox() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [selectedMode, setSelectedMode] = useState<"draft_from_materials" | "start_from_zero" | null>(null);
 
-  // Inferred mode helper
   const inferMode = (text: string): "draft_from_materials" | "start_from_zero" => {
     const lower = text.toLowerCase();
     const draftTriggers = [
@@ -44,7 +51,6 @@ export function HomeQueryBox() {
       return "start_from_zero";
     }
 
-    if (selectedMode) return selectedMode;
     return "draft_from_materials";
   };
 
@@ -59,7 +65,7 @@ export function HomeQueryBox() {
 
     const inferredMode = inferMode(trimmed);
 
-    // Save prefill to local storage using the correct key expected by CreateReportForm
+    // Save prefill to local storage for CreateReportForm
     window.localStorage.setItem(
       "nali-create-report-prefill",
       JSON.stringify({
@@ -72,94 +78,65 @@ export function HomeQueryBox() {
     router.push(`/create-report?q=${encodeURIComponent(trimmed)}&mode=${inferredMode}`);
   };
 
-  const selectChip = (label: string, mode: "draft_from_materials" | "start_from_zero", textToFill?: string) => {
-    setSelectedMode(mode);
-    if (textToFill) {
-      setQuery(textToFill);
-    }
+  const handleChipClick = (fillText: string) => {
+    setQuery(fillText);
   };
 
   return (
-    <div className="mt-8 w-full max-w-[680px]">
+    <div className="mt-8 w-full max-w-[720px] mx-auto text-left">
       <form onSubmit={handleSearchSubmit} className="group relative">
-        <div className="flex min-h-[72px] flex-col gap-2 rounded-lg border border-[#d9d2c3] bg-white p-2 shadow-[0_12px_32px_rgba(16,35,27,0.06)] transition-colors focus-within:border-[#315f45] sm:flex-row sm:items-center">
-          <div className="flex w-full flex-1 items-center gap-2 px-3">
-            <Search className="h-5 w-5 shrink-0 text-[#6a756e]" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Tulis topik laporanmu..."
-              aria-label="Tulis topik laporanmu"
-              className="w-full border-none bg-transparent py-3 text-[15px] font-medium text-[#10231b] outline-none placeholder:text-[#7b847e]"
-            />
-          </div>
+        <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[#00FFB3]/10 to-[#5a8a62]/10 opacity-30 blur-md transition duration-500 group-focus-within:opacity-50" />
+        
+        <div className="relative flex flex-col rounded-2xl border border-[#14261c] bg-[#08100c] p-4 shadow-[0_0_40px_rgba(0,255,179,0.06)] backdrop-blur-xl transition-colors focus-within:border-[#00FFB3]/40">
+          <Textarea
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Deskripsikan spesies, lokasi, atau temuan lapangan…"
+            aria-label="Tulis topik laporanmu"
+            rows={3}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSearchSubmit(e);
+              }
+            }}
+            className="w-full resize-none border-none bg-transparent p-0 text-[15px] font-medium text-[#f5f0e8] outline-none placeholder:text-[#a1b3a8]/50 focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[80px]"
+          />
+          
+          <div className="mt-4 flex items-center justify-between border-t border-[#14261c] pt-3">
+            {/* Left: Attachment trigger (disabled, muted) */}
+            <div className="flex items-center gap-1.5 text-xs text-[#a1b3a8]/40 select-none cursor-not-allowed">
+              <Plus className="h-4 w-4" />
+              <span>Lampiran (segera hadir)</span>
+            </div>
 
-          <button
-            type="submit"
-            className="inline-flex min-h-[52px] w-full shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md bg-[#315f45] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#274d38] sm:w-auto"
-          >
-            Buat Laporan
-            <ArrowRight className="h-3.5 w-3.5" />
-          </button>
+            {/* Right: Submit Button */}
+            <Button
+              type="submit"
+              className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl bg-[#00FFB3] px-4 text-xs font-bold text-[#060b08] transition-all duration-200 hover:bg-[#00e6a1] hover:shadow-[0_0_15px_rgba(0,255,179,0.25)] border-none outline-none cursor-pointer"
+            >
+              Buat Laporan
+              <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
+            </Button>
+          </div>
         </div>
       </form>
 
-      <p className="mt-3 text-center text-xs text-[#6a756e]">
-        Contoh: observasi kualitas air sungai di sekitar sekolah
-      </p>
-
-      <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs text-[#315f45]">
-        <button
-          type="button"
-          onClick={() => selectChip("Laporan Observasi", "draft_from_materials", "Laporan observasi lingkungan: ")}
-          className={cn(
-            "inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-md border border-[#d9d2c3] bg-white/70 px-3 transition-colors hover:bg-[#eef2e8]",
-            selectedMode === "draft_from_materials" && "border-[#9eb99e] bg-[#eef2e8]",
-          )}
-        >
-          <Leaf className="h-3.5 w-3.5" />
-          Laporan Observasi
-        </button>
-
-        <button
-          type="button"
-          onClick={() => selectChip("Praktikum Biologi", "draft_from_materials", "Laporan praktikum biologi: ")}
-          className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-md border border-[#d9d2c3] bg-white/70 px-3 transition-colors hover:bg-[#eef2e8]"
-        >
-          <FlaskConical className="h-3.5 w-3.5" />
-          Praktikum Biologi
-        </button>
-
-        <button
-          type="button"
-          onClick={() => selectChip("Laporan KKN", "draft_from_materials", "Laporan kegiatan KKN: ")}
-          className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-md border border-[#d9d2c3] bg-white/70 px-3 transition-colors hover:bg-[#eef2e8]"
-        >
-          <FileText className="h-3.5 w-3.5" />
-          Laporan KKN
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            selectChip(
-              "Cek Batas Bukti",
-              "start_from_zero",
-              "Bantu saya memahami batas bukti untuk laporan yang akan saya siapkan.",
-            )
-          }
-          className={cn(
-            "inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-md border border-[#d9d2c3] bg-white/70 px-3 transition-colors hover:bg-[#eef2e8]",
-            selectedMode === "start_from_zero" && "border-[#9eb99e] bg-[#eef2e8]",
-          )}
-        >
-          <ClipboardCheck className="h-3.5 w-3.5" />
-          Cek Batas Bukti
-        </button>
+      {/* Shortcut Chips */}
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+        {shortcutChips.map((chip) => (
+          <button
+            key={chip.label}
+            type="button"
+            onClick={() => handleChipClick(chip.fillText)}
+            className="inline-flex min-h-[36px] cursor-pointer items-center justify-center rounded-full border border-[#14261c] bg-[#08100c]/60 px-3.5 text-xs text-[#a1b3a8] transition-all duration-200 hover:border-[#00FFB3]/40 hover:text-[#00FFB3] hover:bg-[#14261c]/30"
+          >
+            {chip.label}
+          </button>
+        ))}
       </div>
 
-      <p className="mx-auto mt-4 max-w-[500px] text-center text-xs leading-5 text-[#6a756e]">
+      <p className="mt-4 text-center text-xs text-[#a1b3a8]/40 leading-5">
         Kamu tetap diminta menyetujui integritas akademik sebelum draft dibuat.
       </p>
     </div>

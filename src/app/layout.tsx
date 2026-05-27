@@ -3,7 +3,23 @@ import { getServerLanguage } from "@/lib/i18n/server";
 import { I18nProvider } from "@/lib/i18n/provider";
 import { siteMetadata } from "@/lib/seo/siteMetadata";
 import { seoKeywords } from "@/lib/seo/site";
+import { Lora, Plus_Jakarta_Sans, Geist } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+
+const lora = Lora({
+  subsets: ["latin"],
+  variable: "--font-lora",
+  display: "swap",
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteMetadata.canonicalBase),
@@ -62,15 +78,15 @@ export default async function RootLayout({
   const language = await getServerLanguage();
 
   return (
-    <html data-scroll-behavior="smooth" lang={language}>
+    <html data-scroll-behavior="smooth" lang={language} className={cn("dark font-sans", geist.variable)}>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <meta name="theme-color" content="#09090b" />
+        <meta name="theme-color" content="#060b08" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
-      <body className="flex min-h-screen flex-col overflow-x-hidden bg-[#09090b] font-body-md text-body-md text-white antialiased">
+      <body className={`${lora.variable} ${plusJakartaSans.variable} flex min-h-screen flex-col overflow-x-hidden bg-[#060b08] font-sans antialiased text-[#f5f0e8]`}>
         <I18nProvider initialLanguage={language}>{children}</I18nProvider>
       </body>
     </html>

@@ -14,8 +14,8 @@ import {
   RotateCcw,
   ShieldCheck,
 } from "lucide-react";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { DraftReport, ReportResult, StartFromZeroGuide } from "@/lib/reports/reportGenerator";
 import { buildReportMarkdown } from "@/lib/reports/markdown";
 

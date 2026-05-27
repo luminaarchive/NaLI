@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState, useCallback, memo } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -26,8 +27,8 @@ import {
 import { cn } from "@/lib/utils";
 import { FluidVideoBackground } from "@/components/ui/FluidVideoBackground";
 import { NaLILogoMark } from "@/components/ui/NaLILogoMark";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { ReportResult, DraftReport, StartFromZeroGuide } from "@/lib/reports/reportGenerator";
 import { buildReportMarkdown } from "@/lib/reports/markdown";
 import { NaliAlert } from "@/components/ui/NaliAlert";
@@ -904,20 +905,36 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     error?.status === 429 || (error?.retryAfterSeconds !== undefined && error.retryAfterSeconds > 0);
 
   return (
-    <div className="relative flex min-h-screen w-screen overflow-hidden bg-[#07090e] text-white">
+    <div className="relative flex min-h-screen w-screen overflow-hidden bg-[#060b08] text-[#f5f0e8]">
       <FluidVideoBackground />
 
       {/* --- Sidebar --- */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-white/[0.06] bg-[#07090e]/95 backdrop-blur-2xl transition-transform duration-300 md:static md:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-[#14261c] bg-[#08100c]/95 backdrop-blur-2xl transition-transform duration-300 md:static md:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <div className="flex h-14 items-center justify-between border-b border-white/[0.06] px-4">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <span className="text-emerald-400">NaLI</span>
-            <span className="text-xs text-white/30">v1.5.3</span>
+        <div className="flex h-14 items-center justify-between border-b border-[#14261c] px-4">
+          <Link aria-label="NaLI beranda" className="flex items-center gap-2 group min-h-[44px]" href="/">
+            <span className="relative h-7 w-7 overflow-hidden rounded-md border border-[#14261c] bg-[#08100c] flex items-center justify-center transition-all duration-300 group-hover:border-[#00FFB3]/40">
+              <Image
+                alt="NaLI Logo Mark"
+                className="object-cover mix-blend-screen p-0.5 transition-transform duration-300 group-hover:scale-105"
+                fill
+                src="/assets/nali-mark.jpg"
+                unoptimized
+              />
+            </span>
+            <span className="relative h-4 w-12 overflow-hidden flex items-center justify-center">
+              <Image
+                alt="NaLI Logo Wordmark"
+                className="object-contain mix-blend-screen transition-transform duration-300"
+                fill
+                src="/assets/nali-wordmark.jpg"
+                unoptimized
+              />
+            </span>
           </Link>
           <button
             aria-label="Tutup riwayat"
@@ -973,7 +990,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       {/* --- Main Workspace Content --- */}
       <div className="relative flex flex-1 flex-col overflow-hidden">
         {/* Workspace Header */}
-        <header className="z-30 flex h-14 shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#07090e]/60 px-4 backdrop-blur-md">
+        <header className="z-30 flex h-14 shrink-0 items-center justify-between border-b border-[#14261c] bg-[#060b08]/80 px-4 backdrop-blur-md">
           <div className="flex items-center gap-3">
             <button
               aria-label="Buka riwayat"
@@ -1093,7 +1110,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                   <select
                     value={selectedTemplate}
                     onChange={(e) => setSelectedTemplate(e.target.value)}
-                    className="w-full rounded-xl border border-white/[0.08] bg-[#07090e]/60 px-4 py-2.5 text-sm text-white focus:border-white/20 focus:outline-none"
+                    className="w-full rounded-xl border border-[#14261c] bg-[#08100c]/60 px-4 py-2.5 text-sm text-[#f5f0e8] focus:border-[#00FFB3]/30 focus:outline-none"
                   >
                     {templates.map((tpl) => (
                       <option key={tpl} value={tpl} className="bg-[#09090b] text-white">
@@ -1557,7 +1574,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         </main>
 
         {/* Bottom Composer and Control chips */}
-        <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#07090e] via-[#07090e]/95 to-transparent px-4 pt-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:px-8">
+        <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#060b08] via-[#060b08]/95 to-transparent px-4 pt-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:px-8">
           <div className="mx-auto max-w-[760px] space-y-3">
             {/* Quick Action chips (only if messages exist and thread is idle) */}
             {messages.length > 0 &&
@@ -1594,7 +1611,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             >
               <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-indigo-600/10 to-indigo-400/10 opacity-30 blur-md transition duration-500 group-focus-within:opacity-60 group-hover:opacity-50" />
 
-              <div className="relative flex min-h-[48px] items-end gap-2 rounded-2xl border border-white/[0.08] bg-[#07090e]/80 p-2 shadow-2xl backdrop-blur-2xl transition duration-300 focus-within:border-white/[0.15] focus-within:bg-[#07090e] sm:min-h-[56px]">
+              <div className="relative flex min-h-[48px] items-end gap-2 rounded-2xl border border-[#14261c] bg-[#08100c]/80 p-2 shadow-2xl backdrop-blur-2xl transition duration-300 focus-within:border-[#00FFB3]/30 focus-within:bg-[#08100c] sm:min-h-[56px]">
                 <div className="flex-1 px-3 py-1">
                   <textarea
                     ref={composerRef}
@@ -1907,7 +1924,7 @@ function ReportResultCard({
   };
 
   return (
-    <div className="z-10 mt-3 w-full overflow-hidden rounded-2xl border border-white/[0.08] bg-[#07090e]/60 shadow-2xl backdrop-blur-xl">
+    <div className="z-10 mt-3 w-full overflow-hidden rounded-2xl border border-[#14261c] bg-[#08100c]/80 shadow-2xl backdrop-blur-xl">
       <div className="flex items-center justify-between border-b border-white/[0.06] bg-white/[0.02] px-4 py-3">
         <div className="flex flex-col">
           <span className="text-xs text-white/40">{report.report_type}</span>
@@ -2046,7 +2063,7 @@ const LocalHistoryPanel = memo(function LocalHistoryPanel({
   if (snapshots.length === 0) return null;
 
   return (
-    <div className="mb-4 rounded-2xl border border-white/[0.06] bg-[#07090e]/40 p-3 shadow-lg backdrop-blur-md">
+    <div className="mb-4 rounded-2xl border border-[#14261c] bg-[#08100c]/40 p-3 shadow-lg backdrop-blur-md">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
