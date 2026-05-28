@@ -17,7 +17,7 @@ export default function SpeciesPage() {
       <main className="flex-1 px-4 pt-20 pb-16 sm:px-6 lg:px-8 bg-[#060b08]">
         <div className="mx-auto max-w-[1040px] text-center">
           <span className="inline-flex min-h-8 items-center rounded-full border border-[#00FFB3]/25 bg-[#00FFB3]/5 px-3.5 py-1 text-xs font-bold tracking-wider text-[#00FFB3] uppercase">
-            Wide Research
+            Intelligence Fusion
           </span>
           <h1 className="mt-6 text-4xl font-serif font-bold tracking-tight text-[#f5f0e8] sm:text-5xl">
             Inteligensi Spesies

@@ -8,12 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import type { StreamChunk } from "@/lib/types/session";
 
 const QUICK_CHIPS = [
-  { label: "🐅 Satwa Kritis (CR)", query: "Kaji status dan populasi satwa kritis (CR) di Indonesia:" },
-  { label: "🦜 Burung Endemik", query: "Daftar burung endemik Indonesia beserta sebaran dan habitatnya:" },
-  { label: "🐘 Mamalia Besar", query: "Kaji wilayah jelajah dan status konservasi mamalia besar di Indonesia:" },
-  { label: "🐍 Reptil & Amfibi", query: "Analisis habitat dan keanekaragaman reptil dan amfibi di Indonesia:" },
-  { label: "🌺 Flora Langka", query: "Daftar flora langka dilindungi di Indonesia beserta ancaman kelestariannya:" },
-  { label: "🏔️ Spesies Gunung", query: "Identifikasi keanekaragaman spesies di kawasan pegunungan Indonesia:" },
+  { label: "🐅 Satwa Kritis (CR)", query: "Berikan informasi lengkap tentang spesies dengan status Critically Endangered di Indonesia:" },
+  { label: "🦜 Burung Endemik", query: "Informasi spesies burung endemik Indonesia, distribusi, dan status konservasi:" },
+  { label: "🐘 Mamalia Besar", query: "Data populasi dan ancaman terhadap mamalia besar di Indonesia:" },
+  { label: "🐍 Reptil & Amfibi", query: "Informasi ilmiah tentang reptil atau amfibi Indonesia ini:" },
+  { label: "🌺 Flora Langka", query: "Status konservasi dan informasi botani untuk flora langka Indonesia ini:" },
+  { label: "🏔️ Spesies Gunung", query: "Spesies yang ditemukan di pegunungan Jawa/Lombok, khususnya di:" },
 ] as const;
 
 export function SpeciesClient() {

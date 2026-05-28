@@ -292,8 +292,8 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
               label="Produk"
               links={[
                 { href: "/create-report", label: "Buat Laporan" },
-                { href: "/species", label: "Spesies" },
-                { href: "/field-report", label: "Field Report" },
+                { href: "/species", label: "Spesies Intelligence" },
+                { href: "/field-report", label: "Field Report Builder" },
                 { href: "/pricing", label: "Harga" },
                 { href: "/learn-report", label: "Panduan" },
               ]}

@@ -268,7 +268,7 @@ export default function PricingPage() {
         {/* FAQ SECTION */}
         <section className="mx-auto max-w-[760px]">
           <h2 className="text-center font-serif text-2xl font-bold text-[#f5f0e8] tracking-tight mb-8">
-            Pertanyaan yang Sering Diajukan
+            Pertanyaan Umum
           </h2>
           <Accordion type="single" collapsible className="space-y-3">
             <AccordionItem value="faq-1" className="border border-[#14261c] bg-[#08100c]/40 rounded-xl px-4">
@@ -276,7 +276,7 @@ export default function PricingPage() {
                 Kapan paket berbayar dibuka?
               </AccordionTrigger>
               <AccordionContent className="text-xs leading-relaxed text-[#a1b3a8] pb-4">
-                Setelah fase public alpha selesai. Kamu akan diberitahu via email ketika sistem penagihan siap diaktifkan.
+                Setelah fase public alpha selesai. Kamu akan diberitahu terlebih dahulu melalui email sebelum pembayaran diaktifkan.
               </AccordionContent>
             </AccordionItem>
 
@@ -285,16 +285,16 @@ export default function PricingPage() {
                 Apakah data lapangan saya aman?
               </AccordionTrigger>
               <AccordionContent className="text-xs leading-relaxed text-[#a1b3a8] pb-4">
-                Ya. Semua catatan lapangan dan media yang diunggah dilindungi dengan kebijakan Row-Level Security (RLS) di database Supabase kami. Batas bukti dari draf laporan tetap sepenuhnya menjadi hak dan tanggung jawab pengguna.
+                Ya. Semua data tersimpan di Supabase dengan enkripsi. Batas bukti tetap milik pengguna — NaLI tidak mengklaim kepemilikan atas observasi lapangan kamu.
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="faq-3" className="border border-[#14261c] bg-[#08100c]/40 rounded-xl px-4">
               <AccordionTrigger className="text-[#f5f0e8] hover:text-[#00FFB3] py-4">
-                Apa itu Laporan Cepat vs Laporan Lengkap?
+                Apa perbedaan Laporan Cepat dan Laporan Lengkap?
               </AccordionTrigger>
               <AccordionContent className="text-xs leading-relaxed text-[#a1b3a8] pb-4">
-                Laporan Cepat menghasilkan ringkasan struktur biodiversitas singkat secara instan berdasarkan input ringkas. Laporan Lengkap (Deep Mode) memproses analisis multidimensi mendalam dengan sitasi ilmiah terintegrasi dan lembar integritas bukti lapangan.
+                Laporan Cepat menghasilkan ringkasan singkat dalam hitungan detik. Laporan Lengkap melakukan analisis mendalam dengan referensi ilmiah, konteks habitat, dan rekomendasi konservasi.
               </AccordionContent>
             </AccordionItem>
 
@@ -303,7 +303,16 @@ export default function PricingPage() {
                 Apakah ada diskon untuk peneliti dan NGO?
               </AccordionTrigger>
               <AccordionContent className="text-xs leading-relaxed text-[#a1b3a8] pb-4">
-                Kami sedang merancang program dukungan khusus bagi peneliti independen, akademisi, dan NGO konservasi lokal di Indonesia untuk memastikan aksesibilitas teknologi data ini. Hubungi kami untuk info lebih lanjut.
+                Kami sedang merancang program khusus untuk institusi penelitian dan NGO konservasi Indonesia. Hubungi kami untuk informasi lebih lanjut.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="faq-5" className="border border-[#14261c] bg-[#08100c]/40 rounded-xl px-4">
+              <AccordionTrigger className="text-[#f5f0e8] hover:text-[#00FFB3] py-4">
+                Bagaimana cara kerja paket tim Forest Keeper?
+              </AccordionTrigger>
+              <AccordionContent className="text-xs leading-relaxed text-[#a1b3a8] pb-4">
+                Forest Keeper memungkinkan hingga 5 anggota tim berbagi workspace, session history, dan data pilot mountain. Cocok untuk tim ranger, peneliti lapangan, atau NGO kecil.
               </AccordionContent>
             </AccordionItem>
           </Accordion>

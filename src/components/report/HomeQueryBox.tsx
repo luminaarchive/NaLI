@@ -13,11 +13,11 @@ import type { StreamChunk } from "@/lib/types/session";
 const shortcutChips = [
   {
     label: "🐆 Identifikasi Satwa",
-    fillText: "Bantu saya mengidentifikasi satwa yang saya temukan di lapangan. Saya akan mendeskripsikan ciri-cirinya.",
+    fillText: "Bantu saya mengidentifikasi satwa yang saya temukan di lapangan. Berikut ciri-cirinya:",
   },
   {
     label: "🌿 Flora Hutan",
-    fillText: "Saya menemukan tanaman/flora di lapangan dan butuh informasi ilmiah tentang spesies ini.",
+    fillText: "Saya menemukan tanaman di lapangan dan butuh informasi ilmiah tentang spesies ini:",
   },
   {
     label: "☁️ Cuaca Lapangan",
@@ -33,7 +33,7 @@ const shortcutChips = [
   },
   {
     label: "🔬 Survey Biodiversitas",
-    fillText: "Saya sedang melakukan survey biodiversitas. Bantu saya merancang metodologi dan mencatat temuan untuk:",
+    fillText: "Saya sedang melakukan survey biodiversitas. Bantu saya mencatat temuan untuk:",
   },
 ] as const;
 
