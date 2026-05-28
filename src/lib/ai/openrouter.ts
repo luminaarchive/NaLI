@@ -14,8 +14,13 @@ type OpenRouterResponse = {
   };
 };
 
-const DEFAULT_MODEL = "openai/gpt-oss-120b:free";
-const DEFAULT_FALLBACKS = ["z-ai/glm-4.5-air:free", "nvidia/nemotron-3-super:free", "openrouter/free"];
+const DEFAULT_MODEL = "meta-llama/llama-3.3-70b-instruct:free";
+const DEFAULT_FALLBACKS = [
+  "google/gemma-4-31b-it:free",
+  "google/gemma-4-26b-a4b-it:free",
+  "deepseek/deepseek-v4-flash:free",
+  "meta-llama/llama-3.2-3b-instruct:free"
+];
 
 function parseModelList(value: string | undefined) {
   return (value ?? "")
@@ -112,9 +117,28 @@ export async function requestOpenRouterJson({
         continue;
       }
 
-      const payload = (await response.json().catch(() => null)) as OpenRouterResponse | null;
+      let payloadText = "";
+      try {
+        payloadText = await response.text();
+      } catch (textErr) {
+        console.warn("OpenRouter failed to read response text", { model, error: textErr instanceof Error ? textErr.message : "unknown" });
+        continue;
+      }
+
+      let payload: OpenRouterResponse | null = null;
+      try {
+        payload = JSON.parse(payloadText) as OpenRouterResponse;
+      } catch (parseErr) {
+        console.warn("OpenRouter response was not valid JSON", {
+          model,
+          payloadTextPreview: payloadText.slice(0, 500),
+          error: parseErr instanceof Error ? parseErr.message : "unknown"
+        });
+        continue;
+      }
+
       if (!payload) {
-        console.warn("OpenRouter response was not valid JSON", { model });
+        console.warn("OpenRouter response payload is empty", { model });
         continue;
       }
 
