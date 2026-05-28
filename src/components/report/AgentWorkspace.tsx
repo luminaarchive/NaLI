@@ -723,7 +723,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const handleFollowUpSubmit = async (e?: FormEvent, retryQuery?: string) => {
     if (e) e.preventDefault();
     const trimmed = (retryQuery !== undefined ? retryQuery : query).trim();
-    if (!trimmed || activeRunStatus === "running" || !report || !initialReportId) return;
+    const activeReportId = initialReportId || report?.id;
+    if (!trimmed || activeRunStatus === "running" || !report || !activeReportId) return;
 
     const issue = validateComposerInput(trimmed);
     if (!issue.canSubmit) {
@@ -757,7 +758,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          reportId: initialReportId,
+          reportId: activeReportId,
           reportAccessKey: accessKey,
           newQuery: trimmed,
         }),
@@ -800,10 +801,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
       if (payload.messages) {
         setMessages(payload.messages);
-        window.localStorage.setItem(`nali-messages:${initialReportId}`, JSON.stringify(payload.messages));
+        window.localStorage.setItem(`nali-messages:${activeReportId}`, JSON.stringify(payload.messages));
         // Also update recovery snapshot to reflect "chat_updated" status and the latest mainText
         saveGuestReportRecovery({
-          id: initialReportId,
+          id: activeReportId,
           title: report?.title || "Draft Laporan",
           mode: selectedMode,
           mainText: trimmed,
@@ -826,7 +827,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
   // Replace report preview with version from message
   const handleApplyProposedReport = async (proposedReport: ReportResult) => {
-    if (!initialReportId || !accessKey) return;
+    const activeReportId = initialReportId || report?.id;
+    if (!activeReportId || !accessKey) return;
     setError(null);
 
     try {
@@ -834,7 +836,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          reportId: initialReportId,
+          reportId: activeReportId,
           reportAccessKey: accessKey,
           action: "replace_preview",
           newReport: proposedReport,
@@ -852,7 +854,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       }
 
       setReport(proposedReport);
-      window.localStorage.setItem(`nali-report:${initialReportId}`, JSON.stringify(proposedReport));
+      window.localStorage.setItem(`nali-report:${activeReportId}`, JSON.stringify(proposedReport));
       setNotice("Draf preview berhasil diganti dengan versi saran ini.");
       setTimeout(() => setNotice(null), 3500);
     } catch {

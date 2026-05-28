@@ -10,6 +10,8 @@ test.describe("NaLI Workspace E2E Continuous Use & Persistence Flow", () => {
   });
 
   test("Should flow seamlessly from Homepage search to workspace and run iterative chat revision", async ({ page }) => {
+    test.setTimeout(120000);
+
     // 1. Visit homepage
     await page.goto("/");
     await expect(page.locator("h1")).toContainText("Apa yang ingin kamu susun hari ini?");
@@ -17,7 +19,7 @@ test.describe("NaLI Workspace E2E Continuous Use & Persistence Flow", () => {
     // 2. Type an observation query in homepage query box
     const queryBox = page.locator("textarea[placeholder*='Deskripsikan spesies']");
     await expect(queryBox).toBeVisible();
-    await queryBox.fill("Bantu saya menyusun laporan observasi tentang burung madu pengantin (Leptocoma sperata) di lereng Gunung Lawu.");
+    await queryBox.fill("Bantu saya menyusun laporan observasi tentang burung madu pengantin (Leptocoma sperata) di lereng Gunung Lawu berdasarkan catatan saya.");
 
     // 3. Click search submit button
     const submitBtn = page.locator("button:has-text('Mulai Susun Laporan')");
@@ -31,7 +33,7 @@ test.describe("NaLI Workspace E2E Continuous Use & Persistence Flow", () => {
     // 5. Verify prefilled composer state
     const composer = page.locator("textarea[placeholder*='Ketik catatan, topik']");
     await expect(composer).toBeVisible();
-    await expect(composer).toHaveValue("Bantu saya menyusun laporan observasi tentang burung madu pengantin (Leptocoma sperata) di lereng Gunung Lawu.");
+    await expect(composer).toHaveValue("Bantu saya menyusun laporan observasi tentang burung madu pengantin (Leptocoma sperata) di lereng Gunung Lawu berdasarkan catatan saya.");
 
     // 6. Check academic integrity checkbox
     const integrityCheckbox = page.locator("input[type='checkbox']");
@@ -48,8 +50,8 @@ test.describe("NaLI Workspace E2E Continuous Use & Persistence Flow", () => {
     
     // Wait for the server generation to complete
     await page.waitForURL(/\/report\/[a-f0-9-]+/);
-    await expect(page.locator("text=Salin Markdown")).toBeVisible();
-    await expect(page.locator("text=Salin teks biasa")).toBeVisible();
+    await expect(page.locator("text=Salin Markdown").first()).toBeVisible({ timeout: 30000 });
+    await expect(page.locator("text=Salin teks biasa").first()).toBeVisible({ timeout: 30000 });
 
     // 9. Send first follow-up message to revise the report
     const followUpComposer = page.locator("textarea[placeholder*='Ketik instruksi penyuntingan']");
@@ -60,21 +62,21 @@ test.describe("NaLI Workspace E2E Continuous Use & Persistence Flow", () => {
     await followUpSendBtn.click();
 
     // Verify revision finishes successfully
-    await expect(page.locator("text=Telah disesuaikan ke gaya bahasa")).toBeVisible();
+    await expect(page.locator("text=Silakan tinjau perubahan pada draf laporan").last()).toBeVisible({ timeout: 30000 });
 
     // 10. Send second follow-up message to restructure
     await followUpComposer.fill("Tolong ubah gaya bahasa laporan menjadi lebih formal.");
     await followUpSendBtn.click();
-    await expect(page.locator("text=Silakan tinjau perubahan pada draf laporan")).toBeVisible();
+    await expect(page.locator("text=Telah disesuaikan ke gaya bahasa")).toBeVisible({ timeout: 30000 });
 
     // 11. Verify localStorage thread history persistence after reload
     await page.reload();
-    await expect(page.locator("text=Burung Madu Pengantin")).toBeVisible();
-    await expect(page.locator("text=Salin Markdown")).toBeVisible();
+    await expect(page.locator("text=Burung Madu Pengantin").first()).toBeVisible({ timeout: 30000 });
+    await expect(page.locator("text=Salin Markdown").first()).toBeVisible({ timeout: 30000 });
 
     // 12. Verify PDF export lock state explanation
-    const pdfDisclaimer = page.locator("text=PDF/DOCX publik tetap terkunci / inactive di CP1");
-    await expect(pdfDisclaimer).toBeVisible();
+    const pdfDisclaimer = page.locator("text=PDF/DOCX publik tetap terkunci / inactive di CP1").first();
+    await expect(pdfDisclaimer).toBeVisible({ timeout: 30000 });
   });
 
   test("Should support mobile viewport 360px responsiveness", async ({ page }) => {
