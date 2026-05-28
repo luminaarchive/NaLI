@@ -19,7 +19,13 @@ const DEFAULT_FALLBACKS = [
   "google/gemma-4-31b-it:free",
   "google/gemma-4-26b-a4b-it:free",
   "deepseek/deepseek-v4-flash:free",
-  "meta-llama/llama-3.2-3b-instruct:free"
+  "meta-llama/llama-3.2-3b-instruct:free",
+  "meta-llama/llama-3.3-70b-instruct:free",
+  "qwen/qwen3-coder:free",
+  "liquid/lfm-2.5-1.2b-instruct:free",
+  "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
+  "moonshotai/kimi-k2.6:free",
+  "openai/gpt-oss-20b:free"
 ];
 
 function parseModelList(value: string | undefined) {
