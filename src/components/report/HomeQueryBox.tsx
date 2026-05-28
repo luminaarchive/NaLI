@@ -12,28 +12,36 @@ import type { StreamChunk } from "@/lib/types/session";
 
 const shortcutChips = [
   {
-    label: "🐆 Identifikasi Satwa",
-    fillText: "Bantu saya mengidentifikasi satwa yang saya temukan di lapangan. Berikut ciri-cirinya:",
+    label: "📝 Laporan Observasi",
+    fillText: "Bantu saya menyusun Laporan Observasi lingkungan berdasarkan bahan berikut:",
   },
   {
-    label: "🌿 Flora Hutan",
-    fillText: "Saya menemukan tanaman di lapangan dan butuh informasi ilmiah tentang spesies ini:",
+    label: "🔬 Praktikum Biologi",
+    fillText: "Bantu saya menyusun laporan Praktikum Biologi berdasarkan hasil praktikum berikut:",
   },
   {
-    label: "☁️ Cuaca Lapangan",
-    fillText: "Berikan analisis kondisi cuaca dan dampaknya terhadap aktivitas satwa di lokasi ini:",
+    label: "📋 Laporan KKN",
+    fillText: "Bantu saya menyusun Laporan KKN kegiatan mahasiswa berdasarkan catatan berikut:",
   },
   {
-    label: "🗺️ Peta Habitat",
-    fillText: "Jelaskan karakteristik habitat dan distribusi geografis untuk spesies atau kawasan ini:",
+    label: "🔍 Cek Batas Bukti",
+    fillText: "Cek Batas Bukti dan tandai klaim yang belum cukup bukti dari draf berikut:",
   },
   {
-    label: "📋 Laporan Biodiversitas",
-    fillText: "Bantu saya menyusun laporan biodiversitas berdasarkan temuan lapangan berikut:",
+    label: "🌱 Catatan ke Draft",
+    fillText: "Ubah catatan lapangan menjadi draft laporan terstruktur:",
   },
   {
-    label: "🔬 Survey Biodiversitas",
-    fillText: "Saya sedang melakukan survey biodiversitas. Bantu saya mencatat temuan untuk:",
+    label: "📐 Kerangka IMRaD",
+    fillText: "Buat kerangka IMRaD sederhana untuk laporan observasi berikut:",
+  },
+  {
+    label: "📌 Ringkas Temuan",
+    fillText: "Ringkas temuan observasi lapangan ini dengan poin-poin penting:",
+  },
+  {
+    label: "⚠️ Tandai Klaim Lemah",
+    fillText: "Tandai klaim yang belum cukup bukti pada draf laporan ini:",
   },
 ] as const;
 
@@ -208,7 +216,7 @@ export function HomeQueryBox() {
             {/* Left: Attachment trigger (disabled, muted) */}
             <div className="flex items-center gap-1.5 text-xs text-[#4a6455]/50 select-none cursor-not-allowed">
               <Plus className="h-4 w-4" />
-              <span>Lampiran (segera hadir)</span>
+              <span>Tempel bahan/catatan dulu. Upload file penuh akan dibuka setelah pipeline bukti aktif.</span>
             </div>
 
             {/* Right: Submit Button */}

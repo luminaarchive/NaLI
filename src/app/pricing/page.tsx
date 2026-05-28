@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { siteMetadata } from "@/lib/seo/siteMetadata";
+import { PricingCards } from "@/components/report/PricingCards";
+import { PricingInterestCapture } from "@/components/report/PricingInterestCapture";
 
 export const metadata: Metadata = {
   title: siteMetadata.routes.pricing.title,
@@ -41,172 +43,17 @@ export default function PricingPage() {
         </section>
 
         {/* PRICING CARDS */}
-        <section className="mx-auto max-w-[1040px] grid gap-6 md:grid-cols-3 mb-24">
-          {/* FREE: Seeds */}
-          <div className="flex flex-col justify-between rounded-2xl border border-[#14261c] bg-[#08100c] p-6 shadow-lg transition-all duration-300 hover:border-[#00FFB3]/20 relative overflow-hidden">
-            <div>
-              <div className="flex items-start justify-between mb-4">
-                <span className="text-xs font-bold text-[#00FFB3] uppercase tracking-wider">Free</span>
-                <Badge tone="teal" className="text-[10px] uppercase px-2 py-0.5">
-                  Sekarang Aktif
-                </Badge>
-              </div>
-              <h3 className="font-serif text-xl font-bold text-[#f5f0e8] mb-2">Seeds</h3>
-              <p className="text-xs text-[#a1b3a8]/70 leading-relaxed mb-6">
-                Untuk belajar mandiri, mahasiswa, dan observasi lapangan cepat.
-              </p>
-              <div className="flex items-baseline mb-6">
-                <span className="text-3xl font-extrabold text-[#f5f0e8]">Rp0</span>
-                <span className="text-xs text-[#a1b3a8]/60 ml-1">/bulan</span>
-              </div>
-              <p className="text-xs font-bold text-[#00FFB3] mb-4">3 laporan cepat/bulan</p>
-              
-              <ul className="space-y-3.5 text-xs text-[#a1b3a8] border-t border-[#14261c] pt-4">
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#00FFB3] flex-shrink-0" />
-                  <span>Laporan Cepat (Quick Mode)</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#00FFB3] flex-shrink-0" />
-                  <span>Chat session tersimpan</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#00FFB3] flex-shrink-0" />
-                  <span>Akses spesies database</span>
-                </li>
-                <li className="flex items-center gap-2 opacity-40">
-                  <X className="h-4 w-4 text-white/60 flex-shrink-0" />
-                  <span className="line-through">Laporan Lengkap</span>
-                </li>
-                <li className="flex items-center gap-2 opacity-40">
-                  <X className="h-4 w-4 text-white/60 flex-shrink-0" />
-                  <span className="line-through">Export PDF/DOCX</span>
-                </li>
-                <li className="flex items-center gap-2 opacity-40">
-                  <X className="h-4 w-4 text-white/60 flex-shrink-0" />
-                  <span className="line-through">Prioritas antrian</span>
-                </li>
-              </ul>
-            </div>
-            <div className="mt-8 border-t border-[#14261c] pt-4">
-              <Link
-                href="/"
-                className="inline-flex h-10 w-full items-center justify-center rounded-xl bg-[#1e3525] text-xs font-bold text-[#f5f0e8] hover:bg-[#162d1d] transition-all"
-              >
-                Mulai Gratis
-              </Link>
-            </div>
-          </div>
+        <section className="mx-auto max-w-[1040px] mb-24">
+          <PricingCards />
 
-          {/* HIGHLIGHTED: Sapling */}
-          <div className="flex flex-col justify-between rounded-2xl border bg-[#08100c] p-6 shadow-xl relative overflow-hidden ring-1 ring-[#00FFB3]/30">
-            <div className="absolute -inset-0.5 bg-gradient-to-b from-[#00FFB3]/5 to-transparent opacity-100" />
-            <div className="relative z-10">
-              <div className="flex items-start justify-between mb-4">
-                <span className="text-xs font-bold text-[#00FFB3] uppercase tracking-wider">Pro</span>
-                <Badge tone="teal" className="text-[10px] uppercase px-2 py-0.5">
-                  Direkomendasikan
-                </Badge>
-              </div>
-              <h3 className="font-serif text-xl font-bold text-[#f5f0e8] mb-2">Sapling</h3>
-              <p className="text-xs text-[#a1b3a8]/70 leading-relaxed mb-6">
-                Untuk peneliti, ranger, dan pembuat laporan terstruktur penuh.
-              </p>
-              <div className="flex items-baseline mb-6">
-                <span className="text-3xl font-extrabold text-[#f5f0e8]">Rp45.000</span>
-                <span className="text-xs text-[#a1b3a8]/60 ml-1">/bulan</span>
-              </div>
-              <p className="text-xs font-bold text-[#00FFB3] mb-4">Laporan Lengkap unlimited</p>
-              
-              <ul className="space-y-3.5 text-xs text-[#a1b3a8] border-t border-[#14261c] pt-4">
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#00FFB3] flex-shrink-0" />
-                  <span className="font-medium text-[#f5f0e8]">Semua fitur Seeds</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#00FFB3] flex-shrink-0" />
-                  <span>Laporan Lengkap (Deep Mode)</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#00FFB3] flex-shrink-0" />
-                  <span>Export PDF/DOCX</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#00FFB3] flex-shrink-0" />
-                  <span>Prioritas antrian</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#00FFB3] flex-shrink-0" />
-                  <span>Species Intelligence</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#00FFB3] flex-shrink-0" />
-                  <span>Field Report Builder</span>
-                </li>
-              </ul>
-            </div>
-            <div className="mt-8 border-t border-[#14261c] pt-4 relative z-10">
-              <button
-                type="button"
-                disabled
-                className="inline-flex h-10 w-full items-center justify-center rounded-xl bg-[#0b1a12] border border-[#14261c] text-xs font-bold text-[#a1b3a8]/40 cursor-not-allowed"
-              >
-                Belum dapat dibeli
-              </button>
-            </div>
-          </div>
-
-          {/* ORGANIZATIONAL: Forest Keeper */}
-          <div className="flex flex-col justify-between rounded-2xl border border-[#14261c] bg-[#08100c] p-6 shadow-lg transition-all duration-300 hover:border-[#00FFB3]/20 relative overflow-hidden">
-            <div>
-              <div className="flex items-start justify-between mb-4">
-                <span className="text-xs font-bold text-[#00FFB3] uppercase tracking-wider">Enterprise</span>
-                <Badge tone="glass" className="text-[10px] uppercase px-2 py-0.5">
-                  Untuk Tim & NGO
-                </Badge>
-              </div>
-              <h3 className="font-serif text-xl font-bold text-[#f5f0e8] mb-2">Forest Keeper</h3>
-              <p className="text-xs text-[#a1b3a8]/70 leading-relaxed mb-6">
-                Untuk lembaga survei biodiversitas, kelompok konservasi, dan kelompok KKN.
-              </p>
-              <div className="flex items-baseline mb-6">
-                <span className="text-3xl font-extrabold text-[#f5f0e8]">Rp149.000</span>
-                <span className="text-xs text-[#a1b3a8]/60 ml-1">/bulan</span>
-              </div>
-              <p className="text-xs font-bold text-[#00FFB3] mb-4">Unlimited + tim</p>
-              
-              <ul className="space-y-3.5 text-xs text-[#a1b3a8] border-t border-[#14261c] pt-4">
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#00FFB3] flex-shrink-0" />
-                  <span className="font-medium text-[#f5f0e8]">Semua fitur Sapling</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#00FFB3] flex-shrink-0" />
-                  <span>Hingga 5 anggota tim</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#00FFB3] flex-shrink-0" />
-                  <span>Shared session history</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#00FFB3] flex-shrink-0" />
-                  <span>Priority support</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#00FFB3] flex-shrink-0" />
-                  <span>Custom pilot mountain data</span>
-                </li>
-              </ul>
-            </div>
-            <div className="mt-8 border-t border-[#14261c] pt-4">
-              <button
-                type="button"
-                disabled
-                className="inline-flex h-10 w-full items-center justify-center rounded-xl bg-[#0b1a12] border border-[#14261c] text-xs font-bold text-[#a1b3a8]/40 cursor-not-allowed"
-              >
-                Belum dapat dibeli
-              </button>
-            </div>
+          <div className="mt-12 rounded-2xl border border-[#14261c] bg-[#08100c] p-6 text-center max-w-2xl mx-auto">
+            <h3 className="font-serif text-[#f5f0e8] text-lg font-bold mb-2">
+              Beri tahu saya saat paket berbayar diaktifkan
+            </h3>
+            <p className="text-xs text-[#a1b3a8] mb-6">
+              Dapatkan email pemberitahuan resmi saat pembayaran instan via Midtrans siap dirilis ke publik.
+            </p>
+            <PricingInterestCapture />
           </div>
         </section>
 

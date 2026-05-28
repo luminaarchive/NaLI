@@ -7,6 +7,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+import { NaLILogo } from "@/components/ui/NaLILogo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,9 +41,7 @@ export default function LoginPage() {
           {/* Left panel */}
           <div className="border-b border-white/[0.06] bg-white/[0.03] p-6 backdrop-blur-xl sm:p-8 lg:border-r lg:border-b-0">
             <Link className="mb-8 inline-flex items-center gap-3" href="/">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-white/[0.02] text-sm font-bold text-white">
-                N
-              </span>
+              <NaLILogo variant="light" showWordmark={false} href={null} size={40} />
               <span>
                 <span className="block text-base font-semibold text-white">NaLI</span>
                 <span className="text-xs text-white/40">Evidence-based Intelligence</span>

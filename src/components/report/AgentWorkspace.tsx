@@ -92,6 +92,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const [activeRunStatus, setActiveRunStatus] = useState<"idle" | "running" | "completed" | "failed" | "blocked">(
     "idle",
   );
+  const [reportStatus, setReportStatus] = useState<
+    "idle" | "validating" | "planning" | "generating" | "quality checking" | "done" | "error" | "rate limited" | "integrity blocked"
+  >("idle");
 
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -443,15 +446,17 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
   // Run progress simulation for optimistic UI
   const startProgressSimulation = () => {
+    setReportStatus("validating");
     const steps = [
-      { label: "Menganalisis Kueri", status: "in_progress" as const },
-      { label: "Memeriksa Bukti Pengguna", status: "pending" as const },
-      { label: "Menyusun Kerangka Draf", status: "pending" as const },
-      { label: "Menyiapkan Opsi Ekspor", status: "pending" as const },
+      { label: "Menganalisis Kueri & Integritas", status: "in_progress" as const },
+      { label: "Memeriksa Bukti Pengguna (Evidence Ladder)", status: "pending" as const },
+      { label: "Menyusun Kerangka Draf & Struktur Laporan", status: "pending" as const },
+      { label: "Menilai Kualitas Bukti & Rekomendasi", status: "pending" as const },
     ];
     setOptimisticSteps(steps);
 
     setTimeout(() => {
+      setReportStatus("planning");
       setOptimisticSteps((curr) => {
         if (curr.length === 0) return [];
         return [{ ...curr[0], status: "completed" }, { ...curr[1], status: "in_progress" }, curr[2], curr[3]];
@@ -459,6 +464,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     }, 800);
 
     setTimeout(() => {
+      setReportStatus("generating");
       setOptimisticSteps((curr) => {
         if (curr.length === 0) return [];
         return [curr[0], { ...curr[1], status: "completed" }, { ...curr[2], status: "in_progress" }, curr[3]];
@@ -466,6 +472,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     }, 1800);
 
     setTimeout(() => {
+      setReportStatus("quality checking");
       setOptimisticSteps((curr) => {
         if (curr.length === 0) return [];
         return [curr[0], curr[1], { ...curr[2], status: "completed" }, { ...curr[3], status: "in_progress" }];
@@ -554,6 +561,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           clearGuestReportRecovery("composer-autosave");
         }
 
+        const isRateLimit = response.status === 429 || payload.code === "RATE_LIMIT";
+        setReportStatus(isRateLimit ? "rate limited" : isAbuseBlock ? "integrity blocked" : "error");
+
         setError({
           message: payload.error ?? "NaLI gagal membuat draf laporan awal.",
           code: payload.code,
@@ -624,8 +634,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       }).catch(() => {}); // fire-and-forget sync to register thread in metadata
 
       // Replace URL to point to this report
+      setReportStatus("done");
       window.history.pushState(null, "", `/report/${reportId}`);
     } catch {
+      setReportStatus("error");
       setError({
         message: "Koneksi gagal. Periksa jaringan Anda.",
         status: 500,
@@ -683,6 +695,19 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
       const payload = await response.json();
       if (!response.ok) {
+        const isAbuseBlock =
+          response.status === 400 &&
+          [
+            "EMPTY_DRAFT_MATERIAL",
+            "FINAL_ASSIGNMENT_WITHOUT_MATERIAL",
+            "FAKE_CITATION_REQUEST",
+            "FAKE_DATA_REQUEST",
+            "PLAGIARISM_EVASION",
+            "DO_MY_WORK",
+          ].includes(payload.code || "");
+        const isRateLimit = response.status === 429 || payload.code === "RATE_LIMIT";
+        setReportStatus(isRateLimit ? "rate limited" : isAbuseBlock ? "integrity blocked" : "error");
+
         setError({
           message: payload.error ?? "NaLI gagal memproses kueri lanjutan Anda.",
           code: payload.code,
@@ -715,8 +740,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           status: "chat_updated",
           timestamp: Date.now(),
         });
+        setReportStatus("done");
       }
     } catch {
+      setReportStatus("error");
       setError({
         message: "Gagal mengirim kueri. Periksa koneksi internet Anda.",
         status: 500,
@@ -1418,39 +1445,68 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               })
             )}
 
-            {/* Simulated Progressive Task checklist (displayed only when running) */}
-            {activeRunStatus === "running" && optimisticSteps.length > 0 && (
+            {/* Simulated Progressive Task checklist / Agent Plan Panel */}
+            {activeRunStatus === "running" && (
               <div className="space-y-4 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 backdrop-blur-md">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin text-emerald-400" />
-                    <span className="text-sm font-semibold">NaLI sedang memproses draf...</span>
+                    <span className="text-sm font-semibold text-white">Rencana Kerja NaLI (Active Plan)</span>
                   </div>
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-md">
+                    Status: {reportStatus === "rate limited" ? "Laju Dibatasi" : reportStatus === "integrity blocked" ? "Integritas Ditolak" : reportStatus}
+                  </span>
                 </div>
-                <ul className="space-y-2.5 pl-6 text-xs text-white/50">
-                  {optimisticSteps.map((step, idx) => (
-                    <li key={idx} className="flex items-center gap-2">
-                      {step.status === "completed" ? (
-                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
-                      ) : step.status === "in_progress" ? (
-                        <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
-                      ) : (
-                        <span className="mr-1 ml-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white/20" />
-                      )}
-                      <span
-                        className={cn(
-                          step.status === "completed"
-                            ? "text-emerald-400/80"
-                            : step.status === "in_progress"
-                              ? "font-medium text-white"
-                              : "text-white/40",
-                        )}
-                      >
-                        {step.label}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                
+                <div className="relative border-l border-white/[0.08] ml-2 pl-4 space-y-4 text-xs">
+                  {[
+                    { key: "validating", label: "Memvalidasi Input & Integritas Akademik" },
+                    { key: "planning", label: "Memetakan Klaim & Merancang Rencana Kerja" },
+                    { key: "generating", label: "Menyusun Draft Laporan Awal Berbasis Bukti" },
+                    { key: "quality checking", label: "Mengaudit Kekuatan Bukti (Evidence Quality)" }
+                  ].map((step, idx) => {
+                    const stepKeys = ["validating", "planning", "generating", "quality checking"];
+                    const currentIdx = stepKeys.indexOf(reportStatus);
+                    const stepIdx = stepKeys.indexOf(step.key);
+                    
+                    let status: "pending" | "in_progress" | "completed" = "pending";
+                    if (currentIdx > stepIdx) {
+                      status = "completed";
+                    } else if (currentIdx === stepIdx) {
+                      status = "in_progress";
+                    }
+                    
+                    return (
+                      <div key={idx} className="relative flex items-start gap-2.5">
+                        <div className="absolute -left-[21px] top-0.5">
+                          {status === "completed" ? (
+                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 bg-[#060b08] rounded-full" />
+                          ) : status === "in_progress" ? (
+                            <span className="flex h-3.5 w-3.5 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent bg-[#060b08]" />
+                          ) : (
+                            <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#060b08]">
+                              <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="flex flex-col">
+                          <span
+                            className={cn(
+                              status === "completed"
+                                ? "text-emerald-400/80 line-through decoration-emerald-400/20"
+                                : status === "in_progress"
+                                  ? "font-semibold text-white"
+                                  : "text-white/40",
+                            )}
+                          >
+                            {step.label}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
@@ -1555,34 +1611,40 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         {/* Bottom Composer and Control chips */}
         <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#060b08] via-[#060b08]/95 to-transparent px-4 pt-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:px-8">
           <div className="mx-auto max-w-[760px] space-y-3">
-            {/* Quick Action chips (only if messages exist and thread is idle) */}
-            {messages.length > 0 &&
-              activeRunStatus === "idle" &&
-              (() => {
-                const actions =
-                  report?.suggested_actions && report.suggested_actions.length > 0
+            {/* Quick Action / Suggested action chips near composer */}
+            {activeRunStatus === "idle" && (() => {
+              const actions = messages.length > 0 
+                ? (report?.suggested_actions && report.suggested_actions.length > 0
                     ? report.suggested_actions
                     : [
                         { label: "Kesimpulan Formal", prompt: "Tulis kesimpulan lebih formal" },
                         { label: "Perpendek Ringkasan", prompt: "Buat ringkasan draf di atas menjadi lebih pendek" },
                         { label: "Perkuat Temuan", prompt: "Perkuat analisis bagian temuan" },
                         { label: "Tambahkan Rekomendasi", prompt: "Tambahkan poin rekomendasi praktis" },
-                      ];
-                return (
-                  <div className="flex flex-wrap justify-center gap-2 py-1 md:justify-start">
-                    {actions.map((act, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => handleQuickAction(act.prompt)}
-                        className="inline-flex min-h-[44px] cursor-pointer items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-2 text-xs text-white/50 transition duration-200 hover:bg-white/[0.06] hover:text-white"
-                      >
-                        {act.label}
-                      </button>
-                    ))}
-                  </div>
-                );
-              })()}
+                      ])
+                : [
+                    { label: "📍 Tambah lokasi", prompt: "Tolong tambahkan detail lokasi pengamatan di: " },
+                    { label: "🔬 Tambah metode", prompt: "Tolong tambahkan metode penelitian yang digunakan: " },
+                    { label: "📋 Tambah bukti", prompt: "Berikut bukti pengamatan tambahan yang saya temukan: " },
+                    { label: "🔍 Cek kekurangan", prompt: "Cek kekurangan bukti dan ketidakpastian draf ini" },
+                    { label: "📝 Susun draft", prompt: "Bantu saya menyusun draf laporan terstruktur dari bahan ini" },
+                    { label: "📐 Perbaiki struktur", prompt: "Tolong perbaiki struktur laporan sesuai format IMRaD" },
+                  ];
+              return (
+                <div className="flex flex-wrap justify-center gap-2 py-1 md:justify-start">
+                  {actions.map((act, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => handleQuickAction(act.prompt)}
+                      className="inline-flex min-h-[44px] cursor-pointer items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-2 text-xs text-white/70 transition duration-200 hover:bg-white/[0.06] hover:text-white"
+                    >
+                      {act.label}
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
 
             <form
               onSubmit={messages.length === 0 ? handleInitialSubmit : handleFollowUpSubmit}

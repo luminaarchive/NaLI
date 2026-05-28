@@ -8,22 +8,28 @@ import { supabase } from "@/lib/supabase/client";
 import type { UserRole } from "@/types/common";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+import { NaLILogo } from "@/components/ui/NaLILogo";
 
-const roles: Array<{ value: UserRole; title: string; description: string }> = [
+const roles: Array<{ value: string; title: string; description: string }> = [
   {
     value: "ranger",
-    title: "Ranger",
-    description: "Patrol observations, protected species records, and field review workflows.",
+    title: "Ranger / Tim Lapangan",
+    description: "Catatan observasi lapangan, spesies yang ditemui, dan dokumentasi draf laporan.",
   },
   {
     value: "researcher",
-    title: "Researcher",
-    description: "Survey records, ecological review, and scientific observation exports.",
+    title: "Peneliti",
+    description: "Penyusunan kerangka laporan penelitian dan pemetaan bukti ilmiah.",
   },
   {
     value: "student",
-    title: "Student",
-    description: "Guided field learning with scientific names and conservation context.",
+    title: "Mahasiswa",
+    description: "Panduan menyusun laporan praktikum, KKN, dan tugas belajar biologi/lingkungan.",
+  },
+  {
+    value: "umum",
+    title: "Umum",
+    description: "Penyusunan draf laporan untuk masyarakat umum dan pengamat alam.",
   },
 ];
 
@@ -36,7 +42,7 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<UserRole>("student");
+  const [role, setRole] = useState<string>("student");
   const [institution, setInstitution] = useState("");
 
   const handleRegister = async (event: React.FormEvent) => {
@@ -44,13 +50,16 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
 
+    const dbRole = (role === "umum" ? "student" : role) as UserRole;
+
     const { data, error: signupError } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           full_name: fullName,
-          role,
+          role: dbRole,
+          onboarding_role: role,
           institution: institution || null,
         },
       },
@@ -67,7 +76,7 @@ export default function RegisterPage() {
         id: data.user.id,
         email,
         full_name: fullName,
-        role,
+        role: dbRole,
         institution: institution || null,
       });
     }
@@ -83,9 +92,7 @@ export default function RegisterPage() {
           {/* Left panel */}
           <div className="border-b border-white/[0.06] bg-white/[0.03] p-6 backdrop-blur-xl sm:p-8 lg:border-r lg:border-b-0">
             <Link className="mb-8 inline-flex items-center gap-3" href="/">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-white/[0.02] text-sm font-bold text-white">
-                N
-              </span>
+              <NaLILogo variant="light" showWordmark={false} href={null} size={40} />
               <span>
                 <span className="block text-base font-semibold text-white">NaLI</span>
                 <span className="text-xs text-white/40">Evidence-based Intelligence</span>

@@ -26,13 +26,42 @@ export default function HomePage() {
               NaLI Learn &amp; Report
             </p>
             <h1 className="mb-3 font-serif text-[clamp(28px,4.5vw,52px)] font-semibold leading-[1.15] text-[#1e3525]">
-              Apa yang ingin kamu teliti hari ini?
+              Apa yang ingin kamu susun hari ini?
             </h1>
-            <p className="mb-8 max-w-[480px] text-base leading-relaxed text-[#4a6455]">
-              Susun draft belajar berbasis bahanmu untuk satwa liar dan lingkungan Indonesia.
+            <p className="mb-4 max-w-[580px] text-sm sm:text-base leading-relaxed text-[#4a6455] font-medium">
+              Nature &amp; Evidence Intelligence OS untuk menyusun laporan lingkungan, praktikum, dan observasi berbasis bukti secara instan dan jujur.
+            </p>
+            <p className="mb-8 text-xs text-[#4a6455]/70 italic">
+              NaLI membedakan bukti pengguna, inferensi AI, dan bukti yang masih kurang.
             </p>
 
             <HomeQueryBox />
+
+            {/* Agent Preview Card */}
+            <div className="mt-8 w-full max-w-[620px] rounded-2xl border border-[#1e3525]/12 bg-white/50 p-5 text-left shadow-[0_4px_20px_rgba(30,53,37,0.04)] backdrop-blur-sm">
+              <h3 className="mb-3.5 font-serif text-xs font-bold uppercase tracking-wider text-[#1e3525]">
+                Rencana Kerja NaLI (Agentic Work Plan)
+              </h3>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                {[
+                  "Membaca konteks input",
+                  "Mengidentifikasi jenis laporan",
+                  "Memetakan klaim dan bukti",
+                  "Menandai bukti yang kurang",
+                  "Menyusun struktur laporan",
+                  "Membuat draft awal",
+                  "Mengecek batas klaim",
+                  "Menyiapkan hasil"
+                ].map((step, idx) => (
+                  <div key={idx} className="flex items-center gap-2 text-xs text-[#4a6455]">
+                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#1e3525]/10 text-[9px] font-bold text-[#1e3525]">
+                      {idx + 1}
+                    </span>
+                    <span className="font-medium">{step}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
             <aside
               aria-label="Batas bukti"

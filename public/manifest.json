@@ -1,11 +1,11 @@
 {
-  "name": "NaLI - Wildlife Field Intelligence",
+  "name": "NaLI - Nature & Evidence Intelligence OS",
   "short_name": "NaLI",
-  "description": "Wildlife field intelligence for ecological observations and conservation operations",
-  "start_url": "/dashboard",
+  "description": "Nature & Evidence Intelligence OS untuk menyusun laporan lingkungan, praktikum, dan observasi berbasis bukti",
+  "start_url": "/create-report",
   "display": "standalone",
-  "background_color": "#0a1f0e",
-  "theme_color": "#22c55e",
+  "background_color": "#08100c",
+  "theme_color": "#00ffb3",
   "orientation": "portrait",
   "icons": [
     { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }

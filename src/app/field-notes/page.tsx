@@ -42,21 +42,79 @@ export default function FieldNotesPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
   const [form, setForm] = useState({
     title: "", raw_notes: "", location_name: "", mountain: "",
     elevation_m: "", weather_notes: "", habitat_type: "", observed_at: "",
   });
 
   useEffect(() => {
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 4000);
+
     fetch("/api/field-notes")
-      .then(r => r.json())
-      .then(d => setNotes(d.notes ?? []))
+      .then(async (r) => {
+        clearTimeout(timeout);
+        if (!r.ok) {
+          setIsGuest(true);
+          const local = localStorage.getItem("nali-local-notes");
+          setNotes(local ? JSON.parse(local) : []);
+          return;
+        }
+        const d = await r.json();
+        if (d.notes && d.notes.length > 0) {
+          setNotes(d.notes);
+        } else {
+          const local = localStorage.getItem("nali-local-notes");
+          if (local) {
+            setNotes(JSON.parse(local));
+          }
+        }
+      })
+      .catch(() => {
+        clearTimeout(timeout);
+        setIsGuest(true);
+        const local = localStorage.getItem("nali-local-notes");
+        setNotes(local ? JSON.parse(local) : []);
+      })
       .finally(() => setLoading(false));
   }, []);
 
   async function saveNote() {
     if (!form.title.trim() || !form.raw_notes.trim() || saving) return;
     setSaving(true);
+
+    const localSave = () => {
+      const newNote: FieldNote = {
+        id: `local-note-${Date.now()}`,
+        title: form.title.trim(),
+        raw_notes: form.raw_notes.trim(),
+        location_name: form.location_name || null,
+        mountain_context: form.mountain || null,
+        elevation_m: form.elevation_m ? parseInt(form.elevation_m) : null,
+        weather_notes: form.weather_notes || null,
+        habitat_type: form.habitat_type || null,
+        observed_at: form.observed_at || null,
+        created_at: new Date().toISOString(),
+        is_processed: false,
+      };
+
+      const local = localStorage.getItem("nali-local-notes");
+      const current = local ? JSON.parse(local) : [];
+      const updated = [newNote, ...current];
+      localStorage.setItem("nali-local-notes", JSON.stringify(updated));
+      setNotes(updated);
+      setDialogOpen(false);
+      setForm({ title: "", raw_notes: "", location_name: "", mountain: "", elevation_m: "", weather_notes: "", habitat_type: "", observed_at: "" });
+    };
+
+    if (isGuest) {
+      localSave();
+      setSaving(false);
+      return;
+    }
+
     try {
       const res = await fetch("/api/field-notes", {
         method: "POST",
@@ -72,12 +130,24 @@ export default function FieldNotesPage() {
           observed_at: form.observed_at || null,
         }),
       });
+
+      if (res.status === 401) {
+        setIsGuest(true);
+        localSave();
+        return;
+      }
+
       const data = await res.json();
       if (data.note) {
         setNotes(prev => [{ ...data.note, raw_notes: form.raw_notes, is_processed: false } as FieldNote, ...prev]);
         setDialogOpen(false);
         setForm({ title: "", raw_notes: "", location_name: "", mountain: "", elevation_m: "", weather_notes: "", habitat_type: "", observed_at: "" });
+      } else {
+        localSave();
       }
+    } catch {
+      setIsGuest(true);
+      localSave();
     } finally {
       setSaving(false);
     }
@@ -194,13 +264,31 @@ export default function FieldNotesPage() {
             {[1,2,3].map(i => <div key={i} className="bg-[#08100c] border border-[#14261c] rounded-2xl h-28 animate-pulse" />)}
           </div>
         ) : notes.length === 0 ? (
-          <div className="text-center py-20">
+          <div className="text-center py-20 bg-[#08100c]/40 border border-[#14261c] rounded-2xl p-8">
             <FileText className="h-12 w-12 text-[#14261c] mx-auto mb-4" />
-            <p className="text-[#a1b3a8] mb-2">Belum ada catatan lapangan.</p>
-            <p className="text-[#a1b3a8]/50 text-sm">Mulai dokumentasikan observasi lapanganmu.</p>
+            <p className="text-[#f5f0e8] font-serif text-lg mb-2">Belum ada catatan lapangan.</p>
+            <p className="text-[#a1b3a8] text-sm mb-6">Buat catatan pertama atau mulai dari laporan.</p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Button onClick={() => setDialogOpen(true)} className="rounded-xl bg-[#1e3525] text-[#f5f0e8] hover:bg-[#162d1d] cursor-pointer text-xs h-10 px-4">
+                Buat Catatan Lokal
+              </Button>
+              <Button onClick={() => router.push("/create-report")} variant="outline" className="rounded-xl border-[#14261c] text-[#a1b3a8] hover:text-[#f5f0e8] hover:border-[#1e3525] cursor-pointer text-xs h-10 px-4 bg-transparent">
+                Mulai dari Laporan
+              </Button>
+            </div>
+            {isGuest && (
+              <p className="mt-4 text-[10px] text-[#a1b3a8]/50">
+                Catatan disimpan secara lokal di browser perangkat ini (tidak ada sinkronisasi cloud).
+              </p>
+            )}
           </div>
         ) : (
           <div className="flex flex-col gap-3">
+            {isGuest && (
+              <div className="rounded-xl border border-amber-500/10 bg-amber-500/5 px-4 py-2.5 text-xs text-amber-400/80 mb-2">
+                🔒 Mode Tamu: Catatan disimpan secara lokal di browser perangkat ini. Login untuk sinkronisasi cloud.
+              </div>
+            )}
             {notes.map(note => (
               <Card key={note.id} className="bg-[#08100c] border-[#14261c] rounded-2xl">
                 <CardHeader className="pb-2">

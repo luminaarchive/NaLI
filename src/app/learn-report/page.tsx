@@ -60,7 +60,7 @@ export default function LearnReportPage() {
             Cara Kerja NaLI
           </h1>
           <p className="mx-auto mt-4 max-w-[620px] text-sm leading-6 text-[#a1b3a8]">
-            Intelligence Fusion Logic untuk laporan satwa liar yang akurat dan terpercaya. Mulai dari satu topik.
+            Sistem penyusunan laporan berbasis bukti yang transparan, jujur, dan berintegritas. Mulai dari satu topik.
           </p>
         </section>
 
@@ -72,9 +72,9 @@ export default function LearnReportPage() {
               <span className="block font-serif text-6xl font-extrabold text-[#00FFB3]">
                 01
               </span>
-              <h3 className="font-serif text-lg font-bold text-[#f5f0e8]">Input Observasi</h3>
+              <h3 className="font-serif text-lg font-bold text-[#f5f0e8]">Input Catatan & Bahan</h3>
               <p className="text-xs leading-6 text-[#a1b3a8] max-w-[280px] mx-auto">
-                Paste text materials or start with one topic. Deskripsikan spesies yang ditemukan, lokasi, kondisi habitat, dan konteks observasi.
+                Paste text materials or start with one topic. Tempel catatan lapangan, lokasi, spesies, atau bahan mentah Anda.
               </p>
             </div>
 
@@ -83,9 +83,9 @@ export default function LearnReportPage() {
               <span className="block font-serif text-6xl font-extrabold text-[#00FFB3]">
                 02
               </span>
-              <h3 className="font-serif text-lg font-bold text-[#f5f0e8]">Intelligence Fusion</h3>
+              <h3 className="font-serif text-lg font-bold text-[#f5f0e8]">Penyusunan Terstruktur</h3>
               <p className="text-xs leading-6 text-[#a1b3a8] max-w-[280px] mx-auto">
-                Intelligence Fusion Logic menggabungkan input kamu dengan database spesies, literatur ilmiah, dan konteks lokal Indonesia.
+                NaLI menyusun input Anda dengan struktur laporan, peta klaim-bukti, dan batasan inferensi. Integrasi data eksternal akan dibuka bertahap.
               </p>
             </div>
 
@@ -94,11 +94,63 @@ export default function LearnReportPage() {
               <span className="block font-serif text-6xl font-extrabold text-[#00FFB3]">
                 03
               </span>
-              <h3 className="font-serif text-lg font-bold text-[#f5f0e8]">Terima Laporan</h3>
+              <h3 className="font-serif text-lg font-bold text-[#f5f0e8]">Analisis Batas Bukti</h3>
               <p className="text-xs leading-6 text-[#a1b3a8] max-w-[280px] mx-auto">
-                Laporan biodiversitas dengan batas bukti yang jelas. AI inference dibedakan dari observasi lapangan.
+                Terima draf laporan yang memisahkan bukti nyata dari inferensi AI, lengkap dengan ceklis bukti yang masih kurang.
               </p>
             </div>
+          </div>
+        </section>
+
+        {/* EVIDENCE LADDER SECTION */}
+        <section className="mx-auto max-w-[840px] mb-24">
+          <h2 className="text-center font-serif text-2xl font-bold text-[#f5f0e8] tracking-tight mb-8">
+            Tangga Kualitas Bukti (Evidence Quality Ladder)
+          </h2>
+          <p className="text-center text-xs text-[#a1b3a8] mb-12 max-w-[540px] mx-auto leading-relaxed">
+            NaLI memetakan seberapa kuat klaim laporan Anda berdasarkan kelengkapan bukti yang disediakan secara bertahap.
+          </p>
+          <div className="relative border-l border-[#14261c] ml-4 md:ml-8 pl-6 md:pl-10 space-y-12">
+            {[
+              {
+                step: "Level 1: Ide Awal / Start From Zero",
+                desc: "Hanya berupa pertanyaan, topik umum, atau request penulisan. NaLI hanya memberikan panduan awal belajar dan struktur penelitian, belum berupa draf laporan berbasis bukti.",
+                badge: "Hanya Panduan"
+              },
+              {
+                step: "Level 2: Draf Berbasis Konteks",
+                desc: "Pengguna memberikan catatan/bahan mentah minimal. NaLI menyusun draf awal tetapi menandai batasan klaim yang belum didukung bukti kuat.",
+                badge: "Draf Awal"
+              },
+              {
+                step: "Level 3: Draf Dengan Bukti Pengguna",
+                desc: "Bahan yang diinput menyertakan bukti spesifik (nama spesies, lokasi, elevasi). NaLI memetakan bukti tersebut ke dalam bab laporan terkait.",
+                badge: "Bukti Pengguna"
+              },
+              {
+                step: "Level 4: Draf Dengan Bukti Lebih Kuat",
+                desc: "Bukti pengguna diperkuat oleh literatur atau data pendukung lainnya. Status verifikasi ditandai: 'Source verification belum aktif di MVP ini'.",
+                badge: "Bukti Kuat"
+              },
+              {
+                step: "Level 5: Field-Grade / Terverifikasi Ahli",
+                desc: "Laporan draf telah divalidasi secara manual oleh tim lapangan atau ahli ekologi profesional. (Fitur ini belum aktif di fase CP1).",
+                badge: "Coming Soon"
+              }
+            ].map((ladder, idx) => (
+              <div key={idx} className="relative">
+                <span className="absolute -left-[35px] md:-left-[51px] top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-[#08100c] border border-[#14261c] text-[10px] font-bold text-[#00FFB3]">
+                  {idx + 1}
+                </span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                  <h4 className="font-serif text-base font-bold text-[#f5f0e8]">{ladder.step}</h4>
+                  <span className="inline-flex items-center rounded-full bg-[#14261c] px-2.5 py-0.5 text-[10px] font-medium text-[#00FFB3] w-max">
+                    {ladder.badge}
+                  </span>
+                </div>
+                <p className="text-xs leading-relaxed text-[#a1b3a8]">{ladder.desc}</p>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -113,15 +165,15 @@ export default function LearnReportPage() {
             <Alert className="border-[#14261c] bg-[#0b1a12] p-5 text-left mb-6">
               <AlertDescription className="space-y-4 text-xs leading-6 text-[#a1b3a8]">
                 <p>
-                  Dokumen ini adalah draft bantuan belajar/penulisan berbasis bukti. Pengguna wajib memeriksa,
+                  Dokumen ini adalah draf bantuan belajar/penulisan berbasis bukti. Pengguna wajib memeriksa,
                   mengedit, memverifikasi sumber, dan bertanggung jawab penuh atas dokumen akhir. NaLI tidak boleh
                   digunakan untuk memalsukan data, mengarang referensi, melakukan plagiarisme, atau mengklaim karya
                   AI sebagai karya final tanpa revisi.
                 </p>
                 <p>
-                  Panduan ini belum menjadi draft laporan berbasis bukti karena bahan observasi atau sumber belum
+                  Panduan ini belum menjadi draf laporan berbasis bukti karena bahan observasi atau sumber belum
                   tersedia. Pengguna perlu mengumpulkan data, catatan, foto, sumber, atau hasil pengamatan terlebih
-                  dahulu sebelum NaLI dapat menyusun draft laporan.
+                  dahulu sebelum NaLI dapat menyusun draf laporan.
                 </p>
               </AlertDescription>
             </Alert>
@@ -142,27 +194,43 @@ export default function LearnReportPage() {
           </div>
         </section>
 
-        {/* CAPABILITY CARDS */}
-        <section className="mx-auto max-w-[1040px] mb-24">
-          <h2 className="text-center font-serif text-2xl font-bold text-[#f5f0e8] tracking-tight mb-12">
-            Kemampuan Inteligensi NaLI
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {capabilities.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.title}
-                  className="rounded-2xl border border-[#14261c] bg-[#08100c] p-6 backdrop-blur-sm transition-all duration-300 hover:border-[#00FFB3]/25 hover:bg-[#0b1a12] group"
-                >
-                  <div className="h-10 w-10 rounded-xl bg-[#14261c]/40 flex items-center justify-center transition-colors duration-300 group-hover:bg-[#00FFB3]/10 mb-4">
-                    <Icon className="h-5 w-5 text-[#00FFB3]" />
-                  </div>
-                  <h3 className="font-serif text-lg font-bold text-[#f5f0e8]">{item.title}</h3>
-                  <p className="mt-2 text-xs leading-6 text-[#a1b3a8]">{item.desc}</p>
+        {/* WHAT NALI DOES NOT DO SECTION */}
+        <section className="mx-auto max-w-[760px] mb-24">
+          <div className="rounded-2xl border border-red-500/10 bg-red-500/5 p-6 sm:p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <ShieldAlert className="h-6 w-6 text-red-400 flex-shrink-0" />
+              <h2 className="font-serif text-xl font-bold text-red-400">Yang NaLI Tidak Lakukan di CP1</h2>
+            </div>
+            <ul className="space-y-4 text-xs text-[#a1b3a8]">
+              <li className="flex gap-3">
+                <span className="text-red-400 font-bold select-none">&bull;</span>
+                <div>
+                  <strong className="text-[#f5f0e8] block mb-0.5">Tidak melakukan verifikasi lapangan otomatis</strong>
+                  NaLI tidak memverifikasi keberadaan spesies di lapangan secara fisik. Semua klaim berbasis data sepenuhnya bergantung pada kebenaran catatan yang diinput oleh pengguna.
                 </div>
-              );
-            })}
+              </li>
+              <li className="flex gap-3">
+                <span className="text-red-400 font-bold select-none">&bull;</span>
+                <div>
+                  <strong className="text-[#f5f0e8] block mb-0.5">Tidak memfabrikasi atau mengarang bukti</strong>
+                  NaLI dilarang keras mengarang koordinat geografis, statistik satwa, tanggal observasi, atau bukti ilmiah palsu. Jika bukti tidak disediakan, NaLI akan mencatatnya sebagai &ldquo;bukti yang masih kurang&rdquo;.
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-red-400 font-bold select-none">&bull;</span>
+                <div>
+                  <strong className="text-[#f5f0e8] block mb-0.5">Tidak mengklaim validitas literatur secara mutlak</strong>
+                  Sistem verifikasi literatur (Crossref/NCBI) belum diaktifkan secara otomatis. Pengguna wajib memverifikasi secara mandiri setiap sitasi dan DOI yang tercantum dalam draf.
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-red-400 font-bold select-none">&bull;</span>
+                <div>
+                  <strong className="text-[#f5f0e8] block mb-0.5">Bukan alat joki tugas atau plagiarisme</strong>
+                  NaLI tidak dirancang untuk memotong proses akademik atau mengelabui sistem deteksi plagiarisme. Hasil generator adalah draf bantuan belajar/penulisan berbasis bukti yang wajib diperbaiki dan ditelaah secara kritis oleh pengguna.
+                </div>
+              </li>
+            </ul>
           </div>
         </section>
 
@@ -174,10 +242,10 @@ export default function LearnReportPage() {
           </p>
           <div className="flex justify-center">
             <Link
-              href="/"
+              href="/create-report"
               className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#00FFB3] px-6 text-xs font-bold text-[#060b08] hover:bg-[#00e6a1] transition-all"
             >
-              Buat Laporan Pertamamu
+              Mulai Susun Laporan
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </div>
