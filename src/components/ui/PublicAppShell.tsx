@@ -94,6 +94,24 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
                     <span>Field Report Builder</span>
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/projects"
+                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-[#a1b3a8] transition-colors hover:bg-[#14261c] hover:text-[#f5f0e8] focus:bg-[#14261c] focus:text-[#f5f0e8]"
+                  >
+                    <span>📁</span>
+                    <span>Proyek Riset</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/skills"
+                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-[#a1b3a8] transition-colors hover:bg-[#14261c] hover:text-[#f5f0e8] focus:bg-[#14261c] focus:text-[#f5f0e8]"
+                  >
+                    <span>⚡</span>
+                    <span>NaLI Skills</span>
+                  </Link>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -218,6 +236,30 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
                 </Link>
                 <Link
                   className={cn(
+                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors pl-6",
+                    isHomepage
+                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
+                      : "text-[#f5f0e8] hover:bg-white/5",
+                  )}
+                  href="/projects"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  📁 Proyek Riset
+                </Link>
+                <Link
+                  className={cn(
+                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors pl-6",
+                    isHomepage
+                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
+                      : "text-[#f5f0e8] hover:bg-white/5",
+                  )}
+                  href="/skills"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  ⚡ NaLI Skills
+                </Link>
+                <Link
+                  className={cn(
                     "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors",
                     isHomepage
                       ? "text-[#1e3525] hover:bg-[#1e3525]/5"
@@ -294,6 +336,8 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
                 { href: "/create-report", label: "Buat Laporan" },
                 { href: "/species", label: "Spesies Intelligence" },
                 { href: "/field-report", label: "Field Report Builder" },
+                { href: "/projects", label: "Proyek Riset" },
+                { href: "/skills", label: "NaLI Skills" },
                 { href: "/pricing", label: "Harga" },
                 { href: "/learn-report", label: "Panduan" },
               ]}
