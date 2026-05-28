@@ -990,7 +990,7 @@ function ModeButton({
         "min-h-[48px] rounded-xl border p-3 text-left transition-all duration-200 sm:p-4",
         active
           ? "border-white/[0.15] bg-white/[0.08] text-white"
-          : "border-white/[0.06] bg-[#07090e]/60 text-white/50 hover:bg-white/[0.05]",
+          : "border-white/[0.06] bg-[#060b08]/60 text-white/50 hover:bg-white/[0.05]",
       )}
       type="button"
       onClick={onClick}
@@ -1024,7 +1024,7 @@ export const LocalHistoryPanel = memo(function LocalHistoryPanel({
   if (snapshots.length === 0) return null;
 
   return (
-    <div className="mb-4 rounded-2xl border border-white/[0.06] bg-[#07090e]/40 p-3 shadow-lg backdrop-blur-md">
+    <div className="mb-4 rounded-2xl border border-white/[0.06] bg-[#060b08]/40 p-3 shadow-lg backdrop-blur-md">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}

@@ -276,7 +276,7 @@ function FeatureBlock({
 
 export function CodexFeatureShowcase() {
   return (
-    <div className="space-y-[72px] bg-[#07090e] md:space-y-24">
+    <div className="space-y-[72px] bg-[#060b08] md:space-y-24">
       <FeatureBlock
         body="Dari catatan teks, URL sumber, lokasi, dan ringkasan bahan, NaLI mengubah input pengguna menjadi draft berbasis evidensi yang siap direview."
         href="/create-report"

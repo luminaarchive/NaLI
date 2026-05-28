@@ -6,7 +6,7 @@ import { CodexNav } from "./CodexNav";
 
 export function LearnReportShell({ children }: { children: ReactNode }) {
   return (
-    <div className="relative min-h-screen bg-[#07090e] text-white">
+    <div className="relative min-h-screen bg-[#060b08] text-white">
       <CodexMagicBackground />
       <CodexNav />
       {children}

@@ -158,6 +158,27 @@ function SidebarContent({
         )}
       </ScrollArea>
 
+      {/* Quick links at bottom of sidebar */}
+      <div className="px-2 pb-2 border-t border-[#14261c] pt-3 mt-2">
+        <p className="text-[10px] uppercase tracking-widest text-[#a1b3a8]/40 px-2 mb-2">Fitur</p>
+        {[
+          { href: "/", label: "Percakapan Baru", emoji: "+" },
+          { href: "/species", label: "Spesies Intelligence", emoji: "🔬" },
+          { href: "/skills", label: "NaLI Skills", emoji: "⚡" },
+          { href: "/field-notes", label: "Catatan Lapangan", emoji: "📝" },
+          { href: "/projects", label: "Proyek Riset", emoji: "📁" },
+        ].map(link => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-[#a1b3a8]/60 hover:text-[#a1b3a8] hover:bg-[#14261c] transition-colors"
+          >
+            <span>{link.emoji}</span>
+            <span>{link.label}</span>
+          </Link>
+        ))}
+      </div>
+
       <div className="border-t border-[#14261c] px-4 py-3">
         <p className="text-[10px] leading-relaxed text-[#a1b3a8]/40">
           NaLI CP1 · Public alpha non-paid

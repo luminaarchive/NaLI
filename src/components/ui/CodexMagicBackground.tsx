@@ -17,7 +17,7 @@ export function CodexMagicBackground() {
       aria-hidden="true"
     >
       {/* Deep dark base */}
-      <div className="absolute inset-0 bg-[#07090e]" />
+      <div className="absolute inset-0 bg-[#060b08]" />
 
       {/* Magic UI Grid Pattern */}
       <GridPattern
@@ -87,7 +87,7 @@ export function CodexMagicBackground() {
       />
 
       {/* Top-edge fade for nav readability */}
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#07090e]/60 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#060b08]/60 to-transparent" />
     </div>
   );
 }

@@ -34,14 +34,14 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-[#07090e]/80 backdrop-blur-md transition-opacity duration-300"
+        className="absolute inset-0 bg-[#060b08]/80 backdrop-blur-md transition-opacity duration-300"
         onClick={onClose}
       />
 
       {/* Modal Container */}
       <div
         ref={modalRef}
-        className="relative w-full max-w-[1100px] max-h-[90vh] overflow-y-auto rounded-3xl border border-white/[0.08] bg-[#07090e]/95 p-6 shadow-2xl md:p-8 z-10 transition-all duration-300"
+        className="relative w-full max-w-[1100px] max-h-[90vh] overflow-y-auto rounded-3xl border border-white/[0.08] bg-[#060b08]/95 p-6 shadow-2xl md:p-8 z-10 transition-all duration-300"
       >
         {/* Glow Effects */}
         <div className="pointer-events-none absolute -top-40 -left-40 h-[400px] w-[400px] rounded-full bg-emerald-500/10 blur-[100px]" />

@@ -122,6 +122,18 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
                   ? "text-[#1e3525]/65 hover:text-[#1e3525]"
                   : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
               )}
+              href="/field-notes"
+            >
+              Catatan
+            </Link>
+
+            <Link
+              className={cn(
+                "text-sm transition-colors font-medium",
+                isHomepage
+                  ? "text-[#1e3525]/65 hover:text-[#1e3525]"
+                  : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
+              )}
               href="/pricing"
             >
               Harga
@@ -265,6 +277,18 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
                       ? "text-[#1e3525] hover:bg-[#1e3525]/5"
                       : "text-[#f5f0e8] hover:bg-white/5",
                   )}
+                  href="/field-notes"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  📝 Catatan Lapangan
+                </Link>
+                <Link
+                  className={cn(
+                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors",
+                    isHomepage
+                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
+                      : "text-[#f5f0e8] hover:bg-white/5",
+                  )}
                   href="/pricing"
                   onClick={() => setMobileOpen(false)}
                 >
@@ -338,6 +362,7 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
                 { href: "/field-report", label: "Field Report Builder" },
                 { href: "/projects", label: "Proyek Riset" },
                 { href: "/skills", label: "NaLI Skills" },
+                { href: "/field-notes", label: "Catatan Lapangan" },
                 { href: "/pricing", label: "Harga" },
                 { href: "/learn-report", label: "Panduan" },
               ]}

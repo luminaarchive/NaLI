@@ -90,7 +90,7 @@ export default function ProjectsPage() {
                 <Plus className="h-4 w-4" /> Proyek Baru
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-[#08100c] border border-[#14261c] rounded-2xl text-[#f5f0e8] max-w-md">
+            <DialogContent className="bg-[#08100c] border border-[#14261c] rounded-2xl text-[#f5f0e8] w-full max-w-[calc(100vw-32px)] sm:max-w-md">
               <DialogHeader>
                 <DialogTitle className="font-serif text-[#f5f0e8]">Buat Proyek Baru</DialogTitle>
               </DialogHeader>

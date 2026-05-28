@@ -16,7 +16,7 @@ export function HomepageShell({ children }: { children: ReactNode }) {
     const body = document.body;
     const prevBg = body.style.backgroundColor;
     const prevColor = body.style.color;
-    body.style.backgroundColor = "#07090e";
+    body.style.backgroundColor = "#060b08";
     body.style.color = "#ffffff";
     return () => {
       body.style.backgroundColor = prevBg;
@@ -25,7 +25,7 @@ export function HomepageShell({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#07090e] text-white">
+    <div className="relative min-h-screen overflow-x-hidden bg-[#060b08] text-white">
       <FluidVideoBackground />
       <CodexNav />
       {children}
