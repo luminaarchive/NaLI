@@ -32,7 +32,7 @@ test("sitemap includes only allowed static public routes and excludes private/ad
   assert.ok(urls.includes("https://naliai.vercel.app/field-intelligence"));
 
   // Disallowed
-  const disallowed = ["/founder", "/api", "/report", "/observe", "/dashboard", "/verify", "/login"];
+  const disallowed = ["/founder", "/api", "/report", "/observe", "/dashboard", "/verify", "/login", "/register", "/auth", "/logout"];
   for (const entry of entries) {
     assert.ok(!entry.url.includes("verdantai.vercel.app"), "no sitemap entry should reference verdantai");
     for (const prefix of disallowed) {
@@ -59,6 +59,10 @@ test("robots rules allow root and disallow internal/api/founder/private routes",
   assert.ok(disallows.includes("/founder"));
   assert.ok(disallows.includes("/api/"));
   assert.ok(disallows.includes("/report/"));
+  assert.ok(disallows.includes("/login"));
+  assert.ok(disallows.includes("/register"));
+  assert.ok(disallows.includes("/auth/"));
+  assert.ok(disallows.includes("/logout"));
 });
 
 // ─── Test 4: Root & Route Meta Tags Static Match ────────────────────────────

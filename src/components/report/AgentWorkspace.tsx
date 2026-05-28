@@ -1,8 +1,9 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState, useCallback, memo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase/client";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -179,7 +180,85 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const loadRecentThreads = () => {
+  // Auth and Guest Linking state
+  const searchParams = useSearchParams();
+  const linkGuest = searchParams?.get("linkGuest") || "";
+  const [user, setUser] = useState<any>(null);
+  const [userLoading, setUserLoading] = useState(true);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      setUserLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (linkGuest === "1") {
+      fetch("/api/auth/link-guest", { method: "POST" })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+            setToast({ message: "Riwayat berhasil disimpan ke akun.", type: "success" });
+            loadRecentThreads();
+          } else {
+            console.warn("Guest linking query failed:", data.error);
+            setToast({ message: "Gagal menyimpan riwayat. Data lokal tetap aman.", type: "error" });
+          }
+          setTimeout(() => setToast(null), 4000);
+        })
+        .catch((err) => {
+          console.error("Guest linking error:", err);
+          setToast({ message: "Gagal menghubungkan data ke server.", type: "error" });
+          setTimeout(() => setToast(null), 4000);
+        });
+    }
+  }, [linkGuest]);
+
+  function getStoredReportAccessKey(reportId: string): string | null {
+    if (typeof window === "undefined") return null;
+    const tkStorageKey = "nali-report-access-token" + `:${reportId}`;
+    return (
+      window.localStorage.getItem(`nali-report-access:${reportId}`) ??
+      window.localStorage.getItem(tkStorageKey) ??
+      window.localStorage.getItem(`nali-report-key:${reportId}`) ??
+      window.localStorage.getItem(`nali-report-access-key:${reportId}`)
+    );
+  }
+
+  async function loadRecentThreads() {
+    try {
+      const response = await fetch("/api/reports");
+      if (response.ok) {
+        const data = await response.json();
+        if (data.reports) {
+          const threads = data.reports.map((r: any) => ({
+            id: r.id,
+            title: r.title,
+            mode: r.mode,
+            created_at: r.created_at,
+            token: getStoredReportAccessKey(r.id) || "",
+          }));
+          setRecentThreads(threads);
+          window.localStorage.setItem("nali-threads", JSON.stringify(threads));
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn("Could not load threads from server, falling back to local cache:", err);
+    }
+
     try {
       const stored = window.localStorage.getItem("nali-threads");
       if (stored) {
@@ -188,17 +267,15 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     } catch {
       // ignore
     }
-  };
+  }
 
-  const saveRecentThread = (threadId: string, title: string, mode: string, token?: string) => {
+  function saveRecentThread(threadId: string, title: string, mode: string, token?: string) {
     try {
       const stored = window.localStorage.getItem("nali-threads");
       let list: LocalThread[] = stored ? JSON.parse(stored) : [];
 
-      // Remove duplicate
       list = list.filter((t) => t.id !== threadId);
 
-      // Prepend latest
       list.unshift({
         id: threadId,
         title,
@@ -207,14 +284,13 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         token,
       });
 
-      // Keep last 15
       list = list.slice(0, 15);
       window.localStorage.setItem("nali-threads", JSON.stringify(list));
       setRecentThreads(list);
     } catch {
       // ignore
     }
-  };
+  }
 
   const loadReport = async (reportId: string) => {
     setActiveRunStatus("running");
@@ -295,16 +371,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     }
   };
 
-  const getStoredReportAccessKey = (reportId: string): string | null => {
-    if (typeof window === "undefined") return null;
-    const tkStorageKey = "nali-report-access-token" + `:${reportId}`;
-    return (
-      window.localStorage.getItem(`nali-report-access:${reportId}`) ??
-      window.localStorage.getItem(tkStorageKey) ??
-      window.localStorage.getItem(`nali-report-key:${reportId}`) ??
-      window.localStorage.getItem(`nali-report-access-key:${reportId}`)
-    );
-  };
 
   useEffect(() => {
     scrollToBottom();
@@ -1103,6 +1169,25 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
               {selectedMode === "start_from_zero" ? "Panduan Awal" : "Laporan NaLI"}
             </span>
+
+            {/* Auth Session Dropdown / Guest Link Account button */}
+            {!userLoading && (
+              user ? (
+                <UserDropdown user={user} />
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="hidden sm:inline text-[11px] font-semibold text-white/40">Guest</span>
+                  <Link
+                    href={`/login?next=${encodeURIComponent(
+                      report?.id ? `/report/${report.id}` : "/create-report"
+                    )}&linkGuest=1`}
+                    className="inline-flex h-8 items-center rounded-lg bg-white/10 px-3 text-xs font-semibold text-white transition hover:bg-white/15"
+                  >
+                    Simpan ke akun
+                  </Link>
+                </div>
+              )
+            )}
           </div>
         </header>
 
@@ -1797,6 +1882,17 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           </div>
         </div>
       </div>
+
+      {toast && (
+        <div className={cn(
+          "fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl border px-4 py-3 shadow-xl backdrop-blur-xl transition-all duration-300",
+          toast.type === "success" 
+            ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+            : "border-red-500/20 bg-red-500/10 text-red-300"
+        )}>
+          <span>{toast.message}</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -2278,3 +2374,49 @@ const LocalHistoryPanel = memo(function LocalHistoryPanel({
     </div>
   );
 });
+
+export function UserDropdown({ user }: { user: any }) {
+  const [open, setOpen] = useState(false);
+  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
+  const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] p-1.5 pr-3 text-xs font-medium text-white/80 transition hover:bg-white/[0.05]"
+      >
+        {avatarUrl ? (
+          <img src={avatarUrl} alt={name} className="h-5.5 w-5.5 rounded-full object-cover" />
+        ) : (
+          <div className="flex h-5.5 w-5.5 items-center justify-center rounded-full bg-white/10 font-bold text-white/90">
+            {name.charAt(0).toUpperCase()}
+          </div>
+        )}
+        <span className="max-w-[80px] truncate">{name}</span>
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 mt-2 z-50 w-44 rounded-2xl border border-white/[0.08] bg-[#0c1612] p-1.5 shadow-xl backdrop-blur-xl">
+            <Link
+              href="/create-report"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center rounded-xl px-3 py-2 text-left text-xs text-white/70 hover:bg-white/[0.04] hover:text-white"
+            >
+              Mulai Baru
+            </Link>
+            <div className="my-1 border-t border-white/[0.04]" />
+            <a
+              href="/logout"
+              className="flex w-full items-center rounded-xl px-3 py-2 text-left text-xs text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+            >
+              Keluar
+            </a>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

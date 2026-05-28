@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { randomBytes } from "crypto";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requestOpenRouterJson } from "@/lib/ai/openrouter";
 import { guardReportOutput } from "@/lib/integrity/outputGuard";
 import { evaluateIntegrityPolicy } from "@/lib/integrity/policy";
@@ -113,9 +116,32 @@ export async function POST(req: NextRequest) {
   }
 
   const input = getInputObject(body);
+
+  // Resolve cookie-based guest session & authenticated user session
+  const cookieStore = await cookies();
+  let guestSessionId = cookieStore.get("nali_guest_session")?.value;
+
+  if (!guestSessionId) {
+    if (typeof input.guestSessionId === "string" && input.guestSessionId.trim().length >= 16) {
+      guestSessionId = input.guestSessionId.trim();
+    } else {
+      guestSessionId = `guest-${Date.now().toString(36)}-${randomBytes(16).toString("hex")}`;
+    }
+    cookieStore.set("nali_guest_session", guestSessionId, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 365,
+    });
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const userId = user?.id;
+
   const rateLimit = await checkRateLimit({
     actionType: "generate_report",
-    guestSessionId: input.guestSessionId,
+    guestSessionId: guestSessionId,
     request: req,
   });
   const headers = rateLimitHeaders(rateLimit);
@@ -270,7 +296,8 @@ export async function POST(req: NextRequest) {
 
     const report = guarded.report;
     const persistence = await persistGeneratedReport({
-      guestSessionId: input.guestSessionId,
+      guestSessionId,
+      userId,
       input: validated.data,
       report,
     });
@@ -296,7 +323,7 @@ export async function POST(req: NextRequest) {
     });
     void logUsageEvent({
       actionType: validated.data.mode === "start_from_zero" ? "start_from_zero_guidance" : "report_preview",
-      guestSessionId: input.guestSessionId,
+      guestSessionId,
       inputSize: getInputSize(validated.data),
       metadata: {
         persistence: persistence.persisted ? "supabase" : persistence.reason,
@@ -334,7 +361,8 @@ export async function POST(req: NextRequest) {
 
   const report = guarded.report;
   const persistence = await persistGeneratedReport({
-    guestSessionId: input.guestSessionId,
+    guestSessionId,
+    userId,
     input: validated.data,
     report,
   });
@@ -360,7 +388,7 @@ export async function POST(req: NextRequest) {
   });
   void logUsageEvent({
     actionType: validated.data.mode === "start_from_zero" ? "start_from_zero_guidance" : "report_preview",
-    guestSessionId: input.guestSessionId,
+    guestSessionId,
     inputSize: getInputSize(validated.data),
     metadata: {
       persistence: persistence.persisted ? "supabase" : persistence.reason,

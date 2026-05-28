@@ -48,11 +48,14 @@ export async function proxy(request: NextRequest) {
   const isAuthPath = pathname.startsWith("/login") || pathname.startsWith("/register");
 
   if (isProtectedPath && !user) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const nextUrl = pathname + request.nextUrl.search;
+    return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(nextUrl)}`, request.url));
   }
 
   if (isAuthPath && user) {
-    return NextResponse.redirect(new URL("/archive", request.url));
+    const next = request.nextUrl.searchParams.get("next") || "/archive";
+    const isSafe = next.startsWith("/") && !next.startsWith("//");
+    return NextResponse.redirect(new URL(isSafe ? next : "/archive", request.url));
   }
 
   return supabaseResponse;

@@ -78,10 +78,12 @@ export function estimatePreviewEnergy(report: ReportResult) {
 
 export async function persistGeneratedReport({
   guestSessionId,
+  userId,
   input,
   report,
 }: {
   guestSessionId: unknown;
+  userId?: string;
   input: ReportRequest;
   report: ReportResult;
 }): Promise<PersistReportResult> {
@@ -103,6 +105,7 @@ export async function persistGeneratedReport({
       source_verification: "inactive_mvp",
       sprint: "zero",
       step: "preview_generated",
+      user_id: userId || undefined,
     },
     status: getReportMacroStatus(report),
   });
@@ -120,6 +123,7 @@ export async function persistGeneratedReport({
   const { error } = await withTimeout(
     supabase.from("reports").insert({
       guest_session_id_hash: guestSessionIdHash,
+      user_id: userId || null,
       id: report.id,
       input,
       mode: report.mode,
@@ -225,25 +229,39 @@ export async function recordEnergyLedgerEntry({
 export async function getPersistedReport({
   reportAccessToken,
   reportId,
+  userId,
 }: {
-  reportAccessToken: unknown;
+  reportAccessToken?: unknown;
   reportId: string;
+  userId?: string;
 }) {
-  if (typeof reportAccessToken !== "string" || !reportAccessToken.trim()) {
-    return { found: false as const, reason: "missing_token" as const };
-  }
-
   const getMockData = () => {
     const cached = mockDb.get(reportId);
-    if (cached && cached.accessTokenHash === getReportAccessTokenHash(reportAccessToken)) {
-      return {
-        found: true as const,
-        report: cached.report,
-        status: cached.status as any,
-        processing_metadata: cached.processing_metadata,
-        input: cached.input,
-        guest_session_id_hash: cached.guestSessionIdHash,
-      };
+    if (cached) {
+      const tokenMatches = typeof reportAccessToken === "string" && cached.accessTokenHash === getReportAccessTokenHash(reportAccessToken);
+      if (userId) {
+        if (cached.processing_metadata?.user_id === userId) {
+          return {
+            found: true as const,
+            report: cached.report,
+            status: cached.status as any,
+            processing_metadata: cached.processing_metadata,
+            input: cached.input,
+            guest_session_id_hash: cached.guestSessionIdHash,
+            user_id: userId,
+          };
+        }
+      } else if (tokenMatches && !cached.processing_metadata?.user_id) {
+        return {
+          found: true as const,
+          report: cached.report,
+          status: cached.status as any,
+          processing_metadata: cached.processing_metadata,
+          input: cached.input,
+          guest_session_id_hash: cached.guestSessionIdHash,
+          user_id: null,
+        };
+      }
     }
     return null;
   };
@@ -256,13 +274,24 @@ export async function getPersistedReport({
     return { found: false as const, reason: "supabase_unconfigured" as const };
   }
 
-  const { data, error } = await withTimeout(
-    supabase
-      .from("reports")
-      .select("id, status, output, mode, created_at, processing_metadata, input, guest_session_id_hash")
-      .eq("id", reportId)
+  let query = supabase
+    .from("reports")
+    .select("id, status, output, mode, created_at, processing_metadata, input, guest_session_id_hash, user_id")
+    .eq("id", reportId);
+
+  if (userId) {
+    query = query.eq("user_id", userId);
+  } else {
+    if (typeof reportAccessToken !== "string" || !reportAccessToken.trim()) {
+      return { found: false as const, reason: "missing_token" as const };
+    }
+    query = query
       .eq("report_access_token_hash", getReportAccessTokenHash(reportAccessToken))
-      .maybeSingle(),
+      .is("user_id", null);
+  }
+
+  const { data, error } = await withTimeout(
+    query.maybeSingle(),
     3000
   ).catch((err) => {
     return { data: null, error: { code: "TIMEOUT", message: err.message } };
@@ -291,6 +320,7 @@ export async function getPersistedReport({
     processing_metadata: data.processing_metadata as any,
     input: data.input as any,
     guest_session_id_hash: data.guest_session_id_hash as string,
+    user_id: data.user_id as string | null,
   };
 }
 
@@ -299,15 +329,19 @@ export async function updatePersistedReport({
   reportAccessKey,
   report,
   agentThread,
+  userId,
 }: {
   reportId: string;
-  reportAccessKey: string;
+  reportAccessKey?: string;
   report: ReportResult;
   agentThread: any;
+  userId?: string;
 }) {
   // Update local mockDb entry
   const cached = mockDb.get(reportId);
-  if (cached && cached.accessTokenHash === getReportAccessTokenHash(reportAccessKey)) {
+  const tokenMatches = reportAccessKey && cached && cached.accessTokenHash === getReportAccessTokenHash(reportAccessKey);
+  const userMatches = userId && cached && cached.processing_metadata?.user_id === userId;
+  if (cached && (tokenMatches || userMatches)) {
     cached.report = report;
     cached.status = getReportMacroStatus(report);
     cached.processing_metadata = {
@@ -323,21 +357,33 @@ export async function updatePersistedReport({
     return { updated: true };
   }
 
+  let query = supabase
+    .from("reports")
+    .update({
+      output: report,
+      status: getReportMacroStatus(report),
+      processing_metadata: {
+        source_verification: "inactive_mvp",
+        sprint: "zero",
+        step: "chat_updated",
+        agent_thread: agentThread,
+      },
+    })
+    .eq("id", reportId);
+
+  if (userId) {
+    query = query.eq("user_id", userId);
+  } else {
+    if (!reportAccessKey) {
+      return { updated: false, reason: "missing_token" };
+    }
+    query = query
+      .eq("report_access_token_hash", getReportAccessTokenHash(reportAccessKey))
+      .is("user_id", null);
+  }
+
   const { error } = await withTimeout(
-    supabase
-      .from("reports")
-      .update({
-        output: report,
-        status: getReportMacroStatus(report),
-        processing_metadata: {
-          source_verification: "inactive_mvp",
-          sprint: "zero",
-          step: "chat_updated",
-          agent_thread: agentThread,
-        },
-      })
-      .eq("id", reportId)
-      .eq("report_access_token_hash", getReportAccessTokenHash(reportAccessKey)),
+    query,
     3000
   ).catch((err) => {
     return { error: { code: "TIMEOUT", message: err.message } };
@@ -348,11 +394,22 @@ export async function updatePersistedReport({
       code: "code" in error ? error.code : "UNKNOWN",
       message: "message" in error ? error.message : String(error),
     });
-    if (cached && cached.accessTokenHash === getReportAccessTokenHash(reportAccessKey)) {
+    if (cached && (tokenMatches || userMatches)) {
       return { updated: true };
     }
     return { updated: false, reason: "update_failed" };
   }
 
   return { updated: true };
+}
+
+export function linkGuestReportsMock(guestSessionIdHash: string, userId: string) {
+  for (const value of mockDb.values()) {
+    if (value.guestSessionIdHash === guestSessionIdHash && !value.processing_metadata?.user_id) {
+      value.processing_metadata = {
+        ...value.processing_metadata,
+        user_id: userId,
+      };
+    }
+  }
 }

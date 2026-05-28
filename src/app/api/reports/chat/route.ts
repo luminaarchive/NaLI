@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getPersistedReport, updatePersistedReport } from "@/lib/reports/persistence";
 import { evaluateIntegrityPolicy } from "@/lib/integrity/policy";
 import { checkRateLimit, RATE_LIMITED_MESSAGE, rateLimitHeaders } from "@/lib/rateLimit/limit";
@@ -68,15 +70,24 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const { reportId, reportAccessKey, newQuery, action, newReport } = body;
 
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id;
+
     // 1. Validate parameters
-    if (!reportId || !reportAccessKey) {
-      return NextResponse.json({ error: "reportId dan reportAccessKey diperlukan." }, { status: 400 });
+    if (!reportId) {
+      return NextResponse.json({ error: "reportId diperlukan." }, { status: 400 });
+    }
+
+    if (!userId && !reportAccessKey) {
+      return NextResponse.json({ error: "reportAccessKey diperlukan untuk akses tamu." }, { status: 400 });
     }
 
     // 2. Fetch persisted report from trusted database
     const persisted = await getPersistedReport({
       reportAccessToken: reportAccessKey,
       reportId: reportId,
+      userId: userId,
     });
 
     if (!persisted.found) {
@@ -99,6 +110,7 @@ export async function POST(req: NextRequest) {
         reportAccessKey,
         report: newReport,
         agentThread: metadata.agent_thread,
+        userId,
       });
 
       if (!updateResult.updated) {
@@ -118,10 +130,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Input terlalu panjang. Tulis pesan yang lebih pendek." }, { status: 400 });
     }
 
+    // Resolve cookie-based guest session
+    const cookieStore = await cookies();
+    const guestSessionId = cookieStore.get("nali_guest_session")?.value || body.guestSessionId || reportInput?.guestSessionId;
+
     // 4. Rate Limiting Check
     const rateLimit = await checkRateLimit({
       actionType: "generate_report",
-      guestSessionId: body.guestSessionId || reportInput?.guestSessionId,
+      guestSessionId: guestSessionId,
       request: req,
     });
     const headers = rateLimitHeaders(rateLimit);
@@ -184,6 +200,7 @@ export async function POST(req: NextRequest) {
       reportAccessKey,
       report: currentReport,
       agentThread: thread,
+      userId,
     });
 
     let runSaved = false;
@@ -272,6 +289,7 @@ export async function POST(req: NextRequest) {
             reportAccessKey,
             report: currentReport,
             agentThread: thread,
+            userId,
           });
           runSaved = true;
 
@@ -323,6 +341,7 @@ export async function POST(req: NextRequest) {
           reportAccessKey,
           report: currentReport,
           agentThread: thread,
+          userId,
         });
         runSaved = true;
 
@@ -342,6 +361,7 @@ export async function POST(req: NextRequest) {
           reportAccessKey,
           report: currentReport,
           agentThread: thread,
+          userId,
         });
         runSaved = true;
         return NextResponse.json({ error: guarded.userMessage }, { status: 400 });
@@ -370,6 +390,7 @@ export async function POST(req: NextRequest) {
         reportAccessKey,
         report: currentReport,
         agentThread: thread,
+        userId,
       });
       runSaved = true;
 
@@ -397,6 +418,7 @@ export async function POST(req: NextRequest) {
           reportAccessKey,
           report: currentReport,
           agentThread: thread,
+          userId,
         }).catch((e) => console.warn("Failed to reset run status on DB", e));
       }
       throw innerError;

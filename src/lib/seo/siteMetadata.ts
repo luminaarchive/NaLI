@@ -47,5 +47,9 @@ export const siteMetadata = {
     "/cases",
     "/review",
     "/patrol-plan",
+    "/login",
+    "/register",
+    "/auth/",
+    "/logout",
   ],
 };
