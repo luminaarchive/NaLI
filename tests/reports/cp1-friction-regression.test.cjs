@@ -25,51 +25,19 @@ let mockUpdateFn = () => ({ data: null, error: null });
 
 const mockSupabaseClient = {
   from: (table) => {
+    const makeChain = (queryObj = {}) => ({
+      eq: (col, val) => makeChain({ ...queryObj, [col]: val }),
+      is: (col, val) => makeChain({ ...queryObj, [col]: val }),
+      in: (col, val) => makeChain({ ...queryObj, [col]: val }),
+      order: () => makeChain(queryObj),
+      limit: () => makeChain(queryObj),
+      select: () => makeChain(queryObj),
+      maybeSingle: async () => mockSelectFn(table, queryObj),
+      single: async () => mockSelectFn(table, queryObj),
+    });
+
     return {
-      select: (fields, options) => {
-        return {
-          eq: (col, val) => {
-            return {
-              eq: (col2, val2) => {
-                return {
-                  maybeSingle: async () => mockSelectFn(table, { col, val, col2, val2 }),
-                  single: async () => mockSelectFn(table, { col, val, col2, val2 }),
-                };
-              },
-              in: (col2, val2) => {
-                return {
-                  order: (col3, opts) => {
-                    return {
-                      limit: (num) => {
-                        return {
-                          maybeSingle: async () => mockSelectFn(table, { col, val, col2, val2 }),
-                        };
-                      },
-                    };
-                  },
-                };
-              },
-              maybeSingle: async () => mockSelectFn(table, { col, val }),
-              single: async () => mockSelectFn(table, { col, val }),
-            };
-          },
-          in: (col, arr) => {
-            return {
-              order: (col2, opts) => {
-                return {
-                  limit: (num) => {
-                    return {
-                      maybeSingle: async () => mockSelectFn(table, { col, val: arr }),
-                    };
-                  },
-                };
-              },
-            };
-          },
-          maybeSingle: async () => mockSelectFn(table, {}),
-          single: async () => mockSelectFn(table, {}),
-        };
-      },
+      select: (fields, options) => makeChain({}),
       insert: (payload) => {
         return {
           select: (fields) => {

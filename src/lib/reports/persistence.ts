@@ -235,6 +235,11 @@ export async function getPersistedReport({
   reportId: string;
   userId?: string;
 }) {
+  if (!userId) {
+    if (typeof reportAccessToken !== "string" || !reportAccessToken.trim()) {
+      return { found: false as const, reason: "missing_token" as const };
+    }
+  }
   const getMockData = () => {
     const cached = mockDb.get(reportId);
     if (cached) {

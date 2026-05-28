@@ -75,12 +75,8 @@ export async function POST(req: NextRequest) {
     const userId = user?.id;
 
     // 1. Validate parameters
-    if (!reportId) {
-      return NextResponse.json({ error: "reportId diperlukan." }, { status: 400 });
-    }
-
-    if (!userId && !reportAccessKey) {
-      return NextResponse.json({ error: "reportAccessKey diperlukan untuk akses tamu." }, { status: 400 });
+    if (!reportId || (!userId && !reportAccessKey)) {
+      return NextResponse.json({ error: "reportId dan reportAccessKey diperlukan." }, { status: 400 });
     }
 
     // 2. Fetch persisted report from trusted database

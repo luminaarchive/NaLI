@@ -150,5 +150,12 @@ Build the smallest working Learn & Report flow:
 - Copy/export works in a simple format.
 - Supabase Sprint 0 migrations are additive and safe; if they are not applied or env vars are missing, the app falls back instead of crashing.
 - Forbidden academic-cheating wording is absent from UI.
-- No fake realtime/payment/institutional claims are introduced.
 - `npm run lint`, `npm run typecheck`, and `npm run build` pass, or failures are reported with exact causes.
+
+## Sprint 0.8 Agent Reliability & Verification Workflow
+
+- **Targeted Verification First**: Always run targeted test suites or scripts (e.g. `npm run agent:verify-fast`) before triggering a full verification (`npm run verify`).
+- **Token-Saving Policy**: Use `grep_search` (`rg`) to locate lines of code before opening files. Specify line ranges via `view_file` to keep prompts lightweight and prevent context window exhaustion.
+- **MCP & Local Tooling**: Leverage standard local validation scripts (`scripts/agent/*`) and registered npm commands. Avoid installing external executable binaries.
+- **Commit Index Maintenance**: Stage all features in small micro-commits. Ensure `git status` remains clean and HEAD matches the origin branch.
+- **No Blocking Poll Loops**: Never poll task statuses continuously. Trigger a run, then yield control to the reactive agent system.

@@ -30,7 +30,13 @@
     "validate:rls": "node scripts/validate-rls.cjs",
     "validate:storage": "node scripts/validate-storage.cjs",
     "validate:vercel-env": "node scripts/print-vercel-env-checklist.cjs",
-    "validate:production": "npm run validate:vercel-env && npm run validate:supabase && npm run validate:storage && npm run validate:rls"
+    "validate:production": "npm run validate:vercel-env && npm run validate:supabase && npm run validate:storage && npm run validate:rls",
+    "agent:env-check": "node scripts/agent/check-env-readiness.mjs",
+    "agent:git-check": "node scripts/agent/check-git-clean.mjs",
+    "agent:prod-smoke": "node scripts/agent/check-production-routes.mjs",
+    "agent:seo-smoke": "node scripts/agent/check-seo-routes.mjs",
+    "agent:verify-fast": "node scripts/agent/verify-fast.mjs",
+    "agent:verify-full": "node scripts/agent/verify-full.mjs"
   },
   "lint-staged": {
     "*.{js,cjs,mjs,ts,tsx}": [
