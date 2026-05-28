@@ -22,7 +22,7 @@ async function countTable(supabase: NonNullable<ReturnType<typeof getOptionalSup
   } satisfies TableReadiness;
 }
 
-export async function GET(req?: Request) {
+export async function GET(req: Request) {
   let authorized = false;
 
   // If req is not passed (or not a Request object), we are in a unit test environment calling the route directly
