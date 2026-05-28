@@ -25,6 +25,7 @@ async function run() {
 
     // 3. Type Check
     runCommand("npm run typecheck", "Type Verification");
+    runCommand("npm run typecheck:build", "Build-specific Type Verification");
 
     // 4. Production Build
     runCommand("npm run build", "Next.js Production Build");

@@ -26,6 +26,7 @@ runCommand("npm run lint", "Lint Verification");
 
 // 4. Type Check
 runCommand("npm run typecheck", "Type Verification");
+runCommand("npm run typecheck:build", "Build-specific Type Verification");
 
 // 5. Selected Unit Tests
 runCommand("node --test tests/reports/auth-persistence-linking.test.cjs", "Auth Persistence unit tests");

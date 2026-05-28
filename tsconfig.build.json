@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "playwright.config.ts",
+    "tests/e2e/**/*",
+    "test-results/**/*",
+    "playwright-report/**/*",
+    "node_modules",
+    "ui-ux-pro-max-skill"
+  ]
+}
