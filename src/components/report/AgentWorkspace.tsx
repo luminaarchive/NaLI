@@ -331,6 +331,76 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     }
   }, [initialReportId, loadSnapshots]);
 
+  // Parse prefill from URL and localStorage on mount (if no initialReportId)
+  useEffect(() => {
+    if (initialReportId) return;
+
+    let prefText = "";
+    let prefMode: "draft_from_materials" | "start_from_zero" | null = null;
+    let prefTpl = "";
+
+    // 1. Try URL parameters first
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const urlQ = searchParams.get("q") || searchParams.get("query");
+      const urlMode = searchParams.get("mode");
+      const urlTpl = searchParams.get("template") || searchParams.get("reportTemplate");
+
+      if (urlQ) {
+        prefText = urlQ;
+      }
+      if (urlMode === "draft_from_materials" || urlMode === "start_from_zero") {
+        prefMode = urlMode;
+      }
+      if (urlTpl && templates.includes(urlTpl as any)) {
+        prefTpl = urlTpl;
+      }
+    } catch {
+      // ignore
+    }
+
+    // 2. Try localStorage if URL parameters were incomplete
+    try {
+      const storedPrefill = window.localStorage.getItem("nali-create-report-prefill");
+      if (storedPrefill) {
+        const parsed = JSON.parse(storedPrefill);
+        if (parsed) {
+          if (!prefText) {
+            prefText = parsed.mainText || parsed.topic || "";
+          }
+          if (!prefMode && (parsed.mode === "draft_from_materials" || parsed.mode === "start_from_zero")) {
+            prefMode = parsed.mode;
+          }
+          if (!prefTpl && parsed.reportTemplate && templates.includes(parsed.reportTemplate as any)) {
+            prefTpl = parsed.reportTemplate;
+          }
+        }
+        // Prune the prefill key so it doesn't trigger on subsequent empty page loads
+        window.localStorage.removeItem("nali-create-report-prefill");
+      }
+    } catch {
+      // ignore
+    }
+
+    // Apply resolved prefill parameters to state
+    if (prefText) {
+      setQuery(prefText);
+    }
+    if (prefMode) {
+      setSelectedMode(prefMode);
+    }
+    if (prefTpl) {
+      setSelectedTemplate(prefTpl);
+    }
+
+    // Auto-focus composer if prefilled text is ready
+    if (prefText) {
+      setTimeout(() => {
+        composerRef.current?.focus();
+      }, 100);
+    }
+  }, [initialReportId]);
+
   // Debounced local composer autosave in AgentWorkspace
   useEffect(() => {
     if (query.trim().length < 20) {

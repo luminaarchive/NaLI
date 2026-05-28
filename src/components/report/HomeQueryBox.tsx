@@ -112,78 +112,7 @@ export function HomeQueryBox() {
       return;
     }
 
-    // Try session-based flow first
-    if (isCreating) return;
-    setIsCreating(true);
-    setCreateError(null);
-
-    try {
-      const res = await fetch("/api/sessions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: trimmed }),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({})) as { fallback?: boolean; error?: string };
-        // If fallback flag is set (table missing), go to /create-report
-        if (errData.fallback) {
-          fallbackToCreateReport(trimmed);
-          return;
-        }
-        throw new Error(errData.error ?? "Gagal memulai percakapan");
-      }
-
-      // Read SSE stream just long enough to get session_created
-      const reader = res.body?.getReader();
-      const decoder = new TextDecoder();
-
-      if (!reader) {
-        fallbackToCreateReport(trimmed);
-        return;
-      }
-
-      let redirected = false;
-      while (!redirected) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const text = decoder.decode(value, { stream: true });
-        const lines = text.split("\n");
-
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          try {
-            const chunk = JSON.parse(line.slice(6)) as StreamChunk;
-            if (chunk.type === "session_created" && chunk.sessionId) {
-              void reader.cancel();
-              router.push(`/s/${chunk.sessionId}`);
-              redirected = true;
-              break;
-            }
-            if (chunk.type === "error") {
-              throw new Error(chunk.error ?? "Terjadi kesalahan");
-            }
-          } catch (parseErr) {
-            if (parseErr instanceof Error && (parseErr.message.includes("Terjadi") || parseErr.message.includes("Gagal"))) {
-              throw parseErr;
-            }
-            // Skip malformed SSE lines
-          }
-        }
-      }
-
-      // If we never got a session_created event, fall back
-      if (!redirected) {
-        fallbackToCreateReport(trimmed);
-      }
-    } catch (err) {
-      // Show inline error, re-enable form
-      setCreateError(
-        err instanceof Error ? err.message : "Gagal memulai percakapan. Coba lagi.",
-      );
-      setIsCreating(false);
-    }
+    fallbackToCreateReport(trimmed);
   };
 
   const handleChipClick = (fillText: string) => {
