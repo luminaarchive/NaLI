@@ -348,68 +348,81 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const guarded = guardOutput(buildMockResult(validated.data, modelLabel));
-  if (!guarded.allowed) {
+  // OpenRouter failed (returned null)
+  // Check if explicit mock fallback is enabled via process.env.NALI_ALLOW_MOCK_GENERATION === "true"
+  if (process.env.NALI_ALLOW_MOCK_GENERATION === "true") {
+    const guarded = guardOutput(buildMockResult(validated.data, modelLabel));
+    if (!guarded.allowed) {
+      return NextResponse.json(
+        {
+          code: guarded.reasonCode,
+          error: guarded.userMessage,
+        },
+        { headers, status: 502 },
+      );
+    }
+
+    const report = guarded.report;
+    const persistence = await persistGeneratedReport({
+      guestSessionId,
+      userId,
+      input: validated.data,
+      report,
+    });
+    void logReportEvent({
+      eventType: "REPORT_CREATED",
+      metadata: {
+        mode: validated.data.mode,
+        persistence: persistence.persisted ? "supabase" : persistence.reason,
+        template: validated.data.reportTemplate,
+      },
+      reportId: report.id,
+      status: persistence.persisted ? "success" : "skipped",
+    });
+    void logReportEvent({
+      eventType: "PREVIEW_GENERATED",
+      metadata: {
+        mode: validated.data.mode,
+        result_kind: "mock",
+        template: validated.data.reportTemplate,
+      },
+      reportId: report.id,
+      status: "success",
+    });
+    void logUsageEvent({
+      actionType: validated.data.mode === "start_from_zero" ? "start_from_zero_guidance" : "report_preview",
+      guestSessionId,
+      inputSize: getInputSize(validated.data),
+      metadata: {
+        persistence: persistence.persisted ? "supabase" : persistence.reason,
+        result_kind: "mock",
+      },
+      mode: validated.data.mode,
+      reportId: report.id,
+      status: "generated",
+    });
+
     return NextResponse.json(
       {
-        code: guarded.reasonCode,
-        error: guarded.userMessage,
+        id: report.id,
+        report_id: report.id,
+        persistence: persistence.persisted ? "supabase" : persistence.reason,
+        report_access_key: persistence.persisted ? persistence.reportAccessToken : undefined,
+        mode: "mock",
+        notice: "DEMO/MOCK - NaLI preview engine unavailable or not configured.",
+        provider: "nali",
+        report,
       },
-      { headers, status: 502 },
+      { headers, status: 200 },
     );
   }
 
-  const report = guarded.report;
-  const persistence = await persistGeneratedReport({
-    guestSessionId,
-    userId,
-    input: validated.data,
-    report,
-  });
-  void logReportEvent({
-    eventType: "REPORT_CREATED",
-    metadata: {
-      mode: validated.data.mode,
-      persistence: persistence.persisted ? "supabase" : persistence.reason,
-      template: validated.data.reportTemplate,
-    },
-    reportId: report.id,
-    status: persistence.persisted ? "success" : "skipped",
-  });
-  void logReportEvent({
-    eventType: "PREVIEW_GENERATED",
-    metadata: {
-      mode: validated.data.mode,
-      result_kind: "mock",
-      template: validated.data.reportTemplate,
-    },
-    reportId: report.id,
-    status: "success",
-  });
-  void logUsageEvent({
-    actionType: validated.data.mode === "start_from_zero" ? "start_from_zero_guidance" : "report_preview",
-    guestSessionId,
-    inputSize: getInputSize(validated.data),
-    metadata: {
-      persistence: persistence.persisted ? "supabase" : persistence.reason,
-      result_kind: "mock",
-    },
-    mode: validated.data.mode,
-    reportId: report.id,
-    status: "generated",
-  });
-
+  // Otherwise, return a controlled non-200 error response (503 Service Unavailable)
   return NextResponse.json(
     {
-      id: report.id,
-      report_id: report.id,
-      persistence: persistence.persisted ? "supabase" : persistence.reason,
-      report_access_key: persistence.persisted ? persistence.reportAccessToken : undefined,
-      mode: "mock",
-      notice: "DEMO/MOCK - NaLI preview engine unavailable or not configured.",
-      provider: "nali",
-      report,
+      code: "AI_ENGINE_UNAVAILABLE",
+      error: "AI engine belum tersedia. Coba lagi nanti.",
     },
-    { headers, status: 200 },
+    { headers, status: 503 }
   );
 }

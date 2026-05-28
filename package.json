@@ -23,6 +23,7 @@
     "check:i18n": "node scripts/check-i18n-coverage.cjs",
     "smoke:feedback:prod": "node scripts/smoke-feedback-production.mjs",
     "smoke:export:prod": "node scripts/smoke-paid-export-production.mjs",
+    "smoke:ai:prod": "node scripts/smoke-ai-generation.mjs",
     "payment:confirm:manual": "node scripts/confirm-manual-payment.mjs",
     "check:readiness:prod": "node -e \"fetch('https://naliai.vercel.app/api/system/readiness').then(r => r.json()).then(console.log).catch(console.error)\"",
     "verify": "npm run build && npm run typecheck && npm run check:i18n && npm run test:demo && npm run test:field-intelligence && npm run test:fine-tuning && npm run test:reasoning && npm run test:longitudinal && npm run test:golden",

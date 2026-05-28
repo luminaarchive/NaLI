@@ -47,7 +47,8 @@ function parseJsonText(value: string) {
 }
 
 export function getOpenRouterModels() {
-  const primary = process.env.OPENROUTER_MODEL?.trim() || DEFAULT_MODEL;
+  // Support both standard OPENROUTER_MODEL and NALI_OPENROUTER_MODEL env variables
+  const primary = process.env.OPENROUTER_MODEL?.trim() || process.env.NALI_OPENROUTER_MODEL?.trim() || DEFAULT_MODEL;
   const fallbacks = parseModelList(process.env.OPENROUTER_FALLBACK_MODELS);
   const modelSet = new Set([primary, ...(fallbacks.length > 0 ? fallbacks : DEFAULT_FALLBACKS)]);
 
@@ -64,13 +65,20 @@ export async function requestOpenRouterJson({
   const apiKey = process.env.OPENROUTER_API_KEY?.trim();
 
   if (!apiKey) {
+    console.warn("OpenRouter API key is missing. Model connection disabled.");
     return null;
   }
 
   const siteUrl = process.env.OPENROUTER_SITE_URL?.trim() || "https://naliai.vercel.app";
   const siteName = process.env.OPENROUTER_SITE_NAME?.trim() || "NaLI by NatIve";
 
-  for (const model of getOpenRouterModels()) {
+  const models = getOpenRouterModels();
+  if (models.length === 0) {
+    console.warn("No OpenRouter models configured.");
+    return null;
+  }
+
+  for (const model of models) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12_000);
 
@@ -94,10 +102,9 @@ export async function requestOpenRouterJson({
         method: "POST",
         signal: controller.signal,
       });
-      const payload = (await response.json().catch(() => ({}))) as OpenRouterResponse;
 
       if (!response.ok) {
-        console.warn("OpenRouter model failed", {
+        console.warn("OpenRouter model failed with provider error", {
           model,
           status: response.status,
           statusText: response.statusText,
@@ -105,22 +112,58 @@ export async function requestOpenRouterJson({
         continue;
       }
 
+      const payload = (await response.json().catch(() => null)) as OpenRouterResponse | null;
+      if (!payload) {
+        console.warn("OpenRouter response was not valid JSON", { model });
+        continue;
+      }
+
+      if (payload.error) {
+        console.warn("OpenRouter returned error in payload", {
+          model,
+          error: payload.error.message,
+        });
+        continue;
+      }
+
       const content = payload.choices?.[0]?.message?.content;
 
       if (!content) {
-        console.warn("OpenRouter model returned empty content", { model });
+        console.warn("OpenRouter model returned empty content or missing message choices", { model });
+        continue;
+      }
+
+      let parsedJson: unknown;
+      try {
+        parsedJson = parseJsonText(content);
+      } catch (parseErr) {
+        console.warn("OpenRouter generated content was not valid JSON", {
+          model,
+          content,
+          error: parseErr instanceof Error ? parseErr.message : "unknown",
+        });
+        continue;
+      }
+
+      // Verify that it contains usable generated content (must be an object)
+      if (!parsedJson || typeof parsedJson !== "object") {
+        console.warn("OpenRouter generated content does not contain usable JSON object", { model, parsedJson });
         continue;
       }
 
       return {
-        json: parseJsonText(content),
+        json: parsedJson,
         model,
       };
     } catch (error) {
-      console.warn("OpenRouter request failed", {
-        error: error instanceof Error ? error.name : "unknown",
-        model,
-      });
+      if (error instanceof Error && error.name === "AbortError") {
+        console.warn("OpenRouter request timed out", { model });
+      } else {
+        console.warn("OpenRouter request failed with network or system error", {
+          error: error instanceof Error ? error.message : "unknown",
+          model,
+        });
+      }
     } finally {
       clearTimeout(timeout);
     }
@@ -128,3 +171,4 @@ export async function requestOpenRouterJson({
 
   return null;
 }
+

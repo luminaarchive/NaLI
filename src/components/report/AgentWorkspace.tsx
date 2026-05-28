@@ -355,6 +355,15 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             setReport(payload.report);
             window.localStorage.setItem(`nali-report:${reportId}`, JSON.stringify(payload.report));
 
+            if (payload.mode === "mock" || payload.notice) {
+              const warning = payload.notice || "DEMO/MOCK - NaLI preview engine unavailable or not configured.";
+              setNotice(warning);
+              window.localStorage.setItem(`nali-report-notice:${reportId}`, warning);
+            } else {
+              setNotice(null);
+              window.localStorage.removeItem(`nali-report-notice:${reportId}`);
+            }
+
             // Reconcile messages
             const serverThread = payload.report.processing_metadata?.agent_thread;
             if (serverThread && serverThread.messages) {
@@ -706,6 +715,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           status: response.status,
           retryAfterSeconds: payload.retryAfterSeconds,
         });
+        setReport(null);
         setMessages([]);
         setActiveRunStatus("failed");
         return;
@@ -730,8 +740,13 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
       setReport(generatedReport);
       setAccessKey(key);
-      if (payload.notice) {
-        setNotice(payload.notice);
+      if (payload.mode === "mock" || payload.notice) {
+        const warning = payload.notice || "DEMO/MOCK - NaLI preview engine unavailable or not configured.";
+        setNotice(warning);
+        window.localStorage.setItem(`nali-report-notice:${reportId}`, warning);
+      } else {
+        setNotice(null);
+        window.localStorage.removeItem(`nali-report-notice:${reportId}`);
       }
 
       // Initialize server-side conversation metadata under the retrieved report key
@@ -1759,7 +1774,13 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               })()}
 
             {/* Notice notifications */}
-            {notice && <NaliAlert variant="success" title="Notifikasi" explanation={notice} />}
+            {notice && (
+              <NaliAlert
+                variant={notice.includes("DEMO/MOCK") ? "warning" : "success"}
+                title={notice.includes("DEMO/MOCK") ? "Mode Demo / Mock Terdeteksi" : "Notifikasi"}
+                explanation={notice}
+              />
+            )}
 
             <div ref={messagesEndRef} />
           </div>

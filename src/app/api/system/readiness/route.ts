@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { getRuntimeSystemReadiness } from "@/lib/system/readiness";
 import { getOptionalSupabaseAdminClient } from "@/lib/supabase/admin";
+import { verifyFounderToken } from "@/lib/system/founderAuthorization";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +22,31 @@ async function countTable(supabase: NonNullable<ReturnType<typeof getOptionalSup
   } satisfies TableReadiness;
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  // Extract token from Authorization header or founder_token cookie
+  const authHeader = req.headers.get("Authorization");
+  const cookieStore = await cookies();
+  const cookieToken = cookieStore.get("founder_token")?.value;
+
+  let token = cookieToken;
+  if (authHeader && authHeader.toLowerCase().startsWith("bearer ")) {
+    token = authHeader.substring(7).trim();
+  }
+
+  const { authorized } = verifyFounderToken(token);
+
+  if (!authorized) {
+    return NextResponse.json(
+      { status: "ok", service: "nali", publicMode: "alpha" },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+        status: 200,
+      }
+    );
+  }
+
   const readiness = await getRuntimeSystemReadiness();
 
   const envSupabaseUrl = process.env.SUPABASE_URL;
@@ -91,11 +117,19 @@ export async function GET() {
     dbStatus = { status: "supabase_unconfigured" };
   }
 
-  return NextResponse.json({
-    ...readiness,
-    midtransConfigured: readiness.midtransConfigured,
-    midtransProductionMode: readiness.midtransProductionMode,
-    envVerification,
-    dbStatus,
-  });
+  return NextResponse.json(
+    {
+      ...readiness,
+      midtransConfigured: readiness.midtransConfigured,
+      midtransProductionMode: readiness.midtransProductionMode,
+      envVerification,
+      dbStatus,
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    }
+  );
 }
+
