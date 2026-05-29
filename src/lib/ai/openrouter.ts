@@ -17,16 +17,9 @@ type OpenRouterResponse = {
 const DEFAULT_MODEL = "meta-llama/llama-3.3-70b-instruct:free";
 const DEFAULT_FALLBACKS = [
   "liquid/lfm-2.5-1.2b-instruct:free",
-  "meta-llama/llama-3.2-3b-instruct:free",
   "meta-llama/llama-3.3-70b-instruct:free",
-  "openrouter/free",
-  "deepseek/deepseek-v4-flash:free",
-  "google/gemma-4-31b-it:free",
-  "google/gemma-4-26b-a4b-it:free",
-  "qwen/qwen3-coder:free",
-  "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
-  "moonshotai/kimi-k2.6:free",
-  "openai/gpt-oss-20b:free"
+  "google/gemini-2.5-flash",
+  "openrouter/free"
 ];
 
 function parseModelList(value: string | undefined) {

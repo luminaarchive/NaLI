@@ -405,3 +405,48 @@ test("Sprint 4 Benchmark - 12. Export Gate status remains locked", async () => {
   assert.equal(eligibility.eligible, false);
   assert.equal(eligibility.state, "export_locked");
 });
+
+test("Sprint 4B - 1. OpenRouter classifier maps response/error states correctly", () => {
+  const { classifyOpenRouterResponse } = require("../../scripts/openrouter-classifier.cjs");
+
+  // 1. Payment Required (402)
+  assert.equal(classifyOpenRouterResponse({ status: 402 }), "payment_required");
+  assert.equal(classifyOpenRouterResponse({ status: 200, bodyText: JSON.stringify({ error: { code: 402, message: "credits empty" } }) }), "payment_required");
+
+  // 2. Rate Limited (429)
+  assert.equal(classifyOpenRouterResponse({ status: 429 }), "rate_limited");
+  assert.equal(classifyOpenRouterResponse({ status: 200, bodyText: JSON.stringify({ error: { code: 429, message: "rate limits exceeded" } }) }), "rate_limited");
+
+  // 3. Not Found (404)
+  assert.equal(classifyOpenRouterResponse({ status: 404 }), "not_found");
+  assert.equal(classifyOpenRouterResponse({ status: 200, bodyText: JSON.stringify({ error: { code: 404, message: "model not found" } }) }), "not_found");
+
+  // 4. Timeout
+  const abortError = new Error("Request aborted");
+  abortError.name = "AbortError";
+  assert.equal(classifyOpenRouterResponse({ error: abortError }), "timeout");
+
+  // 5. Malformed JSON (invalid_json)
+  assert.equal(classifyOpenRouterResponse({ status: 200, bodyText: "Not a JSON at all" }), "invalid_json");
+  assert.equal(classifyOpenRouterResponse({ status: 200, bodyText: JSON.stringify({ choices: [] }) }), "invalid_json");
+
+  // 6. Usable Response
+  const validBody = JSON.stringify({
+    choices: [{
+      message: {
+        content: JSON.stringify({ title: "Valid JSON Content" })
+      }
+    }]
+  });
+  assert.equal(classifyOpenRouterResponse({ status: 200, bodyText: validBody }), "usable");
+});
+
+test("Sprint 4B - 2. Fallback order does not place known bad model first", () => {
+  const { getOpenRouterModels } = require("../../src/lib/ai/openrouter");
+  const models = getOpenRouterModels();
+  // Ensure the primary fallback (first one tried after env model) is a valid, existing model ID
+  assert.ok(models.length > 0);
+  const badModels = ["google/gemma-4-31b-it:free", "google/gemma-4-26b-a4b-it:free", "deepseek/deepseek-v4-flash:free", "qwen/qwen3-coder:free"];
+  assert.equal(badModels.includes(models[1] || ""), false);
+});
+
