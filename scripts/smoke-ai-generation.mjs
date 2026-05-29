@@ -81,16 +81,85 @@ async function main() {
     }
 
     if (isJournalMode) {
-      if (!data.journal_candidate) {
+      const jc = data.journal_candidate;
+      const jq = data.journal_quality;
+      if (!jc) {
         console.error("FAIL: journal_candidate is missing in response under NALI_SMOKE_JOURNAL_MODE=true");
         process.exit(1);
       }
-      if (!data.journal_quality) {
+      if (!jq) {
         console.error("FAIL: journal_quality is missing in response under NALI_SMOKE_JOURNAL_MODE=true");
         process.exit(1);
       }
-      console.log(`Journal Quality Score: ${data.journal_quality.score}`);
-      console.log(`Journal Quality Level: "${data.journal_quality.level}"`);
+      
+      // Assertions
+      const abstractWordCount = jc.abstract.trim().split(/\s+/).length;
+      console.log(`Abstract Word Count: ${abstractWordCount}`);
+      if (abstractWordCount > 300) {
+        console.error(`FAIL: Abstract word count (${abstractWordCount}) exceeds 300 words limit!`);
+        process.exit(1);
+      }
+
+      const keywordsCount = Array.isArray(jc.keywords) ? jc.keywords.length : 0;
+      console.log(`Keywords Count: ${keywordsCount}`);
+      if (keywordsCount > 8) {
+        console.error(`FAIL: Keywords count (${keywordsCount}) exceeds 8 keywords limit!`);
+        process.exit(1);
+      }
+
+      console.log(`Conservation Implication Status: ${jq.hasConservationImplication}`);
+      console.log(`Methods Replicability Status: ${jq.hasMethodsReplicability}`);
+      
+      // PDF locked
+      console.log(`canGenerateJournalPdfNow: ${jq.canGenerateJournalPdfNow}`);
+      if (jq.canGenerateJournalPdfNow !== false) {
+        console.error(`FAIL: PDF generation should remain strictly false/locked!`);
+        process.exit(1);
+      }
+
+      // publicationStatus flags false
+      const ps = jc.publicationStatus;
+      console.log(`Publication Status: isPublished=${ps.isPublished}, isPeerReviewed=${ps.isPeerReviewed}, doiGenerated=${ps.doiGenerated}`);
+      if (ps.isPublished !== false || ps.isPeerReviewed !== false || ps.doiGenerated !== false || ps.pdfPublicExportActive !== false) {
+        console.error(`FAIL: Publication status flags must remain false!`);
+        process.exit(1);
+      }
+
+      // No fake DOI/ISSN/publisher or copied benchmark journal branding
+      const fullText = JSON.stringify(jc).toLowerCase();
+      const forbiddenTerms = ["animal conservation", "wiley", "zsl", "journal of wildlife and conservation", "e-palli"];
+      for (const term of forbiddenTerms) {
+        if (fullText.includes(term)) {
+          const isFromUserInput = payload.mainText.toLowerCase().includes(term);
+          if (!isFromUserInput) {
+            console.error(`FAIL: Forbidden term "${term}" found in generated journal candidate!`);
+            process.exit(1);
+          }
+        }
+      }
+
+      // No final publication claim or ready-to-submit/peer-reviewed status
+      const forbiddenClaims = ["peer-reviewed", "published", "accepted", "indexed", "siap submit", "jurnal final"];
+      for (const claim of forbiddenClaims) {
+        if (fullText.includes(claim)) {
+          const isFromUserInput = payload.mainText.toLowerCase().includes(claim);
+          if (!isFromUserInput) {
+            console.error(`FAIL: Forbidden claim/term "${claim}" found in generated journal candidate!`);
+            process.exit(1);
+          }
+        }
+      }
+
+      // Output contains integrity footer / benchmark note
+      const hasIntegrityNote = fullText.includes("draf") || fullText.includes("akademik") || fullText.includes("bantuan") || fullText.includes("terbit");
+      if (!hasIntegrityNote) {
+        console.error("FAIL: Journal candidate is missing the integrity note!");
+        process.exit(1);
+      }
+
+      console.log(`Journal Quality Score: ${jq.score}`);
+      console.log(`Journal Quality Level: "${jq.level}"`);
+      console.log(`Citation Integrity: "${jq.citationIntegrity}"`);
       console.log("PASS: journal_candidate and journal_quality verifications passed.");
     }
 

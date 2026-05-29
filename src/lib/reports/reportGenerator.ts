@@ -139,16 +139,38 @@ export type DraftReport = {
     abstract: string;
     keywords: string[];
     introduction: string;
-    methods: string;
+    literatureReview: string;
+    materialsAndMethods: string;
     results: string;
     discussion: string;
     conclusion: string;
-    limitations: string;
-    evidenceTable: Array<{ id: string; material_type: string; summary: string; user_provided: boolean; verification_status: string }>;
+    limitations: string[];
+    futureResearch: string[];
+    annexure: Array<{
+      label: string;
+      details: string[];
+    }>;
+    evidenceTable: Array<{
+      claim: string;
+      evidenceType: string;
+      source: "user_supplied" | "ai_inference" | "missing";
+      confidence: "low" | "medium" | "high";
+      limitation: string;
+    }>;
     missingEvidence: string[];
-    referencesSuppliedByUser: string;
+    referencesSuppliedByUser: string[];
     citationIntegrityNote: string;
     unsupportedClaims: string[];
+    publicationStatus: {
+      isPublished: boolean;
+      isPeerReviewed: boolean;
+      doiGenerated: boolean;
+      pdfPublicExportActive: boolean;
+    };
+    hasConservationImplication: boolean;
+    scientificNameDiscipline: "ok" | "missing" | "not_applicable";
+    ethicsSafetyNotePresent: boolean;
+    quantitativeEvidenceLevel: "none" | "descriptive" | "basic_quantitative" | "statistical";
   };
   journal_quality?: {
     score: number;
@@ -159,6 +181,16 @@ export type DraftReport = {
     evidenceSufficiency: "weak" | "moderate" | "strong";
     publicationClaimAllowed: false;
     recommendedFixes: string[];
+    abstractWordCount: number;
+    keywordsCount: number;
+    articleWordTarget: number;
+    hasConservationImplication: boolean;
+    hasMethodsReplicability: boolean;
+    usesMetricOrSIUnitsWhenMeasurementsExist: boolean;
+    scientificNameDiscipline: "ok" | "missing" | "not_applicable";
+    ethicsSafetyNotePresent: boolean;
+    referenceConsistencyStatus: "safe" | "warning" | "blocked";
+    quantitativeEvidenceLevel: "none" | "descriptive" | "basic_quantitative" | "statistical";
   };
 };
 
@@ -344,6 +376,33 @@ function validateUrls(urls: string[]) {
 
 export function containsForbiddenWording(value: string) {
   return forbiddenWording.some((pattern) => pattern.test(value));
+}
+
+export function scrubForbiddenOutputs(text: string, sourceUrls: string[] = []): string {
+  const forbiddenPatterns = [
+    { pattern: /Animal\s+Conservation/gi, replacement: "NaLI Nature & Evidence Journal" },
+    { pattern: /Wiley/gi, replacement: "Publisher" },
+    { pattern: /ZSL/gi, replacement: "Zoological Society" },
+    { pattern: /Journal\s+of\s+Wildlife\s+and\s+Conservation/gi, replacement: "NaLI Nature & Evidence Journal" },
+    { pattern: /E-Palli/gi, replacement: "Publisher" },
+    { pattern: /\b10\.\d{4,9}\/[-._;()/:A-Z0-9]+\b/gi, replacement: "[DOI not assigned]" },
+    { pattern: /\bISSN\s*\d{4}-\d{3}[\dX]\b/gi, replacement: "ISSN: Not applicable" },
+    { pattern: /peer-reviewed/gi, replacement: "academic draft style" },
+    { pattern: /\bpublished\b/gi, replacement: "drafted" },
+    { pattern: /\baccepted\b/gi, replacement: "processed" },
+    { pattern: /\bindexed\b/gi, replacement: "archived" },
+    { pattern: /siap\s+submit/gi, replacement: "draf awal" },
+    { pattern: /jurnal\s+final/gi, replacement: "draf kandidat jurnal" }
+  ];
+
+  let scrubbed = text;
+  for (const { pattern, replacement } of forbiddenPatterns) {
+    const hasInUrls = sourceUrls.some(url => pattern.test(url));
+    if (!hasInUrls) {
+      scrubbed = scrubbed.replace(pattern, replacement);
+    }
+  }
+  return scrubbed;
 }
 
 export function hasAtLeastOneMaterial(
@@ -975,10 +1034,26 @@ export function buildReportPrompt(input: ReportRequest) {
 
   const isJournal = isJournalTriggered(input);
   const journalSchema = isJournal 
-    ? ", journal_candidate: { title: string, abstract: string, keywords: string[], introduction: string, methods: string, results: string, discussion: string, conclusion: string, limitations: string, evidenceTable: Array<{ id: string, material_type: string, summary: string, user_provided: boolean, verification_status: string }>, missingEvidence: string[], referencesSuppliedByUser: string, citationIntegrityNote: string, unsupportedClaims: string[] }"
+    ? ", journal_candidate: { title: string, abstract: string, keywords: string[], introduction: string, literatureReview: string, materialsAndMethods: string, results: string, discussion: string, conclusion: string, limitations: string[], futureResearch: string[], annexure: Array<{ label: string, details: string[] }>, evidenceTable: Array<{ claim: string, evidenceType: string, source: string, confidence: string, limitation: string }>, missingEvidence: string[], referencesSuppliedByUser: string[], citationIntegrityNote: string, unsupportedClaims: string[], publicationStatus: { isPublished: boolean, isPeerReviewed: boolean, doiGenerated: boolean, pdfPublicExportActive: boolean }, hasConservationImplication: boolean, scientificNameDiscipline: string, ethicsSafetyNotePresent: boolean, quantitativeEvidenceLevel: string }"
     : "";
   const journalInstruction = isJournal
-    ? "\n- Because this is a journal-style request, you MUST also populate the 'journal_candidate' object. All IMRaD fields must be generated. Do NOT invent references, DOIs, coordinates, or journal names. If there are no user-supplied references, set referencesSuppliedByUser to 'Belum ada referensi yang disediakan pengguna.'. Any claims unsupported directly by user materials must be placed in the 'unsupportedClaims' array."
+    ? "\n- Because this is a journal-style request, you MUST also populate the 'journal_candidate' object matching the double-benchmark standard (JWC structure and Animal Conservation author guidelines). Specifically:\n" +
+      "  * abstract: target 180-300 words.\n" +
+      "  * keywords: max 8 keywords (preferably 4-7).\n" +
+      "  * introduction: must include study context, knowledge gaps, and objective statement.\n" +
+      "  * literatureReview: summarize user reference URLs if provided, otherwise honestly say none.\n" +
+      "  * materialsAndMethods: include location, period, observation protocol, metric/SI units, and animal ethics/safety note.\n" +
+      "  * results: distinct, structured evidence-bounded findings.\n" +
+      "  * discussion: interpretations and broader conservation implications.\n" +
+      "  * limitations: list of specific data limitations.\n" +
+      "  * futureResearch: list of future research steps.\n" +
+      "  * referencesSuppliedByUser: string array of user-supplied references only.\n" +
+      "  * publicationStatus: MUST have isPublished=false, isPeerReviewed=false, doiGenerated=false, pdfPublicExportActive=false.\n" +
+      "  * hasConservationImplication: boolean.\n" +
+      "  * scientificNameDiscipline: 'ok' | 'missing' | 'not_applicable'.\n" +
+      "  * ethicsSafetyNotePresent: boolean.\n" +
+      "  * quantitativeEvidenceLevel: 'none' | 'descriptive' | 'basic_quantitative' | 'statistical'.\n" +
+      "  * DO NOT invent DOIs, ISSNs, publishers, journal names (e.g. Animal Conservation, Wiley, ZSL, JWC, E-Palli are strictly forbidden). DO NOT claim published, peer-reviewed, accepted, or ready-to-submit status."
     : "";
 
   return [
@@ -1084,13 +1159,14 @@ export function normalizeProviderResult(raw: Record<string, unknown>, input: Rep
     const rawJc = (raw.journal_candidate || {}) as any;
     
     // Normalization & programmatic override of references
-    let referencesSuppliedByUser = "Belum ada referensi yang disediakan pengguna.";
+    let referencesSuppliedByUser: string[] = ["Belum ada referensi yang disediakan pengguna."];
     if (Array.isArray(input.sourceUrls) && input.sourceUrls.length > 0) {
-      referencesSuppliedByUser = input.sourceUrls.map((url: string) => `- [User Provided] ${url} (Belum diverifikasi)`).join("\n");
+      referencesSuppliedByUser = input.sourceUrls.map((url: string) => `[User Provided] ${url} (Belum diverifikasi)`);
     }
 
     // Capture unsupported claims
-    let unsupportedClaims = safeStringArray(rawJc.unsupportedClaims || rawJc.unsupported_claims, []);
+    let unsupportedClaims = safeStringArray(rawJc.unsupportedClaims || rawJc.unsupported_claims, [])
+      .map(c => scrubForbiddenOutputs(c, input.sourceUrls || []));
     
     // Capping fields before saving to DB
     const MAX_FIELD_LEN = 1000;
@@ -1108,25 +1184,72 @@ export function normalizeProviderResult(raw: Record<string, unknown>, input: Rep
       evidence_table: Array.isArray(raw.evidence_table) ? raw.evidence_table : [],
       additional_evidence_needed: safeStringArray(raw.additional_evidence_needed, [])
     };
+
+    const scrub = (str: string) => scrubForbiddenOutputs(str, input.sourceUrls || []);
+
+    const rawEvTable = Array.isArray(rawJc.evidenceTable || rawJc.evidence_table)
+      ? (rawJc.evidenceTable || rawJc.evidence_table)
+      : (Array.isArray(draftForFallback.evidence_table) ? draftForFallback.evidence_table : []);
+    
+    const mappedEvidenceTable = rawEvTable.map((row: any) => {
+      const claim = scrub(String(row.claim || row.summary || "Observasi Lapangan"));
+      const evidenceType = scrub(String(row.evidenceType || row.material_type || "Catatan"));
+      const sourceVal = row.source || (row.user_provided ? "user_supplied" : "ai_inference");
+      const source = (sourceVal === "user_supplied" || sourceVal === "ai_inference" || sourceVal === "missing") ? sourceVal : "ai_inference";
+      const confidenceVal = row.confidence || (row.verification_status === "verified" ? "high" : "medium");
+      const confidence = (confidenceVal === "low" || confidenceVal === "medium" || confidenceVal === "high") ? confidenceVal : "medium";
+      const limitation = scrub(String(row.limitation || ""));
+      return { claim, evidenceType, source, confidence, limitation };
+    }).slice(0, 10);
+
+    const rawAnnex = Array.isArray(rawJc.annexure) ? rawJc.annexure : [];
+    const mappedAnnexure = rawAnnex.map((item: any) => {
+      const label = scrub(String(item.label || "Lampiran"));
+      const details = Array.isArray(item.details)
+        ? item.details.map((d: any) => scrub(String(d))).slice(0, 10)
+        : [scrub(String(item.details || ""))];
+      return { label, details };
+    }).slice(0, 10);
+
+    const rawLimitations = Array.isArray(rawJc.limitations)
+      ? rawJc.limitations
+      : (typeof rawJc.limitations === "string" ? [rawJc.limitations] : [draftForFallback.uncertainty_note]);
+    const limitations = rawLimitations.map((l: any) => scrub(String(l))).slice(0, 10);
+
+    const rawFuture = Array.isArray(rawJc.futureResearch || rawJc.future_research)
+      ? (rawJc.futureResearch || rawJc.future_research)
+      : (typeof (rawJc.futureResearch || rawJc.future_research) === "string" ? [rawJc.futureResearch || rawJc.future_research] : []);
+    const futureResearch = rawFuture.map((f: any) => scrub(String(f))).slice(0, 10);
     
     // Map raw model outputs, capping sizes
     journal_candidate = {
-      title: safeString(rawJc.title || rawJc.judul, draftForFallback.title).slice(0, MAX_FIELD_LEN),
-      abstract: safeString(rawJc.abstract || rawJc.abstrak, draftForFallback.executive_summary).slice(0, MAX_FIELD_LEN),
-      keywords: safeStringArray(rawJc.keywords || rawJc.kata_kunci, [input.topic || "Observasi"]).map(k => k.slice(0, 50)).slice(0, 10),
-      introduction: safeString(rawJc.introduction || rawJc.pendahuluan, draftForFallback.background).slice(0, MAX_FIELD_LEN),
-      methods: safeString(rawJc.methods || rawJc.metode, draftForFallback.method_or_materials).slice(0, MAX_FIELD_LEN),
-      results: safeString(rawJc.results || rawJc.hasil, draftForFallback.preliminary_analysis || draftForFallback.findings.join("\n")).slice(0, MAX_FIELD_LEN),
-      discussion: safeString(rawJc.discussion || rawJc.pembahasan, draftForFallback.discussion).slice(0, MAX_FIELD_LEN),
-      conclusion: safeString(rawJc.conclusion || rawJc.kesimpulan, draftForFallback.conclusion).slice(0, MAX_FIELD_LEN),
-      limitations: safeString(rawJc.limitations || rawJc.batasan, draftForFallback.uncertainty_note).slice(0, MAX_FIELD_LEN),
-      evidenceTable: (Array.isArray(rawJc.evidenceTable || rawJc.evidence_table) 
-        ? (rawJc.evidenceTable || rawJc.evidence_table) 
-        : draftForFallback.evidence_table).slice(0, 10),
-      missingEvidence: safeStringArray(rawJc.missingEvidence || rawJc.missing_evidence, draftForFallback.additional_evidence_needed).slice(0, 10),
+      title: scrub(safeString(rawJc.title || rawJc.judul, draftForFallback.title)).slice(0, MAX_FIELD_LEN),
+      abstract: scrub(safeString(rawJc.abstract || rawJc.abstrak, draftForFallback.executive_summary)).slice(0, MAX_FIELD_LEN),
+      keywords: safeStringArray(rawJc.keywords || rawJc.kata_kunci, [input.topic || "Observasi"]).map(k => scrub(k).slice(0, 50)).slice(0, 10),
+      introduction: scrub(safeString(rawJc.introduction || rawJc.pendahuluan, draftForFallback.background)).slice(0, MAX_FIELD_LEN),
+      literatureReview: scrub(safeString(rawJc.literatureReview || rawJc.literature_review, draftForFallback.background)).slice(0, MAX_FIELD_LEN),
+      materialsAndMethods: scrub(safeString(rawJc.materialsAndMethods || rawJc.methods || rawJc.metode, draftForFallback.method_or_materials)).slice(0, MAX_FIELD_LEN),
+      results: scrub(safeString(rawJc.results || rawJc.hasil, draftForFallback.preliminary_analysis || draftForFallback.findings.join("\n"))).slice(0, MAX_FIELD_LEN),
+      discussion: scrub(safeString(rawJc.discussion || rawJc.pembahasan, draftForFallback.discussion)).slice(0, MAX_FIELD_LEN),
+      conclusion: scrub(safeString(rawJc.conclusion || rawJc.kesimpulan, draftForFallback.conclusion)).slice(0, MAX_FIELD_LEN),
+      limitations,
+      futureResearch,
+      annexure: mappedAnnexure,
+      evidenceTable: mappedEvidenceTable,
+      missingEvidence: safeStringArray(rawJc.missingEvidence || rawJc.missing_evidence, draftForFallback.additional_evidence_needed).map(m => scrub(m)).slice(0, 10),
       referencesSuppliedByUser,
-      citationIntegrityNote: safeString(rawJc.citationIntegrityNote || rawJc.citation_integrity_note, "NaLI tidak membuat DOI/referensi palsu.").slice(0, MAX_FIELD_LEN),
+      citationIntegrityNote: scrub(safeString(rawJc.citationIntegrityNote || rawJc.citation_integrity_note, "NaLI tidak membuat DOI/referensi palsu.")).slice(0, MAX_FIELD_LEN),
       unsupportedClaims: unsupportedClaims.slice(0, 10),
+      publicationStatus: {
+        isPublished: false,
+        isPeerReviewed: false,
+        doiGenerated: false,
+        pdfPublicExportActive: false
+      },
+      hasConservationImplication: !!(rawJc.hasConservationImplication || rawJc.has_conservation_implication),
+      scientificNameDiscipline: (rawJc.scientificNameDiscipline || rawJc.scientific_name_discipline || "not_applicable") as "ok" | "missing" | "not_applicable",
+      ethicsSafetyNotePresent: !!(rawJc.ethicsSafetyNotePresent || rawJc.ethics_safety_note_present),
+      quantitativeEvidenceLevel: (rawJc.quantitativeEvidenceLevel || rawJc.quantitative_evidence_level || "none") as "none" | "descriptive" | "basic_quantitative" | "statistical"
     };
 
     journal_quality = evaluateJournalQuality(input, journal_candidate);

@@ -92,7 +92,7 @@ test("Sprint 3 Journal Quality - 2. Thin input caps the score to maximum 55", ()
 test("Sprint 3 Journal Quality - 3. Citation integrity warning and references override when sourceUrls are empty", () => {
   const requestInputNoRefs = {
     mode: "draft_from_materials",
-    reportTemplate: "Laporan Observasi Lingkungan",
+    reportTemplate: "Laporan Observasi Lingkungan Jurnal",
     title: "Jurnal Observasi Hutan Merapi",
     role: "pengguna",
     mainText: "Observasi vegetasi Acacia decurrens di lereng Gunung Merapi.",
@@ -132,7 +132,7 @@ test("Sprint 3 Journal Quality - 3. Citation integrity warning and references ov
 
   const normalized = normalizeProviderResult(rawResponse, requestInputNoRefs, "Test Model");
   assert.ok(normalized.journal_candidate);
-  assert.equal(normalized.journal_candidate.referencesSuppliedByUser, "Belum ada referensi yang disediakan pengguna.");
+  assert.deepEqual(normalized.journal_candidate.referencesSuppliedByUser, ["Belum ada referensi yang disediakan pengguna."]);
   assert.equal(normalized.journal_quality.citationIntegrity, "warning");
 });
 

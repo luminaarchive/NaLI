@@ -2754,6 +2754,16 @@ function ReportResultCard({
             evidenceSufficiency: "weak" as const,
             publicationClaimAllowed: false,
             recommendedFixes: [],
+            abstractWordCount: 0,
+            keywordsCount: 0,
+            articleWordTarget: 0,
+            hasConservationImplication: false,
+            hasMethodsReplicability: false,
+            usesMetricOrSIUnitsWhenMeasurementsExist: false,
+            scientificNameDiscipline: "not_applicable" as const,
+            ethicsSafetyNotePresent: false,
+            referenceConsistencyStatus: "warning" as const,
+            quantitativeEvidenceLevel: "none" as const
           };
 
           if (!candidate) {
@@ -2764,38 +2774,127 @@ function ReportResultCard({
             );
           }
 
+          // Define inline scrub function for client side safeguarding
+          const clientScrub = (text: string) => {
+            if (!text) return "";
+            return text
+              .replace(/Animal\s+Conservation/gi, "NaLI Nature & Evidence Journal")
+              .replace(/Wiley/gi, "Publisher")
+              .replace(/ZSL/gi, "Zoological Society")
+              .replace(/Journal\s+of\s+Wildlife\s+and\s+Conservation/gi, "NaLI Nature & Evidence Journal")
+              .replace(/E-Palli/gi, "Publisher")
+              .replace(/peer-reviewed/gi, "academic draft style")
+              .replace(/\bpublished\b/gi, "drafted")
+              .replace(/\baccepted\b/gi, "processed")
+              .replace(/\bindexed\b/gi, "archived")
+              .replace(/siap\s+submit/gi, "draf awal")
+              .replace(/jurnal\s+final/gi, "draf kandidat jurnal");
+          };
+
           return (
-            <div className="space-y-4 text-sm leading-6 text-white/70">
+            <div className="space-y-5 text-sm leading-6 text-white/70">
               {/* Warnings and Wording Locks */}
               <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-6 text-amber-200/80 space-y-2">
                 <div className="flex items-center gap-1.5 font-semibold text-amber-400">
                   <AlertTriangle className="h-4 w-4" />
                   <span>Draf kandidat jurnal — Belum siap publikasi final</span>
                 </div>
-                <ul className="list-disc pl-4 space-y-1 text-white/70">
+                <ul className="list-disc pl-4 space-y-1 text-white/75">
                   <li>PDF jurnal publik belum aktif di CP1</li>
                   <li>Referensi hanya berdasarkan input pengguna</li>
-                  <li>NaLI tidak membuat DOI/referensi palsu</li>
+                  <li>NaLI tidak membuat DOI, ISSN, nama jurnal, publisher, atau referensi palsu</li>
+                  <li>Benchmark ini mengikuti disiplin struktur akademik, bukan menyalin identitas jurnal.</li>
                 </ul>
               </div>
 
               {/* Quality Evaluator Panel */}
-              <div className="rounded-xl border border-white/[0.05] bg-white/[0.01] p-3 text-xs space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-white/45">Skor Kualitas Jurnal:</span>
-                  <span className="font-bold text-emerald-400">{quality.score} / 100</span>
+              <div className="rounded-xl border border-white/[0.05] bg-white/[0.01] p-4 text-xs space-y-3">
+                <div className="flex justify-between border-b border-white/[0.04] pb-2">
+                  <span className="font-bold text-white/80">Benchmark Kualitas Akademik</span>
+                  <span className="font-mono text-white/45">Sprint 4 QA Engine</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-white/45">Tingkat Draf:</span>
-                  <span className="font-semibold capitalize text-white/70">{quality.level}</span>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between">
+                      <span className="text-white/45">Skor Kualitas Jurnal:</span>
+                      <span className="font-bold text-emerald-400">{quality.score} / 100</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/45">Tingkat Kelayakan:</span>
+                      <span className="font-semibold capitalize text-emerald-400/90">{quality.level}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/45">Struktur Artikel Konservasi:</span>
+                      <span className={cn("font-medium", quality.imradComplete ? "text-emerald-400" : "text-amber-400")}>
+                        {quality.imradComplete ? "Terpenuhi (IMRaD lengkap)" : "Belum Lengkap"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/45">Guideline Konservasi Kuantitatif:</span>
+                      <span className="font-semibold text-white/70">Aktif</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/45">Implikasi Konservasi (Implication):</span>
+                      <span className={cn("font-semibold", quality.hasConservationImplication ? "text-emerald-400" : "text-rose-400")}>
+                        {quality.hasConservationImplication ? "Terpenuhi" : "Tidak Ada"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between">
+                      <span className="text-white/45">Jumlah Kata Abstrak (Max 300):</span>
+                      <span className={cn("font-mono font-medium", quality.abstractWordCount <= 300 ? "text-emerald-400" : "text-rose-400")}>
+                        {quality.abstractWordCount} kata
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/45">Jumlah Kata Kunci (Max 8):</span>
+                      <span className={cn("font-mono font-medium", quality.keywordsCount <= 8 ? "text-emerald-400" : "text-rose-400")}>
+                        {quality.keywordsCount}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/45">Target Kata Artikel (Max 4000):</span>
+                      <span className="font-mono text-white/70">{quality.articleWordTarget} kata</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/45">Replikabilitas Metode (Replicability):</span>
+                      <span className={cn("font-semibold", quality.hasMethodsReplicability ? "text-emerald-400" : "text-rose-400")}>
+                        {quality.hasMethodsReplicability ? "Terpenuhi" : "Tidak Ada"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/45">Etika & Keamanan Populasi:</span>
+                      <span className={cn("font-semibold", quality.ethicsSafetyNotePresent ? "text-emerald-400" : "text-rose-400")}>
+                        {quality.ethicsSafetyNotePresent ? "Terpenuhi" : "Tidak Ada"}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-white/45">Kelengkapan IMRaD:</span>
-                  <span className="font-semibold text-white/70">{quality.imradComplete ? "Lengkap" : "Belum Lengkap"}</span>
+
+                <div className="border-t border-white/[0.04] pt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Tingkat Bukti Kuantitatif:</span>
+                    <span className="font-mono text-emerald-400">{quality.quantitativeEvidenceLevel}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Konsistensi Referensi (Citation):</span>
+                    <span className={cn("font-bold", quality.referenceConsistencyStatus === "safe" ? "text-emerald-400" : (quality.referenceConsistencyStatus === "blocked" ? "text-rose-400" : "text-amber-400"))}>
+                      {quality.referenceConsistencyStatus}
+                    </span>
+                  </div>
                 </div>
+
+                <div className="flex justify-between border-t border-white/[0.04] pt-2">
+                  <span className="text-white/45">Ekspor PDF Publik:</span>
+                  <span className="font-bold text-rose-400">Locked / Inactive</span>
+                </div>
+
                 {quality.missingSections && quality.missingSections.length > 0 && (
                   <div>
-                    <span className="block text-white/45">Bagian IMRaD yang Kurang:</span>
+                    <span className="block text-white/45">Bagian Artikel yang Kurang:</span>
                     <ul className="mt-1 list-disc pl-4 text-white/50">
                       {quality.missingSections.map((sec, idx) => (
                         <li key={idx}>{sec}</li>
@@ -2820,64 +2919,125 @@ function ReportResultCard({
                 <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
                   Judul Jurnal
                 </span>
-                <p className="mt-1 font-semibold text-white/90">{candidate.title}</p>
+                <p className="mt-1 font-semibold text-white/90">{clientScrub(candidate.title)}</p>
               </div>
 
               <div className="border-t border-white/[0.04] pt-3">
                 <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
                   Abstrak
                 </span>
-                <p className="mt-1 italic">{candidate.abstract}</p>
+                <p className="mt-1 italic">{clientScrub(candidate.abstract)}</p>
               </div>
 
               <div className="border-t border-white/[0.04] pt-3">
                 <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
                   Kata Kunci
                 </span>
-                <p className="mt-1 font-medium">{candidate.keywords.join(", ")}</p>
+                <p className="mt-1 font-medium">{clientScrub(candidate.keywords.join(", "))}</p>
               </div>
 
               <div className="border-t border-white/[0.04] pt-3">
                 <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
                   Pendahuluan (Introduction)
                 </span>
-                <p className="mt-1 whitespace-pre-wrap">{candidate.introduction}</p>
+                <p className="mt-1 whitespace-pre-wrap">{clientScrub(candidate.introduction)}</p>
               </div>
 
               <div className="border-t border-white/[0.04] pt-3">
                 <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
-                  Metode (Methods)
+                  Tinjauan Pustaka (Literature Review)
                 </span>
-                <p className="mt-1 whitespace-pre-wrap">{candidate.methods}</p>
+                <p className="mt-1 whitespace-pre-wrap">{clientScrub(candidate.literatureReview)}</p>
+              </div>
+
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Materi & Metode (Materials and Methods)
+                </span>
+                <p className="mt-1 whitespace-pre-wrap">{clientScrub(candidate.materialsAndMethods)}</p>
               </div>
 
               <div className="border-t border-white/[0.04] pt-3">
                 <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
                   Hasil (Results)
                 </span>
-                <p className="mt-1 whitespace-pre-wrap">{candidate.results}</p>
+                <p className="mt-1 whitespace-pre-wrap">{clientScrub(candidate.results)}</p>
               </div>
 
               <div className="border-t border-white/[0.04] pt-3">
                 <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
                   Pembahasan (Discussion)
                 </span>
-                <p className="mt-1 whitespace-pre-wrap">{candidate.discussion}</p>
+                <p className="mt-1 whitespace-pre-wrap">{clientScrub(candidate.discussion)}</p>
               </div>
 
               <div className="border-t border-white/[0.04] pt-3">
                 <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
                   Kesimpulan (Conclusion)
                 </span>
-                <p className="mt-1 whitespace-pre-wrap">{candidate.conclusion}</p>
+                <p className="mt-1 whitespace-pre-wrap">{clientScrub(candidate.conclusion)}</p>
               </div>
 
               <div className="border-t border-white/[0.04] pt-3">
                 <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
                   Batasan Jurnal (Limitations)
                 </span>
-                <p className="mt-1 whitespace-pre-wrap">{candidate.limitations}</p>
+                <div className="mt-1 space-y-1">
+                  {Array.isArray(candidate.limitations) ? (
+                    <ul className="list-disc pl-4 space-y-0.5">
+                      {candidate.limitations.map((l: string, idx: number) => (
+                        <li key={idx}>{clientScrub(l)}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="whitespace-pre-wrap">{clientScrub(candidate.limitations as any as string)}</p>
+                  )}
+                </div>
               </div>
+
+              {candidate.futureResearch && (
+                <div className="border-t border-white/[0.04] pt-3">
+                  <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                    Riset Masa Depan (Future Research)
+                  </span>
+                  <div className="mt-1 space-y-1">
+                    {Array.isArray(candidate.futureResearch) ? (
+                      <ul className="list-disc pl-4 space-y-0.5">
+                        {candidate.futureResearch.map((fr: string, idx: number) => (
+                          <li key={idx}>{clientScrub(fr)}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="whitespace-pre-wrap">{clientScrub(candidate.futureResearch as any as string)}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Annexure */}
+              {candidate.annexure && candidate.annexure.length > 0 && (
+                <div className="border-t border-white/[0.04] pt-3">
+                  <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                    Lampiran (Annexure)
+                  </span>
+                  <div className="mt-2 space-y-3">
+                    {candidate.annexure.map((annex: any, idx: number) => (
+                      <div key={idx} className="space-y-1 border-l border-white/10 pl-3">
+                        <span className="block text-xs font-bold text-white/80">{clientScrub(annex.label)}</span>
+                        {Array.isArray(annex.details) ? (
+                          <ul className="list-disc pl-4 text-xs text-white/50 space-y-0.5">
+                            {annex.details.map((detail: string, dIdx: number) => (
+                              <li key={dIdx}>{clientScrub(detail)}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-xs text-white/50">{clientScrub(annex.details)}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Evidence Table */}
               {candidate.evidenceTable && candidate.evidenceTable.length > 0 && (
@@ -2889,21 +3049,21 @@ function ReportResultCard({
                     <table className="min-w-full text-left text-xs">
                       <thead>
                         <tr className="border-b border-white/[0.06] bg-white/[0.02]">
-                          <th className="px-3 py-2 text-white/40">ID</th>
-                          <th className="px-3 py-2 text-white/40">Tipe</th>
-                          <th className="px-3 py-2 text-white/40">Ringkasan</th>
-                          <th className="px-3 py-2 text-white/40">Verifikasi</th>
+                          <th className="px-3 py-2 text-white/40">Klaim</th>
+                          <th className="px-3 py-2 text-white/40">Tipe Bukti</th>
+                          <th className="px-3 py-2 text-white/40">Ringkasan / Batasan</th>
+                          <th className="px-3 py-2 text-white/40">Sumber & Verifikasi</th>
                         </tr>
                       </thead>
                       <tbody>
                         {candidate.evidenceTable.map((row, idx) => (
-                          <tr key={row.id || idx} className="border-b border-white/[0.04] last:border-none">
-                            <td className="px-3 py-2.5 font-mono text-[10px] text-white/50">{row.id || `EV-${idx}`}</td>
-                            <td className="px-3 py-2.5 text-white/60">{row.material_type}</td>
-                            <td className="max-w-[200px] truncate px-3 py-2.5 text-white/50">{row.summary}</td>
+                          <tr key={idx} className="border-b border-white/[0.04] last:border-none">
+                            <td className="px-3 py-2.5 font-medium text-white/80">{clientScrub(row.claim)}</td>
+                            <td className="px-3 py-2.5 text-white/60">{clientScrub(row.evidenceType)}</td>
+                            <td className="max-w-[200px] truncate px-3 py-2.5 text-white/50">{clientScrub(row.limitation)}</td>
                             <td className="px-3 py-2.5">
                               <span className="inline-flex rounded border border-white/[0.06] bg-white/[0.04] px-1.5 py-0.5 text-[9px] text-white/45">
-                                {row.verification_status}
+                                {clientScrub(row.source)}
                               </span>
                             </td>
                           </tr>
@@ -2922,7 +3082,7 @@ function ReportResultCard({
                   </span>
                   <ul className="mt-1 list-disc pl-4 text-white/60">
                     {candidate.missingEvidence.map((item, i) => (
-                      <li key={i}>{item}</li>
+                      <li key={i}>{clientScrub(item)}</li>
                     ))}
                   </ul>
                 </div>
@@ -2936,7 +3096,7 @@ function ReportResultCard({
                   </span>
                   <ul className="mt-1 list-disc pl-4 text-[#FFACAC]/80">
                     {candidate.unsupportedClaims.map((item, i) => (
-                      <li key={i}>{item}</li>
+                      <li key={i}>{clientScrub(item)}</li>
                     ))}
                   </ul>
                 </div>
@@ -2947,8 +3107,18 @@ function ReportResultCard({
                 <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
                   Referensi Pustaka (User Provided)
                 </span>
-                <p className="mt-1 whitespace-pre-wrap text-white/50 font-mono text-xs">{candidate.referencesSuppliedByUser}</p>
-                <p className="mt-1.5 text-white/30 text-[10px] italic">{candidate.citationIntegrityNote}</p>
+                <div className="mt-1 space-y-1">
+                  {Array.isArray(candidate.referencesSuppliedByUser) ? (
+                    <ul className="list-disc pl-4 text-white/50 font-mono text-xs space-y-1">
+                      {candidate.referencesSuppliedByUser.map((ref: string, idx: number) => (
+                        <li key={idx}>{clientScrub(ref)}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="whitespace-pre-wrap text-white/50 font-mono text-xs">{clientScrub(candidate.referencesSuppliedByUser)}</p>
+                  )}
+                </div>
+                <p className="mt-2.5 text-white/30 text-[10px] italic">{clientScrub(candidate.citationIntegrityNote)}</p>
               </div>
             </div>
           );
