@@ -184,73 +184,73 @@ export default function FieldNotesPage() {
   }
 
   return (
-    <PublicAppShell>
-      <div className="max-w-4xl mx-auto px-4 py-16">
+    <PublicAppShell isHomepage={true}>
+      <div className="max-w-4xl mx-auto px-4 py-16 text-[#1e3525]">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-10">
           <div>
-            <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-[#f5f0e8] mb-2">Catatan Lapangan</h1>
-            <p className="text-[#a1b3a8]">Dokumentasikan observasi lapangan dan analisis dengan NaLI.</p>
+            <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-[#1e3525] mb-2">Catatan Lapangan</h1>
+            <p className="text-[#4a6455]">Dokumentasikan observasi lapangan dan analisis dengan NaLI.</p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="rounded-xl bg-[#1e3525] text-[#f5f0e8] hover:bg-[#162d1d] flex items-center gap-2 cursor-pointer">
+              <Button className="rounded-xl bg-[#1e3525] text-white hover:bg-[#162d1d] flex items-center gap-2 cursor-pointer">
                 <Plus className="h-4 w-4" /> Catatan Baru
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-[#08100c] border border-[#14261c] rounded-2xl text-[#f5f0e8] w-full max-w-[calc(100vw-32px)] sm:max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogContent className="bg-white border border-[#1e3525]/12 rounded-2xl text-[#1e3525] w-full max-w-[calc(100vw-32px)] sm:max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
               <DialogHeader>
-                <DialogTitle className="font-serif text-[#f5f0e8]">Catatan Lapangan Baru</DialogTitle>
+                <DialogTitle className="font-serif text-[#1e3525]">Catatan Lapangan Baru</DialogTitle>
               </DialogHeader>
               <div className="flex flex-col gap-4 mt-2">
                 <div>
-                  <Label className="text-[#a1b3a8] text-xs mb-1.5 block">Judul *</Label>
-                  <Input value={form.title} onChange={e => setForm(p => ({...p,title:e.target.value}))} placeholder="Contoh: Observasi Macan Tutul — Merbabu 2706" className="bg-[#0b1a12] border-[#14261c] text-[#f5f0e8] placeholder:text-[#a1b3a8]/40 rounded-xl focus-visible:ring-[#00FFB3]/30" />
+                  <Label className="text-[#4a6455] text-xs mb-1.5 block">Judul *</Label>
+                  <Input value={form.title} onChange={e => setForm(p => ({...p,title:e.target.value}))} placeholder="Contoh: Observasi Macan Tutul — Merbabu 2706" className="bg-white border-[#1e3525]/12 text-[#1e3525] placeholder:text-[#4a6455]/40 rounded-xl focus-visible:ring-[#1e3525]/30" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-[#a1b3a8] text-xs mb-1.5 block">Lokasi</Label>
-                    <Input value={form.location_name} onChange={e => setForm(p => ({...p,location_name:e.target.value}))} placeholder="Nama lokasi" className="bg-[#0b1a12] border-[#14261c] text-[#f5f0e8] placeholder:text-[#a1b3a8]/40 rounded-xl focus-visible:ring-[#00FFB3]/30" />
+                    <Label className="text-[#4a6455] text-xs mb-1.5 block">Lokasi</Label>
+                    <Input value={form.location_name} onChange={e => setForm(p => ({...p,location_name:e.target.value}))} placeholder="Nama lokasi" className="bg-white border-[#1e3525]/12 text-[#1e3525] placeholder:text-[#4a6455]/40 rounded-xl focus-visible:ring-[#1e3525]/30" />
                   </div>
                   <div>
-                    <Label className="text-[#a1b3a8] text-xs mb-1.5 block">Elevasi (m)</Label>
-                    <Input type="number" value={form.elevation_m} onChange={e => setForm(p => ({...p,elevation_m:e.target.value}))} placeholder="Contoh: 2400" className="bg-[#0b1a12] border-[#14261c] text-[#f5f0e8] placeholder:text-[#a1b3a8]/40 rounded-xl focus-visible:ring-[#00FFB3]/30" />
+                    <Label className="text-[#4a6455] text-xs mb-1.5 block">Elevasi (m)</Label>
+                    <Input type="number" value={form.elevation_m} onChange={e => setForm(p => ({...p,elevation_m:e.target.value}))} placeholder="Contoh: 2400" className="bg-white border-[#1e3525]/12 text-[#1e3525] placeholder:text-[#4a6455]/40 rounded-xl focus-visible:ring-[#1e3525]/30" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-[#a1b3a8] text-xs mb-1.5 block">Gunung Pilot</Label>
+                    <Label className="text-[#4a6455] text-xs mb-1.5 block">Gunung Pilot</Label>
                     <Select value={form.mountain} onValueChange={v => setForm(p => ({...p,mountain:v}))}>
-                      <SelectTrigger className="bg-[#0b1a12] border-[#14261c] text-[#f5f0e8] rounded-xl"><SelectValue placeholder="Pilih..." /></SelectTrigger>
-                      <SelectContent className="bg-[#08100c] border-[#14261c]">
-                        {MOUNTAINS.map(m => <SelectItem key={m} value={m} className="text-[#a1b3a8] focus:text-[#f5f0e8] focus:bg-[#14261c] capitalize cursor-pointer">{m}</SelectItem>)}
+                      <SelectTrigger className="bg-white border-[#1e3525]/12 text-[#1e3525] rounded-xl"><SelectValue placeholder="Pilih..." /></SelectTrigger>
+                      <SelectContent className="bg-white border-[#1e3525]/12">
+                        {MOUNTAINS.map(m => <SelectItem key={m} value={m} className="text-[#4a6455] focus:text-[#1e3525] focus:bg-[#1e3525]/5 capitalize cursor-pointer">{m}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-[#a1b3a8] text-xs mb-1.5 block">Tipe Habitat</Label>
+                    <Label className="text-[#4a6455] text-xs mb-1.5 block">Tipe Habitat</Label>
                     <Select value={form.habitat_type} onValueChange={v => setForm(p => ({...p,habitat_type:v}))}>
-                      <SelectTrigger className="bg-[#0b1a12] border-[#14261c] text-[#f5f0e8] rounded-xl"><SelectValue placeholder="Pilih..." /></SelectTrigger>
-                      <SelectContent className="bg-[#08100c] border-[#14261c]">
-                        {HABITATS.map(h => <SelectItem key={h.value} value={h.value} className="text-[#a1b3a8] focus:text-[#f5f0e8] focus:bg-[#14261c] cursor-pointer">{h.label}</SelectItem>)}
+                      <SelectTrigger className="bg-white border-[#1e3525]/12 text-[#1e3525] rounded-xl"><SelectValue placeholder="Pilih..." /></SelectTrigger>
+                      <SelectContent className="bg-white border-[#1e3525]/12">
+                        {HABITATS.map(h => <SelectItem key={h.value} value={h.value} className="text-[#4a6455] focus:text-[#1e3525] focus:bg-[#1e3525]/5 cursor-pointer">{h.label}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
                 <div>
-                  <Label className="text-[#a1b3a8] text-xs mb-1.5 block">Tanggal Observasi</Label>
-                  <Input type="datetime-local" value={form.observed_at} onChange={e => setForm(p => ({...p,observed_at:e.target.value}))} className="bg-[#0b1a12] border-[#14261c] text-[#f5f0e8] rounded-xl focus-visible:ring-[#00FFB3]/30" />
+                  <Label className="text-[#4a6455] text-xs mb-1.5 block">Tanggal Observasi</Label>
+                  <Input type="datetime-local" value={form.observed_at} onChange={e => setForm(p => ({...p,observed_at:e.target.value}))} className="bg-white border-[#1e3525]/12 text-[#1e3525] rounded-xl focus-visible:ring-[#1e3525]/30" />
                 </div>
                 <div>
-                  <Label className="text-[#a1b3a8] text-xs mb-1.5 block">Kondisi Cuaca</Label>
-                  <Input value={form.weather_notes} onChange={e => setForm(p => ({...p,weather_notes:e.target.value}))} placeholder="Cerah, berawan, kabut, hujan ringan..." className="bg-[#0b1a12] border-[#14261c] text-[#f5f0e8] placeholder:text-[#a1b3a8]/40 rounded-xl focus-visible:ring-[#00FFB3]/30" />
+                  <Label className="text-[#4a6455] text-xs mb-1.5 block">Kondisi Cuaca</Label>
+                  <Input value={form.weather_notes} onChange={e => setForm(p => ({...p,weather_notes:e.target.value}))} placeholder="Cerah, berawan, kabut, hujan ringan..." className="bg-white border-[#1e3525]/12 text-[#1e3525] placeholder:text-[#4a6455]/40 rounded-xl focus-visible:ring-[#1e3525]/30" />
                 </div>
                 <div>
-                  <Label className="text-[#a1b3a8] text-xs mb-1.5 block">Catatan Lapangan *</Label>
-                  <Textarea value={form.raw_notes} onChange={e => setForm(p => ({...p,raw_notes:e.target.value}))} placeholder="Deskripsikan observasi secara bebas: spesies yang ditemukan, perilaku, kondisi habitat, tanda-tanda kehadiran, ancaman yang terlihat..." rows={5} className="bg-[#0b1a12] border-[#14261c] text-[#f5f0e8] placeholder:text-[#a1b3a8]/40 rounded-xl resize-none focus-visible:ring-[#00FFB3]/30" />
+                  <Label className="text-[#4a6455] text-xs mb-1.5 block">Catatan Lapangan *</Label>
+                  <Textarea value={form.raw_notes} onChange={e => setForm(p => ({...p,raw_notes:e.target.value}))} placeholder="Deskripsikan observasi secara bebas: spesies yang ditemukan, perilaku, kondisi habitat, tanda-tanda kehadiran, ancaman yang terlihat..." rows={5} className="bg-white border-[#1e3525]/12 text-[#1e3525] placeholder:text-[#4a6455]/40 rounded-xl resize-none focus-visible:ring-[#1e3525]/30" />
                 </div>
-                <Button onClick={saveNote} disabled={!form.title.trim() || !form.raw_notes.trim() || saving} className="w-full rounded-xl bg-[#1e3525] text-[#f5f0e8] hover:bg-[#162d1d] disabled:opacity-50 cursor-pointer">
+                <Button onClick={saveNote} disabled={!form.title.trim() || !form.raw_notes.trim() || saving} className="w-full rounded-xl bg-[#1e3525] text-white hover:bg-[#162d1d] disabled:opacity-50 cursor-pointer">
                   {saving ? "Menyimpan..." : "Simpan Catatan"}
                 </Button>
               </div>
@@ -261,23 +261,23 @@ export default function FieldNotesPage() {
         {/* Notes list */}
         {loading ? (
           <div className="flex flex-col gap-3">
-            {[1,2,3].map(i => <div key={i} className="bg-[#08100c] border border-[#14261c] rounded-2xl h-28 animate-pulse" />)}
+            {[1,2,3].map(i => <div key={i} className="bg-white border border-[#1e3525]/12 rounded-2xl h-28 animate-pulse shadow-sm" />)}
           </div>
         ) : notes.length === 0 ? (
-          <div className="text-center py-20 bg-[#08100c]/40 border border-[#14261c] rounded-2xl p-8">
-            <FileText className="h-12 w-12 text-[#14261c] mx-auto mb-4" />
-            <p className="text-[#f5f0e8] font-serif text-lg mb-2">Belum ada catatan lapangan.</p>
-            <p className="text-[#a1b3a8] text-sm mb-6">Buat catatan pertama atau mulai dari laporan.</p>
+          <div className="text-center py-20 bg-white/50 border border-[#1e3525]/12 rounded-2xl p-8 shadow-[0_4px_20px_rgba(30,53,37,0.02)]">
+            <FileText className="h-12 w-12 text-[#1e3525]/15 mx-auto mb-4" />
+            <p className="text-[#1e3525] font-serif text-lg mb-2">Belum ada catatan lapangan.</p>
+            <p className="text-[#4a6455] text-sm mb-6">Buat catatan pertama atau mulai dari laporan.</p>
             <div className="flex flex-wrap items-center justify-center gap-3">
-              <Button onClick={() => setDialogOpen(true)} className="rounded-xl bg-[#1e3525] text-[#f5f0e8] hover:bg-[#162d1d] cursor-pointer text-xs h-10 px-4">
+              <Button onClick={() => setDialogOpen(true)} className="rounded-xl bg-[#1e3525] text-white hover:bg-[#162d1d] cursor-pointer text-xs h-10 px-4">
                 Buat Catatan Lokal
               </Button>
-              <Button onClick={() => router.push("/create-report")} variant="outline" className="rounded-xl border-[#14261c] text-[#a1b3a8] hover:text-[#f5f0e8] hover:border-[#1e3525] cursor-pointer text-xs h-10 px-4 bg-transparent">
+              <Button onClick={() => router.push("/create-report")} variant="outline" className="rounded-xl border-[#1e3525]/12 text-[#4a6455] hover:text-[#1e3525] hover:border-[#1e3525] cursor-pointer text-xs h-10 px-4 bg-white shadow-sm">
                 Mulai dari Laporan
               </Button>
             </div>
             {isGuest && (
-              <p className="mt-4 text-[10px] text-[#a1b3a8]/50">
+              <p className="mt-4 text-[10px] text-[#4a6455]/70">
                 Catatan disimpan secara lokal di browser perangkat ini (tidak ada sinkronisasi cloud).
               </p>
             )}
@@ -285,37 +285,37 @@ export default function FieldNotesPage() {
         ) : (
           <div className="flex flex-col gap-3">
             {isGuest && (
-              <div className="rounded-xl border border-amber-500/10 bg-amber-500/5 px-4 py-2.5 text-xs text-amber-400/80 mb-2">
+              <div className="rounded-xl border border-amber-600/10 bg-amber-500/5 px-4 py-2.5 text-xs text-amber-800 mb-2">
                 🔒 Mode Tamu: Catatan disimpan secara lokal di browser perangkat ini. Login untuk sinkronisasi cloud.
               </div>
             )}
             {notes.map(note => (
-              <Card key={note.id} className="bg-[#08100c] border-[#14261c] rounded-2xl">
+              <Card key={note.id} className="bg-white border-[#1e3525]/12 rounded-2xl shadow-[0_4px_20px_rgba(30,53,37,0.02)]">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-3">
-                    <CardTitle className="font-serif text-[#f5f0e8] text-base leading-snug">{note.title}</CardTitle>
+                    <CardTitle className="font-serif text-[#1e3525] text-base leading-snug">{note.title}</CardTitle>
                     {note.is_processed && (
-                      <Badge className="border-[#00FFB3]/25 bg-[#00FFB3]/10 text-[#00FFB3] text-xs flex-shrink-0">
+                      <Badge className="border-emerald-600/25 bg-emerald-500/10 text-emerald-800 text-xs flex-shrink-0">
                         Dianalisis
                       </Badge>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-3 mt-1">
                     {note.location_name && (
-                      <span className="flex items-center gap-1 text-xs text-[#a1b3a8]/60">
+                      <span className="flex items-center gap-1 text-xs text-[#4a6455]">
                         <MapPin className="h-3 w-3" />{note.location_name}
                       </span>
                     )}
                     {note.mountain_context && (
-                      <span className="flex items-center gap-1 text-xs text-[#a1b3a8]/60">
+                      <span className="flex items-center gap-1 text-xs text-[#4a6455]">
                         <Mountain className="h-3 w-3" />{note.mountain_context}
                       </span>
                     )}
                     {note.elevation_m && (
-                      <span className="text-xs text-[#a1b3a8]/60">{note.elevation_m}m</span>
+                      <span className="text-xs text-[#4a6455]">{note.elevation_m}m</span>
                     )}
                     {note.observed_at && (
-                      <span className="flex items-center gap-1 text-xs text-[#a1b3a8]/60">
+                      <span className="flex items-center gap-1 text-xs text-[#4a6455]">
                         <Calendar className="h-3 w-3" />
                         {new Date(note.observed_at).toLocaleDateString("id-ID")}
                       </span>
@@ -323,11 +323,11 @@ export default function FieldNotesPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-[#a1b3a8] line-clamp-2 leading-relaxed">{note.raw_notes}</p>
+                  <p className="text-sm text-[#4a6455] line-clamp-2 leading-relaxed">{note.raw_notes}</p>
                   <Button
                     onClick={() => analyzeNote(note)}
                     variant="outline"
-                    className="mt-3 rounded-xl border-[#14261c] text-[#a1b3a8] hover:text-[#f5f0e8] hover:border-[#1e3525] text-xs h-auto py-1.5 px-3 cursor-pointer"
+                    className="mt-3 rounded-xl border-[#1e3525]/12 text-[#4a6455] hover:text-[#1e3525] hover:border-[#1e3525] text-xs h-auto py-1.5 px-3 cursor-pointer bg-white shadow-sm"
                   >
                     Analisis dengan NaLI →
                   </Button>

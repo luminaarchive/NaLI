@@ -55,7 +55,7 @@ export function PricingInterestCapture() {
                 if (status === "error") setStatus("idle");
               }}
               placeholder="Masukkan email Anda..."
-              className="bg-[#0b1a12] border-[#14261c] text-[#f5f0e8] placeholder:text-[#a1b3a8]/40 rounded-xl focus-visible:ring-[#00FFB3]/30 w-full"
+              className="bg-white border-[#1e3525]/12 text-[#1e3525] placeholder:text-[#4a6455]/40 rounded-xl focus-visible:ring-[#1e3525]/30 w-full"
               required
             />
           </div>

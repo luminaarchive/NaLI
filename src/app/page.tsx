@@ -95,6 +95,37 @@ export default function HomePage() {
             </p>
           </div>
         </section>
+
+        {/* Dedicated Centered Status Section */}
+        <section id="status" className="border-t border-[#1e3525]/10 bg-white/40 py-16 px-4">
+          <div className="mx-auto max-w-[620px] text-center">
+            <h2 className="font-serif text-2xl font-bold text-[#1e3525] tracking-tight mb-4">
+              Status Sistem NaLI
+            </h2>
+            <p className="mb-8 text-xs text-[#4a6455]">
+              Pemantauan status kesiapan operasional fitur publik NaLI (Public Alpha).
+            </p>
+            <div className="grid grid-cols-2 gap-4 text-left">
+              {[
+                { label: "Public Alpha", status: "aktif", desc: "Akses publik gratis" },
+                { label: "AI engine", status: "kapasitas bisa terbatas", desc: "Provider rate limits/quota" },
+                { label: "Pembayaran", status: "belum aktif", desc: "Checkout ditangguhkan" },
+                { label: "PDF publik", status: "terkunci", desc: "Unduh laporan lokal saja" },
+                { label: "Upload", status: "belum aktif", desc: "Materi input via teks/form" },
+                { label: "Source verification", status: "belum aktif", desc: "Klaim rujukan diverifikasi manual" }
+              ].map((item, idx) => (
+                <div key={idx} className="rounded-xl border border-[#1e3525]/8 bg-white/80 p-4 shadow-[0_2px_12px_rgba(30,53,37,0.02)]">
+                  <span className="block text-xs font-semibold text-[#4a6455] uppercase tracking-wider">{item.label}</span>
+                  <span className="mt-1.5 inline-flex items-center gap-1.5 text-sm font-bold text-[#1e3525]">
+                    <span className={`h-2 w-2 rounded-full ${item.status === "aktif" ? "bg-emerald-500" : item.status === "kapasitas bisa terbatas" ? "bg-amber-500 animate-pulse" : "bg-zinc-400"}`} />
+                    {item.status}
+                  </span>
+                  <span className="mt-1 block text-[11px] text-[#4a6455]/70">{item.desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
     </PublicAppShell>
   );

@@ -343,7 +343,7 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
 
       {children}
 
-      <footer className="border-t border-[#f5f0e8]/10 bg-[#1e3525] px-4 py-12 text-[#f5f0e8] sm:px-6" id="status">
+      <footer className="border-t border-[#f5f0e8]/10 bg-[#1e3525] px-4 py-12 text-[#f5f0e8] sm:px-6">
         <div className="mx-auto max-w-[1120px]">
           <div className="mb-8 border-b border-[#f5f0e8]/10 pb-8">
             <NaLILogo size={30} variant="light" />
