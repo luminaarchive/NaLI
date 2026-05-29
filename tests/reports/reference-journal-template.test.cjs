@@ -22,7 +22,7 @@ test("1. Journal article template includes cover page data", () => {
   const article = buildJournalArticle(testInput, "peregrine");
   assert.equal(article.cover.journalTitle, "NaLI Nature & Evidence Journal");
   assert.ok(article.cover.issueLine.includes("Volume 1"));
-  assert.ok(article.cover.editionLine.includes("CP1 Founder/Admin QA Edition"));
+  assert.ok(article.cover.editionLine.includes("Founder/Admin QA Edition"));
   assert.equal(article.cover.truthNote, "Draft only; source verification inactive; public export locked.");
 });
 

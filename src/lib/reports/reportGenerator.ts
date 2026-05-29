@@ -125,6 +125,7 @@ export type DraftReport = {
   disclaimer: typeof PUBLIC_REPORT_DISCLAIMER;
   next_user_steps: string[];
   is_mock: boolean;
+  is_preview: boolean;
   // Agentic fields (optional for backward compat)
   understanding?: string;
   plan?: string[];
@@ -215,6 +216,7 @@ export type StartFromZeroGuide = {
   disclaimer: typeof START_FROM_ZERO_DISCLAIMER;
   next_steps: string[];
   is_mock: boolean;
+  is_preview: boolean;
   // Agentic fields (optional for backward compat)
   understanding?: string;
   plan?: string[];
@@ -751,6 +753,7 @@ export function buildMockDraftReport(input: ReportRequest, modelUsed = "NaLI Pre
     human_review_reminder: "Validasi akhir tetap berada pada pengguna, guru, dosen, pembimbing, reviewer, atau ahli yang relevan.",
     id: makeId(),
     is_mock: true,
+    is_preview: true,
     method_or_materials:
       "Metode/bahan dalam draft ini hanya berasal dari input pengguna: catatan, URL, lokasi, atau ringkasan file. Upload file, ekstraksi PDF, dan source verification otomatis belum aktif.",
     mode: "draft_from_materials",
@@ -771,7 +774,7 @@ export function buildMockDraftReport(input: ReportRequest, modelUsed = "NaLI Pre
         ? input.sourceUrls.map((url) => `${url} - diberikan oleh pengguna; belum diverifikasi otomatis.`)
         : ["Belum ada URL sumber. Source verification belum aktif di MVP ini."],
     source_verification_status: SOURCE_VERIFICATION_MVP_STATUS,
-    status: "DEMO/MOCK - NaLI preview engine unavailable or not configured.",
+    status: "PREVIEW LOKAL - Kapasitas mesin AI utama sedang dibatasi.",
     title: input.title,
     uncertainty_note: confidenceNoteFor(input, evidenceTable),
     user_review_checklist: [
@@ -782,7 +785,7 @@ export function buildMockDraftReport(input: ReportRequest, modelUsed = "NaLI Pre
       "Apakah disclaimer tetap disertakan saat dokumen dipakai atau diekspor?",
     ],
     // Agentic fields
-    understanding: `Saya memahami ini sebagai ${input.reportTemplate} berdasarkan ${evidenceTable.length} bahan yang diberikan.${shortInput ? " Input cukup pendek — draf akan terbatas." : ""}`,
+    understanding: `Saya memahami ini sebagai ${input.reportTemplate} berdasarkan ${evidenceTable.length} bahan yang diberikan.${shortInput ? " Input cukup pendek, draf akan terbatas." : ""}`,
     plan: [
       "Menyusun struktur laporan sesuai template.",
       "Mempertahankan data dari catatan pengguna.",
@@ -887,6 +890,7 @@ export function buildMockStartGuide(input: ReportRequest, modelUsed = "NaLI Prev
     integrity_note:
       "Panduan ini membantu kamu memulai observasi. NaLI belum menyusun temuan, analisis, atau kesimpulan laporan karena bahan belum tersedia.",
     is_mock: true,
+    is_preview: true,
     label: START_FROM_ZERO_LABEL,
     mode: "start_from_zero",
     model_used: modelUsed,
@@ -926,7 +930,7 @@ export function buildMockStartGuide(input: ReportRequest, modelUsed = "NaLI Prev
           "Artikel edukasi dari institusi kredibel",
           "Pedoman metode observasi sederhana",
         ],
-    status: "DEMO/MOCK - NaLI preview engine unavailable or not configured.",
+    status: "PREVIEW LOKAL - Kapasitas mesin AI utama sedang dibatasi.",
     suggested_outline: [
       "Pendahuluan",
       "Tujuan observasi",
@@ -1136,6 +1140,7 @@ export function normalizeProviderResult(raw: Record<string, unknown>, input: Rep
       generated_at: new Date().toISOString(),
       id: makeId(),
       is_mock: false,
+      is_preview: false,
       label: START_FROM_ZERO_LABEL,
       mode: "start_from_zero",
       model_used: modelUsed,
@@ -1276,6 +1281,7 @@ export function normalizeProviderResult(raw: Record<string, unknown>, input: Rep
         : draftFallback.human_review_reminder,
     id: makeId(),
     is_mock: false,
+    is_preview: false,
     mode: "draft_from_materials",
     model_used: modelUsed,
     next_user_steps: safeStringArray(draftRaw.next_user_steps, draftFallback.next_user_steps),

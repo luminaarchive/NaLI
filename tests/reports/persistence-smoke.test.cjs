@@ -8,6 +8,7 @@ const { GET: getExport } = require("../../src/app/api/reports/[id]/export/route"
 const { POST: postFeedback } = require("../../src/app/api/reports/[id]/feedback/route");
 const { getPersistedReport } = require("../../src/lib/reports/persistence");
 const { logUsageEvent } = require("../../src/lib/usage/logging");
+const { __setCookie, __clearCookies } = require("../helpers/next-headers-mock.cjs");
 
 function snapshotEnv() {
   return {
@@ -29,6 +30,8 @@ function restoreEnv(snapshot) {
 }
 
 test("persisted report endpoint requires valid token", async () => {
+  __clearCookies();
+  __setCookie("nali_guest_session", "test_guest");
   const original = snapshotEnv();
   delete process.env.NEXT_PUBLIC_SUPABASE_URL;
   delete process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -36,7 +39,9 @@ test("persisted report endpoint requires valid token", async () => {
   try {
     // 1. GET without token -> 401
     const resNoToken = await getReport(
-      new NextRequest("http://localhost/api/reports/11111111-1111-4111-8111-111111111111"),
+      new NextRequest("http://localhost/api/reports/11111111-1111-4111-8111-111111111111", {
+        headers: { cookie: "nali_guest_session=test_guest" }
+      }),
       { params: Promise.resolve({ id: "11111111-1111-4111-8111-111111111111" }) }
     );
     const payloadNoToken = await resNoToken.json();
@@ -45,14 +50,18 @@ test("persisted report endpoint requires valid token", async () => {
 
     // 2. GET with empty/whitespace token -> 401
     const resEmptyToken = await getReport(
-      new NextRequest("http://localhost/api/reports/11111111-1111-4111-8111-111111111111?token=   "),
+      new NextRequest("http://localhost/api/reports/11111111-1111-4111-8111-111111111111?token=   ", {
+        headers: { cookie: "nali_guest_session=test_guest" }
+      }),
       { params: Promise.resolve({ id: "11111111-1111-4111-8111-111111111111" }) }
     );
     assert.equal(resEmptyToken.status, 401);
 
     // 3. GET with token under unconfigured supabase env -> 503
     const resUnconfigured = await getReport(
-      new NextRequest("http://localhost/api/reports/11111111-1111-4111-8111-111111111111?token=some_token"),
+      new NextRequest("http://localhost/api/reports/11111111-1111-4111-8111-111111111111?token=some_token", {
+        headers: { cookie: "nali_guest_session=test_guest" }
+      }),
       { params: Promise.resolve({ id: "11111111-1111-4111-8111-111111111111" }) }
     );
     const payloadUnconfigured = await resUnconfigured.json();
@@ -120,6 +129,8 @@ test("usage logging fallback behavior under unconfigured env", async () => {
 });
 
 test("export endpoint under unconfigured env returns 503 or 401", async () => {
+  __clearCookies();
+  __setCookie("nali_guest_session", "test_guest");
   const original = snapshotEnv();
   delete process.env.NEXT_PUBLIC_SUPABASE_URL;
   delete process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -127,14 +138,18 @@ test("export endpoint under unconfigured env returns 503 or 401", async () => {
   try {
     // GET export without token -> 401
     const resNoToken = await getExport(
-      new NextRequest("http://localhost/api/reports/11111111-1111-4111-8111-111111111111/export"),
+      new NextRequest("http://localhost/api/reports/11111111-1111-4111-8111-111111111111/export", {
+        headers: { cookie: "nali_guest_session=test_guest" }
+      }),
       { params: Promise.resolve({ id: "11111111-1111-4111-8111-111111111111" }) }
     );
     assert.equal(resNoToken.status, 401);
 
     // GET export with token under unconfigured env -> 503
     const resUnconfigured = await getExport(
-      new NextRequest("http://localhost/api/reports/11111111-1111-4111-8111-111111111111/export?token=some_token"),
+      new NextRequest("http://localhost/api/reports/11111111-1111-4111-8111-111111111111/export?token=some_token", {
+        headers: { cookie: "nali_guest_session=test_guest" }
+      }),
       { params: Promise.resolve({ id: "11111111-1111-4111-8111-111111111111" }) }
     );
     assert.equal(resUnconfigured.status, 503);

@@ -69,7 +69,7 @@ function FeatureText({
   );
 }
 
-function MockupShell({ children }: { children: ReactNode }) {
+function PreviewShell({ children }: { children: ReactNode }) {
   return (
     <div className="w-full max-w-[560px] rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-md sm:p-6">
       {children}
@@ -77,9 +77,9 @@ function MockupShell({ children }: { children: ReactNode }) {
   );
 }
 
-function UploadDraftMockup() {
+function UploadDraftPreview() {
   return (
-    <MockupShell>
+    <PreviewShell>
       <div className="rounded-xl border-2 border-dashed border-white/10 bg-white/[0.02] px-4 py-8 text-center">
         <FileText className="mx-auto h-8 w-8 text-white/40" />
         <p className="mt-3 text-sm font-medium text-white/80">
@@ -118,7 +118,7 @@ function UploadDraftMockup() {
       <button className="mt-5 flex h-12 w-full items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 px-4 text-sm font-semibold text-white transition hover:brightness-110">
         Generate Evidence-Based Draft →
       </button>
-    </MockupShell>
+    </PreviewShell>
   );
 }
 
@@ -137,7 +137,7 @@ function StatusBadge({ tone, children }: { tone: "green" | "amber" | "gray"; chi
   );
 }
 
-function EvidenceMockup() {
+function EvidencePreview() {
   const rows = [
     {
       claim: "Populasi menurun 12%...",
@@ -157,7 +157,7 @@ function EvidenceMockup() {
   ];
 
   return (
-    <MockupShell>
+    <PreviewShell>
       <div className="mb-4 flex min-w-0 items-center gap-2">
         <Table2 className="h-5 w-5 shrink-0 text-cyan-400" />
         <span className="text-[14px] font-semibold text-white/90">Source Notes</span>
@@ -192,11 +192,11 @@ function EvidenceMockup() {
           ))}
         </div>
       </div>
-    </MockupShell>
+    </PreviewShell>
   );
 }
 
-function ExportMockup() {
+function ExportPreview() {
   const checklist = [
     "Source notes labeled",
     "Evidence summary included",
@@ -205,7 +205,7 @@ function ExportMockup() {
   ];
 
   return (
-    <MockupShell>
+    <PreviewShell>
       <div className="text-[16px] font-semibold text-white">Export Gate</div>
       <div className="mt-5 space-y-3">
         {checklist.map((item) => (
@@ -223,7 +223,7 @@ function ExportMockup() {
         <Download className="h-4 w-4" />
         PDF/DOCX terkunci 
       </div>
-    </MockupShell>
+    </PreviewShell>
   );
 }
 
@@ -231,14 +231,14 @@ function FeatureBlock({
   body,
   href,
   link,
-  mockup,
+  preview,
   reversed = false,
   title,
 }: {
   body: string;
   href: string;
   link: string;
-  mockup: ReactNode;
+  preview: ReactNode;
   reversed?: boolean;
   title: string;
 }) {
@@ -268,7 +268,7 @@ function FeatureBlock({
           transform: visible ? "translateY(0)" : "translateY(24px)",
         }}
       >
-        <div className="mt-8 md:mt-0">{mockup}</div>
+        <div className="mt-8 md:mt-0">{preview}</div>
       </div>
     </div>
   );
@@ -281,7 +281,7 @@ export function CodexFeatureShowcase() {
         body="Dari catatan teks, URL sumber, lokasi, dan ringkasan bahan, NaLI mengubah input pengguna menjadi draft berbasis evidensi yang siap direview."
         href="/create-report"
         link="Mulai draft sekarang"
-        mockup={<UploadDraftMockup />}
+        preview={<UploadDraftPreview />}
         title="Masukkan catatan. Dapatkan draft otomatis."
       />
 
@@ -289,7 +289,7 @@ export function CodexFeatureShowcase() {
         body="Evidence Engine NaLI menautkan klaim ke sumber, menandai data yang memerlukan verifikasi mandiri, dan menjaga transparansi sebelum export."
         href="/learn-report"
         link="Lihat evidence engine"
-        mockup={<EvidenceMockup />}
+        preview={<EvidencePreview />}
         reversed
         title="Setiap klaim dilacak. Setiap sumber terlihat."
       />
@@ -298,7 +298,7 @@ export function CodexFeatureShowcase() {
         body="Preview tetap terbuka untuk diperiksa. PDF/DOCX publik tetap terkunci  dan checkout belum aktif."
         href="/pricing"
         link="Pelajari export gate"
-        mockup={<ExportMockup />}
+        preview={<ExportPreview />}
         title="Review dulu. Export saat siap."
       />
     </div>

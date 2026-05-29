@@ -22,7 +22,7 @@ export function generateManualChecklist(
   const isZero = mode === "start_from_zero";
   
   const modeLabel = isZero
-    ? "Panduan awal — belum menjadi draft laporan berbasis bukti."
+    ? "Panduan awal - belum menjadi draft laporan berbasis bukti."
     : "Draft bantuan belajar/penulisan berbasis bukti.";
 
   const disclaimer = isZero

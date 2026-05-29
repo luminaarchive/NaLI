@@ -193,7 +193,7 @@ test("normal public screens hide internal model names, credits, and active payme
   assert.match(combinedPublicComposer, /Buat Laporan/);
   assert.match(pricing, /REPORT_PACKAGES\.map/);
   assert.match(pricing, /reportPackage\.publicCopy/);
-  assert.match(pricing, /Pembayaran dan checkout belum aktif di CP1/);
+  assert.match(pricing, /Pembayaran dan checkout belum aktif/);
   assert.doesNotMatch(pricing + results + combinedPublicComposer, /fetch\(["']\/api\/payments\/create/);
 });
 

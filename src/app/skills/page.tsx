@@ -177,7 +177,7 @@ export default function SkillsPage() {
                 Selesaikan sesi yang bagus, lalu simpan sebagai skill untuk digunakan kembali.
               </p>
               <Badge className="border-[#14261c] bg-transparent text-[#a1b3a8] text-xs">
-                Fitur simpan skill — segera hadir
+                Fitur simpan skill - segera hadir
               </Badge>
             </div>
           </TabsContent>

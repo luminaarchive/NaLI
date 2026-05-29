@@ -24,13 +24,8 @@ export async function GET(req: NextRequest) {
       .select("id, mode, status, created_at, input, output, user_id");
 
     if (user) {
-      // User authenticated: load user-owned reports, or guest-owned reports matching guest session hash (before linking)
-      if (guestSessionId) {
-        const guestHash = getGuestSessionIdHash(guestSessionId);
-        query = query.or(`user_id.eq.${user.id},and(guest_session_id_hash.eq.${guestHash},user_id.is.null)`);
-      } else {
-        query = query.eq("user_id", user.id);
-      }
+      // User authenticated: load user-owned reports strictly
+      query = query.eq("user_id", user.id);
     } else {
       // Guest: load reports matching guest session hash only
       if (guestSessionId) {

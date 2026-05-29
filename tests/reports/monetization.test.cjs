@@ -36,6 +36,8 @@ const { POST: createPayment } = require("../../src/app/api/payments/create/route
 const { POST: processWebhook } = require("../../src/app/api/payments/midtrans-webhook/route");
 const { getPlanById, getTopUpPackById, PLAN_CATALOG, TOP_UP_PACKS } = require("../../src/lib/pricing/plans");
 const { createMidtransSignature } = require("../../src/lib/payments/midtrans");
+const { getGuestSessionIdHash } = require("../../src/lib/reports/access");
+const { __setCookie, __clearCookies } = require("../helpers/next-headers-mock.cjs");
 
 // Setup Supabase Mocking
 let mockSelectFn = () => ({ data: null, error: null });
@@ -121,13 +123,15 @@ test("PLAN_CATALOG and TOP_UP_PACKS structures are valid", () => {
 });
 
 test("checkout creation rejects invalid input or spoofer attempts", async () => {
+  __clearCookies();
+  __setCookie("nali_guest_session", "mock_guest");
   // Mock report check to return persisted report
   mockSelectFn = (table, query) => {
     if (table === "reports") {
       return {
         data: {
           id: "report-12345",
-          guest_session_id_hash: "mock_guest_hash",
+          guest_session_id_hash: getGuestSessionIdHash("mock_guest"),
           report_access_token_hash: "mock_token_hash",
           status: "export_ready",
           output: { id: "report-12345", mode: "draft_from_materials" },
@@ -141,6 +145,7 @@ test("checkout creation rejects invalid input or spoofer attempts", async () => 
   // 1. Invalid plan_id returns 400
   const reqInvalidPlan = new NextRequest("http://localhost/api/payments/create", {
     method: "POST",
+    headers: { cookie: "nali_guest_session=mock_guest" },
     body: JSON.stringify({
       report_id: "report-12345",
       report_access_key: "key-123",
@@ -151,10 +156,11 @@ test("checkout creation rejects invalid input or spoofer attempts", async () => 
   assert.equal(res1.status, 400);
   const body1 = await res1.json();
   assert.equal(body1.error, "Plan tidak valid.");
-
+ 
   // 2. Invalid pack_id returns 400
   const reqInvalidPack = new NextRequest("http://localhost/api/payments/create", {
     method: "POST",
+    headers: { cookie: "nali_guest_session=mock_guest" },
     body: JSON.stringify({
       report_id: "report-12345",
       report_access_key: "key-123",
@@ -165,10 +171,11 @@ test("checkout creation rejects invalid input or spoofer attempts", async () => 
   assert.equal(res2.status, 400);
   const body2 = await res2.json();
   assert.equal(body2.error, "Paket top-up tidak valid.");
-
+ 
   // 3. Both plan_id and pack_id returns 400
   const reqBoth = new NextRequest("http://localhost/api/payments/create", {
     method: "POST",
+    headers: { cookie: "nali_guest_session=mock_guest" },
     body: JSON.stringify({
       report_id: "report-12345",
       report_access_key: "key-123",
@@ -183,6 +190,8 @@ test("checkout creation rejects invalid input or spoofer attempts", async () => 
 });
 
 test("checkout creation ignores client-supplied pricing/credits/session metadata", async () => {
+  __clearCookies();
+  __setCookie("nali_guest_session", "trusted_guest_session");
   let createdPayload = null;
 
   mockSelectFn = (table, query) => {
@@ -190,7 +199,7 @@ test("checkout creation ignores client-supplied pricing/credits/session metadata
       return {
         data: {
           id: "report-12345",
-          guest_session_id_hash: "trusted_guest_session_hash",
+          guest_session_id_hash: getGuestSessionIdHash("trusted_guest_session"),
           report_access_token_hash: "mock_token_hash",
           status: "export_ready",
           output: { id: "report-12345", mode: "draft_from_materials" },
@@ -221,6 +230,7 @@ test("checkout creation ignores client-supplied pricing/credits/session metadata
 
   const reqSpoof = new NextRequest("http://localhost/api/payments/create", {
     method: "POST",
+    headers: { cookie: "nali_guest_session=trusted_guest_session" },
     body: JSON.stringify({
       report_id: "report-12345",
       report_access_key: "key-123",
@@ -247,7 +257,7 @@ test("checkout creation ignores client-supplied pricing/credits/session metadata
   assert.equal(rawNotification.metadata.product_id, "starter");
   assert.equal(rawNotification.metadata.credits_to_grant, 300);
   assert.equal(rawNotification.metadata.gross_amount, 49000);
-  assert.equal(rawNotification.metadata.guest_session_id_hash, "trusted_guest_session_hash");
+  assert.equal(rawNotification.metadata.guest_session_id_hash, getGuestSessionIdHash("trusted_guest_session"));
 });
 
 test("webhook credit grant triggers for plans and topups and protects against duplicate triggers", async () => {

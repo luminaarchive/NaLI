@@ -58,7 +58,7 @@ test("AgentWorkspace tracks composer focus state and adjusts bottom padding dyna
   // 6. Public mobile flow shows one report action without internal tier buttons
   assert.match(code, /Buat Laporan/);
   assert.match(code, /aria-label=\{selectedMode === "draft_from_materials" \? "Buat Laporan" : "Buat Panduan Awal"\}/);
-  assert.match(code, /Paket Laporan lengkap belum aktif di CP1/);
+  assert.match(code, /Paket Laporan lengkap belum aktif/);
   assert.doesNotMatch(code, /selectedModel|naliModels|Peregrine|Obsidian|Zephyr/);
 
   // 7. No Midtrans checkout link or payment activation is present

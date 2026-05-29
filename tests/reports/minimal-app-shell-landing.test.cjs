@@ -30,7 +30,7 @@ test("homepage is a NaLI-original minimal report launcher without public engines
   assert.match(combined, /Praktikum Biologi/);
   assert.match(combined, /Laporan KKN/);
   assert.match(combined, /Cek Batas Bukti/);
-  assert.match(combined, /CP1: pembayaran belum aktif/);
+  assert.match(combined, /Pembayaran belum aktif/);
   assert.match(combined, /Upload belum aktif/);
   assert.match(combined, /Source verification belum aktif/);
   assert.doesNotMatch(combined, /Peregrine|Obsidian|Zephyr|Haiku|Sonnet|Kredit|credits/i);
@@ -61,7 +61,7 @@ test("pricing and create-report keep Laporan language, inactive actions, and mob
   assert.match(cards, /reportPackage\.publicCopy/);
   assert.match(cards, /Belum aktif/);
   assert.match(cards, /disabled/);
-  assert.match(cards, /Pembayaran dan checkout belum aktif di CP1/);
+  assert.match(cards, /Pembayaran dan checkout belum aktif/);
   assert.match(pricing, /<Alert/);
   assert.match(workspace, /Buat Laporan/);
   assert.match(workspace, /jalur starter gratis/i);

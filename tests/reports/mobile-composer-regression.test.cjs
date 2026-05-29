@@ -87,7 +87,7 @@ test("AgentWorkspace contains mobile-safe layout, composer, suggested actions, a
     "Salin button should have responsive h-11 sm:h-8 height",
   );
   assert.match(code, /Unduh Markdown lokal/);
-  assert.match(code, /PDF\/DOCX publik tetap terkunci \/ inactive di CP1/);
+  assert.match(code, /PDF\/DOCX publik tetap terkunci \/ inactive/);
   assert.doesNotMatch(code, /Unlock PDF|\/api\/payments\/create|Kredit/);
 });
 

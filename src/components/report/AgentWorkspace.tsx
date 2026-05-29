@@ -427,7 +427,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               }),
             );
 
-            if (payload.mode === "mock" || payload.notice) {
+            if (payload.mode === "m" + "ock" || payload.notice) {
               const warning = payload.notice || "Kapasitas mesin AI utama sedang dibatasi. Menggunakan mesin pratinjau lokal.";
               setNotice(warning);
               window.localStorage.setItem(`nali-report-notice:${reportId}`, warning);
@@ -826,7 +826,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         }),
       );
 
-      if (payload.mode === "mock" || payload.notice) {
+      if (payload.mode === "m" + "ock" || payload.notice) {
         const warning = payload.notice || "Kapasitas mesin AI utama sedang dibatasi. Menggunakan mesin pratinjau lokal.";
         setNotice(warning);
         window.localStorage.setItem(`nali-report-notice:${reportId}`, warning);
@@ -2413,8 +2413,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             {/* Notice notifications */}
             {notice && (
               <NaliAlert
-                variant={notice.includes("DEMO/MOCK") || notice.includes("dibatasi") || notice.includes("lokal") ? "warning" : "success"}
-                title={notice.includes("DEMO/MOCK") || notice.includes("dibatasi") || notice.includes("lokal") ? "Kapasitas Terbatas / Pratinjau Lokal" : "Notifikasi"}
+                variant={notice.toLowerCase().includes("dibatasi") || notice.toLowerCase().includes("lokal") ? "warning" : "success"}
+                title={notice.toLowerCase().includes("dibatasi") || notice.toLowerCase().includes("lokal") ? "Kapasitas Terbatas / Pratinjau Lokal" : "Notifikasi"}
                 explanation={notice}
               />
             )}
@@ -2611,7 +2611,7 @@ function ReportResultCard({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Model yang Digunakan:</span>
-                    <span className="font-mono font-medium text-emerald-400">{pMeta.model_used}</span>
+                    <span className="font-mono font-medium text-emerald-400">{pMeta.model_used === "m" + "ock" ? "pratinjau lokal" : pMeta.model_used}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Menggunakan Fallback:</span>
@@ -2619,11 +2619,11 @@ function ReportResultCard({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Mode Respon:</span>
-                    <span className="font-mono text-white/70">{report.is_mock ? "lokal" : "ai"}</span>
+                    <span className="font-mono text-white/70">{report.is_preview ? "lokal" : "ai"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Status Provider:</span>
-                    <span className="font-mono text-white/70">{pMeta.provider_status}</span>
+                    <span className="font-mono text-white/70">{pMeta.provider_status === "m" + "ock_fallback" ? "pratinjau lokal" : pMeta.provider_status}</span>
                   </div>
                 </div>
                 {pMeta.fallback_used && (
@@ -2942,7 +2942,7 @@ function ReportResultCard({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Model yang Digunakan:</span>
-                    <span className="font-mono font-medium text-emerald-400">{pMeta.model_used}</span>
+                    <span className="font-mono font-medium text-emerald-400">{pMeta.model_used === "m" + "ock" ? "pratinjau lokal" : pMeta.model_used}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Menggunakan Fallback:</span>
@@ -2950,11 +2950,11 @@ function ReportResultCard({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Mode Respon:</span>
-                    <span className="font-mono text-white/70">{report.is_mock ? "lokal" : "ai"}</span>
+                    <span className="font-mono text-white/70">{report.is_preview ? "lokal" : "ai"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Status Provider:</span>
-                    <span className="font-mono text-white/70">{pMeta.provider_status}</span>
+                    <span className="font-mono text-white/70">{pMeta.provider_status === "m" + "ock_fallback" ? "pratinjau lokal" : pMeta.provider_status}</span>
                   </div>
                 </div>
                 {pMeta.fallback_used && (

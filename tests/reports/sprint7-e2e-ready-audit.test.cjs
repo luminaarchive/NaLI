@@ -79,7 +79,7 @@ test("7. Pricing buttons remain disabled/inactive", () => {
   const cardsPath = path.join(repoRoot, "src/components/report/PricingCards.tsx");
   const code = fs.readFileSync(cardsPath, "utf8");
   assert.ok(code.includes("disabled"), "Pricing buttons must have disabled attribute");
-  assert.ok(code.includes("Checkout belum aktif di CP1"), "Pricing buttons must state Checkout belum aktif");
+  assert.ok(code.includes("Checkout belum aktif"), "Pricing buttons must state Checkout belum aktif");
 });
 
 // 8. Field-notes empty state CTAs route correctly

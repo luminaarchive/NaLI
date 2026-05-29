@@ -445,7 +445,7 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
             <div>
               <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[#00FFB3]/80">Status Rilis</p>
               <div className="flex flex-col gap-2 text-sm text-[#f5f0e8]/60">
-                <span>CP1: pembayaran belum aktif</span>
+                <span>Pembayaran belum aktif</span>
                 <span>Upload belum aktif</span>
                 <span>Source verification belum aktif</span>
               </div>

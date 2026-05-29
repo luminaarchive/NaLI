@@ -342,7 +342,7 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
               Buat lagi
             </Link>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Badge tone={report.is_mock ? "amber" : "green"}>{report.status}</Badge>
+              <Badge tone={report.is_preview ? "amber" : "green"}>{report.status}</Badge>
               <Badge tone="glass">{isGuide ? "Start From Zero" : "Draft From Materials"}</Badge>
               <Badge tone="cyan">{evidenceLabel}</Badge>
             </div>

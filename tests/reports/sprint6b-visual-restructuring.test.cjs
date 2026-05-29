@@ -24,7 +24,7 @@ test("Sprint 6B Visual Restructuring - 3. create-report workspace has required s
   const code = fs.readFileSync(wsPath, "utf8");
   
   // Sidebar items
-  assert.ok(code.includes("Mulai Baru"));
+  assert.ok(code.includes("Buat laporan baru"));
   assert.ok(code.includes("Agent"));
   assert.ok(code.includes("Laporan"));
   assert.ok(code.includes("Draf Jurnal"));
@@ -33,7 +33,7 @@ test("Sprint 6B Visual Restructuring - 3. create-report workspace has required s
   assert.ok(code.includes("Scheduled"));
   assert.ok(code.includes("Projects"));
   assert.ok(code.includes("NaLI"));
-  assert.ok(code.includes("All Tasks / Riwayat Tugas"));
+  assert.ok(code.includes("Riwayat") && (code.includes("Riwayat lokal") || code.includes("Riwayat akun")));
   
   // Sidebar footer status
   assert.ok(code.includes("Public Alpha"));
@@ -69,7 +69,7 @@ test("Sprint 6B Visual Restructuring - 5. PricingCards contains required inactiv
   const cardsPath = path.join(__dirname, "../../src/components/report/PricingCards.tsx");
   const code = fs.readFileSync(cardsPath, "utf8");
 
-  assert.ok(code.includes("Checkout belum aktif di CP1"));
+  assert.ok(code.includes("Checkout belum aktif"));
   assert.ok(code.includes("PDF ekspor publik belum aktif"));
   assert.ok(code.includes("Paket ini adalah konfigurasi harga, belum bisa dibeli"));
 });

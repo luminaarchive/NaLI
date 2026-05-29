@@ -86,7 +86,7 @@ export default function HomePage() {
                 </Link>
               </div>
               <p className="mt-3 text-[#4a6455]/70">
-                Public Alpha: AI draft tersedia jika kapasitas tersedia &middot;: pembayaran belum aktif &middot; Upload belum aktif &middot; Source verification belum aktif
+                Public Alpha: AI draft tersedia jika kapasitas tersedia &middot;: Pembayaran belum aktif &middot; Upload belum aktif &middot; Source verification belum aktif
               </p>
             </aside>
 
@@ -108,7 +108,7 @@ export default function HomePage() {
             <div className="grid grid-cols-2 gap-4 text-left">
               {[
                 { label: "Public Alpha", status: "aktif", desc: "Akses publik gratis" },
-                { label: "AI engine", status: "kapasitas bisa terbatas", desc: "Provider rate limits/quota" },
+                { label: "AI engine", status: "kapasitas bisa terbatas", desc: "Kapasitas AI sedang terbatas" },
                 { label: "Pembayaran", status: "belum aktif", desc: "Checkout ditangguhkan" },
                 { label: "PDF publik", status: "terkunci", desc: "Unduh laporan lokal saja" },
                 { label: "Upload", status: "belum aktif", desc: "Materi input via teks/form" },

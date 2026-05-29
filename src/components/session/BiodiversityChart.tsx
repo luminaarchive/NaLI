@@ -1,7 +1,7 @@
 "use client";
 // Lightweight chart component for biodiversity data visualization in session results.
 // Renders bar charts and simple stat cards from structured data in assistant messages.
-// No heavy chart library — uses CSS-based bar charts for zero bundle impact.
+// No heavy chart library - uses CSS-based bar charts for zero bundle impact.
 
 interface SpeciesEntry {
   name: string;

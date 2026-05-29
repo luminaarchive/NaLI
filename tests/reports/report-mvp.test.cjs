@@ -1348,30 +1348,30 @@ test("public frontend copy aligns with CP1 backend state without overclaiming", 
   assert.match(homepage, /Cara kerja singkat/);
   assert.match(homepage, /NaLI menyusun draft/);
   assert.match(homepage, /AI inference bukan bukti lapangan/);
-  assert.match(homepage, /CP1: pembayaran belum aktif/);
+  assert.match(homepage, /Pembayaran belum aktif/);
   assert.match(homepage, /Upload belum aktif/);
   assert.match(homepage, /Source verification belum aktif/);
   assert.doesNotMatch(homepage, /CodexProductPreview|CodexFeatureShowcase|FluidVideoBackground/);
 
   assert.match(learnReport, /Mulai dari satu topik/);
   assert.match(learnReport, /Paste text materials or start with one topic/);
-  assert.match(createReport, /Upload PDF\/foto belum aktif di CP1/);
+  assert.match(createReport, /Upload PDF\/foto belum aktif/);
   assert.match(createReport, /Belum aktif/);
   assert.doesNotMatch(createReport, /create-upload|confirm-upload|signed_upload_url|handlePdfChange/);
   assert.match(pricing, /Paket Laporan NaLI/);
-  assert.match(pricing, /Pembayaran dan checkout belum aktif di CP1/);
+  assert.match(pricing, /Pembayaran dan checkout belum aktif/);
   assert.doesNotMatch(pricing, /Export unlocks after confirmed payment|automated verification succeeds/);
 
   assert.match(resultClient, /Unduh Markdown lokal/);
   assert.match(resultClient, /Unduh teks lokal/);
-  assert.match(resultClient, /PDF\/DOCX publik tetap terkunci \/ inactive di CP1/);
+  assert.match(resultClient, /PDF\/DOCX publik tetap terkunci \/ inactive/);
   assert.doesNotMatch(resultClient, /\/api\/payments\/create|Download PDF|Export versi rapi/);
   assert.match(resultClient, /Idea Mode/);
   assert.match(resultClient, /User-Evidence Report/);
   assert.doesNotMatch(resultClient, /model_used/);
   assert.match(fieldIntelligence, /roadmap\/manual inquiry only/);
   assert.match(fieldIntelligence, /F1-F11 workflows/);
-  assert.match(fieldIntelligence, /Roadmap only in CP1/);
+  assert.match(fieldIntelligence, /roadmap\/manual inquiry only/);
 
   assert.doesNotMatch(
     publicSource,
@@ -1391,7 +1391,7 @@ test("CP1 public pricing uses report packages with no public checkout or fake ba
   assert.match(packages, /id:\s*"pro_bundle"[\s\S]*priceIdr:\s*89_000[\s\S]*publicCopy:\s*"10 laporan lengkap"/);
   assert.match(pricing, /Paket Laporan NaLI|Aturan penggunaan Laporan/);
   assert.match(pricingCards, /Paket Laporan/);
-  assert.match(pricingCards, /Pembayaran dan checkout belum aktif di CP1/);
+  assert.match(pricingCards, /Pembayaran dan checkout belum aktif/);
   assert.match(pricingCards, /Laporan kamu habis\. Pilih paket untuk lanjut/);
   assert.doesNotMatch(
     pricingCards + pricing + resultClient + workspace,

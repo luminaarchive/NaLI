@@ -67,7 +67,7 @@ test("Sprint 5 Public Alpha - 5. Pricing copy contains inactive checkout info", 
   const pricingCardsPath = path.join(__dirname, "../../src/components/report/PricingCards.tsx");
   const pricingCardsCode = fs.readFileSync(pricingCardsPath, "utf8");
   
-  assert.ok(pricingCardsCode.includes("Checkout belum aktif di CP1"));
+  assert.ok(pricingCardsCode.includes("Checkout belum aktif"));
   assert.ok(pricingCardsCode.includes("PDF ekspor publik belum aktif"));
   assert.ok(pricingCardsCode.includes("Paket ini adalah konfigurasi harga, belum bisa dibeli"));
 });

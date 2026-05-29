@@ -105,8 +105,9 @@ const { GET: getReadiness } = require("../../src/app/api/system/readiness/route"
 const { POST: createPayment } = require("../../src/app/api/payments/create/route");
 const { POST: processWebhook } = require("../../src/app/api/payments/midtrans-webhook/route");
 const { GET: getExport } = require("../../src/app/api/reports/[id]/export/route");
-const { getReportAccessTokenHash } = require("../../src/lib/reports/access");
+const { getReportAccessTokenHash, getGuestSessionIdHash } = require("../../src/lib/reports/access");
 const { createMidtransSignature } = require("../../src/lib/payments/midtrans");
+const { __setCookie, __clearCookies } = require("../helpers/next-headers-mock.cjs");
 
 // Helper to restore env
 function restoreAllEnv() {
@@ -137,6 +138,8 @@ test("Readiness truth indicates status correctly when env variables are missing"
 });
 
 test("Payment creation route rejects invalid inputs and missing keys safely", async () => {
+  __clearCookies();
+  __setCookie("nali_guest_session", "trusted_session");
   // 1. Rejected on empty body/missing fields
   const reqEmpty = new NextRequest("http://localhost/api/payments/create", {
     method: "POST",
@@ -156,7 +159,7 @@ test("Payment creation route rejects invalid inputs and missing keys safely", as
       return {
         data: {
           id: "report-123",
-          guest_session_id_hash: "trusted_session_hash",
+          guest_session_id_hash: getGuestSessionIdHash("trusted_session"),
           report_access_token_hash: getReportAccessTokenHash("my_access_key"),
           status: "export_ready",
           output: { id: "report-123", mode: "draft_from_materials" },
@@ -174,6 +177,7 @@ test("Payment creation route rejects invalid inputs and missing keys safely", as
   try {
     const reqFallback = new NextRequest("http://localhost/api/payments/create", {
       method: "POST",
+      headers: { cookie: "nali_guest_session=trusted_session" },
       body: JSON.stringify({
         report_id: "report-123",
         report_access_key: "my_access_key",
@@ -283,13 +287,15 @@ test("Webhook callback signature security and credit grant validation", async ()
 });
 
 test("Export gate refuses unauthorized download attempts and prevents client bypass", async () => {
+  __clearCookies();
+  __setCookie("nali_guest_session", "trusted_session");
   mockSelectFn = (table, query) => {
     if (table === "reports") {
       // Return persisted report
       return {
         data: {
           id: "report-123",
-          guest_session_id_hash: "trusted_session_hash",
+          guest_session_id_hash: getGuestSessionIdHash("trusted_session"),
           report_access_token_hash: getReportAccessTokenHash("my_token"),
           status: "export_ready",
           output: {
@@ -328,7 +334,9 @@ test("Export gate refuses unauthorized download attempts and prevents client byp
   };
 
   // 1. Blocked when unpaid
-  const reqUnpaid = new NextRequest("http://localhost/api/reports/report-123/export?token=my_token&format=markdown");
+  const reqUnpaid = new NextRequest("http://localhost/api/reports/report-123/export?token=my_token&format=markdown", {
+    headers: { cookie: "nali_guest_session=trusted_session" }
+  });
   const resUnpaid = await getExport(reqUnpaid, { params: Promise.resolve({ id: "report-123" }) });
   assert.equal(resUnpaid.status, 402);
   const bodyUnpaid = await resUnpaid.json();
@@ -340,7 +348,7 @@ test("Export gate refuses unauthorized download attempts and prevents client byp
       return {
         data: {
           id: "report-123",
-          guest_session_id_hash: "trusted_session_hash",
+          guest_session_id_hash: getGuestSessionIdHash("trusted_session"),
           report_access_token_hash: getReportAccessTokenHash("my_token"),
           status: "export_ready",
           output: {
@@ -381,7 +389,9 @@ test("Export gate refuses unauthorized download attempts and prevents client byp
     return { data: null, error: null };
   };
 
-  const reqPaid = new NextRequest("http://localhost/api/reports/report-123/export?token=my_token&format=markdown");
+  const reqPaid = new NextRequest("http://localhost/api/reports/report-123/export?token=my_token&format=markdown", {
+    headers: { cookie: "nali_guest_session=trusted_session" }
+  });
   const resPaid = await getExport(reqPaid, { params: Promise.resolve({ id: "report-123" }) });
   assert.equal(resPaid.status, 200);
   const textPaid = await resPaid.text();

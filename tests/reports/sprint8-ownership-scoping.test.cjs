@@ -214,3 +214,183 @@ test("guest report updates require guestSessionIdHash validation", async (t) => 
     adminModule.getOptionalSupabaseAdminClient = originalGetAdmin;
   }
 });
+
+test("authenticated user A cannot access authenticated user B report", async (t) => {
+  let eqFilters = {};
+  
+  const queryBuilder = {
+    select(fields) { return this; },
+    eq(field, value) {
+      eqFilters[field] = value;
+      return this;
+    },
+    is(field, value) { return this; },
+    async maybeSingle() {
+      if (eqFilters["user_id"] === "user-A" && eqFilters["id"] === "report-user-B") {
+        return { data: null, error: null };
+      }
+      return { data: { id: "report-user-B", user_id: "user-B" }, error: null };
+    }
+  };
+
+  const mockAdmin = {
+    from(table) {
+      if (table === "reports") {
+        eqFilters = {};
+        return queryBuilder;
+      }
+      throw new Error(`Unexpected table: ${table}`);
+    }
+  };
+
+  adminModule.getOptionalSupabaseAdminClient = () => mockAdmin;
+
+  try {
+    const res = await getPersistedReport({
+      reportId: "report-user-B",
+      userId: "user-A"
+    });
+    assert.strictEqual(res.found, false);
+  } finally {
+    adminModule.getOptionalSupabaseAdminClient = originalGetAdmin;
+  }
+});
+
+test("guest session cannot access user A report", async (t) => {
+  let eqFilters = {};
+  
+  const queryBuilder = {
+    select(fields) { return this; },
+    eq(field, value) {
+      eqFilters[field] = value;
+      return this;
+    },
+    is(field, value) { return this; },
+    async maybeSingle() {
+      if (eqFilters["user_id"] === null && eqFilters["id"] === "report-user-A") {
+        return { data: null, error: null };
+      }
+      return { data: { id: "report-user-A", user_id: "user-A" }, error: null };
+    }
+  };
+
+  const mockAdmin = {
+    from(table) {
+      if (table === "reports") {
+        eqFilters = {};
+        return queryBuilder;
+      }
+      throw new Error(`Unexpected table: ${table}`);
+    }
+  };
+
+  adminModule.getOptionalSupabaseAdminClient = () => mockAdmin;
+
+  try {
+    const res = await getPersistedReport({
+      guestSessionIdHash: getGuestSessionIdHash("guest-session-secret"),
+      reportAccessToken: "access-token-secret",
+      reportId: "report-user-A"
+    });
+    assert.strictEqual(res.found, false);
+  } finally {
+    adminModule.getOptionalSupabaseAdminClient = originalGetAdmin;
+  }
+});
+
+test("guest B cannot access guest A report", async (t) => {
+  let eqFilters = {};
+  
+  const queryBuilder = {
+    select(fields) { return this; },
+    eq(field, value) {
+      eqFilters[field] = value;
+      return this;
+    },
+    is(field, value) { return this; },
+    async maybeSingle() {
+      if (eqFilters["guest_session_id_hash"] === getGuestSessionIdHash("guest-B") && eqFilters["id"] === "report-guest-A") {
+        return { data: null, error: null };
+      }
+      return { data: { id: "report-guest-A", guest_session_id_hash: getGuestSessionIdHash("guest-A") }, error: null };
+    }
+  };
+
+  const mockAdmin = {
+    from(table) {
+      if (table === "reports") {
+        eqFilters = {};
+        return queryBuilder;
+      }
+      throw new Error(`Unexpected table: ${table}`);
+    }
+  };
+
+  adminModule.getOptionalSupabaseAdminClient = () => mockAdmin;
+
+  try {
+    const res = await getPersistedReport({
+      guestSessionIdHash: getGuestSessionIdHash("guest-B"),
+      reportAccessToken: "access-token-secret",
+      reportId: "report-guest-A"
+    });
+    assert.strictEqual(res.found, false);
+  } finally {
+    adminModule.getOptionalSupabaseAdminClient = originalGetAdmin;
+  }
+});
+
+test("auth configuration utilities correctly evaluate configuration flags", () => {
+  const { isSupabaseConfigured, isGoogleOAuthLikelyConfigured } = require("../../src/lib/auth/config");
+  
+  const prevUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const prevAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const prevGoogleActive = process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ACTIVE;
+
+  try {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://real.supabase.co";
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "real-key";
+    process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ACTIVE = "true";
+    assert.strictEqual(isSupabaseConfigured(), true);
+    assert.strictEqual(isGoogleOAuthLikelyConfigured(), true);
+
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://dummy.supabase.co";
+    assert.strictEqual(isSupabaseConfigured(), false);
+    assert.strictEqual(isGoogleOAuthLikelyConfigured(), false);
+
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://real.supabase.co";
+    process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ACTIVE = "false";
+    assert.strictEqual(isGoogleOAuthLikelyConfigured(), false);
+  } finally {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = prevUrl;
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = prevAnon;
+    process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ACTIVE = prevGoogleActive;
+  }
+});
+
+test("no client-side component imports service role key or supabase admin client", () => {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const repoRoot = path.join(__dirname, "../..");
+
+  function getTsFiles(dir, files = []) {
+    const list = fs.readdirSync(dir);
+    for (const item of list) {
+      const full = path.join(dir, item);
+      const stat = fs.statSync(full);
+      if (stat.isDirectory()) {
+        getTsFiles(full, files);
+      } else if (stat.isFile() && /\.(ts|tsx)$/.test(item)) {
+        files.push(full);
+      }
+    }
+    return files;
+  }
+
+  const files = getTsFiles(path.join(repoRoot, "src/components"));
+  for (const file of files) {
+    const code = fs.readFileSync(file, "utf8");
+    assert.doesNotMatch(code, /SUPABASE_SERVICE_ROLE_KEY|getOptionalSupabaseAdminClient/);
+  }
+});
+

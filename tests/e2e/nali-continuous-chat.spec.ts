@@ -79,7 +79,7 @@ test.describe("NaLI Workspace E2E Continuous Use & Persistence Flow", () => {
     await expect(page.locator("text=Salin Markdown").first()).toBeVisible({ timeout: 30000 });
 
     // 12. Verify PDF export lock state explanation
-    const pdfDisclaimer = page.locator("text=PDF/DOCX publik tetap terkunci / inactive di CP1").first();
+    const pdfDisclaimer = page.locator("text=PDF/DOCX publik tetap terkunci / inactive").first();
     await expect(pdfDisclaimer).toBeVisible({ timeout: 30000 });
   });
 

@@ -34,19 +34,19 @@ test("5. Local Markdown/TXT copy/download options exist in client UI", () => {
 
 test("6. Public PDF/payment remains locked", () => {
   const clientSource = fs.readFileSync(path.join(repoRoot, "src/components/report/ReportResultClient.tsx"), "utf8");
-  assert.ok(clientSource.includes("PDF/DOCX publik tetap terkunci / inactive di CP1."));
+  assert.ok(clientSource.includes("PDF/DOCX publik tetap terkunci / inactive"));
   assert.doesNotMatch(clientSource, /\/api\/payments\/create/);
 });
 
 test("7. Pricing/upgrade copy does not claim paid launch active", () => {
   const pricingSource = fs.readFileSync(path.join(repoRoot, "src/app/pricing/page.tsx"), "utf8");
-  assert.ok(pricingSource.includes("Pembayaran dan checkout belum aktif di CP1"));
+  assert.ok(pricingSource.includes("Pembayaran dan checkout belum aktif"));
 });
 
 test("8. Field Intelligence page remains positioning-only", () => {
   const fiSource = fs.readFileSync(path.join(repoRoot, "src/app/field-intelligence/page.tsx"), "utf8");
   assert.ok(fiSource.includes("Concept workflow. Not a fully operational feature in the public MVP."));
-  assert.ok(fiSource.includes("Roadmap only in CP1"));
+  assert.ok(fiSource.includes("Roadmap only"));
 });
 
 test("9. Readiness endpoint source preserves inactive upload/source verification", () => {
