@@ -108,12 +108,12 @@ test("OG and Twitter image files export correct size, contentType, and alt confi
   const twImg = fs.readFileSync(path.join(repoRoot, "src/app/twitter-image.tsx"), "utf8");
 
   assert.match(ogImg, /contentType\s*=\s*['"]image\/png['"]/);
-  assert.match(ogImg, /alt\s*=\s*['"]NaLI — Nature & Evidence Intelligence OS['"]/);
+  assert.match(ogImg, /alt\s*=\s*['"]NaLI - Nature & Evidence Intelligence OS['"]/);
   assert.match(ogImg, /width:\s*1200/);
   assert.match(ogImg, /height:\s*630/);
 
   assert.match(twImg, /contentType\s*=\s*['"]image\/png['"]/);
-  assert.match(twImg, /alt\s*=\s*['"]NaLI — Nature & Evidence Intelligence OS['"]/);
+  assert.match(twImg, /alt\s*=\s*['"]NaLI - Nature & Evidence Intelligence OS['"]/);
   assert.match(twImg, /width:\s*1200/);
   assert.match(twImg, /height:\s*630/);
 });

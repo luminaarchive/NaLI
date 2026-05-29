@@ -27,7 +27,7 @@ export type ModelEntitlementResult = {
 };
 
 export const PREMIUM_MODEL_LOCK_MESSAGE =
-  "Akses model premium belum aktif untuk sesi ini. Peregrine tetap tersedia sebagai starter; checkout/pembayaran tidak diaktifkan di CP1.";
+  "Akses model premium belum aktif untuk sesi ini. Peregrine tetap tersedia sebagai starter; checkout/pembayaran tidak diaktifkan .";
 
 function normalizeModelId(modelId: string): JournalModelId {
   return modelId === "obsidian" || modelId === "zephyr" ? modelId : "peregrine";

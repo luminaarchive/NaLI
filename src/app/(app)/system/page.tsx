@@ -65,7 +65,7 @@ export default async function SystemReadinessPage({
     {
       detail: readiness.openRouterConfigured
         ? "Provider path can be used by server code."
-        : "NaLI will keep using safe DEMO/MOCK fallback when provider access is absent.",
+        : "NaLI akan menggunakan pratinjau lokal yang aman jika akses ke provider engine tidak tersedia.",
       label: "AI provider",
       status: readiness.openRouterConfigured ? "configured" : "missing",
     },

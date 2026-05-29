@@ -110,7 +110,7 @@ test("link guest route links reports and clears cookie (unconfigured Supabase fa
     assert.equal(res.status, 200);
     const payload = await res.json();
     assert.equal(payload.success, true);
-    assert.match(payload.notice, /Supabase unconfigured/);
+    assert.match(payload.notice, /Database belum aktif/);
     
     // Cookie should be deleted
     assert.equal(nextHeadersMock.__getCookie("nali_guest_session"), undefined);

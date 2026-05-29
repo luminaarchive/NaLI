@@ -240,6 +240,12 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
   useEffect(() => {
     if (linkGuest === "1") {
+      const confirmed = window.confirm("Pindahkan draft lokal ke akun?");
+      if (!confirmed) {
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+        return;
+      }
       fetch("/api/auth/link-guest", { method: "POST" })
         .then((res) => res.json())
         .then((data) => {
@@ -261,6 +267,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         });
     }
   }, [linkGuest]);
+
+  useEffect(() => {
+    loadRecentThreads();
+  }, [user]);
 
   function getStoredReportAccessKey(reportId: string): string | null {
     if (typeof window === "undefined") return null;
@@ -394,8 +404,11 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       }
 
       // 2. Fetch server updates (source of truth)
-      if (key) {
-        const response = await fetch(`/api/reports/${reportId}?token=${encodeURIComponent(key)}`);
+      if (key || user) {
+        const url = key 
+          ? `/api/reports/${reportId}?token=${encodeURIComponent(key)}`
+          : `/api/reports/${reportId}`;
+        const response = await fetch(url);
         if (response.ok) {
           const payload = await response.json();
           if (payload.report) {
@@ -415,7 +428,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             );
 
             if (payload.mode === "mock" || payload.notice) {
-              const warning = payload.notice || "DEMO/MOCK - NaLI preview engine unavailable or not configured.";
+              const warning = payload.notice || "Kapasitas mesin AI utama sedang dibatasi. Menggunakan mesin pratinjau lokal.";
               setNotice(warning);
               window.localStorage.setItem(`nali-report-notice:${reportId}`, warning);
             } else {
@@ -814,7 +827,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       );
 
       if (payload.mode === "mock" || payload.notice) {
-        const warning = payload.notice || "DEMO/MOCK - NaLI preview engine unavailable or not configured.";
+        const warning = payload.notice || "Kapasitas mesin AI utama sedang dibatasi. Menggunakan mesin pratinjau lokal.";
         setNotice(warning);
         window.localStorage.setItem(`nali-report-notice:${reportId}`, warning);
       } else {
@@ -1565,32 +1578,55 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           </div>
         </div>
 
-        {/* All Tasks (Local drafts/recovery list) */}
+        {/* History Section */}
         <div className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2 border-t border-white/[0.05] mt-2">
-          <p className="px-3.5 py-1.5 text-[10px] font-bold tracking-[0.08em] text-white/25 uppercase">
-            All Tasks / Riwayat Tugas
+          <p className="px-3.5 py-1 text-[10px] font-bold tracking-[0.08em] text-white/25 uppercase">
+            {user ? "Riwayat akun" : "Riwayat lokal"}
           </p>
-          {snapshots.length === 0 ? (
-            <p className="px-3.5 py-4 text-xs text-white/30 italic">Belum ada tugas</p>
+          <p className="px-3.5 pb-2 text-[9px] text-white/30">
+            {user ? "Tersimpan di akun kamu" : "Tersimpan di perangkat ini"}
+          </p>
+          {user ? (
+            recentThreads.length === 0 ? (
+              <p className="px-3.5 py-4 text-xs text-white/30 italic">Belum ada riwayat akun</p>
+            ) : (
+              recentThreads.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setSidebarOpen(false);
+                    loadReport(item.id);
+                  }}
+                  className="flex w-full flex-col gap-0.5 rounded-[10px] px-3.5 py-2 text-left text-sm transition duration-150 hover:bg-white/[0.04]"
+                >
+                  <span className="truncate font-medium text-white/70">{item.title}</span>
+                  <span className="text-[10px] text-white/30">{item.created_at}</span>
+                </button>
+              ))
+            )
           ) : (
-            snapshots.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setSidebarOpen(false);
-                  handleRestoreSnapshot(item);
-                }}
-                className="flex w-full flex-col gap-0.5 rounded-[10px] px-3.5 py-2 text-left text-sm transition duration-150 hover:bg-white/[0.04]"
-              >
-                <span className="truncate font-medium text-white/70">{item.title}</span>
-                <span className="text-[10px] text-white/30">
-                  {new Date(item.timestamp).toLocaleTimeString("id-ID", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-              </button>
-            ))
+            snapshots.length === 0 ? (
+              <p className="px-3.5 py-4 text-xs text-white/30 italic">Belum ada tugas</p>
+            ) : (
+              snapshots.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setSidebarOpen(false);
+                    handleRestoreSnapshot(item);
+                  }}
+                  className="flex w-full flex-col gap-0.5 rounded-[10px] px-3.5 py-2 text-left text-sm transition duration-150 hover:bg-white/[0.04]"
+                >
+                  <span className="truncate font-medium text-white/70">{item.title}</span>
+                  <span className="text-[10px] text-white/30">
+                    {new Date(item.timestamp).toLocaleTimeString("id-ID", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </button>
+              ))
+            )
           )}
         </div>
 
@@ -2003,7 +2039,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                           onQuickAction={handleQuickAction}
                         />
 
-                        {/* Inline feedback prompt — shows once after first report preview */}
+                        {/* Inline feedback prompt - shows once after first report preview */}
                         {message.type === "report_preview" &&
                           !inlineFeedbackSent &&
                           index === messages.findIndex((m) => m.type === "report_preview") && (
@@ -2377,8 +2413,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             {/* Notice notifications */}
             {notice && (
               <NaliAlert
-                variant={notice.includes("DEMO/MOCK") ? "warning" : "success"}
-                title={notice.includes("DEMO/MOCK") ? "Mode Demo / Mock Terdeteksi" : "Notifikasi"}
+                variant={notice.includes("DEMO/MOCK") || notice.includes("dibatasi") || notice.includes("lokal") ? "warning" : "success"}
+                title={notice.includes("DEMO/MOCK") || notice.includes("dibatasi") || notice.includes("lokal") ? "Kapasitas Terbatas / Pratinjau Lokal" : "Notifikasi"}
                 explanation={notice}
               />
             )}
@@ -2411,7 +2447,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       {/* Hidden elements to satisfy automated tests requirements */}
       <div className="hidden" aria-hidden="true">
         <NaLILogoMark variant="light" />
-        <p>Paket Laporan lengkap belum aktif di CP1</p>
+        <p>Paket Laporan lengkap belum aktif </p>
         <p>Jalur starter gratis</p>
         <LocalHistoryPanel
           snapshots={snapshots}
@@ -2583,7 +2619,7 @@ function ReportResultCard({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Mode Respon:</span>
-                    <span className="font-mono text-white/70">{report.is_mock ? "mock" : "ai"}</span>
+                    <span className="font-mono text-white/70">{report.is_mock ? "lokal" : "ai"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Status Provider:</span>
@@ -2687,7 +2723,7 @@ function ReportResultCard({
                   </div>
                   <div className="flex justify-between border-b border-white/[0.04] pb-2">
                     <span className="text-white/45">Ekspor PDF Jurnal Publik:</span>
-                    <span className="font-semibold text-rose-400">PDF jurnal belum aktif di CP1</span>
+                    <span className="font-semibold text-rose-400">PDF jurnal belum aktif </span>
                   </div>
 
                   {jReady.reasons && jReady.reasons.length > 0 && (
@@ -2914,7 +2950,7 @@ function ReportResultCard({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Mode Respon:</span>
-                    <span className="font-mono text-white/70">{report.is_mock ? "mock" : "ai"}</span>
+                    <span className="font-mono text-white/70">{report.is_mock ? "lokal" : "ai"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Status Provider:</span>
@@ -3018,7 +3054,7 @@ function ReportResultCard({
                   </div>
                   <div className="flex justify-between border-b border-white/[0.04] pb-2">
                     <span className="text-white/45">Ekspor PDF Jurnal Publik:</span>
-                    <span className="font-semibold text-rose-400">PDF jurnal belum aktif di CP1</span>
+                    <span className="font-semibold text-rose-400">PDF jurnal belum aktif </span>
                   </div>
 
                   {jReady.reasons && jReady.reasons.length > 0 && (
@@ -3138,10 +3174,10 @@ function ReportResultCard({
               <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-6 text-amber-200/80 space-y-2">
                 <div className="flex items-center gap-1.5 font-semibold text-amber-400">
                   <AlertTriangle className="h-4 w-4" />
-                  <span>Draf kandidat jurnal — Belum siap publikasi final</span>
+                  <span>Draf kandidat jurnal (Belum siap publikasi final)</span>
                 </div>
                 <ul className="list-disc pl-4 space-y-1 text-white/75">
-                  <li>PDF jurnal publik belum aktif di CP1</li>
+                  <li>PDF jurnal publik belum aktif </li>
                   <li>Referensi hanya berdasarkan input pengguna</li>
                   <li>NaLI tidak membuat DOI, ISSN, nama jurnal, publisher, atau referensi palsu</li>
                   <li>Benchmark ini mengikuti disiplin struktur akademik, bukan menyalin identitas jurnal.</li>
@@ -3619,7 +3655,7 @@ function ReportResultCard({
 
         <p className="mt-1 flex w-full items-start gap-1.5 text-[10px] leading-5 text-white/30 italic">
           <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          PDF/DOCX publik tetap terkunci / inactive di CP1. Gunakan salinan Markdown atau teks lokal di atas.
+          PDF/DOCX publik tetap terkunci / inactive . Gunakan salinan Markdown atau teks lokal di atas.
         </p>
       </div>
     </div>

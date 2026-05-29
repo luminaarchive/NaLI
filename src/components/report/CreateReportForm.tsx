@@ -589,7 +589,7 @@ export function CreateReportForm() {
 
   const isDraft = form.mode === "draft_from_materials";
   const uploadStatusText =
-    "Upload PDF/foto belum aktif di CP1. Gunakan catatan teks, URL, lokasi, atau deskripsi bahan dulu.";
+    "Upload PDF/foto belum aktif . Gunakan catatan teks, URL, lokasi, atau deskripsi bahan dulu.";
 
   return (
     <form className="safe-bottom" onSubmit={handleSubmit}>
@@ -644,7 +644,7 @@ export function CreateReportForm() {
             <p className="text-xs font-semibold tracking-[0.08em] text-white/55 uppercase">Satu Alur Laporan</p>
             <p className="mt-1 text-xs leading-5 text-white/50">
               Jalur starter gratis tersedia terbatas dan tetap mengikuti batas penggunaan. Paket Laporan lengkap belum
-              aktif di CP1.
+              aktif .
             </p>
           </div>
 
@@ -768,7 +768,7 @@ export function CreateReportForm() {
                 </span>
                 <input
                   className="field-input mt-2"
-                  placeholder="Upload belum aktif di CP1. Tulis ringkasan bahan jika perlu."
+                  placeholder="Upload belum aktif . Tulis ringkasan bahan jika perlu."
                   value={form.fileDescription}
                   onChange={(event) => updateField("fileDescription", event.target.value)}
                 />
@@ -779,7 +779,7 @@ export function CreateReportForm() {
                   <div>
                     <p className="flex items-center gap-2 text-sm font-semibold text-white/80">
                       <UploadCloud className="h-4 w-4 text-indigo-400/60" aria-hidden="true" />
-                      Upload PDF/foto belum aktif di CP1
+                      Upload PDF/foto belum aktif 
                     </p>
                     <p className="mt-1 text-xs leading-5 text-white/40">
                       Gunakan catatan teks, URL, lokasi, atau deskripsi bahan dulu.

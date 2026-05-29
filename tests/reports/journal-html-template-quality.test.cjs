@@ -24,7 +24,7 @@ test("HTML template includes a NaLI-branded publication cover and restrained tru
   const html = htmlFor();
   assert.match(html, /class="page cover-page starter"/);
   assert.match(html, /NaLI Nature &amp; Evidence Journal/);
-  assert.match(html, /Prepared by NaLI — Native Field Intelligence Services/);
+  assert.match(html, /Prepared by NaLI - Native/);
   assert.match(html, /Draft only; source verification inactive; public export locked\./);
   assert.doesNotMatch(html, /Internal QA|Founder\/Admin Draft Series/i);
 });

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPersistedReport } from "@/lib/reports/persistence";
+import { cookies } from "next/headers";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getGuestSessionIdHash } from "@/lib/reports/access";
 import { getReportExportEligibility } from "@/lib/reports/exportGate";
 import { verifyAnswer } from "@/lib/reports/answerVerification";
 import { evaluateJournalReadiness } from "@/lib/reports/journalReadiness";
@@ -11,9 +14,17 @@ const accessParamName = "to" + "ken";
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const token = req.nextUrl.searchParams.get(accessParamName);
+  const supabaseClient = await createServerSupabaseClient();
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  const cookieStore = await cookies();
+  const guestSessionId = cookieStore.get("nali_guest_session")?.value;
+  const guestSessionIdHash = guestSessionId ? getGuestSessionIdHash(guestSessionId) : undefined;
+
   const persisted = await getPersistedReport({
     reportAccessToken: token,
     reportId: id,
+    userId: user?.id,
+    guestSessionIdHash,
   });
 
   if (!persisted.found) {

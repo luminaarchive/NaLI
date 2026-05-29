@@ -134,7 +134,7 @@ export default function LearnReportPage() {
               },
               {
                 step: "Level 5: Field-Grade / Terverifikasi Ahli",
-                desc: "Laporan draf telah divalidasi secara manual oleh tim lapangan atau ahli ekologi profesional. (Fitur ini belum aktif di fase CP1).",
+                desc: "Laporan draf telah divalidasi secara manual oleh tim lapangan atau ahli ekologi profesional. (Fitur ini belum aktif ).",
                 badge: "Coming Soon"
               }
             ].map((ladder, idx) => (
@@ -199,7 +199,7 @@ export default function LearnReportPage() {
           <div className="rounded-2xl border border-red-500/10 bg-red-500/5 p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-6">
               <ShieldAlert className="h-6 w-6 text-red-700 flex-shrink-0" />
-              <h2 className="font-serif text-xl font-bold text-red-700">Yang NaLI Tidak Lakukan di CP1</h2>
+              <h2 className="font-serif text-xl font-bold text-red-700">Yang NaLI Tidak Lakukan </h2>
             </div>
             <ul className="space-y-4 text-xs text-[#4a6455]">
               <li className="flex gap-3">

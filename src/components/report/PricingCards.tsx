@@ -61,7 +61,7 @@ export function PricingCards() {
                     variant="outline"
                   >
                     <LockKeyhole className="h-3.5 w-3.5 text-[#4a6455]/40 mr-1.5" aria-hidden="true" />
-                    Checkout belum aktif di CP1 {/* Belum aktif */}
+                    Checkout belum aktif  {/* Belum aktif */}
                   </Button>
                 </CardFooter>
               </div>
@@ -71,7 +71,7 @@ export function PricingCards() {
       </div>
 
       <p className="rounded-2xl border border-[#1e3525]/12 bg-white/50 p-5 text-xs leading-6 text-[#4a6455]">
-        Laporan kamu habis. Pilih paket untuk lanjut. Paket ini adalah konfigurasi harga, belum bisa dibeli. Pembayaran dan checkout belum aktif di CP1. PDF ekspor publik belum aktif. Draf laporan dapat disalin atau diunduh secara lokal sebagai Markdown/TXT.
+        Laporan kamu habis. Pilih paket untuk lanjut. Paket ini adalah konfigurasi harga, belum bisa dibeli. Pembayaran dan checkout belum aktif . PDF ekspor publik belum aktif. Draf laporan dapat disalin atau diunduh secara lokal sebagai Markdown/TXT.
       </p>
     </div>
   );

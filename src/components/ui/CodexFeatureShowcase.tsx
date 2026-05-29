@@ -221,7 +221,7 @@ function ExportMockup() {
       <div className="my-5 h-px bg-white/[0.08]" />
       <div className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 text-sm font-semibold text-white/50">
         <Download className="h-4 w-4" />
-        PDF/DOCX terkunci di CP1
+        PDF/DOCX terkunci 
       </div>
     </MockupShell>
   );
@@ -295,7 +295,7 @@ export function CodexFeatureShowcase() {
       />
 
       <FeatureBlock
-        body="Preview tetap terbuka untuk diperiksa. PDF/DOCX publik tetap terkunci di CP1 dan checkout belum aktif."
+        body="Preview tetap terbuka untuk diperiksa. PDF/DOCX publik tetap terkunci  dan checkout belum aktif."
         href="/pricing"
         link="Pelajari export gate"
         mockup={<ExportMockup />}

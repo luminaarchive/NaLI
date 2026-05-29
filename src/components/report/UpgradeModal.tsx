@@ -66,7 +66,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
         <div className="rounded-xl border border-amber-500/15 bg-amber-500/[0.04] p-5 text-sm leading-7 text-amber-200/70">
           <p className="flex items-start gap-2">
             <LockKeyhole className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" />
-            Pembayaran dan checkout belum aktif di CP1. Paket Laporan hanya ditampilkan sebagai persiapan arsitektur.
+            Pembayaran dan checkout belum aktif . Paket Laporan hanya ditampilkan sebagai persiapan arsitektur.
           </p>
         </div>
       </div>

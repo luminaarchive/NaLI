@@ -122,7 +122,7 @@ export const combinedNaLiJournalCandidateBenchmark: JournalBenchmarkProfile = {
     "No claims of peer-reviewed or ready-to-submit status.",
   ],
   requiredHonestyNotes: [
-    "PDF/DOCX public export remains locked/inactive in CP1.",
+    "PDF/DOCX public export remains locked/inactive.",
     "Format ini adalah draf akademik, bukan jurnal terbit.",
     "NaLI tidak membuat DOI/referensi palsu.",
   ],

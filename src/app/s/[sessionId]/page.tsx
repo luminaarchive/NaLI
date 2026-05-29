@@ -1,6 +1,6 @@
 // src/app/s/[sessionId]/page.tsx
 // Manus-style chat session page with sidebar, streaming, and history.
-// Full-screen layout — no PublicAppShell.
+// Full-screen layout - no PublicAppShell.
 
 "use client";
 
@@ -181,7 +181,7 @@ function SidebarContent({
 
       <div className="border-t border-[#14261c] px-4 py-3">
         <p className="text-[10px] leading-relaxed text-[#a1b3a8]/40">
-          NaLI CP1 · Public alpha non-paid
+          NaLI · Public alpha non-paid
         </p>
       </div>
     </div>
@@ -362,11 +362,11 @@ export default function SessionPage() {
         }
       }
     } catch (err) {
-      // Show inline error — do NOT navigate away, do NOT lose messages
+      // Show inline error - do NOT navigate away, do NOT lose messages
       const errMsg =
         err instanceof Error ? err.message : "Terjadi kesalahan. Coba lagi.";
       setError(errMsg);
-      // Keep the optimistic user message — it was the user's actual input
+      // Keep the optimistic user message - it was the user's actual input
     } finally {
       setIsStreaming(false);
       setStreamingContent("");
@@ -402,7 +402,7 @@ export default function SessionPage() {
     );
   }
 
-  // ── 404 state — redirect home ─────────────────────────────
+  // ── 404 state - redirect home ─────────────────────────────
   if (loadState === "not_found") {
     router.push("/");
     return (
@@ -412,7 +412,7 @@ export default function SessionPage() {
     );
   }
 
-  // ── Error state — retry button ────────────────────────────
+  // ── Error state - retry button ────────────────────────────
   if (loadState === "error") {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-4 bg-[#060b08]">
@@ -489,7 +489,7 @@ export default function SessionPage() {
         {/* Messages scroll area */}
         <div className="flex-1 overflow-y-auto px-4 py-6">
           <div className="mx-auto max-w-[720px]">
-            {/* Error banner — inline, does NOT navigate away */}
+            {/* Error banner - inline, does NOT navigate away */}
             {error && (
               <div className="mb-4 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-950/30 px-4 py-3 text-sm text-red-400">
                 <AlertCircle className="h-4 w-4 flex-shrink-0" />
@@ -539,7 +539,7 @@ export default function SessionPage() {
           </div>
         </div>
 
-        {/* Input bar — sticky bottom */}
+        {/* Input bar - sticky bottom */}
         <div className="flex-shrink-0 border-t border-[#14261c] bg-[#060b08] px-4 py-3">
           <div className="mx-auto max-w-[720px]">
             <div className="flex items-end gap-2 rounded-2xl border border-[#14261c] bg-[#08100c] px-4 py-3 transition-colors focus-within:border-[#1e3525]">

@@ -47,7 +47,7 @@ const capabilities = [
   {
     icon: FileCheck2,
     title: "Darwin Core Export",
-    text: "Roadmap only in CP1: biodiversity export with coordinate obfuscation and clear review status.",
+    text: "Roadmap only: biodiversity export with coordinate obfuscation and clear review status.",
     accent: "from-[#00FFB3]/15",
   },
   {
@@ -85,7 +85,7 @@ export default function FieldIntelligencePage() {
             </h1>
             <p className="mx-auto mt-5 max-w-[600px] text-sm leading-6 text-[#a1b3a8]">
               Field intelligence for observations, conservation, data structuring, and evidence-based
-              decision support. In CP1 this remains roadmap/manual inquiry only.
+              decision support. this remains roadmap/manual inquiry only.
             </p>
             <div className="mt-6">
               <Badge tone="amber" className="px-4 py-2 text-xs font-semibold">

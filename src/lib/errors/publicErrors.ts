@@ -144,7 +144,7 @@ export function normalizePublicError(options: {
       category: "MODEL_ENTITLEMENT_REQUIRED",
       title: "Model premium terkunci",
       explanation:
-        "Obsidian dan Zephyr memerlukan entitlement atau kredit premium yang terverifikasi. Akses premium dan checkout/pembayaran belum diaktifkan di CP1.",
+        "Obsidian dan Zephyr memerlukan entitlement atau kredit premium yang terverifikasi. Akses premium dan checkout/pembayaran belum diaktifkan .",
       nextStep: "Gunakan Peregrine untuk membuat starter draft yang tersedia saat ini.",
       severity: "locked",
     };

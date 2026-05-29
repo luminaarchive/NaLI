@@ -23,7 +23,7 @@ export default function PricingPage() {
       {/* ALPHA WARNING BANNER */}
       <Alert className="rounded-none border-t-0 border-x-0 border-b border-amber-500/10 bg-amber-500/5 py-2 px-4 text-center">
         <AlertDescription className="text-xs sm:text-sm font-bold text-amber-800 leading-none">
-          NaLI dalam public alpha non-paid &middot; Pembayaran dan checkout belum aktif di CP1
+          NaLI dalam public alpha non-paid &middot; Pembayaran dan checkout belum aktif 
         </AlertDescription>
       </Alert>
 
@@ -132,7 +132,7 @@ export default function PricingPage() {
                 Apakah data lapangan saya aman?
               </AccordionTrigger>
               <AccordionContent className="text-xs leading-relaxed text-[#4a6455] pb-4">
-                Ya. Semua data tersimpan di Supabase dengan enkripsi. Batas bukti tetap milik pengguna — NaLI tidak mengklaim kepemilikan atas observasi lapangan kamu.
+                Ya. Semua data tersimpan di Supabase dengan enkripsi. Batas bukti tetap milik pengguna, NaLI tidak mengklaim kepemilikan atas observasi lapangan kamu.
               </AccordionContent>
             </AccordionItem>
 

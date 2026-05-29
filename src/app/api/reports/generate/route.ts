@@ -233,7 +233,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           code: "REPORT_BALANCE_REQUIRED",
-          error: "Laporan kamu habis. Pilih paket untuk lanjut. Pembayaran dan checkout belum aktif di CP1.",
+          error: "Laporan kamu habis. Pilih paket untuk lanjut. Pembayaran dan checkout belum aktif .",
           paymentActivation: "disabled",
           reason: "laporan_habis",
           reportAccess,
@@ -248,7 +248,7 @@ export async function POST(req: NextRequest) {
           balanceSource,
           code: "PUBLIC_PAID_GENERATION_INACTIVE",
           error:
-            "Paket Laporan belum aktif untuk penggunaan publik di CP1. Pembayaran dan checkout tetap dinonaktifkan.",
+            "Paket Laporan belum aktif untuk penggunaan publik . Pembayaran dan checkout tetap dinonaktifkan.",
           paymentActivation: "disabled",
           publicPremiumActivation: "disabled",
           reason: "payment_not_active",
@@ -445,7 +445,7 @@ export async function POST(req: NextRequest) {
         persistence: persistence.persisted ? "supabase" : persistence.reason,
         report_access_key: persistence.persisted ? persistence.reportAccessToken : undefined,
         mode: "mock",
-        notice: "DEMO/MOCK - NaLI preview engine unavailable or not configured.",
+        notice: "Kapasitas mesin AI utama sedang dibatasi. Menggunakan mesin pratinjau lokal.",
         provider: "nali",
         provider_metadata,
         answer_verification,

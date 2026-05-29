@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase/client";
 import { ArrowRight, Menu, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NaLILogo } from "@/components/ui/NaLILogo";
@@ -22,6 +23,29 @@ interface PublicAppShellProps {
 
 export function PublicAppShell({ children, isHomepage = false }: PublicAppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [userLoading, setUserLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      setUserLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.reload();
+  };
+
   const logoVariant = isHomepage ? "dark" : "light";
 
   return (
@@ -165,17 +189,41 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
           </nav>
 
           <div className="hidden items-center gap-3 md:flex">
-            <Link
-              className={cn(
-                "inline-flex min-h-[44px] items-center px-2 text-sm transition-colors",
-                isHomepage
-                  ? "text-[#1e3525]/65 hover:text-[#1e3525]"
-                  : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
-              )}
-              href="/login"
-            >
-              Masuk
-            </Link>
+            {!userLoading && (
+              user ? (
+                <div className="flex items-center gap-3">
+                  <span className={cn(
+                    "text-xs font-semibold px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20",
+                    isHomepage ? "text-[#1e3525]" : "text-[#00FFB3]"
+                  )}>
+                    {user.email}
+                  </span>
+                  <button
+                    onClick={handleLogout}
+                    className={cn(
+                      "inline-flex min-h-[44px] items-center px-2 text-sm font-semibold transition-colors cursor-pointer",
+                      isHomepage
+                        ? "text-red-700 hover:text-red-800"
+                        : "text-red-400 hover:text-red-300",
+                    )}
+                  >
+                    Keluar
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  className={cn(
+                    "inline-flex min-h-[44px] items-center px-2 text-sm transition-colors",
+                    isHomepage
+                      ? "text-[#1e3525]/65 hover:text-[#1e3525]"
+                      : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
+                  )}
+                  href="/login"
+                >
+                  Masuk
+                </Link>
+              )
+            )}
             <Link
               className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#1e3525] px-4 text-sm font-medium text-[#f5f0e8] transition-colors hover:bg-[#162d1d]"
               href="/create-report"
@@ -319,13 +367,32 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
                   Status
                 </Link>
                 <div className="mt-5 flex flex-col gap-2 border-t border-current/10 pt-5">
-                  <Link
-                    className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-current/20 text-sm font-medium"
-                    href="/login"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    Masuk
-                  </Link>
+                  {!userLoading && (
+                    user ? (
+                      <div className="flex flex-col gap-2">
+                        <span className="text-xs text-center font-medium opacity-60 truncate">
+                          {user.email}
+                        </span>
+                        <button
+                          className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-red-500/30 text-sm font-semibold text-red-500 bg-red-500/5 hover:bg-red-500/10 cursor-pointer"
+                          onClick={() => {
+                            setMobileOpen(false);
+                            handleLogout();
+                          }}
+                        >
+                          Keluar
+                        </button>
+                      </div>
+                    ) : (
+                      <Link
+                        className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-current/20 text-sm font-medium"
+                        href="/login"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        Masuk
+                      </Link>
+                    )
+                  )}
                   <Link
                     className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[#1e3525] px-4 text-sm font-medium text-[#f5f0e8]"
                     href="/create-report"
@@ -376,7 +443,7 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
               ]}
             />
             <div>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[#00FFB3]/80">Status CP1</p>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[#00FFB3]/80">Status Rilis</p>
               <div className="flex flex-col gap-2 text-sm text-[#f5f0e8]/60">
                 <span>CP1: pembayaran belum aktif</span>
                 <span>Upload belum aktif</span>

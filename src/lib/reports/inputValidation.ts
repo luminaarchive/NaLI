@@ -137,7 +137,7 @@ export function validateReportInput(input: {
       canSubmit: true, // Warn but do not block completely
       severity: "warning",
       code: "UNSUPPORTED_UPLOAD",
-      title: "Unggah file belum aktif di CP1",
+      title: "Unggah file belum aktif ",
       message: "Sistem observasi berkas file masih dalam tahap persiapan. Harap langsung tempelkan (copy-paste) teks isi catatan observasi Anda di kolom input utama.",
       suggestions: ["Salin isi berkas kajian ke dalam text area utama."],
     };
@@ -149,7 +149,7 @@ export function validateReportInput(input: {
       canSubmit: true,
       severity: "info",
       code: "UNSUPPORTED_VERIFICATION",
-      title: "Verifikasi sumber belum aktif di CP1",
+      title: "Verifikasi sumber belum aktif ",
       message: "Fitur lookup literatur eksternal belum diaktifkan di MVP ini. Rujukan akan ditulis sebagai penanda draf internal.",
       suggestions: ["Periksa kebenaran rujukan sumber secara manual."],
     };

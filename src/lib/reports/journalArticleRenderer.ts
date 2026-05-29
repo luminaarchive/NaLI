@@ -89,7 +89,7 @@ export function renderJournalPreview(
         <div><strong>Mesin Pemroses:</strong> ${modelUsed}</div>
       </div>
       <div style="margin-top: 30px; padding: 15px; border: 1px dashed #ff4e4e; background: rgba(255, 78, 78, 0.05); color: #ffacac; font-size: 11px; text-align: center; border-radius: 6px;">
-        ⚠️ <strong>PEMBERITAHUAN INTEGRITAS:</strong> Draf ini dibuat oleh NaLI sebagai kandidat artikel akademik. Belum peer-reviewed, belum diterbitkan, tidak memiliki DOI/ISSN, dan PDF publik belum aktif di CP1.
+        ⚠️ <strong>PEMBERITAHUAN INTEGRITAS:</strong> Draf ini dibuat oleh NaLI sebagai kandidat artikel akademik. Belum peer-reviewed, belum diterbitkan, tidak memiliki DOI/ISSN, dan PDF publik belum aktif .
       </div>
     </div>
   `;
@@ -104,7 +104,7 @@ export function renderJournalPreview(
           <span>${author}</span> &bull; <span>Dibuat: ${date}</span> &bull; <span>Model: ${modelUsed}</span>
         </div>
         <div style="margin-top: 10px; font-size: 11px; color: #dc2626; font-family: sans-serif; font-weight: bold; padding: 5px; border: 1px solid #fca5a5; background: #fee2e2; border-radius: 4px;">
-          Format ini adalah draf akademik, bukan jurnal terbit. PDF jurnal publik belum aktif di CP1.
+          Format ini adalah draf akademik, bukan jurnal terbit. PDF jurnal publik belum aktif .
         </div>
       </header>
 
@@ -187,7 +187,7 @@ export function renderJournalPreview(
 
       <footer style="margin-top: 40px; border-top: 1px solid #e5e7eb; padding-top: 20px; font-size: 12px; color: #6b7280; text-align: center; font-family: sans-serif;">
         <p style="margin: 0;">NatIve Field Intelligence Services &bull; NaLI Nature & Evidence Journal</p>
-        <p style="margin: 5px 0 0 0; font-size: 11px;">Draf ini dibuat oleh NaLI sebagai kandidat artikel akademik. Belum peer-reviewed, belum diterbitkan, tidak memiliki DOI, dan PDF publik belum aktif di CP1.</p>
+        <p style="margin: 5px 0 0 0; font-size: 11px;">Draf ini dibuat oleh NaLI sebagai kandidat artikel akademik. Belum peer-reviewed, belum diterbitkan, tidak memiliki DOI, dan PDF publik belum aktif .</p>
       </footer>
     </article>
   `;
@@ -201,7 +201,7 @@ export function renderJournalPreview(
 **Model AI Pemroses**: ${modelUsed}  
 
 > [!WARNING]
-> **Pernyataan Kejujuran Akademik:** Format ini adalah draf akademik, bukan jurnal terbit. PDF jurnal publik belum aktif di CP1. NaLI tidak membuat DOI, ISSN, nama jurnal, publisher, atau referensi palsu. Benchmark ini mengikuti disiplin struktur akademik, bukan menyalin identitas jurnal.
+> **Pernyataan Kejujuran Akademik:** Format ini adalah draf akademik, bukan jurnal terbit. PDF jurnal publik belum aktif . NaLI tidak membuat DOI, ISSN, nama jurnal, publisher, atau referensi palsu. Benchmark ini mengikuti disiplin struktur akademik, bukan menyalin identitas jurnal.
 
 ---
 
@@ -267,7 +267,7 @@ ${annexureItems.map((item: any, idx: number) => {
 ${referencesArray.map((ref: string, idx: number) => `${idx + 1}. ${ref}`).join("\n")}
 
 ---
-*Draf ini dibuat oleh NaLI sebagai kandidat artikel akademik. Belum peer-reviewed, belum diterbitkan, tidak memiliki DOI, dan PDF publik belum aktif di CP1.*
+*Draf ini dibuat oleh NaLI sebagai kandidat artikel akademik. Belum peer-reviewed, belum diterbitkan, tidak memiliki DOI, dan PDF publik belum aktif .*
   `.trim();
 
   const fullHtml = `

@@ -107,13 +107,13 @@ test("public composer hides model selector while internal registry remains for s
   }
 
   // Internal-only differentiated registry remains for routing and QA artifacts.
-  assert.match(modelSrc, /Peregrine — Starter Cepat/);
-  assert.match(modelSrc, /Obsidian — Evidence Audit/);
-  assert.match(modelSrc, /Zephyr — Premium Journal Draft/);
+  assert.match(modelSrc, /Peregrine - Starter Cepat/);
+  assert.match(modelSrc, /Obsidian - Evidence Audit/);
+  assert.match(modelSrc, /Zephyr - Premium Journal Draft/);
   assert.match(modelSrc, /tidak sedalam Obsidian atau sehalus Zephyr/);
   assert.match(modelSrc, /audit bukti, batas klaim, risiko data/);
   assert.match(modelSrc, /Model paling mahal dan paling kuat/);
-  assert.match(modelSrc, /checkout\/pembayaran tidak diaktifkan di CP1/i);
+  assert.match(modelSrc, /checkout\/pembayaran tidak diaktifkan/i);
 });
 
 // ─── Test 5: Prohibited and Safe Personalization keywords ────────────────────

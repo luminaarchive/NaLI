@@ -15,13 +15,13 @@ export interface NaliModel {
   accessLabel: "Tersedia" | "Terkunci";
 }
 
-export const CP1_PREMIUM_ACCESS_MESSAGE =
-  "Akses model premium belum aktif; checkout/pembayaran tidak diaktifkan di CP1. Peregrine tetap tersedia sebagai starter.";
+export const PREMIUM_ACCESS_MESSAGE =
+  "Akses model premium belum aktif; checkout/pembayaran tidak diaktifkan . Peregrine tetap tersedia sebagai starter.";
 
 export const naliModels: NaliModel[] = [
   {
     id: "peregrine",
-    label: "Peregrine — Starter Cepat",
+    label: "Peregrine - Starter Cepat",
     shortDescription:
       "Untuk jawaban cepat dan draft super ringkas. Cocok untuk mulai dari catatan mentah, tapi tidak sedalam Obsidian atau sehalus Zephyr.",
     intent: "Jawaban cepat dan draf awal yang sengaja dibatasi sebagai starter.",
@@ -41,7 +41,7 @@ export const naliModels: NaliModel[] = [
   },
   {
     id: "obsidian",
-    label: "Obsidian — Evidence Audit",
+    label: "Obsidian - Evidence Audit",
     shortDescription:
       "Untuk laporan yang jauh lebih kuat dari Peregrine: audit bukti, batas klaim, risiko data, dan bagian 'yang belum bisa disimpulkan'.",
     intent: "Audit bukti, risiko data, dan batas klaim untuk draf yang perlu ditelaah serius.",
@@ -62,7 +62,7 @@ export const naliModels: NaliModel[] = [
   },
   {
     id: "zephyr",
-    label: "Zephyr — Premium Journal Draft",
+    label: "Zephyr - Premium Journal Draft",
     shortDescription:
       "Model paling mahal dan paling kuat untuk draft jurnal panjang: narasi akademik paling halus, struktur paling rapi, dan editorial polish terbaik.",
     intent: "Draf jurnal premium panjang dengan alur akademik dan penyuntingan paling matang.",

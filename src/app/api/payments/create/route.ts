@@ -14,6 +14,9 @@ import { createPaymentRecord, getSuccessfulPaymentForReport } from "@/lib/paymen
 import { checkRateLimit, RATE_LIMITED_MESSAGE, rateLimitHeaders } from "@/lib/rateLimit/limit";
 import { getPersistedReport } from "@/lib/reports/persistence";
 import { logUsageEvent } from "@/lib/usage/logging";
+import { cookies } from "next/headers";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getGuestSessionIdHash } from "@/lib/reports/access";
 import { getPlanById, getTopUpPackById } from "@/lib/pricing/plans";
 
 function getInputObject(body: unknown): Record<string, unknown> {
@@ -64,7 +67,18 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const persisted = await getPersistedReport({ reportAccessToken: reportAccessKey, reportId });
+  const supabaseClient = await createServerSupabaseClient();
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  const cookieStore = await cookies();
+  const guestSessionId = cookieStore.get("nali_guest_session")?.value;
+  const guestSessionIdHash = guestSessionId ? getGuestSessionIdHash(guestSessionId) : undefined;
+
+  const persisted = await getPersistedReport({
+    reportAccessToken: reportAccessKey,
+    reportId,
+    userId: user?.id,
+    guestSessionIdHash,
+  });
 
   if (!persisted.found) {
     const status = persisted.reason === "supabase_unconfigured" ? 503 : 404;

@@ -206,7 +206,7 @@ export default function FieldNotesPage() {
               <div className="flex flex-col gap-4 mt-2">
                 <div>
                   <Label className="text-[#4a6455] text-xs mb-1.5 block">Judul *</Label>
-                  <Input value={form.title} onChange={e => setForm(p => ({...p,title:e.target.value}))} placeholder="Contoh: Observasi Macan Tutul — Merbabu 2706" className="bg-white border-[#1e3525]/12 text-[#1e3525] placeholder:text-[#4a6455]/40 rounded-xl focus-visible:ring-[#1e3525]/30" />
+                  <Input value={form.title} onChange={e => setForm(p => ({...p,title:e.target.value}))} placeholder="Contoh: Observasi Macan Tutul - Merbabu 2706" className="bg-white border-[#1e3525]/12 text-[#1e3525] placeholder:text-[#4a6455]/40 rounded-xl focus-visible:ring-[#1e3525]/30" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>

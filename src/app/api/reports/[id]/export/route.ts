@@ -5,6 +5,9 @@ import { buildReportMarkdown } from "@/lib/reports/markdown";
 import { buildReportPdfBytes } from "@/lib/reports/pdf";
 import { getPersistedReport } from "@/lib/reports/persistence";
 import { logUsageEvent } from "@/lib/usage/logging";
+import { cookies } from "next/headers";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getGuestSessionIdHash } from "@/lib/reports/access";
 
 const accessParamName = "to" + "ken";
 type ExportFormat = "markdown" | "pdf";
@@ -37,9 +40,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "Format export belum didukung." }, { status: 501 });
   }
 
+  const supabaseClient = await createServerSupabaseClient();
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  const cookieStore = await cookies();
+  const guestSessionId = cookieStore.get("nali_guest_session")?.value;
+  const guestSessionIdHash = guestSessionId ? getGuestSessionIdHash(guestSessionId) : undefined;
+
   const persisted = await getPersistedReport({
     reportAccessToken: reportAccessKey,
     reportId: id,
+    userId: user?.id,
+    guestSessionIdHash,
   });
 
   if (!persisted.found) {

@@ -275,13 +275,13 @@ export async function POST(req: NextRequest) {
         "",
         "Kembalikan data dalam format JSON saja. Harus berupa drop-in pengganti untuk skema output laporan (Laporan Observasi Lingkungan / Laporan Praktikum dll), lengkap dengan field pendukung AI Agentic Fields.",
         "Harus menyertakan field agentic di tingkat atas JSON:",
-        '- "understanding": string — ringkasan pemahaman Anda terhadap instruksi baru pengguna.',
-        '- "plan": string[] — langkah-langkah singkat yang Anda lakukan untuk merevisi laporan.',
-        '- "evidence_strength": "weak" | "medium" | "strong" — kekuatan bukti terbaru.',
-        '- "source_coverage": "limited" | "adequate" | "strong" — cakupan sumber terbaru.',
-        '- "missing_evidence": string[] — bukti apa yang masih kurang.',
-        '- "evidence_warnings": string[] — peringatan/catatan khusus tentang klaim laporan.',
-        '- "suggested_actions": Array<{ label: string, prompt: string }> — 3-5 tindakan lanjutan yang disarankan kepada pengguna.',
+        '- "understanding": string - ringkasan pemahaman Anda terhadap instruksi baru pengguna.',
+        '- "plan": string[] - langkah-langkah singkat yang Anda lakukan untuk merevisi laporan.',
+        '- "evidence_strength": "weak" | "medium" | "strong" - kekuatan bukti terbaru.',
+        '- "source_coverage": "limited" | "adequate" | "strong" - cakupan sumber terbaru.',
+        '- "missing_evidence": string[] - bukti apa yang masih kurang.',
+        '- "evidence_warnings": string[] - peringatan/catatan khusus tentang klaim laporan.',
+        '- "suggested_actions": Array<{ label: string, prompt: string }> - 3-5 tindakan lanjutan yang disarankan kepada pengguna.',
         "",
         currentReport.mode === "start_from_zero"
           ? "Skema StartFromZeroGuide: { mode, title, report_type, created_at, status, model_used, label, topic_framing, suggested_outline: string[], observation_questions: string[], field_note_template: string[], evidence_checklist: string[], source_search_checklist: string[], safety_or_ethics_note, integrity_note, disclaimer, next_steps: string[], understanding, plan, evidence_strength, source_coverage, missing_evidence, evidence_warnings, suggested_actions }"
@@ -338,7 +338,7 @@ export async function POST(req: NextRequest) {
           }
           openRouterResult = {
             json: mockUpdatedReport,
-            model: "NaLI Preview Engine (Mock)",
+            model: "NaLI Preview Engine (Lokal)",
           };
         }
       }

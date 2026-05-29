@@ -412,7 +412,7 @@ export function ReportResultClient({ reportId }: { reportId: string }) {
           <SidebarCard title="Export">
             <p className="flex items-start gap-2 text-sm leading-6 text-white/40">
               <LockKeyhole className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" />
-              PDF/DOCX publik tetap terkunci / inactive di CP1. Pembayaran dan checkout belum aktif.
+              PDF/DOCX publik tetap terkunci / inactive . Pembayaran dan checkout belum aktif.
             </p>
             <p className="mt-2 text-[11px] leading-5 text-white/30">
               Gunakan salinan atau unduhan Markdown/TXT lokal pada panel di atas.

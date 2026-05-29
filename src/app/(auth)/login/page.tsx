@@ -44,7 +44,7 @@ function LoginForm() {
     setGoogleLoading(true);
 
     if (!isGoogleOAuthLikelyConfigured()) {
-      setError("Google OAuth belum dikonfigurasi di server. Hubungi administrator.");
+      setError("BLOCKED BY DASHBOARD CONFIG");
       setGoogleLoading(false);
       return;
     }
@@ -52,15 +52,29 @@ function LoginForm() {
     const redirectPath = linkGuest ? `${next}${next.includes("?") ? "&" : "?"}linkGuest=1` : next;
     const redirectUrl = `${getAuthRedirectBaseUrl()}/auth/callback?next=${encodeURIComponent(redirectPath)}`;
 
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: redirectUrl,
-      },
-    });
+    try {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: redirectUrl,
+        },
+      });
 
-    if (oauthError) {
-      setError(oauthError.message);
+      if (oauthError) {
+        if (
+          oauthError.message.includes("provider") ||
+          oauthError.message.includes("disabled") ||
+          oauthError.message.includes("not enabled") ||
+          oauthError.message.includes("configuration")
+        ) {
+          setError("BLOCKED BY DASHBOARD CONFIG");
+        } else {
+          setError("Login Google gagal. Coba lagi.");
+        }
+        setGoogleLoading(false);
+      }
+    } catch (err: any) {
+      setError("Login Google gagal. Coba lagi.");
       setGoogleLoading(false);
     }
   };
@@ -71,7 +85,7 @@ function LoginForm() {
         <NaLILogoMark size={48} variant="light" className="mb-4" />
         <h1 className="font-serif text-2xl font-semibold text-white tracking-wide">Masuk ke NaLI</h1>
         <p className="text-xs text-white/50 mt-2 leading-relaxed">
-          Lanjutkan laporan, catatan, dan riwayat kerja berbasis bukti.
+          Lanjutkan laporan, catatan, and riwayat kerja berbasis bukti.
         </p>
       </div>
 
@@ -92,7 +106,7 @@ function LoginForm() {
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
             </svg>
           )}
-          Lanjutkan dengan Google
+          Masuk dengan Google
         </button>
 
         <div className="flex items-center my-4">

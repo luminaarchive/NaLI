@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         count: 1,
-        notice: "Supabase unconfigured. Local mock cache threads linked.",
+        notice: "Database belum aktif. Riwayat lokal berhasil dihubungkan.",
       });
     }
 

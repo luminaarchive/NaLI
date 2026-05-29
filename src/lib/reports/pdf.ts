@@ -296,7 +296,7 @@ export async function buildReportPdfBytes(report: ReportResult, options: ReportM
     color: ACCENT_COLOR,
   });
 
-  // Cover disclaimer / CP1 truth note
+  // Cover disclaimer / truth note
   const coverDisclaimerLines = wrapText(article.cover.truthNote, regular, 7.5, maxWidth);
   let coverDisclaimerY = MARGIN_BOTTOM + 35;
   for (const line of coverDisclaimerLines) {
@@ -582,7 +582,7 @@ export async function buildReportPdfBytes(report: ReportResult, options: ReportM
     color: MUTED_TEXT,
   });
 
-  page.drawText("Layanan Upload File Inaktif di CP1  |  Metadata Lokal Belum Terverifikasi", {
+  page.drawText("Layanan Upload File Inaktif   |  Metadata Lokal Belum Terverifikasi", {
     x: MARGIN_X + 15,
     y: y - 40,
     size: 7.5,

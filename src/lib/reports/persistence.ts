@@ -242,12 +242,31 @@ export async function getPersistedReport({
   reportAccessToken,
   reportId,
   userId,
+  guestSessionIdHash,
 }: {
   reportAccessToken?: unknown;
   reportId: string;
   userId?: string;
+  guestSessionIdHash?: string;
 }) {
+  let resolvedGuestSessionIdHash = guestSessionIdHash;
+  if (!userId && !resolvedGuestSessionIdHash) {
+    try {
+      const { cookies } = await import("next/headers");
+      const cookieStore = await cookies();
+      const guestSession = cookieStore.get("nali_guest_session")?.value;
+      if (guestSession) {
+        resolvedGuestSessionIdHash = getGuestSessionIdHash(guestSession);
+      }
+    } catch {
+      // Cookies might not be available in non-request contexts
+    }
+  }
+
   if (!userId) {
+    if (!resolvedGuestSessionIdHash) {
+      return { found: false as const, reason: "missing_guest_session_hash" as const };
+    }
     if (typeof reportAccessToken !== "string" || !reportAccessToken.trim()) {
       return { found: false as const, reason: "missing_token" as const };
     }
@@ -255,7 +274,6 @@ export async function getPersistedReport({
   const getMockData = () => {
     const cached = mockDb.get(reportId);
     if (cached) {
-      const tokenMatches = typeof reportAccessToken === "string" && cached.accessTokenHash === getReportAccessTokenHash(reportAccessToken);
       if (userId) {
         if (cached.processing_metadata?.user_id === userId) {
           return {
@@ -268,16 +286,20 @@ export async function getPersistedReport({
             user_id: userId,
           };
         }
-      } else if (tokenMatches && !cached.processing_metadata?.user_id) {
-        return {
-          found: true as const,
-          report: cached.report,
-          status: cached.status as any,
-          processing_metadata: cached.processing_metadata,
-          input: cached.input,
-          guest_session_id_hash: cached.guestSessionIdHash,
-          user_id: null,
-        };
+      } else {
+        const tokenMatches = typeof reportAccessToken === "string" && cached.accessTokenHash === getReportAccessTokenHash(reportAccessToken);
+        const guestHashMatches = resolvedGuestSessionIdHash && cached.guestSessionIdHash === resolvedGuestSessionIdHash;
+        if (tokenMatches && guestHashMatches && !cached.processing_metadata?.user_id) {
+          return {
+            found: true as const,
+            report: cached.report,
+            status: cached.status as any,
+            processing_metadata: cached.processing_metadata,
+            input: cached.input,
+            guest_session_id_hash: cached.guestSessionIdHash,
+            user_id: null,
+          };
+        }
       }
     }
     return null;
@@ -299,10 +321,14 @@ export async function getPersistedReport({
   if (userId) {
     query = query.eq("user_id", userId);
   } else {
+    if (!resolvedGuestSessionIdHash) {
+      return { found: false as const, reason: "missing_guest_session_hash" as const };
+    }
     if (typeof reportAccessToken !== "string" || !reportAccessToken.trim()) {
       return { found: false as const, reason: "missing_token" as const };
     }
     query = query
+      .eq("guest_session_id_hash", resolvedGuestSessionIdHash)
       .eq("report_access_token_hash", getReportAccessTokenHash(reportAccessToken))
       .is("user_id", null);
   }
@@ -347,18 +373,35 @@ export async function updatePersistedReport({
   report,
   agentThread,
   userId,
+  guestSessionIdHash,
 }: {
   reportId: string;
   reportAccessKey?: string;
   report: ReportResult;
   agentThread: any;
   userId?: string;
+  guestSessionIdHash?: string;
 }) {
+  let resolvedGuestSessionIdHash = guestSessionIdHash;
+  if (!userId && !resolvedGuestSessionIdHash) {
+    try {
+      const { cookies } = await import("next/headers");
+      const cookieStore = await cookies();
+      const guestSession = cookieStore.get("nali_guest_session")?.value;
+      if (guestSession) {
+        resolvedGuestSessionIdHash = getGuestSessionIdHash(guestSession);
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   // Update local mockDb entry
   const cached = mockDb.get(reportId);
   const tokenMatches = reportAccessKey && cached && cached.accessTokenHash === getReportAccessTokenHash(reportAccessKey);
   const userMatches = userId && cached && cached.processing_metadata?.user_id === userId;
-  if (cached && (tokenMatches || userMatches)) {
+  const guestHashMatches = resolvedGuestSessionIdHash && cached && cached.guestSessionIdHash === resolvedGuestSessionIdHash;
+  if (cached && ((userId && userMatches) || (!userId && tokenMatches && guestHashMatches))) {
     cached.report = report;
     cached.status = getReportMacroStatus(report);
     cached.processing_metadata = {
@@ -394,7 +437,11 @@ export async function updatePersistedReport({
     if (!reportAccessKey) {
       return { updated: false, reason: "missing_token" };
     }
+    if (!resolvedGuestSessionIdHash) {
+      return { updated: false, reason: "missing_guest_session_hash" };
+    }
     query = query
+      .eq("guest_session_id_hash", resolvedGuestSessionIdHash)
       .eq("report_access_token_hash", getReportAccessTokenHash(reportAccessKey))
       .is("user_id", null);
   }

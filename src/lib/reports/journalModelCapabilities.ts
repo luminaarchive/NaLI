@@ -26,13 +26,13 @@ export interface JournalModelCapability {
   upgradeNote?: string;
 }
 
-export const CP1_PRICING_READINESS_NOTE = "Credit purchase belum aktif; estimasi ini untuk kesiapan pricing CP1.";
+export const PRICING_READINESS_NOTE = "Credit purchase belum aktif; estimasi ini untuk kesiapan pricing.";
 
 export const journalModelCapabilities: Record<JournalModelId, JournalModelCapability> = {
   peregrine: {
     id: "peregrine",
     tier: "starter",
-    publicTitle: "Peregrine — Starter Cepat",
+    publicTitle: "Peregrine - Starter Cepat",
     articleType: "Starter Brief / Short Practicum Note",
     role: "Fast answer model and first-draft helper for quick understanding or rough practicum notes.",
     badge: "Starter Draft",
@@ -44,7 +44,7 @@ export const journalModelCapabilities: Record<JournalModelId, JournalModelCapabi
     maxReferences: 2,
     estimatedCredits: 5,
     costLabel: "Starter",
-    pricingReadinessNote: CP1_PRICING_READINESS_NOTE,
+    pricingReadinessNote: PRICING_READINESS_NOTE,
     sectionTitles: [
       "Starter Abstract",
       "Background for Practicum",
@@ -67,7 +67,7 @@ export const journalModelCapabilities: Record<JournalModelId, JournalModelCapabi
   obsidian: {
     id: "obsidian",
     tier: "evidence_audit",
-    publicTitle: "Obsidian — Evidence Audit",
+    publicTitle: "Obsidian - Evidence Audit",
     articleType: "Evidence Audit Article",
     role: "Evidence-aware model for claim boundaries, data risks, and research sanity checks.",
     badge: "Evidence Audit",
@@ -79,7 +79,7 @@ export const journalModelCapabilities: Record<JournalModelId, JournalModelCapabi
     maxReferences: 8,
     estimatedCredits: 20,
     costLabel: "Evidence Audit",
-    pricingReadinessNote: CP1_PRICING_READINESS_NOTE,
+    pricingReadinessNote: PRICING_READINESS_NOTE,
     sectionTitles: [
       "Audit Abstract",
       "Scope and Claim Boundary",
@@ -106,7 +106,7 @@ export const journalModelCapabilities: Record<JournalModelId, JournalModelCapabi
   zephyr: {
     id: "zephyr",
     tier: "premium",
-    publicTitle: "Zephyr — Premium Journal Draft",
+    publicTitle: "Zephyr - Premium Journal Draft",
     articleType: "Premium Journal Article Draft",
     role: "Flagship editorial model for long-form international-style journal drafts.",
     badge: "Premium Journal Draft",
@@ -118,7 +118,7 @@ export const journalModelCapabilities: Record<JournalModelId, JournalModelCapabi
     maxReferences: 12,
     estimatedCredits: 40,
     costLabel: "Premium",
-    pricingReadinessNote: CP1_PRICING_READINESS_NOTE,
+    pricingReadinessNote: PRICING_READINESS_NOTE,
     sectionTitles: [
       "Executive Editorial Summary",
       "Editorial Abstract",

@@ -86,7 +86,7 @@ export default function HomePage() {
                 </Link>
               </div>
               <p className="mt-3 text-[#4a6455]/70">
-                Public Alpha: AI draft tersedia jika kapasitas tersedia &middot; CP1: pembayaran belum aktif &middot; Upload belum aktif &middot; Source verification belum aktif
+                Public Alpha: AI draft tersedia jika kapasitas tersedia &middot;: pembayaran belum aktif &middot; Upload belum aktif &middot; Source verification belum aktif
               </p>
             </aside>
 
