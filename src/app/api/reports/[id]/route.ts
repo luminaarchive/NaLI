@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPersistedReport } from "@/lib/reports/persistence";
 import { getReportExportEligibility } from "@/lib/reports/exportGate";
+import { verifyAnswer } from "@/lib/reports/answerVerification";
+import { evaluateJournalReadiness } from "@/lib/reports/journalReadiness";
 
 const accessParamName = "to" + "ken";
 
@@ -29,9 +31,35 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const eligibility = await getReportExportEligibility(id);
 
+  const requestInput = persisted.input || {
+    mode: persisted.report.mode || "draft_from_materials",
+    reportTemplate: persisted.report.report_type || "Laporan Observasi Lingkungan",
+    title: persisted.report.title || "",
+    role: "pengguna",
+    mainText: (persisted.report as any).findings?.join("\n") || "",
+    topic: persisted.report.title || "",
+    sourceUrls: [],
+    location: "",
+    fileDescription: "",
+    integrityConsent: true,
+  };
+
+  const provider_metadata = persisted.processing_metadata?.provider_metadata || {
+    primary_model_requested: "unknown",
+    model_used: persisted.report.model_used || "unknown",
+    fallback_used: false,
+    provider_status: "primary_success" as const
+  };
+
+  const answer_verification = persisted.processing_metadata?.answer_verification || verifyAnswer(requestInput, persisted.report);
+  const journal_readiness = persisted.processing_metadata?.journal_readiness || evaluateJournalReadiness(requestInput, persisted.report);
+
   return NextResponse.json({
     report: persisted.report,
     status: persisted.status,
     export_readiness: eligibility.state,
+    provider_metadata,
+    answer_verification,
+    journal_readiness,
   });
 }

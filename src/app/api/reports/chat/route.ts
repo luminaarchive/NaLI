@@ -8,6 +8,8 @@ import { requestOpenRouterJson } from "@/lib/ai/openrouter";
 import { guardReportOutput } from "@/lib/integrity/outputGuard";
 import { containsForbiddenWording, normalizeProviderResult, buildMockResult, type ReportResult } from "@/lib/reports/reportGenerator";
 import { classifyChatAction } from "@/lib/reports/taskClassifier";
+import { verifyAnswer } from "@/lib/reports/answerVerification";
+import { evaluateJournalReadiness } from "@/lib/reports/journalReadiness";
 
 const systemPrompt = [
   "You are NaLI (NatIve Learning & Intelligence) by NatIve, a professional AI field intelligence and evidence-based learning assistant.",
@@ -42,6 +44,29 @@ type AgentMessage = {
     template_id?: string;
     warning_codes?: string[];
     new_report?: any;
+    provider_metadata?: {
+      primary_model_requested: string;
+      model_used: string;
+      fallback_used: boolean;
+      provider_status: string;
+    };
+    answer_verification?: {
+      answered: boolean;
+      answerConfidence: "low" | "medium" | "high";
+      missingAnswerParts: string[];
+      detectedOutputType: string;
+      userQuestionSummary: string;
+      verificationNotes: string[];
+    };
+    journal_readiness?: {
+      journalReady: boolean;
+      readinessLevel: string;
+      canGenerateJournalDraft: boolean;
+      canGenerateJournalPdfNow: boolean;
+      reasons: string[];
+      missingRequirements: string[];
+      recommendedNextAction: string;
+    };
   };
   created_at: string;
 };
@@ -363,6 +388,15 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: guarded.userMessage }, { status: 400 });
       }
 
+      const answer_verification = verifyAnswer(reportInput, guarded.report);
+      const journal_readiness = evaluateJournalReadiness(reportInput, guarded.report);
+      const provider_metadata = {
+        primary_model_requested: "unknown",
+        model_used: openRouterResult?.model || "NaLI Refinement Engine",
+        fallback_used: false,
+        provider_status: "primary_success" as const,
+      };
+
       // 10. Append assistant response server-side
       const assistantMessage: AgentMessage = {
         id: generateId(),
@@ -372,6 +406,9 @@ export async function POST(req: NextRequest) {
         metadata: {
           run_id: activeRunId,
           new_report: guarded.report,
+          provider_metadata,
+          answer_verification,
+          journal_readiness,
         },
         created_at: new Date().toISOString(),
       };

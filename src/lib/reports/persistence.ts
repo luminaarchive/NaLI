@@ -81,11 +81,17 @@ export async function persistGeneratedReport({
   userId,
   input,
   report,
+  provider_metadata,
+  answer_verification,
+  journal_readiness,
 }: {
   guestSessionId: unknown;
   userId?: string;
   input: ReportRequest;
   report: ReportResult;
+  provider_metadata?: any;
+  answer_verification?: any;
+  journal_readiness?: any;
 }): Promise<PersistReportResult> {
   if (!isUsableGuestSessionId(guestSessionId)) {
     return { persisted: false, reason: "missing_guest_session" };
@@ -106,6 +112,9 @@ export async function persistGeneratedReport({
       sprint: "zero",
       step: "preview_generated",
       user_id: userId || undefined,
+      provider_metadata,
+      answer_verification,
+      journal_readiness,
     },
     status: getReportMacroStatus(report),
   });
@@ -132,6 +141,9 @@ export async function persistGeneratedReport({
         source_verification: "inactive_mvp",
         sprint: "zero",
         step: "preview_generated",
+        provider_metadata,
+        answer_verification,
+        journal_readiness,
       },
       report_access_token_hash: reportAccessTokenHash,
       status: getReportMacroStatus(report),

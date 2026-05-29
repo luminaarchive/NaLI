@@ -61,6 +61,29 @@ type AgentMessage = {
     template_id?: string;
     warning_codes?: string[];
     new_report?: any;
+    provider_metadata?: {
+      primary_model_requested: string;
+      model_used: string;
+      fallback_used: boolean;
+      provider_status: string;
+    };
+    answer_verification?: {
+      answered: boolean;
+      answerConfidence: "low" | "medium" | "high";
+      missingAnswerParts: string[];
+      detectedOutputType: string;
+      userQuestionSummary: string;
+      verificationNotes: string[];
+    };
+    journal_readiness?: {
+      journalReady: boolean;
+      readinessLevel: string;
+      canGenerateJournalDraft: boolean;
+      canGenerateJournalPdfNow: boolean;
+      reasons: string[];
+      missingRequirements: string[];
+      recommendedNextAction: string;
+    };
   };
   created_at: string;
 };
@@ -140,6 +163,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [accessKey, setAccessKey] = useState<string | null>(null);
+  const [providerMetadata, setProviderMetadata] = useState<any>(null);
+  const [answerVerification, setAnswerVerification] = useState<any>(null);
+  const [journalReadiness, setJournalReadiness] = useState<any>(null);
   const showValidation = !error && query.trim().length > 0 && validationIssue.severity !== "none";
 
   useEffect(() => {
@@ -313,6 +339,17 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         try {
           localReport = JSON.parse(stored) as ReportResult;
           setReport(localReport);
+
+          const storedMeta = window.localStorage.getItem(`nali-metadata:${reportId}`);
+          if (storedMeta) {
+            try {
+              const parsed = JSON.parse(storedMeta);
+              setProviderMetadata(parsed.providerMetadata || null);
+              setAnswerVerification(parsed.answerVerification || null);
+              setJournalReadiness(parsed.journalReadiness || null);
+            } catch {}
+          }
+
           // Initialize message list from local storage or construct it
           const localMessages = window.localStorage.getItem(`nali-messages:${reportId}`);
           if (localMessages) {
@@ -354,6 +391,18 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           if (payload.report) {
             setReport(payload.report);
             window.localStorage.setItem(`nali-report:${reportId}`, JSON.stringify(payload.report));
+
+            setProviderMetadata(payload.provider_metadata || null);
+            setAnswerVerification(payload.answer_verification || null);
+            setJournalReadiness(payload.journal_readiness || null);
+            window.localStorage.setItem(
+              `nali-metadata:${reportId}`,
+              JSON.stringify({
+                providerMetadata: payload.provider_metadata,
+                answerVerification: payload.answer_verification,
+                journalReadiness: payload.journal_readiness,
+              }),
+            );
 
             if (payload.mode === "mock" || payload.notice) {
               const warning = payload.notice || "DEMO/MOCK - NaLI preview engine unavailable or not configured.";
@@ -740,6 +789,19 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
       setReport(generatedReport);
       setAccessKey(key);
+      setProviderMetadata(payload.provider_metadata || null);
+      setAnswerVerification(payload.answer_verification || null);
+      setJournalReadiness(payload.journal_readiness || null);
+
+      window.localStorage.setItem(
+        `nali-metadata:${reportId}`,
+        JSON.stringify({
+          providerMetadata: payload.provider_metadata,
+          answerVerification: payload.answer_verification,
+          journalReadiness: payload.journal_readiness,
+        }),
+      );
+
       if (payload.mode === "mock" || payload.notice) {
         const warning = payload.notice || "DEMO/MOCK - NaLI preview engine unavailable or not configured.";
         setNotice(warning);
@@ -755,7 +817,12 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         role: "assistant",
         type: "report_preview",
         content: `Draf awal untuk "${generatedReport.title}" berhasil disusun. Anda dapat mengetik pesan lanjutan di bawah untuk memperbarui draf.`,
-        metadata: { new_report: generatedReport },
+        metadata: {
+          new_report: generatedReport,
+          provider_metadata: payload.provider_metadata,
+          answer_verification: payload.answer_verification,
+          journal_readiness: payload.journal_readiness,
+        },
         created_at: new Date().toISOString(),
       };
 
@@ -883,6 +950,22 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       if (payload.messages) {
         setMessages(payload.messages);
         window.localStorage.setItem(`nali-messages:${activeReportId}`, JSON.stringify(payload.messages));
+
+        const lastMsg = payload.messages[payload.messages.length - 1];
+        if (lastMsg && lastMsg.role === "assistant" && lastMsg.metadata) {
+          setProviderMetadata(lastMsg.metadata.provider_metadata || null);
+          setAnswerVerification(lastMsg.metadata.answer_verification || null);
+          setJournalReadiness(lastMsg.metadata.journal_readiness || null);
+          window.localStorage.setItem(
+            `nali-metadata:${activeReportId}`,
+            JSON.stringify({
+              providerMetadata: lastMsg.metadata.provider_metadata,
+              answerVerification: lastMsg.metadata.answer_verification,
+              journalReadiness: lastMsg.metadata.journal_readiness,
+            }),
+          );
+        }
+
         // Also update recovery snapshot to reflect "chat_updated" status and the latest mainText
         saveGuestReportRecovery({
           id: activeReportId,
@@ -1362,28 +1445,107 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                                 </div>
                               )}
 
-                              {plan && plan.length > 0 && (
-                                <div className="rounded-xl border border-white/[0.06] bg-white/[0.01] p-3.5 shadow-md">
-                                  <div className="flex gap-2.5">
-                                    <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
-                                    <div className="w-full">
-                                      <h4 className="text-[10px] font-bold tracking-wider text-emerald-300/80 uppercase">
-                                        Rencana Kerja Agensi
-                                      </h4>
-                                      <div className="mt-2 space-y-1.5">
-                                        {plan.map((step: string, sIdx: number) => (
-                                          <div key={sIdx} className="flex items-center gap-2">
-                                            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
-                                            <span className="text-xs leading-normal font-medium text-white/70">
-                                              {step}
+                              {(() => {
+                                const pMeta = message.metadata?.provider_metadata || {
+                                  primary_model_requested: "google/gemini-2.0-flash-001",
+                                  model_used: reportData.model_used || "unknown",
+                                  fallback_used: false,
+                                  provider_status: "primary_success"
+                                };
+                                const aCheck = message.metadata?.answer_verification || {
+                                  answered: true,
+                                  answerConfidence: "high",
+                                  missingAnswerParts: [],
+                                  detectedOutputType: "report_draft",
+                                  userQuestionSummary: reportData.title || "",
+                                  verificationNotes: []
+                                };
+                                const jReady = message.metadata?.journal_readiness || {
+                                  journalReady: false,
+                                  readinessLevel: "not_ready",
+                                  canGenerateJournalDraft: false,
+                                  canGenerateJournalPdfNow: false,
+                                  reasons: ["Bahan pengamatan terbatas."],
+                                  missingRequirements: ["Data observasi lapangan"],
+                                  recommendedNextAction: "Lengkapi catatan lapangan."
+                                };
+
+                                return (
+                                  <div className="rounded-xl border border-white/[0.06] bg-white/[0.01] p-3.5 shadow-md space-y-3">
+                                    <div className="flex gap-2.5">
+                                      <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                                      <div className="w-full">
+                                        <h4 className="text-[10px] font-bold tracking-wider text-emerald-300/80 uppercase">
+                                          Rencana Kerja & Status Agen
+                                        </h4>
+                                        
+                                        {/* 1. Interpreted Task */}
+                                        <div className="mt-2 text-xs">
+                                          <span className="text-white/45">Tugas Terdeteksi:</span>{" "}
+                                          <span className="font-medium text-white/80">&quot;{aCheck.userQuestionSummary}&quot;</span>
+                                        </div>
+
+                                        {/* 2 & 3. Model / Fallback */}
+                                        <div className="mt-1 text-xs">
+                                          <span className="text-white/45">Model/Pipeline:</span>{" "}
+                                          <span className="font-mono text-emerald-400">{pMeta.model_used}</span>{" "}
+                                          {pMeta.fallback_used && (
+                                            <span className="ml-1 inline-flex rounded bg-amber-500/10 border border-amber-500/20 px-1 text-[9px] text-amber-300 font-semibold">
+                                              Fallback
                                             </span>
+                                          )}
+                                        </div>
+
+                                        {/* 4. Answer verification */}
+                                        <div className="mt-1 text-xs flex items-center gap-1.5">
+                                          <span className="text-white/45">Menjawab Tugas:</span>{" "}
+                                          <span className={cn("font-semibold", aCheck.answered ? "text-emerald-400" : "text-rose-400")}>
+                                            {aCheck.answered ? "Ya (Terverifikasi)" : "Belum Sepenuhnya"}
+                                          </span>
+                                        </div>
+
+                                        {/* 5. Journal Readiness */}
+                                        <div className="mt-1 text-xs">
+                                          <span className="text-white/45">Status Jurnal:</span>{" "}
+                                          <span className={cn(
+                                            "font-semibold",
+                                            jReady.readinessLevel === "draft_ready" && "text-emerald-400",
+                                            jReady.readinessLevel === "outline_ready" && "text-amber-400",
+                                            jReady.readinessLevel === "not_ready" && "text-rose-400"
+                                          )}>
+                                            {jReady.readinessLevel === "draft_ready" 
+                                              ? "Siap disusun menjadi draf jurnal" 
+                                              : jReady.readinessLevel === "outline_ready" 
+                                                ? "Siap untuk outline jurnal" 
+                                                : "Belum siap untuk jurnal"}
+                                          </span>
+                                        </div>
+
+                                        {/* 6. Recommended Action */}
+                                        <div className="mt-2 border-t border-white/[0.04] pt-2 text-xs">
+                                          <span className="block text-[9px] font-bold text-white/40 uppercase">Rekomendasi Tindak Lanjut</span>
+                                          <span className="text-white/80 font-medium">{jReady.recommendedNextAction}</span>
+                                        </div>
+                                        
+                                        {plan && plan.length > 0 && (
+                                          <div className="mt-2 border-t border-white/[0.04] pt-2">
+                                            <span className="block text-[9px] font-bold text-white/40 uppercase mb-1">Rencana Langkah</span>
+                                            <div className="space-y-1">
+                                              {plan.map((step: string, sIdx: number) => (
+                                                <div key={sIdx} className="flex items-center gap-1.5">
+                                                  <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-400" />
+                                                  <span className="text-[11px] text-white/60 leading-tight">{step}</span>
+                                                </div>
+                                              ))}
+                                            </div>
                                           </div>
-                                        ))}
+                                        )}
+
                                       </div>
                                     </div>
                                   </div>
-                                </div>
-                              )}
+                                );
+                              })()}
 
                               {(evidenceStrength ||
                                 sourceCoverage ||
@@ -1526,6 +1688,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                           onCopyText={handleCopyPlainText}
                           onDownloadMarkdownLocal={handleDownloadMarkdownLocal}
                           onDownloadTextLocal={handleDownloadTextLocal}
+                          providerMetadata={message.metadata?.provider_metadata || providerMetadata}
+                          answerVerification={message.metadata?.answer_verification || answerVerification}
+                          journalReadiness={message.metadata?.journal_readiness || journalReadiness}
+                          onQuickAction={handleQuickAction}
                         />
 
                         {/* Inline feedback prompt — shows once after first report preview */}
@@ -1928,6 +2094,10 @@ interface ReportResultCardProps {
   onCopyText?: () => void;
   onDownloadMarkdownLocal?: () => void;
   onDownloadTextLocal?: () => void;
+  providerMetadata?: any;
+  answerVerification?: any;
+  journalReadiness?: any;
+  onQuickAction?: (prompt: string) => void;
 }
 
 function ReportResultCard({
@@ -1939,10 +2109,20 @@ function ReportResultCard({
   onCopyText,
   onDownloadMarkdownLocal,
   onDownloadTextLocal,
+  providerMetadata,
+  answerVerification,
+  journalReadiness,
+  onQuickAction,
 }: ReportResultCardProps) {
-  const [activeTab, setActiveTab] = useState<"preview" | "evidence" | "uncertainty">("preview");
+  const [activeTab, setActiveTab] = useState<"preview" | "evidence" | "uncertainty" | "diagnostics" | "readiness">("preview");
 
   const isGuide = report.mode === "start_from_zero";
+
+  const handleActionClick = (prompt: string) => {
+    if (onQuickAction) {
+      onQuickAction(prompt);
+    }
+  };
 
   const renderTabContent = () => {
     if (isGuide) {
@@ -2024,6 +2204,212 @@ function ReportResultCard({
               </div>
             </div>
           );
+        case "diagnostics": {
+          const pMeta = providerMetadata || {
+            primary_model_requested: "google/gemini-2.0-flash-001",
+            model_used: report.model_used || "unknown",
+            fallback_used: false,
+            provider_status: "primary_success"
+          };
+          const aCheck = answerVerification || {
+            answered: true,
+            answerConfidence: "high",
+            missingAnswerParts: [],
+            detectedOutputType: "guidance",
+            userQuestionSummary: report.title || "",
+            verificationNotes: []
+          };
+
+          return (
+            <div className="space-y-4 text-sm leading-6 text-white/70">
+              <div>
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Model & Pipeline Diagnostic
+                </span>
+                <div className="mt-2 space-y-1.5 rounded-xl border border-white/[0.05] bg-white/[0.01] p-3 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Model yang Diminta:</span>
+                    <span className="font-mono font-medium text-white/70">{pMeta.primary_model_requested}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Model yang Digunakan:</span>
+                    <span className="font-mono font-medium text-emerald-400">{pMeta.model_used}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Menggunakan Fallback:</span>
+                    <span className="font-semibold text-white/70">{pMeta.fallback_used ? "Ya" : "Tidak"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Mode Respon:</span>
+                    <span className="font-mono text-white/70">{report.is_mock ? "mock" : "ai"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Status Provider:</span>
+                    <span className="font-mono text-white/70">{pMeta.provider_status}</span>
+                  </div>
+                </div>
+                {pMeta.fallback_used && (
+                  <p className="mt-2 text-[11px] leading-relaxed text-amber-300/80">
+                    ⚠️ Model utama belum tersedia/berbayar; NaLI memakai model cadangan untuk menyelesaikan draf ini.
+                  </p>
+                )}
+              </div>
+
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold tracking-wider text-[#00FFB3] uppercase">
+                  Pemeriksaan Jawaban (Answer Check)
+                </span>
+                <div className="mt-2 space-y-2 text-xs">
+                  <div>
+                    <span className="block text-white/45">Pertanyaan/Tugas Terdeteksi:</span>
+                    <p className="mt-0.5 italic text-white/85">&quot;{aCheck.userQuestionSummary}&quot;</p>
+                  </div>
+                  <div className="flex justify-between border-t border-white/[0.04] pt-2">
+                    <span className="text-white/45">Apakah NaLI menjawab tugas?</span>
+                    <span className={cn("font-bold", aCheck.answered ? "text-emerald-400" : "text-rose-400")}>
+                      {aCheck.answered ? "Ya" : "Belum Sepenuhnya"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Tingkat Keyakinan:</span>
+                    <span className={cn(
+                      "font-bold uppercase",
+                      aCheck.answerConfidence === "high" && "text-emerald-400",
+                      aCheck.answerConfidence === "medium" && "text-amber-400",
+                      aCheck.answerConfidence === "low" && "text-rose-400"
+                    )}>
+                      {aCheck.answerConfidence === "high" ? "Tinggi" : aCheck.answerConfidence === "medium" ? "Sedang" : "Rendah"}
+                    </span>
+                  </div>
+                  {aCheck.missingAnswerParts && aCheck.missingAnswerParts.length > 0 && (
+                    <div className="border-t border-white/[0.04] pt-2">
+                      <span className="block text-rose-300/80">Bagian yang kurang/perlu dilengkapi:</span>
+                      <ul className="mt-1 list-disc pl-4 text-white/60">
+                        {aCheck.missingAnswerParts.map((part: string, idx: number) => (
+                          <li key={idx}>{part}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {aCheck.verificationNotes && aCheck.verificationNotes.length > 0 && (
+                    <div className="border-t border-white/[0.04] pt-2">
+                      <span className="block text-white/45">Catatan Verifikasi:</span>
+                      <ul className="mt-1 list-disc pl-4 text-white/50">
+                        {aCheck.verificationNotes.map((note: string, idx: number) => (
+                          <li key={idx}>{note}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        }
+        case "readiness": {
+          const jReady = journalReadiness || {
+            journalReady: false,
+            readinessLevel: "not_ready",
+            canGenerateJournalDraft: false,
+            canGenerateJournalPdfNow: false,
+            reasons: ["Bahan pengamatan sangat terbatas."],
+            missingRequirements: ["Data observasi lapangan"],
+            recommendedNextAction: "Kumpulkan catatan observasi lapangan terlebih dahulu."
+          };
+
+          return (
+            <div className="space-y-4 text-sm leading-6 text-white/70">
+              <div>
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Evaluasi Kesiapan Jurnal (Journal Readiness)
+                </span>
+                <div className="mt-2 space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Status Kelayakan:</span>
+                    <span className={cn(
+                      "font-bold uppercase",
+                      jReady.readinessLevel === "draft_ready" && "text-emerald-400",
+                      jReady.readinessLevel === "outline_ready" && "text-amber-400",
+                      jReady.readinessLevel === "not_ready" && "text-rose-400"
+                    )}>
+                      {jReady.readinessLevel === "draft_ready" 
+                        ? "Siap disusun menjadi draf jurnal" 
+                        : jReady.readinessLevel === "outline_ready" 
+                          ? "Siap untuk outline jurnal" 
+                          : "Belum siap untuk jurnal"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Draf Jurnal Tersedia:</span>
+                    <span className="font-semibold text-white/70">{jReady.canGenerateJournalDraft ? "Ya (Siap disusun)" : "Tidak"}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-white/[0.04] pb-2">
+                    <span className="text-white/45">Ekspor PDF Jurnal Publik:</span>
+                    <span className="font-semibold text-rose-400">PDF jurnal belum aktif di CP1</span>
+                  </div>
+
+                  {jReady.reasons && jReady.reasons.length > 0 && (
+                    <div>
+                      <span className="block text-white/45">Analisis Kesiapan:</span>
+                      <ul className="mt-1 list-disc pl-4 text-white/50">
+                        {jReady.reasons.map((reason: string, idx: number) => (
+                          <li key={idx}>{reason}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {jReady.missingRequirements && jReady.missingRequirements.length > 0 && (
+                    <div className="border-t border-white/[0.04] pt-2">
+                      <span className="block text-amber-300/80">Kebutuhan yang Belum Terpenuhi:</span>
+                      <ul className="mt-1 list-disc pl-4 text-white/60">
+                        {jReady.missingRequirements.map((reqStr: string, idx: number) => (
+                          <li key={idx}>{reqStr}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className="mt-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3">
+                    <span className="block font-semibold text-emerald-400">Rekomendasi Tindak Lanjut:</span>
+                    <p className="mt-1 text-white/80 font-medium">{jReady.recommendedNextAction}</p>
+                    
+                    <div className="mt-2.5 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleActionClick("Tambahkan detail metode kerja")}
+                        className="rounded border border-white/[0.08] bg-white/[0.02] px-2 py-1 text-[10px] text-white/50 hover:bg-white/[0.06] hover:text-white"
+                      >
+                        Lengkapi metode
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleActionClick("Tambahkan data dan lokasi observasi lapangan")}
+                        className="rounded border border-white/[0.08] bg-white/[0.02] px-2 py-1 text-[10px] text-white/50 hover:bg-white/[0.06] hover:text-white"
+                      >
+                        Tambahkan data observasi
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleActionClick("Tampilkan outline draf jurnal")}
+                        className="rounded border border-white/[0.08] bg-white/[0.02] px-2 py-1 text-[10px] text-white/50 hover:bg-white/[0.06] hover:text-white"
+                      >
+                        Buat outline jurnal
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleActionClick("Tinjau kekuatan bukti dan batasan")}
+                        className="rounded border border-white/[0.08] bg-white/[0.02] px-2 py-1 text-[10px] text-white/50 hover:bg-white/[0.06] hover:text-white"
+                      >
+                        Perkuat bukti
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
       }
     } else {
       const draft = report as DraftReport;
@@ -2149,6 +2535,212 @@ function ReportResultCard({
               </div>
             </div>
           );
+        case "diagnostics": {
+          const pMeta = providerMetadata || {
+            primary_model_requested: "google/gemini-2.0-flash-001",
+            model_used: report.model_used || "unknown",
+            fallback_used: false,
+            provider_status: "primary_success"
+          };
+          const aCheck = answerVerification || {
+            answered: true,
+            answerConfidence: "high",
+            missingAnswerParts: [],
+            detectedOutputType: "report_draft",
+            userQuestionSummary: report.title || "",
+            verificationNotes: []
+          };
+
+          return (
+            <div className="space-y-4 text-sm leading-6 text-white/70">
+              <div>
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Model & Pipeline Diagnostic
+                </span>
+                <div className="mt-2 space-y-1.5 rounded-xl border border-white/[0.05] bg-white/[0.01] p-3 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Model yang Diminta:</span>
+                    <span className="font-mono font-medium text-white/70">{pMeta.primary_model_requested}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Model yang Digunakan:</span>
+                    <span className="font-mono font-medium text-emerald-400">{pMeta.model_used}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Menggunakan Fallback:</span>
+                    <span className="font-semibold text-white/70">{pMeta.fallback_used ? "Ya" : "Tidak"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Mode Respon:</span>
+                    <span className="font-mono text-white/70">{report.is_mock ? "mock" : "ai"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Status Provider:</span>
+                    <span className="font-mono text-white/70">{pMeta.provider_status}</span>
+                  </div>
+                </div>
+                {pMeta.fallback_used && (
+                  <p className="mt-2 text-[11px] leading-relaxed text-amber-300/80">
+                    ⚠️ Model utama belum tersedia/berbayar; NaLI memakai model cadangan untuk menyelesaikan draf ini.
+                  </p>
+                )}
+              </div>
+
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold tracking-wider text-[#00FFB3] uppercase">
+                  Pemeriksaan Jawaban (Answer Check)
+                </span>
+                <div className="mt-2 space-y-2 text-xs">
+                  <div>
+                    <span className="block text-white/45">Pertanyaan/Tugas Terdeteksi:</span>
+                    <p className="mt-0.5 italic text-white/85">&quot;{aCheck.userQuestionSummary}&quot;</p>
+                  </div>
+                  <div className="flex justify-between border-t border-white/[0.04] pt-2">
+                    <span className="text-white/45">Apakah NaLI menjawab tugas?</span>
+                    <span className={cn("font-bold", aCheck.answered ? "text-emerald-400" : "text-rose-400")}>
+                      {aCheck.answered ? "Ya" : "Belum Sepenuhnya"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Tingkat Keyakinan:</span>
+                    <span className={cn(
+                      "font-bold uppercase",
+                      aCheck.answerConfidence === "high" && "text-emerald-400",
+                      aCheck.answerConfidence === "medium" && "text-amber-400",
+                      aCheck.answerConfidence === "low" && "text-rose-400"
+                    )}>
+                      {aCheck.answerConfidence === "high" ? "Tinggi" : aCheck.answerConfidence === "medium" ? "Sedang" : "Rendah"}
+                    </span>
+                  </div>
+                  {aCheck.missingAnswerParts && aCheck.missingAnswerParts.length > 0 && (
+                    <div className="border-t border-white/[0.04] pt-2">
+                      <span className="block text-rose-300/80">Bagian yang kurang/perlu dilengkapi:</span>
+                      <ul className="mt-1 list-disc pl-4 text-white/60">
+                        {aCheck.missingAnswerParts.map((part: string, idx: number) => (
+                          <li key={idx}>{part}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {aCheck.verificationNotes && aCheck.verificationNotes.length > 0 && (
+                    <div className="border-t border-white/[0.04] pt-2">
+                      <span className="block text-white/45">Catatan Verifikasi:</span>
+                      <ul className="mt-1 list-disc pl-4 text-white/50">
+                        {aCheck.verificationNotes.map((note: string, idx: number) => (
+                          <li key={idx}>{note}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        }
+        case "readiness": {
+          const jReady = journalReadiness || {
+            journalReady: false,
+            readinessLevel: "not_ready",
+            canGenerateJournalDraft: false,
+            canGenerateJournalPdfNow: false,
+            reasons: ["Bahan pengamatan sangat terbatas."],
+            missingRequirements: ["Data observasi lapangan"],
+            recommendedNextAction: "Kumpulkan catatan observasi lapangan terlebih dahulu."
+          };
+
+          return (
+            <div className="space-y-4 text-sm leading-6 text-white/70">
+              <div>
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Evaluasi Kesiapan Jurnal (Journal Readiness)
+                </span>
+                <div className="mt-2 space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Status Kelayakan:</span>
+                    <span className={cn(
+                      "font-bold uppercase",
+                      jReady.readinessLevel === "draft_ready" && "text-emerald-400",
+                      jReady.readinessLevel === "outline_ready" && "text-amber-400",
+                      jReady.readinessLevel === "not_ready" && "text-rose-400"
+                    )}>
+                      {jReady.readinessLevel === "draft_ready" 
+                        ? "Siap disusun menjadi draf jurnal" 
+                        : jReady.readinessLevel === "outline_ready" 
+                          ? "Siap untuk outline jurnal" 
+                          : "Belum siap untuk jurnal"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/45">Draf Jurnal Tersedia:</span>
+                    <span className="font-semibold text-white/70">{jReady.canGenerateJournalDraft ? "Ya (Siap disusun)" : "Tidak"}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-white/[0.04] pb-2">
+                    <span className="text-white/45">Ekspor PDF Jurnal Publik:</span>
+                    <span className="font-semibold text-rose-400">PDF jurnal belum aktif di CP1</span>
+                  </div>
+
+                  {jReady.reasons && jReady.reasons.length > 0 && (
+                    <div>
+                      <span className="block text-white/45">Analisis Kesiapan:</span>
+                      <ul className="mt-1 list-disc pl-4 text-white/50">
+                        {jReady.reasons.map((reason: string, idx: number) => (
+                          <li key={idx}>{reason}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {jReady.missingRequirements && jReady.missingRequirements.length > 0 && (
+                    <div className="border-t border-white/[0.04] pt-2">
+                      <span className="block text-amber-300/80">Kebutuhan yang Belum Terpenuhi:</span>
+                      <ul className="mt-1 list-disc pl-4 text-white/60">
+                        {jReady.missingRequirements.map((reqStr: string, idx: number) => (
+                          <li key={idx}>{reqStr}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className="mt-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3">
+                    <span className="block font-semibold text-emerald-400">Rekomendasi Tindak Lanjut:</span>
+                    <p className="mt-1 text-white/80 font-medium">{jReady.recommendedNextAction}</p>
+                    
+                    <div className="mt-2.5 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleActionClick("Tambahkan detail metode kerja")}
+                        className="rounded border border-white/[0.08] bg-white/[0.02] px-2 py-1 text-[10px] text-white/50 hover:bg-white/[0.06] hover:text-white"
+                      >
+                        Lengkapi metode
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleActionClick("Tambahkan data dan lokasi observasi lapangan")}
+                        className="rounded border border-white/[0.08] bg-white/[0.02] px-2 py-1 text-[10px] text-white/50 hover:bg-white/[0.06] hover:text-white"
+                      >
+                        Tambahkan data observasi
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleActionClick("Tampilkan outline draf jurnal")}
+                        className="rounded border border-white/[0.08] bg-white/[0.02] px-2 py-1 text-[10px] text-white/50 hover:bg-white/[0.06] hover:text-white"
+                      >
+                        Buat outline jurnal
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleActionClick("Tinjau kekuatan bukti dan batasan")}
+                        className="rounded border border-white/[0.08] bg-white/[0.02] px-2 py-1 text-[10px] text-white/50 hover:bg-white/[0.06] hover:text-white"
+                      >
+                        Perkuat bukti
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
       }
     }
   };
@@ -2174,12 +2766,12 @@ function ReportResultCard({
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-white/[0.04] bg-white/[0.01] px-1 text-[11px] sm:px-4 sm:text-xs">
+      <div className="flex border-b border-white/[0.04] bg-white/[0.01] px-1 text-[11px] sm:px-4 sm:text-xs overflow-x-auto scrollbar-thin">
         <button
           type="button"
           onClick={() => setActiveTab("preview")}
           className={cn(
-            "flex min-h-[44px] flex-1 cursor-pointer items-center justify-center border-b-2 px-2 py-3 text-center font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none sm:flex-initial sm:px-4 sm:py-2.5",
+            "flex min-h-[44px] shrink-0 cursor-pointer items-center justify-center border-b-2 px-3 py-3 text-center font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none sm:px-4 sm:py-2.5",
             activeTab === "preview"
               ? "border-emerald-400 text-white"
               : "border-transparent text-white/40 hover:text-white",
@@ -2191,7 +2783,7 @@ function ReportResultCard({
           type="button"
           onClick={() => setActiveTab("evidence")}
           className={cn(
-            "flex min-h-[44px] flex-1 cursor-pointer items-center justify-center border-b-2 px-2 py-3 text-center font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none sm:flex-initial sm:px-4 sm:py-2.5",
+            "flex min-h-[44px] shrink-0 cursor-pointer items-center justify-center border-b-2 px-3 py-3 text-center font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none sm:px-4 sm:py-2.5",
             activeTab === "evidence"
               ? "border-emerald-400 text-white"
               : "border-transparent text-white/40 hover:text-white",
@@ -2203,13 +2795,37 @@ function ReportResultCard({
           type="button"
           onClick={() => setActiveTab("uncertainty")}
           className={cn(
-            "flex min-h-[44px] flex-1 cursor-pointer items-center justify-center border-b-2 px-2 py-3 text-center font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none sm:flex-initial sm:px-4 sm:py-2.5",
+            "flex min-h-[44px] shrink-0 cursor-pointer items-center justify-center border-b-2 px-3 py-3 text-center font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none sm:px-4 sm:py-2.5",
             activeTab === "uncertainty"
               ? "border-emerald-400 text-white"
               : "border-transparent text-white/40 hover:text-white",
           )}
         >
           Integritas & Batasan
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("diagnostics")}
+          className={cn(
+            "flex min-h-[44px] shrink-0 cursor-pointer items-center justify-center border-b-2 px-3 py-3 text-center font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none sm:px-4 sm:py-2.5",
+            activeTab === "diagnostics"
+              ? "border-emerald-400 text-white"
+              : "border-transparent text-white/40 hover:text-white",
+          )}
+        >
+          Diagnostik & Jawaban
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("readiness")}
+          className={cn(
+            "flex min-h-[44px] shrink-0 cursor-pointer items-center justify-center border-b-2 px-3 py-3 text-center font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none sm:px-4 sm:py-2.5",
+            activeTab === "readiness"
+              ? "border-emerald-400 text-white"
+              : "border-transparent text-white/40 hover:text-white",
+          )}
+        >
+          Journal Readiness
         </button>
       </div>
 

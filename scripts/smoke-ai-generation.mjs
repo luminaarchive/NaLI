@@ -42,6 +42,37 @@ async function main() {
     console.log(`HTTP Status: 200`);
     console.log(`Response mode: "${data.mode}"`);
 
+    // Sprint 2 metadata logging
+    if (data.provider_metadata) {
+      console.log(`Provider Status: "${data.provider_metadata.provider_status}"`);
+      console.log(`Primary Model Requested: "${data.provider_metadata.primary_model_requested}"`);
+      console.log(`Model Actually Used: "${data.provider_metadata.model_used}"`);
+      console.log(`Fallback Used: ${data.provider_metadata.fallback_used}`);
+    } else {
+      console.log("Provider Metadata: Not returned (legacy response)");
+    }
+
+    if (data.answer_verification) {
+      console.log(`Answer Verification Answered: ${data.answer_verification.answered}`);
+      console.log(`Answer Confidence: "${data.answer_verification.answerConfidence}"`);
+      console.log(`Detected Output Type: "${data.answer_verification.detectedOutputType}"`);
+      console.log(`User Question Summary: "${data.answer_verification.userQuestionSummary}"`);
+      
+      if (data.answer_verification.answered === false) {
+        console.error("FAIL: Answer verification indicates the AI did not answer the user request!");
+        process.exit(1);
+      }
+    } else {
+      console.log("Answer Verification: Not returned (legacy response)");
+    }
+
+    if (data.journal_readiness) {
+      console.log(`Journal Readiness Level: "${data.journal_readiness.readinessLevel}"`);
+      console.log(`Journal Ready: ${data.journal_readiness.journalReady}`);
+    } else {
+      console.log("Journal Readiness: Not returned (legacy response)");
+    }
+
     const mode = data.mode;
     const report = data.report;
 

@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { randomBytes } from "crypto";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { requestOpenRouterJson } from "@/lib/ai/openrouter";
+import { requestOpenRouterJson, getOpenRouterModels } from "@/lib/ai/openrouter";
 import { guardReportOutput } from "@/lib/integrity/outputGuard";
 import { evaluateIntegrityPolicy } from "@/lib/integrity/policy";
 import { logReportEvent } from "@/lib/operations/logging";
 import { checkRateLimit, RATE_LIMITED_MESSAGE, rateLimitHeaders } from "@/lib/rateLimit/limit";
 import { persistGeneratedReport } from "@/lib/reports/persistence";
+import { verifyAnswer } from "@/lib/reports/answerVerification";
+import { evaluateJournalReadiness } from "@/lib/reports/journalReadiness";
 import {
   buildMockResult,
   buildReportPrompt,
@@ -272,6 +274,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const models = getOpenRouterModels();
+  const primaryModelRequested = models[0] || "google/gemini-2.0-flash-001";
+
   const openRouterResult = await requestOpenRouterJson({
     prompt: buildReportPrompt(validated.data),
     system: systemPrompt,
@@ -295,11 +300,23 @@ export async function POST(req: NextRequest) {
     }
 
     const report = guarded.report;
+    const answer_verification = verifyAnswer(validated.data, report);
+    const journal_readiness = evaluateJournalReadiness(validated.data, report);
+    const provider_metadata = {
+      primary_model_requested: primaryModelRequested,
+      model_used: openRouterResult.model,
+      fallback_used: openRouterResult.model !== primaryModelRequested,
+      provider_status: openRouterResult.model === primaryModelRequested ? "primary_success" : "fallback_success" as const,
+    };
+
     const persistence = await persistGeneratedReport({
       guestSessionId,
       userId,
       input: validated.data,
       report,
+      provider_metadata,
+      answer_verification,
+      journal_readiness,
     });
     void logReportEvent({
       eventType: "REPORT_CREATED",
@@ -342,6 +359,9 @@ export async function POST(req: NextRequest) {
         report_access_key: persistence.persisted ? persistence.reportAccessToken : undefined,
         mode: "ai",
         provider: "nali",
+        provider_metadata,
+        answer_verification,
+        journal_readiness,
         report,
       },
       { headers, status: 200 },
@@ -363,11 +383,23 @@ export async function POST(req: NextRequest) {
     }
 
     const report = guarded.report;
+    const answer_verification = verifyAnswer(validated.data, report);
+    const journal_readiness = evaluateJournalReadiness(validated.data, report);
+    const provider_metadata = {
+      primary_model_requested: primaryModelRequested,
+      model_used: "mock",
+      fallback_used: true,
+      provider_status: "mock_fallback" as const,
+    };
+
     const persistence = await persistGeneratedReport({
       guestSessionId,
       userId,
       input: validated.data,
       report,
+      provider_metadata,
+      answer_verification,
+      journal_readiness,
     });
     void logReportEvent({
       eventType: "REPORT_CREATED",
@@ -411,6 +443,9 @@ export async function POST(req: NextRequest) {
         mode: "mock",
         notice: "DEMO/MOCK - NaLI preview engine unavailable or not configured.",
         provider: "nali",
+        provider_metadata,
+        answer_verification,
+        journal_readiness,
         report,
       },
       { headers, status: 200 },
