@@ -23,11 +23,27 @@ async function run() {
   // Parse arguments
   const args = argv.slice(2);
   const showAll = args.includes("--all");
+  const useFree = args.includes("--free");
   const cliModels = args.filter((arg) => !arg.startsWith("-"));
 
   let candidates = DEFAULT_CANDIDATES;
 
-  if (env.NALI_MODEL_CANDIDATES) {
+  if (useFree) {
+    try {
+      const res = await fetch("https://openrouter.ai/api/v1/models");
+      if (!res.ok) {
+        throw new Error(`HTTP error ${res.status}`);
+      }
+      const data = await res.json();
+      candidates = data.data
+        .filter((m) => m.id.endsWith(":free") || (m.pricing && parseFloat(m.pricing.prompt) === 0))
+        .map((m) => m.id);
+      console.log(`Discovered ${candidates.length} free models from OpenRouter API.`);
+    } catch (err) {
+      console.error("Failed to fetch live free models from OpenRouter:", err);
+      process.exit(1);
+    }
+  } else if (env.NALI_MODEL_CANDIDATES) {
     candidates = env.NALI_MODEL_CANDIDATES.split(",")
       .map((m) => m.trim())
       .filter(Boolean);
@@ -124,7 +140,11 @@ async function run() {
   const allBlocked = results.length > 0 && results.every((r) => r.classification === "payment_required" || r.classification === "rate_limited");
 
   if (allBlocked) {
-    console.log("\nBLOCKED: provider account capacity / credits / quota");
+    if (useFree) {
+      console.log("\nBLOCKED: account-level OpenRouter free quota exhausted. Free models exist, but this API key cannot use them right now.");
+    } else {
+      console.log("\nBLOCKED: provider account capacity / credits / quota");
+    }
     process.exit(1);
   }
 
