@@ -146,3 +146,13 @@ test("4. Failure path: Simulate OpenRouter unavailable and NALI_ALLOW_MOCK_GENER
     openrouterModule.requestOpenRouterJson = origRequestOpenRouterJson;
   }
 });
+
+test("5. Security headers (CSP & HSTS) exist in Next.js config", () => {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const configPath = path.join(__dirname, "../../next.config.mjs");
+  const content = fs.readFileSync(configPath, "utf8");
+
+  assert.match(content, /Content-Security-Policy/);
+  assert.match(content, /Strict-Transport-Security/);
+});

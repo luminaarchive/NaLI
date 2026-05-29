@@ -60,6 +60,48 @@ export function buildJsonLdGraph() {
         url: siteUrl,
         description: "Indonesia-first evidence-based learning, reporting, and biodiversity field intelligence project.",
       },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${siteUrl}/#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Beranda",
+            "item": siteUrl
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Buat Laporan",
+            "item": `${siteUrl}/create-report`
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Panduan",
+            "item": `${siteUrl}/learn-report`
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "name": "Catatan Lapangan",
+            "item": `${siteUrl}/field-notes`
+          },
+          {
+            "@type": "ListItem",
+            "position": 5,
+            "name": "Harga",
+            "item": `${siteUrl}/pricing`
+          },
+          {
+            "@type": "ListItem",
+            "position": 6,
+            "name": "Field Intelligence",
+            "item": `${siteUrl}/field-intelligence`
+          }
+        ]
+      }
     ],
   };
 }

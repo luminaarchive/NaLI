@@ -249,7 +249,7 @@ function RegisterForm() {
 
           {error && (
             <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-400">
-              {error}
+              {error === "BLOCKED BY DASHBOARD CONFIG" ? "Login Google belum dikonfigurasi. Hubungi admin." : error}
             </div>
           )}
 

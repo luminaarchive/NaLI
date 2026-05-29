@@ -11,7 +11,7 @@ test.describe("NaLI Auth, Manus-like UI, and Persistence linking E2E", () => {
     );
 
     // Prominent Google OAuth button
-    const googleBtn = page.locator("button:has-text('Lanjutkan dengan Google')");
+    const googleBtn = page.locator("button:has-text('Masuk dengan Google')");
     await expect(googleBtn).toBeVisible();
 
     // Separator
@@ -64,7 +64,7 @@ test.describe("NaLI Auth, Manus-like UI, and Persistence linking E2E", () => {
     await page.goto("/login");
 
     await expect(page.locator("h1")).toBeVisible();
-    await expect(page.locator("button:has-text('Lanjutkan dengan Google')")).toBeVisible();
+    await expect(page.locator("button:has-text('Masuk dengan Google')")).toBeVisible();
     await expect(page.locator("input[type='email']")).toBeVisible();
   });
 

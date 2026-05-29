@@ -85,7 +85,7 @@ function LoginForm() {
         <NaLILogoMark size={48} variant="light" className="mb-4" />
         <h1 className="font-serif text-2xl font-semibold text-white tracking-wide">Masuk ke NaLI</h1>
         <p className="text-xs text-white/50 mt-2 leading-relaxed">
-          Lanjutkan laporan, catatan, and riwayat kerja berbasis bukti.
+          Lanjutkan laporan, catatan, dan riwayat kerja berbasis bukti.
         </p>
       </div>
 
@@ -159,7 +159,7 @@ function LoginForm() {
 
           {error && (
             <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-400">
-              {error}
+              {error === "BLOCKED BY DASHBOARD CONFIG" ? "Login Google belum dikonfigurasi. Hubungi admin." : error}
             </div>
           )}
 

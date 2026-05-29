@@ -28,6 +28,7 @@ test("sitemap includes only allowed static public routes and excludes private/ad
   assert.ok(urls.includes("https://naliai.vercel.app"));
   assert.ok(urls.includes("https://naliai.vercel.app/learn-report"));
   assert.ok(urls.includes("https://naliai.vercel.app/create-report"));
+  assert.ok(urls.includes("https://naliai.vercel.app/field-notes"));
   assert.ok(urls.includes("https://naliai.vercel.app/pricing"));
   assert.ok(urls.includes("https://naliai.vercel.app/field-intelligence"));
 
@@ -153,4 +154,19 @@ test("system gates remain safely locked (Midtrans deferred, human testing paused
   assert.strictEqual(readiness.midtransConfigured, false);
   assert.strictEqual(readiness.paidCheckoutActive, false);
   assert.strictEqual(readiness.creditPurchaseActive, false);
+});
+
+// ─── Test 8: SEO Layout Metadata & JSON-LD Breadcrumbs (Sprint 9) ───────────────────
+
+test("Sprint 9 layouts define correct metadata and JSON-LD defines breadcrumbs", () => {
+  const loginLayout = fs.readFileSync(path.join(repoRoot, "src/app/(auth)/login/layout.tsx"), "utf8");
+  const registerLayout = fs.readFileSync(path.join(repoRoot, "src/app/(auth)/register/layout.tsx"), "utf8");
+  const fieldNotesLayout = fs.readFileSync(path.join(repoRoot, "src/app/field-notes/layout.tsx"), "utf8");
+  const siteSrc = fs.readFileSync(path.join(repoRoot, "src/lib/seo/site.ts"), "utf8");
+
+  assert.match(loginLayout, /title:\s*["']Masuk ke Akun \| NaLI["']/);
+  assert.match(registerLayout, /title:\s*["']Daftar Akun Baru \| NaLI["']/);
+  assert.match(fieldNotesLayout, /title:\s*["']Catatan Lapangan \| NaLI["']/);
+
+  assert.match(siteSrc, /"@type":\s*["']BreadcrumbList["']/);
 });

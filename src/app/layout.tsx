@@ -31,6 +31,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: siteMetadata.canonicalBase,
   },
+  icons: {
+    icon: "/icon.svg",
+    apple: "/apple-icon.png",
+  },
   category: "conservation technology",
   openGraph: {
     title: siteMetadata.defaultTitle,
@@ -80,6 +84,7 @@ export default async function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-icon.png" />
         <meta name="theme-color" content="#f5f0e8" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
