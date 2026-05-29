@@ -170,3 +170,44 @@ test("Sprint 9 layouts define correct metadata and JSON-LD defines breadcrumbs",
 
   assert.match(siteSrc, /"@type":\s*["']BreadcrumbList["']/);
 });
+
+// ─── Test 9: Favicon assets, Manifest icons, Layout references, & Ops Docs (Sprint 10) ────
+
+test("Sprint 10 favicon files exist, manifest is configured, layout includes version queries, and ops guides exist", () => {
+  const faviconPath = path.join(repoRoot, "public/favicon.ico");
+  const iconPath = path.join(repoRoot, "public/icon.svg");
+  const appleIconPath = path.join(repoRoot, "public/apple-icon.png");
+  const manifestPath = path.join(repoRoot, "public/manifest.json");
+  const layoutSrc = fs.readFileSync(path.join(repoRoot, "src/app/layout.tsx"), "utf8");
+
+  // Verify file existence
+  assert.equal(fs.existsSync(faviconPath), true, "favicon.ico must exist in public/");
+  assert.equal(fs.existsSync(iconPath), true, "icon.svg must exist in public/");
+  assert.equal(fs.existsSync(appleIconPath), true, "apple-icon.png must exist in public/");
+
+  // Verify favicon is a real multi-resolution file by checking file size > 0
+  const faviconStat = fs.statSync(faviconPath);
+  assert.ok(faviconStat.size > 0, "favicon.ico must not be empty");
+
+  // Verify layout.tsx metadata contains version query cache-busting (?v=3)
+  assert.match(layoutSrc, /icon\.svg\?v=3/);
+  assert.match(layoutSrc, /favicon\.ico\?v=3/);
+  assert.match(layoutSrc, /apple-icon\.png\?v=3/);
+
+  // Verify manifest.json references the correct paths
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  const iconSrcs = manifest.icons.map((icon) => icon.src);
+  assert.ok(iconSrcs.includes("/icon.svg"), "manifest must reference /icon.svg");
+  assert.ok(iconSrcs.includes("/brand/png-exports/nali-app-icon-192x192.png"), "manifest must reference 192x192 PNG");
+  assert.ok(iconSrcs.includes("/brand/png-exports/nali-app-icon-512x512.png"), "manifest must reference 512x512 PNG");
+
+  // Verify ops docs exist for dashboard configurations
+  const oauthDoc = path.join(repoRoot, "docs/ops/google_oauth_setup.md");
+  const cloudflareDoc = path.join(repoRoot, "docs/ops/cloudflare_security_setup.md");
+  const searchConsoleDoc = path.join(repoRoot, "docs/ops/google_search_console_setup.md");
+
+  assert.equal(fs.existsSync(oauthDoc), true, "google_oauth_setup.md must exist in docs/ops/");
+  assert.equal(fs.existsSync(cloudflareDoc), true, "cloudflare_security_setup.md must exist in docs/ops/");
+  assert.equal(fs.existsSync(searchConsoleDoc), true, "google_search_console_setup.md must exist in docs/ops/");
+});
+

@@ -1,10 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
   <!-- Monochrome white version -->
-  <path d="M 144 400 C 144 400, 128 300, 136 240 C 144 180, 152 160, 156 128 C 160 108, 156 96, 160 88"
-        stroke="#ffffff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <path d="M 168 112 C 192 160, 228 240, 264 296 C 300 352, 332 380, 348 400"
-        stroke="#ffffff" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <path d="M 352 400 C 352 392, 356 340, 360 280 C 364 220, 368 160, 364 120 C 362 100, 358 92, 356 84"
-        stroke="#ffffff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <circle cx="356" cy="76" r="10" fill="#ffffff"/>
+  <g transform="translate(56, 56) scale(4)">
+    <path d="M11 72 C8 60 13 48 23 39 C31 32 32 18 40 17 C49 16 58 40 66 40 C76 40 68 18 82 16 C95 15 94 34 89 45 C85 53 78 59 74 68 C70 78 66 84 59 83 C50 82 41 63 35 61 C28 59 31 76 24 80 C18 83 13 79 11 72 Z" stroke="#ffffff" stroke-linejoin="round" stroke-width="5.5" fill="none"/>
+    <path d="M18 69 C17 61 20 53 28 46 C36 39 36 27 41 25 C46 24 56 48 66 48 C82 48 75 26 82 24 C88 23 88 34 83 43 C79 51 72 57 68 66 C64 75 62 77 58 76 C51 74 42 54 34 53 C22 52 28 68 21 71 C19 72 18 71 18 69 Z" stroke="#ffffff" stroke-linejoin="round" stroke-width="4" fill="none"/>
+  </g>
 </svg>

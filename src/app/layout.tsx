@@ -32,8 +32,9 @@ export const metadata: Metadata = {
     canonical: siteMetadata.canonicalBase,
   },
   icons: {
-    icon: "/icon.svg",
-    apple: "/apple-icon.png",
+    icon: "/icon.svg?v=3",
+    shortcut: "/favicon.ico?v=3",
+    apple: "/apple-icon.png?v=3",
   },
   category: "conservation technology",
   openGraph: {
@@ -82,9 +83,10 @@ export default async function RootLayout({
   return (
     <html data-scroll-behavior="smooth" lang={language} className="font-sans">
       <head>
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-icon.png" />
+        <link rel="manifest" href="/manifest.json?v=3" />
+        <link rel="icon" href="/icon.svg?v=3" type="image/svg+xml" />
+        <link rel="shortcut icon" href="/favicon.ico?v=3" />
+        <link rel="apple-touch-icon" href="/apple-icon.png?v=3" />
         <meta name="theme-color" content="#f5f0e8" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
