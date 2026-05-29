@@ -1,6 +1,7 @@
 import type { TaskType, SuggestedAction } from "./taskClassifier";
 import { classifyTask, getReportSections, getDefaultSuggestedActions, estimateEvidenceStrength } from "./taskClassifier";
 import { buildJournalArticle, mapJournalArticleToDraftReport } from "./journalArticleTemplate";
+import { evaluateJournalQuality } from "./journalQuality";
 
 export const PUBLIC_REPORT_DISCLAIMER =
   "Dokumen ini adalah draft bantuan belajar/penulisan berbasis bukti. Pengguna wajib memeriksa, mengedit, memverifikasi sumber, dan bertanggung jawab penuh atas dokumen akhir. NaLI tidak boleh digunakan untuk memalsukan data, mengarang referensi, melakukan plagiarisme, atau mengklaim karya AI sebagai karya final tanpa revisi.";
@@ -133,6 +134,32 @@ export type DraftReport = {
   missing_evidence?: string[];
   evidence_warnings?: string[];
   suggested_actions?: SuggestedAction[];
+  journal_candidate?: {
+    title: string;
+    abstract: string;
+    keywords: string[];
+    introduction: string;
+    methods: string;
+    results: string;
+    discussion: string;
+    conclusion: string;
+    limitations: string;
+    evidenceTable: Array<{ id: string; material_type: string; summary: string; user_provided: boolean; verification_status: string }>;
+    missingEvidence: string[];
+    referencesSuppliedByUser: string;
+    citationIntegrityNote: string;
+    unsupportedClaims: string[];
+  };
+  journal_quality?: {
+    score: number;
+    level: "weak" | "basic" | "good" | "strong";
+    imradComplete: boolean;
+    missingSections: string[];
+    citationIntegrity: "safe" | "warning" | "blocked";
+    evidenceSufficiency: "weak" | "moderate" | "strong";
+    publicationClaimAllowed: false;
+    recommendedFixes: string[];
+  };
 };
 
 export type StartFromZeroGuide = {
@@ -580,7 +607,66 @@ function confidenceNoteFor(input: ReportRequest, evidenceTable: EvidenceRow[]) {
   const level = hasDirectNote && hasSupportingContext && evidenceTable.length >= 2 ? "sedang-terbatas" : "rendah";
 
   return `Tingkat keyakinan: ${level}. Penilaian ini hanya berdasarkan bahan yang diberikan pengguna. NaLI belum memverifikasi URL, lokasi, file, angka, atau klaim ilmiah, sehingga hasil perlu divalidasi dengan bukti tambahan dan pemeriksaan manusia.`;
-}export function buildMockDraftReport(input: ReportRequest, modelUsed = "NaLI Preview Engine"): DraftReport {
+}
+
+export function isJournalTriggered(input: ReportRequest): boolean {
+  const combined = `${input.title || ""} ${input.topic || ""} ${input.mainText || ""} ${input.reportTemplate || ""}`.toLowerCase();
+  return /jurnal|journal|paper|artikel ilmiah|imrad/i.test(combined);
+}
+
+function mapArticleToJournalCandidate(article: any, input: ReportRequest): any {
+  return {
+    title: article.metadata.title || "Draf Jurnal Pengamatan",
+    abstract: article.abstract.text || "Abstrak draf.",
+    keywords: article.abstract.keywords || [input.topic || "Observasi"],
+    introduction: [article.introduction || "", article.literatureReview || ""].join("\n\n"),
+    methods: [
+      article.materialsAndMethods.method || "",
+      article.materialsAndMethods.profileEmphasis || "",
+      article.materialsAndMethods.missingDetails || ""
+    ].join("\n\n"),
+    results: article.results.narrative || "",
+    discussion: article.discussion || "Diskusi draf.",
+    conclusion: article.conclusion || "Kesimpulan draf.",
+    limitations: (article.limitations || []).join("\n"),
+    evidenceTable: (article.results.comparisonTable || []).map((row: any) => ({
+      id: row.id || "EV-01",
+      material_type: "catatan",
+      summary: `${row.object}: ${row.shape}, ${row.margin}, ${row.color}`,
+      user_provided: true,
+      verification_status: row.evidenceStatus || "belum"
+    })),
+    missingEvidence: article.futureDataRequired || [],
+    referencesSuppliedByUser: input.sourceUrls.length > 0 
+      ? input.sourceUrls.map((url: string) => `- [User Provided] ${url} (Belum diverifikasi)`).join("\n")
+      : "Belum ada referensi yang disediakan pengguna.",
+    citationIntegrityNote: "NaLI tidak membuat DOI/referensi palsu.",
+    unsupportedClaims: []
+  };
+}
+
+export function buildDefaultJournalCandidate(draft: any, input: ReportRequest): any {
+  return {
+    title: draft.title || "Draf Jurnal Pengamatan",
+    abstract: draft.executive_summary || "Abstrak belum disusun.",
+    keywords: [input.topic || "Observasi", "NaLI"],
+    introduction: draft.background || "Latar belakang belum lengkap.",
+    methods: draft.method_or_materials || "Metode belum lengkap.",
+    results: Array.isArray(draft.findings) ? draft.findings.join("\n") : (draft.preliminary_analysis || ""),
+    discussion: draft.discussion || "Diskusi belum lengkap.",
+    conclusion: draft.conclusion || "Kesimpulan belum lengkap.",
+    limitations: draft.uncertainty_note || "Batasan belum diisi.",
+    evidenceTable: Array.isArray(draft.evidence_table) ? draft.evidence_table : [],
+    missingEvidence: Array.isArray(draft.additional_evidence_needed) ? draft.additional_evidence_needed : [],
+    referencesSuppliedByUser: input.sourceUrls.length > 0 
+      ? input.sourceUrls.map((url: string) => `- [User Provided] ${url} (Belum diverifikasi)`).join("\n")
+      : "Belum ada referensi yang disediakan pengguna.",
+    citationIntegrityNote: "NaLI tidak membuat DOI/referensi palsu.",
+    unsupportedClaims: []
+  };
+}
+
+export function buildMockDraftReport(input: ReportRequest, modelUsed = "NaLI Preview Engine"): DraftReport {
   const evidenceTable = buildEvidenceTable(input);
   const issue = detectIssue(`${input.mainText} ${input.title}`);
   const location = input.location || detectLocation(input.mainText);
@@ -655,15 +741,43 @@ function confidenceNoteFor(input: ReportRequest, evidenceTable: EvidenceRow[]) {
   };
 
   const isLeafQuery = /daun|morfologi|biologi|tanaman|tumbuhan/i.test(input.mainText || input.title);
+  const isJournal = isJournalTriggered(input) || isLeafQuery;
+
+  let reportWithCandidate = baseReport;
+
   if (isLeafQuery) {
     const modelId = (input.selectedModel || "").toLowerCase() || 
                     (modelUsed.toLowerCase().includes("obsidian") ? "obsidian" : 
                      modelUsed.toLowerCase().includes("zephyr") ? "zephyr" : "peregrine");
     const article = buildJournalArticle(input, modelId);
-    return mapJournalArticleToDraftReport(baseReport, article);
+    reportWithCandidate = mapJournalArticleToDraftReport(baseReport, article);
   }
 
-  return baseReport;
+  if (isJournal) {
+    let jCandidate: any;
+    if (isLeafQuery) {
+      const modelId = (input.selectedModel || "").toLowerCase() || 
+                      (modelUsed.toLowerCase().includes("obsidian") ? "obsidian" : 
+                       modelUsed.toLowerCase().includes("zephyr") ? "zephyr" : "peregrine");
+      const article = buildJournalArticle(input, modelId);
+      jCandidate = mapArticleToJournalCandidate(article, input);
+    } else {
+      jCandidate = buildDefaultJournalCandidate(reportWithCandidate, input);
+    }
+
+    // Run programmatic checks on references
+    if (input.sourceUrls.length === 0) {
+      jCandidate.referencesSuppliedByUser = "Belum ada referensi yang disediakan pengguna.";
+    } else {
+      jCandidate.referencesSuppliedByUser = input.sourceUrls.map((url) => `- [User Provided] ${url} (Belum diverifikasi)`).join("\n");
+    }
+
+    const jQuality = evaluateJournalQuality(input, jCandidate);
+    reportWithCandidate.journal_candidate = jCandidate;
+    reportWithCandidate.journal_quality = jQuality;
+  }
+
+  return reportWithCandidate;
 }
 
 export function buildMockStartGuide(input: ReportRequest, modelUsed = "NaLI Preview Engine"): StartFromZeroGuide {
@@ -859,14 +973,22 @@ export function buildReportPrompt(input: ReportRequest) {
     ].join("\n");
   }
 
+  const isJournal = isJournalTriggered(input);
+  const journalSchema = isJournal 
+    ? ", journal_candidate: { title: string, abstract: string, keywords: string[], introduction: string, methods: string, results: string, discussion: string, conclusion: string, limitations: string, evidenceTable: Array<{ id: string, material_type: string, summary: string, user_provided: boolean, verification_status: string }>, missingEvidence: string[], referencesSuppliedByUser: string, citationIntegrityNote: string, unsupportedClaims: string[] }"
+    : "";
+  const journalInstruction = isJournal
+    ? "\n- Because this is a journal-style request, you MUST also populate the 'journal_candidate' object. All IMRaD fields must be generated. Do NOT invent references, DOIs, coordinates, or journal names. If there are no user-supplied references, set referencesSuppliedByUser to 'Belum ada referensi yang disediakan pengguna.'. Any claims unsupported directly by user materials must be placed in the 'unsupportedClaims' array."
+    : "";
+
   return [
     ...commonRules,
     `draft_label must be exactly: ${DRAFT_LABEL}`,
     `disclaimer must be exactly: ${PUBLIC_REPORT_DISCLAIMER}`,
-    "Use only user-provided materials for facts. You may structure, clarify, infer safe title/topic, and suggest missing evidence.",
+    "Use only user-provided materials for facts. You may structure, clarify, infer safe title/topic, and suggest missing evidence." + journalInstruction,
     `Use these section headings for the draft: ${sections.join(", ")}.`,
     "Structure the draft as: Judul laporan, Ringkasan singkat, then the template sections above, then Batasan & disclaimer, Rekomendasi tindak lanjut, and Catatan sumber/evidence.",
-    "Schema: { mode, title, report_type, created_at, status, model_used, draft_label, executive_summary, background, objective, method_or_materials, findings: string[], preliminary_analysis, discussion, conclusion, evidence_table: { id, material_type, summary, user_provided, verification_status }[], source_notes: string[], source_verification_status, uncertainty_note, additional_evidence_needed: string[], user_review_checklist: string[], disclaimer, next_user_steps: string[], understanding, plan, evidence_strength, source_coverage, missing_evidence, evidence_warnings, suggested_actions }",
+    `Schema: { mode, title, report_type, created_at, status, model_used, draft_label, executive_summary, background, objective, method_or_materials, findings: string[], preliminary_analysis, discussion, conclusion, evidence_table: { id, material_type, summary, user_provided, verification_status }[], source_notes: string[], source_verification_status, uncertainty_note, additional_evidence_needed: string[], user_review_checklist: string[], disclaimer, next_user_steps: string[], understanding, plan, evidence_strength, source_coverage, missing_evidence, evidence_warnings, suggested_actions${journalSchema} }`,
     "",
     `Mode: ${input.mode}`,
     `Template: ${input.reportTemplate}`,
@@ -952,6 +1074,64 @@ export function normalizeProviderResult(raw: Record<string, unknown>, input: Rep
   const draftFallback = fallback as DraftReport;
   const draftRaw = raw as Partial<DraftReport>;
 
+  const isLeafQuery = /daun|morfologi|biologi|tanaman|tumbuhan/i.test(input.mainText || input.title);
+  const isJournal = isJournalTriggered(input) || isLeafQuery;
+
+  let journal_candidate: any = undefined;
+  let journal_quality: any = undefined;
+
+  if (isJournal && input.mode === "draft_from_materials") {
+    const rawJc = (raw.journal_candidate || {}) as any;
+    
+    // Normalization & programmatic override of references
+    let referencesSuppliedByUser = "Belum ada referensi yang disediakan pengguna.";
+    if (Array.isArray(input.sourceUrls) && input.sourceUrls.length > 0) {
+      referencesSuppliedByUser = input.sourceUrls.map((url: string) => `- [User Provided] ${url} (Belum diverifikasi)`).join("\n");
+    }
+
+    // Capture unsupported claims
+    let unsupportedClaims = safeStringArray(rawJc.unsupportedClaims || rawJc.unsupported_claims, []);
+    
+    // Capping fields before saving to DB
+    const MAX_FIELD_LEN = 1000;
+    
+    const draftForFallback = {
+      title: safeString(draftRaw.title || raw.title, input.title || "Draf Laporan"),
+      executive_summary: safeString(draftRaw.executive_summary || raw.executive_summary, ""),
+      background: safeString(draftRaw.background || raw.background, ""),
+      method_or_materials: safeString(draftRaw.method_or_materials || raw.method_or_materials, ""),
+      findings: safeStringArray(draftRaw.findings || raw.findings, []),
+      preliminary_analysis: safeString(draftRaw.preliminary_analysis || raw.preliminary_analysis, ""),
+      discussion: safeString(raw.discussion, ""),
+      conclusion: safeString(raw.conclusion, ""),
+      uncertainty_note: safeString(raw.uncertainty_note, ""),
+      evidence_table: Array.isArray(raw.evidence_table) ? raw.evidence_table : [],
+      additional_evidence_needed: safeStringArray(raw.additional_evidence_needed, [])
+    };
+    
+    // Map raw model outputs, capping sizes
+    journal_candidate = {
+      title: safeString(rawJc.title || rawJc.judul, draftForFallback.title).slice(0, MAX_FIELD_LEN),
+      abstract: safeString(rawJc.abstract || rawJc.abstrak, draftForFallback.executive_summary).slice(0, MAX_FIELD_LEN),
+      keywords: safeStringArray(rawJc.keywords || rawJc.kata_kunci, [input.topic || "Observasi"]).map(k => k.slice(0, 50)).slice(0, 10),
+      introduction: safeString(rawJc.introduction || rawJc.pendahuluan, draftForFallback.background).slice(0, MAX_FIELD_LEN),
+      methods: safeString(rawJc.methods || rawJc.metode, draftForFallback.method_or_materials).slice(0, MAX_FIELD_LEN),
+      results: safeString(rawJc.results || rawJc.hasil, draftForFallback.preliminary_analysis || draftForFallback.findings.join("\n")).slice(0, MAX_FIELD_LEN),
+      discussion: safeString(rawJc.discussion || rawJc.pembahasan, draftForFallback.discussion).slice(0, MAX_FIELD_LEN),
+      conclusion: safeString(rawJc.conclusion || rawJc.kesimpulan, draftForFallback.conclusion).slice(0, MAX_FIELD_LEN),
+      limitations: safeString(rawJc.limitations || rawJc.batasan, draftForFallback.uncertainty_note).slice(0, MAX_FIELD_LEN),
+      evidenceTable: (Array.isArray(rawJc.evidenceTable || rawJc.evidence_table) 
+        ? (rawJc.evidenceTable || rawJc.evidence_table) 
+        : draftForFallback.evidence_table).slice(0, 10),
+      missingEvidence: safeStringArray(rawJc.missingEvidence || rawJc.missing_evidence, draftForFallback.additional_evidence_needed).slice(0, 10),
+      referencesSuppliedByUser,
+      citationIntegrityNote: safeString(rawJc.citationIntegrityNote || rawJc.citation_integrity_note, "NaLI tidak membuat DOI/referensi palsu.").slice(0, MAX_FIELD_LEN),
+      unsupportedClaims: unsupportedClaims.slice(0, 10),
+    };
+
+    journal_quality = evaluateJournalQuality(input, journal_candidate);
+  }
+
   return {
     ...draftFallback,
     ...draftRaw,
@@ -981,6 +1161,8 @@ export function normalizeProviderResult(raw: Record<string, unknown>, input: Rep
     status: "AI_GENERATED_NALI",
     user_review_checklist: safeStringArray(draftRaw.user_review_checklist, draftFallback.user_review_checklist),
     ...agenticFields,
+    journal_candidate,
+    journal_quality,
   };
 }
 

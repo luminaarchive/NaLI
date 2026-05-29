@@ -2114,9 +2114,10 @@ function ReportResultCard({
   journalReadiness,
   onQuickAction,
 }: ReportResultCardProps) {
-  const [activeTab, setActiveTab] = useState<"preview" | "evidence" | "uncertainty" | "diagnostics" | "readiness">("preview");
+  const [activeTab, setActiveTab] = useState<"preview" | "evidence" | "uncertainty" | "diagnostics" | "readiness" | "journal_draft">("preview");
 
   const isGuide = report.mode === "start_from_zero";
+  const hasJournalDraft = !isGuide && (report as DraftReport).journal_candidate !== undefined && (report as DraftReport).journal_candidate !== null;
 
   const handleActionClick = (prompt: string) => {
     if (onQuickAction) {
@@ -2741,6 +2742,217 @@ function ReportResultCard({
             </div>
           );
         }
+        case "journal_draft": {
+          const draft = report as DraftReport;
+          const candidate = draft.journal_candidate;
+          const quality = draft.journal_quality || {
+            score: 0,
+            level: "weak" as const,
+            imradComplete: false,
+            missingSections: [],
+            citationIntegrity: "warning" as const,
+            evidenceSufficiency: "weak" as const,
+            publicationClaimAllowed: false,
+            recommendedFixes: [],
+          };
+
+          if (!candidate) {
+            return (
+              <div className="text-white/45 text-xs">
+                Draf kandidat jurnal tidak tersedia untuk draf laporan ini.
+              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4 text-sm leading-6 text-white/70">
+              {/* Warnings and Wording Locks */}
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-6 text-amber-200/80 space-y-2">
+                <div className="flex items-center gap-1.5 font-semibold text-amber-400">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span>Draf kandidat jurnal — Belum siap publikasi final</span>
+                </div>
+                <ul className="list-disc pl-4 space-y-1 text-white/70">
+                  <li>PDF jurnal publik belum aktif di CP1</li>
+                  <li>Referensi hanya berdasarkan input pengguna</li>
+                  <li>NaLI tidak membuat DOI/referensi palsu</li>
+                </ul>
+              </div>
+
+              {/* Quality Evaluator Panel */}
+              <div className="rounded-xl border border-white/[0.05] bg-white/[0.01] p-3 text-xs space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-white/45">Skor Kualitas Jurnal:</span>
+                  <span className="font-bold text-emerald-400">{quality.score} / 100</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/45">Tingkat Draf:</span>
+                  <span className="font-semibold capitalize text-white/70">{quality.level}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/45">Kelengkapan IMRaD:</span>
+                  <span className="font-semibold text-white/70">{quality.imradComplete ? "Lengkap" : "Belum Lengkap"}</span>
+                </div>
+                {quality.missingSections && quality.missingSections.length > 0 && (
+                  <div>
+                    <span className="block text-white/45">Bagian IMRaD yang Kurang:</span>
+                    <ul className="mt-1 list-disc pl-4 text-white/50">
+                      {quality.missingSections.map((sec, idx) => (
+                        <li key={idx}>{sec}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {quality.recommendedFixes && quality.recommendedFixes.length > 0 && (
+                  <div className="border-t border-white/[0.04] pt-2">
+                    <span className="block text-emerald-400 font-semibold">Rekomendasi Perbaikan:</span>
+                    <ul className="mt-1 list-disc pl-4 text-emerald-300/80">
+                      {quality.recommendedFixes.map((fix, idx) => (
+                        <li key={idx}>{fix}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* IMRaD Sections */}
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Judul Jurnal
+                </span>
+                <p className="mt-1 font-semibold text-white/90">{candidate.title}</p>
+              </div>
+
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Abstrak
+                </span>
+                <p className="mt-1 italic">{candidate.abstract}</p>
+              </div>
+
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Kata Kunci
+                </span>
+                <p className="mt-1 font-medium">{candidate.keywords.join(", ")}</p>
+              </div>
+
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Pendahuluan (Introduction)
+                </span>
+                <p className="mt-1 whitespace-pre-wrap">{candidate.introduction}</p>
+              </div>
+
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Metode (Methods)
+                </span>
+                <p className="mt-1 whitespace-pre-wrap">{candidate.methods}</p>
+              </div>
+
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Hasil (Results)
+                </span>
+                <p className="mt-1 whitespace-pre-wrap">{candidate.results}</p>
+              </div>
+
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Pembahasan (Discussion)
+                </span>
+                <p className="mt-1 whitespace-pre-wrap">{candidate.discussion}</p>
+              </div>
+
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Kesimpulan (Conclusion)
+                </span>
+                <p className="mt-1 whitespace-pre-wrap">{candidate.conclusion}</p>
+              </div>
+
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Batasan Jurnal (Limitations)
+                </span>
+                <p className="mt-1 whitespace-pre-wrap">{candidate.limitations}</p>
+              </div>
+
+              {/* Evidence Table */}
+              {candidate.evidenceTable && candidate.evidenceTable.length > 0 && (
+                <div className="border-t border-white/[0.04] pt-3">
+                  <span className="mb-2 block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                    Tabel Bukti Jurnal
+                  </span>
+                  <div className="overflow-x-auto rounded-lg border border-white/[0.05] bg-white/[0.01]">
+                    <table className="min-w-full text-left text-xs">
+                      <thead>
+                        <tr className="border-b border-white/[0.06] bg-white/[0.02]">
+                          <th className="px-3 py-2 text-white/40">ID</th>
+                          <th className="px-3 py-2 text-white/40">Tipe</th>
+                          <th className="px-3 py-2 text-white/40">Ringkasan</th>
+                          <th className="px-3 py-2 text-white/40">Verifikasi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {candidate.evidenceTable.map((row, idx) => (
+                          <tr key={row.id || idx} className="border-b border-white/[0.04] last:border-none">
+                            <td className="px-3 py-2.5 font-mono text-[10px] text-white/50">{row.id || `EV-${idx}`}</td>
+                            <td className="px-3 py-2.5 text-white/60">{row.material_type}</td>
+                            <td className="max-w-[200px] truncate px-3 py-2.5 text-white/50">{row.summary}</td>
+                            <td className="px-3 py-2.5">
+                              <span className="inline-flex rounded border border-white/[0.06] bg-white/[0.04] px-1.5 py-0.5 text-[9px] text-white/45">
+                                {row.verification_status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Missing Evidence */}
+              {candidate.missingEvidence && candidate.missingEvidence.length > 0 && (
+                <div className="border-t border-white/[0.04] pt-3">
+                  <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                    Kebutuhan Bukti Tambahan
+                  </span>
+                  <ul className="mt-1 list-disc pl-4 text-white/60">
+                    {candidate.missingEvidence.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Unsupported Claims */}
+              {candidate.unsupportedClaims && candidate.unsupportedClaims.length > 0 && (
+                <div className="border-t border-[#FF4E4E]/20 pt-3">
+                  <span className="block text-xs font-semibold tracking-wider text-[#FF6464] uppercase">
+                    Klaim AI Tanpa Bukti Input Pengguna
+                  </span>
+                  <ul className="mt-1 list-disc pl-4 text-[#FFACAC]/80">
+                    {candidate.unsupportedClaims.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* References & Citation Integrity */}
+              <div className="border-t border-white/[0.04] pt-3">
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                  Referensi Pustaka (User Provided)
+                </span>
+                <p className="mt-1 whitespace-pre-wrap text-white/50 font-mono text-xs">{candidate.referencesSuppliedByUser}</p>
+                <p className="mt-1.5 text-white/30 text-[10px] italic">{candidate.citationIntegrityNote}</p>
+              </div>
+            </div>
+          );
+        }
       }
     }
   };
@@ -2827,6 +3039,20 @@ function ReportResultCard({
         >
           Journal Readiness
         </button>
+        {hasJournalDraft && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("journal_draft")}
+            className={cn(
+              "flex min-h-[44px] shrink-0 cursor-pointer items-center justify-center border-b-2 px-3 py-3 text-center font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none sm:px-4 sm:py-2.5",
+              activeTab === "journal_draft"
+                ? "border-emerald-400 text-white"
+                : "border-transparent text-white/40 hover:text-white",
+            )}
+          >
+            Draf Jurnal
+          </button>
+        )}
       </div>
 
       {/* Tab content panel */}

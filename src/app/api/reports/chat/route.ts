@@ -67,6 +67,8 @@ type AgentMessage = {
       missingRequirements: string[];
       recommendedNextAction: string;
     };
+    journal_candidate?: any;
+    journal_quality?: any;
   };
   created_at: string;
 };
@@ -409,6 +411,8 @@ export async function POST(req: NextRequest) {
           provider_metadata,
           answer_verification,
           journal_readiness,
+          journal_candidate: "journal_candidate" in guarded.report ? (guarded.report as any).journal_candidate : undefined,
+          journal_quality: "journal_quality" in guarded.report ? (guarded.report as any).journal_quality : undefined,
         },
         created_at: new Date().toISOString(),
       };

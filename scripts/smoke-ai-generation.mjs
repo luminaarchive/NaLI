@@ -8,11 +8,12 @@ async function main() {
   console.log(`Base URL: ${baseUrl}`);
   console.log(`Target URL: ${url}`);
 
+  const isJournalMode = env.NALI_SMOKE_JOURNAL_MODE === "true";
   const payload = {
     mode: "draft_from_materials",
     reportTemplate: "Laporan Observasi Lingkungan",
     integrityConsent: true,
-    mainText: "Lokasi: Lereng Gunung Merapi, Yogyakarta. Tanggal: 25 Mei 2026. Kondisi Teramati: Ditemukan penurunan kerapatan vegetasi pohon jenis Acacia decurrens di plot pengamatan radius 10 meter akibat curah hujan abu tipis seminggu lalu. Bukti terlampir berupa catatan pengamatan lapangan manual dan foto visual (user-supplied). Keterbatasan bukti: Tidak menggunakan pemantauan satelit radar aktif.",
+    mainText: "Lokasi: Lereng Gunung Merapi, Yogyakarta. Tanggal: 25 Mei 2026. Kondisi Teramati: Ditemukan penurunan kerapatan vegetasi pohon jenis Acacia decurrens di plot pengamatan radius 10 meter akibat curah hujan abu tipis seminggu lalu. Bukti terlampir berupa catatan pengamatan lapangan manual dan foto visual (user-supplied). Keterbatasan bukti: Tidak menggunakan pemantauan satelit radar aktif." + (isJournalMode ? " Draf jurnal ilmiah IMRaD." : ""),
   };
 
   try {
@@ -69,8 +70,28 @@ async function main() {
     if (data.journal_readiness) {
       console.log(`Journal Readiness Level: "${data.journal_readiness.readinessLevel}"`);
       console.log(`Journal Ready: ${data.journal_readiness.journalReady}`);
+      console.log(`Can Generate Journal PDF Now: ${data.journal_readiness.canGenerateJournalPdfNow}`);
+      
+      if (data.journal_readiness.canGenerateJournalPdfNow !== false) {
+        console.error("FAIL: PDF export gate is active (should remain false/locked in Sprint 3).");
+        process.exit(1);
+      }
     } else {
       console.log("Journal Readiness: Not returned (legacy response)");
+    }
+
+    if (isJournalMode) {
+      if (!data.journal_candidate) {
+        console.error("FAIL: journal_candidate is missing in response under NALI_SMOKE_JOURNAL_MODE=true");
+        process.exit(1);
+      }
+      if (!data.journal_quality) {
+        console.error("FAIL: journal_quality is missing in response under NALI_SMOKE_JOURNAL_MODE=true");
+        process.exit(1);
+      }
+      console.log(`Journal Quality Score: ${data.journal_quality.score}`);
+      console.log(`Journal Quality Level: "${data.journal_quality.level}"`);
+      console.log("PASS: journal_candidate and journal_quality verifications passed.");
     }
 
     const mode = data.mode;

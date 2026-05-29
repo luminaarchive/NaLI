@@ -3,6 +3,8 @@ import { getPersistedReport } from "@/lib/reports/persistence";
 import { getReportExportEligibility } from "@/lib/reports/exportGate";
 import { verifyAnswer } from "@/lib/reports/answerVerification";
 import { evaluateJournalReadiness } from "@/lib/reports/journalReadiness";
+import { isJournalTriggered, buildDefaultJournalCandidate } from "@/lib/reports/reportGenerator";
+import { evaluateJournalQuality } from "@/lib/reports/journalQuality";
 
 const accessParamName = "to" + "ken";
 
@@ -54,6 +56,26 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const answer_verification = persisted.processing_metadata?.answer_verification || verifyAnswer(requestInput, persisted.report);
   const journal_readiness = persisted.processing_metadata?.journal_readiness || evaluateJournalReadiness(requestInput, persisted.report);
 
+  let journal_candidate = (persisted.report as any).journal_candidate;
+  let journal_quality = (persisted.report as any).journal_quality;
+
+  const isJournal = isJournalTriggered(requestInput);
+  if (isJournal && persisted.report.mode === "draft_from_materials") {
+    if (!journal_candidate) {
+      journal_candidate = buildDefaultJournalCandidate(persisted.report, requestInput);
+      if (requestInput.sourceUrls.length === 0) {
+        journal_candidate.referencesSuppliedByUser = "Belum ada referensi yang disediakan pengguna.";
+      } else {
+        journal_candidate.referencesSuppliedByUser = requestInput.sourceUrls.map((url: string) => `- [User Provided] ${url} (Belum diverifikasi)`).join("\n");
+      }
+    }
+    if (!journal_quality) {
+      journal_quality = evaluateJournalQuality(requestInput, journal_candidate);
+    }
+    (persisted.report as any).journal_candidate = journal_candidate;
+    (persisted.report as any).journal_quality = journal_quality;
+  }
+
   return NextResponse.json({
     report: persisted.report,
     status: persisted.status,
@@ -61,5 +83,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     provider_metadata,
     answer_verification,
     journal_readiness,
+    journal_candidate,
+    journal_quality,
   });
 }
