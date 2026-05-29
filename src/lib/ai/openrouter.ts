@@ -16,6 +16,9 @@ type OpenRouterResponse = {
 
 const DEFAULT_MODEL = "meta-llama/llama-3.3-70b-instruct:free";
 const DEFAULT_FALLBACKS = [
+  "google/gemini-2.5-flash:free",
+  "google/gemini-2.0-flash-exp:free",
+  "openrouter/free",
   "google/gemma-4-31b-it:free",
   "google/gemma-4-26b-a4b-it:free",
   "deepseek/deepseek-v4-flash:free",
@@ -91,7 +94,7 @@ export async function requestOpenRouterJson({
 
   for (const model of models) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12_000);
+    const timeout = setTimeout(() => controller.abort(), 30_000);
 
     try {
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {

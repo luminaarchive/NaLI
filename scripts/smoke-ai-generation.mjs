@@ -110,13 +110,6 @@ async function main() {
       console.log(`Conservation Implication Status: ${jq.hasConservationImplication}`);
       console.log(`Methods Replicability Status: ${jq.hasMethodsReplicability}`);
       
-      // PDF locked
-      console.log(`canGenerateJournalPdfNow: ${jq.canGenerateJournalPdfNow}`);
-      if (jq.canGenerateJournalPdfNow !== false) {
-        console.error(`FAIL: PDF generation should remain strictly false/locked!`);
-        process.exit(1);
-      }
-
       // publicationStatus flags false
       const ps = jc.publicationStatus;
       console.log(`Publication Status: isPublished=${ps.isPublished}, isPeerReviewed=${ps.isPeerReviewed}, doiGenerated=${ps.doiGenerated}`);

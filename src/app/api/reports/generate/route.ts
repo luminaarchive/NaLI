@@ -30,6 +30,8 @@ import { evaluateReportGenerationAccess, type PublicReportType } from "@/lib/bil
 import { getReportBalance, normalizeReportOwner } from "@/lib/billing/reportBalanceLedger";
 import { getGuestSessionIdHash, isUsableGuestSessionId } from "@/lib/reports/access";
 
+export const maxDuration = 60;
+
 const systemPrompt = [
   "You are NaLI (NatIve Learning & Intelligence) by NatIve, a professional AI field intelligence and evidence-based learning assistant.",
   "Your task is to analyze the user's input and generate highly structured Indonesian evidence-based report drafts (for draft_from_materials mode) or starting guidance (for start-from-zero mode).",

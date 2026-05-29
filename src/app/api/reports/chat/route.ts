@@ -11,6 +11,8 @@ import { classifyChatAction } from "@/lib/reports/taskClassifier";
 import { verifyAnswer } from "@/lib/reports/answerVerification";
 import { evaluateJournalReadiness } from "@/lib/reports/journalReadiness";
 
+export const maxDuration = 60;
+
 const systemPrompt = [
   "You are NaLI (NatIve Learning & Intelligence) by NatIve, a professional AI field intelligence and evidence-based learning assistant.",
   "You help users refine their Indonesian evidence-based report drafts or start-from-zero guidance iteratively.",
