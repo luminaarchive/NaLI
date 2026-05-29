@@ -29,10 +29,10 @@ export default function HomePage() {
               Apa yang ingin kamu susun hari ini?
             </h1>
             <p className="mb-4 max-w-[580px] text-sm sm:text-base leading-relaxed text-[#4a6455] font-medium">
-              Nature &amp; Evidence Intelligence OS untuk menyusun laporan lingkungan, praktikum, dan observasi berbasis bukti secara instan dan jujur.
+              Nature &amp; Evidence Intelligence OS (Public Alpha) untuk menyusun laporan lingkungan, praktikum, dan observasi secara jujur.
             </p>
             <p className="mb-8 text-xs text-[#4a6455]/70 italic">
-              NaLI membedakan bukti pengguna, inferensi AI, dan bukti yang masih kurang.
+              Penyusunan berbasis AI aktif saat kapasitas engine tersedia. NaLI membedakan bukti pengguna, inferensi AI, dan bukti yang kurang.
             </p>
 
             <HomeQueryBox />
@@ -86,7 +86,7 @@ export default function HomePage() {
                 </Link>
               </div>
               <p className="mt-3 text-[#4a6455]/70">
-                CP1: pembayaran belum aktif &middot; Upload belum aktif &middot; Source verification belum aktif
+                Public Alpha: AI draft tersedia jika kapasitas tersedia &middot; CP1: pembayaran belum aktif &middot; Upload belum aktif &middot; Source verification belum aktif
               </p>
             </aside>
 

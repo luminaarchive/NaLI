@@ -47,7 +47,7 @@ export function PricingCards() {
                       </li>
                       <li className="flex gap-2.5">
                         <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#00FFB3]" aria-hidden="true" />
-                        <span>Unduhan publik PDF/DOCX tetap terkunci di CP1</span>
+                        <span>PDF ekspor publik belum aktif</span>
                       </li>
                     </ul>
                   </div>
@@ -61,7 +61,7 @@ export function PricingCards() {
                     variant="outline"
                   >
                     <LockKeyhole className="h-3.5 w-3.5 text-[#a1b3a8]/40 mr-1.5" aria-hidden="true" />
-                    Belum dapat dibeli {/* Belum aktif */}
+                    Checkout belum aktif di CP1 {/* Belum aktif */}
                   </Button>
                 </CardFooter>
               </div>
@@ -71,8 +71,7 @@ export function PricingCards() {
       </div>
 
       <p className="rounded-2xl border border-[#14261c] bg-[#14261c]/20 p-5 text-xs leading-6 text-[#a1b3a8]">
-        Laporan kamu habis. Pilih paket untuk lanjut. Pesan ini disiapkan untuk peluncuran mendatang; tidak ada
-        pembelian atau saldo laporan yang diberikan saat ini. Pembayaran dan checkout belum aktif di CP1.
+        Laporan kamu habis. Pilih paket untuk lanjut. Paket ini adalah konfigurasi harga, belum bisa dibeli. Pembayaran dan checkout belum aktif di CP1. PDF ekspor publik belum aktif. Draf laporan dapat disalin atau diunduh secara lokal sebagai Markdown/TXT.
       </p>
     </div>
   );

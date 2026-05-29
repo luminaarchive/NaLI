@@ -6,7 +6,8 @@ export type SafeErrorCategory =
   | "EXPORT_LOCKED"
   | "MODEL_ENTITLEMENT_REQUIRED"
   | "UNAUTHORIZED"
-  | "GENERIC";
+  | "GENERIC"
+  | "AI_UNAVAILABLE";
 
 export type SafeErrorState = {
   category: SafeErrorCategory;
@@ -54,6 +55,23 @@ export function normalizePublicError(options: {
   const status = options.status || 200;
   const rawMsg = options.message || "";
   const retryAfter = options.retryAfterSeconds;
+
+  // 1a. AI UNAVAILABLE / 503 / AI_ENGINE_UNAVAILABLE
+  if (
+    status === 503 ||
+    code === "AI_ENGINE_UNAVAILABLE" ||
+    code === "ai_engine_unavailable" ||
+    rawMsg.toLowerCase().includes("ai engine sedang tidak tersedia") ||
+    rawMsg.toLowerCase().includes("ai_engine_unavailable")
+  ) {
+    return {
+      category: "AI_UNAVAILABLE",
+      title: "AI engine sedang tidak tersedia. Coba lagi nanti.",
+      explanation: "Draf tidak dibuat agar NaLI tidak menampilkan laporan palsu. Input kamu tetap aman di perangkat ini jika pemulihan lokal aktif.",
+      nextStep: "",
+      severity: "error",
+    };
+  }
 
   // 1. RATE LIMIT / 429
   if (

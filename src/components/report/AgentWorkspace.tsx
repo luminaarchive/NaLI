@@ -44,6 +44,7 @@ import {
 } from "@/lib/reports/clientRecovery";
 import { validateComposerInput } from "@/lib/reports/inputValidation";
 import { useDebouncedComposerValidation } from "@/lib/reports/useDebouncedValidation";
+import { generateManualChecklist } from "@/lib/reports/manualFallbackChecklist";
 
 // Types matching backend AgentMessage schema
 type AgentMessage = {
@@ -161,6 +162,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     status?: number;
     retryAfterSeconds?: number;
   } | null>(null);
+  const [showManualChecklist, setShowManualChecklist] = useState<boolean>(false);
+  const [localSaveSuccess, setLocalSaveSuccess] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [accessKey, setAccessKey] = useState<string | null>(null);
   const [providerMetadata, setProviderMetadata] = useState<any>(null);
@@ -1888,6 +1891,132 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                   message: error.message,
                   retryAfterSeconds: error.retryAfterSeconds,
                 });
+
+                if (normalized.category === "AI_UNAVAILABLE") {
+                  return (
+                    <div className="flex flex-col gap-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-5 shadow-lg backdrop-blur-xl transition duration-300 w-full text-left">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-red-400" aria-hidden="true" />
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <h4 className="text-sm font-bold tracking-tight leading-5 text-red-200">
+                            {normalized.title}
+                          </h4>
+                          <p className="text-xs leading-relaxed text-white/70 whitespace-normal break-words">
+                            {normalized.explanation}
+                          </p>
+                        </div>
+                      </div>
+
+                      {localSaveSuccess && (
+                        <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-xs text-emerald-300">
+                          {localSaveSuccess}
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap gap-2 pt-2 border-t border-white/[0.08]">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (messages.length === 0) {
+                              handleInitialSubmit();
+                            } else {
+                              handleFollowUpSubmit(undefined, lastAttemptedQuery);
+                            }
+                          }}
+                          className="inline-flex min-h-[36px] items-center justify-center rounded-xl bg-white text-zinc-950 hover:bg-white/90 px-3 text-xs font-semibold tracking-wide transition duration-150 cursor-pointer shadow-md"
+                        >
+                          Coba Lagi
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            saveGuestReportRecovery({
+                              id: `local-draft-${Date.now()}`,
+                              title: selectedTemplate ? `Draft ${selectedTemplate}` : "Draft Laporan Lapangan",
+                              mode: selectedMode,
+                              mainText: query,
+                              reportTemplate: selectedTemplate,
+                              integrityConsent: integrityConsent,
+                              status: "autosaved_draft",
+                              timestamp: Date.now(),
+                            });
+                            loadSnapshots();
+                            setLocalSaveSuccess("Draf berhasil disimpan secara lokal!");
+                            setTimeout(() => setLocalSaveSuccess(null), 3000);
+                          }}
+                          className="inline-flex min-h-[36px] items-center justify-center rounded-xl bg-white/10 hover:bg-white/15 px-3 text-xs font-semibold text-white tracking-wide border border-white/[0.08] transition duration-150 cursor-pointer"
+                        >
+                          Simpan Draf Lokal
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowManualChecklist(true)}
+                          className="inline-flex min-h-[36px] items-center justify-center rounded-xl bg-white/10 hover:bg-white/15 px-3 text-xs font-semibold text-white tracking-wide border border-white/[0.08] transition duration-150 cursor-pointer"
+                        >
+                          Lihat Checklist Manual
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setError(null);
+                            setShowManualChecklist(false);
+                            composerRef.current?.focus();
+                          }}
+                          className="inline-flex min-h-[36px] items-center justify-center rounded-xl bg-white/10 hover:bg-white/15 px-3 text-xs font-semibold text-white tracking-wide border border-white/[0.08] transition duration-150 cursor-pointer"
+                        >
+                          Kembali ke Form
+                        </button>
+                      </div>
+
+                      {showManualChecklist && (() => {
+                        const checklist = generateManualChecklist(selectedTemplate, selectedMode);
+                        return (
+                          <div className="mt-4 rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 space-y-4 text-xs">
+                            <div className="border-b border-white/[0.08] pb-2">
+                              <h5 className="font-serif text-sm font-bold text-white">{checklist.title}</h5>
+                              <p className="text-[11px] text-white/50">{checklist.description}</p>
+                              <p className="mt-1 text-[10px] text-emerald-400 font-semibold">{checklist.modeLabel}</p>
+                            </div>
+                            
+                            <div className="space-y-3">
+                              <p className="font-bold text-white/80">Butir Observasi / Data Yang Diperlukan:</p>
+                              <div className="grid gap-2 sm:grid-cols-2">
+                                {checklist.items.map((item) => (
+                                  <div key={item.id} className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-2.5">
+                                    <p className="font-semibold text-white/70">{item.label}</p>
+                                    <p className="text-[10px] text-white/40 leading-relaxed mt-0.5">{item.description}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <p className="font-bold text-white/80">Struktur Kerangka Laporan yang Disarankan:</p>
+                              <ul className="list-inside list-disc pl-2 space-y-1 text-white/50">
+                                {checklist.suggestedOutline.map((outlineItem, idx) => (
+                                  <li key={idx}>{outlineItem}</li>
+                                ))}
+                              </ul>
+                            </div>
+
+                            <div className="space-y-2">
+                              <p className="font-bold text-white/80">Langkah Pengguna Selanjutnya:</p>
+                              <ul className="list-inside list-none pl-2 space-y-1 text-white/50">
+                                {checklist.nextSteps.map((step, idx) => (
+                                  <li key={idx} className="leading-relaxed">{step}</li>
+                                ))}
+                              </ul>
+                            </div>
+
+                            <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-[10px] text-amber-200 leading-relaxed">
+                              💡 <strong>Disclaimer:</strong> {checklist.disclaimer}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  );
+                }
 
                 let actionLabel: string | undefined = undefined;
                 let onAction: (() => void) | undefined = undefined;
