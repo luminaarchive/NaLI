@@ -31,11 +31,15 @@ test.describe("NaLI Workspace E2E Continuous Use & Persistence Flow", () => {
     await expect(page).toHaveURL(/\/create-report/);
 
     // 5. Verify prefilled composer state
-    const composer = page.locator("textarea[placeholder*='Ketik catatan, topik']");
+    const composer = page.locator("textarea[placeholder*='Tulis tugas']");
     await expect(composer).toBeVisible();
     await expect(composer).toHaveValue("Bantu saya menyusun laporan observasi tentang burung madu pengantin (Leptocoma sperata) di lereng Gunung Lawu berdasarkan catatan saya.");
 
-    // 6. Check academic integrity checkbox
+    // 6. Click More to reveal options, then check academic integrity checkbox
+    const moreBtn = page.locator("button:has-text('More')");
+    await expect(moreBtn).toBeVisible();
+    await moreBtn.click();
+
     const integrityCheckbox = page.locator("input[type='checkbox']");
     await expect(integrityCheckbox).toBeVisible();
     await integrityCheckbox.check();
@@ -85,8 +89,8 @@ test.describe("NaLI Workspace E2E Continuous Use & Persistence Flow", () => {
     await page.goto("/create-report");
 
     // Verify empty state is legible
-    await expect(page.locator("h1")).toContainText("Buat Laporan");
-    const composer = page.locator("textarea[placeholder*='Ketik catatan, topik']");
+    await expect(page.locator("h1")).toContainText("Apa yang bisa NaLI bantu susun?");
+    const composer = page.locator("textarea[placeholder*='Tulis tugas']");
     await expect(composer).toBeVisible();
 
     // Verify sidebar history drawer button is visible on mobile

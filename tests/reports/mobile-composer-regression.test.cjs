@@ -57,11 +57,11 @@ test("AgentWorkspace contains mobile-safe layout, composer, suggested actions, a
     "Inline suggested action chips should have at least 44px min-height",
   );
 
-  // 3. Bottom composer suggested actions have min-h-[44px]
+  // 3. Bottom composer suggested actions have h-[42px]
   assert.match(
     code,
-    /inline-flex min-h-\[44px\] cursor-pointer items-center rounded-full border border-white\/\[0\.06\] bg-white\/\[0\.02\] px-4 py-2 text-xs/,
-    "Bottom suggested action chips should have at least 44px min-height",
+    /inline-flex h-\[42px\] cursor-pointer items-center rounded-full border border-white\/\[0\.07\] bg-\[#2a2a2a\] px-4 py-2 text-xs/,
+    "Bottom suggested action chips should have at least 42px height and neutral styling",
   );
 
   // 4. Input composer container has min-h-[48px] sm:min-h-[56px]
@@ -76,8 +76,8 @@ test("AgentWorkspace contains mobile-safe layout, composer, suggested actions, a
   );
   assert.match(
     code,
-    /inline-flex h-11 w-11.*sm:h-12 sm:w-12/,
-    "Send button size should be h-11 w-11 on mobile and sm:h-12 sm:w-12 on desktop",
+    /inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/,
+    "Send button should match Manus style (circular h-9 w-9)",
   );
 
   // 6. Card action buttons have responsive h-11 sm:h-8 touch-safe overrides

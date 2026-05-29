@@ -4,6 +4,7 @@ const path = require("node:path");
 const test = require("node:test");
 
 require("../helpers/register-ts.cjs");
+process.env.NALI_ALLOW_MOCK_GENERATION = "true";
 const { POST: postGenerate } = require("../../src/app/api/reports/generate/route");
 const { GET: getReadiness } = require("../../src/app/api/system/readiness/route");
 const { REPORT_PACKAGES } = require("../../src/lib/billing/reportPackages");

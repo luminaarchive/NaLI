@@ -81,6 +81,7 @@ const originalEnv = {
   dailyLimit: process.env.NALI_DAILY_ENERGY_LIMIT,
   founderToken: process.env.NALI_FOUNDER_ADMIN_TOKEN,
   providerKey: process.env.OPENROUTER_API_KEY,
+  allowMock: process.env.NALI_ALLOW_MOCK_GENERATION,
 };
 
 test.beforeEach(() => {
@@ -90,12 +91,14 @@ test.beforeEach(() => {
   process.env.NALI_FOUNDER_ADMIN_TOKEN = trustedToken;
   delete process.env.NALI_DAILY_ENERGY_LIMIT;
   delete process.env.OPENROUTER_API_KEY;
+  process.env.NALI_ALLOW_MOCK_GENERATION = "true";
 });
 
 test.after(() => {
   restoreEnv("NALI_DAILY_ENERGY_LIMIT", originalEnv.dailyLimit);
   restoreEnv("NALI_FOUNDER_ADMIN_TOKEN", originalEnv.founderToken);
   restoreEnv("OPENROUTER_API_KEY", originalEnv.providerKey);
+  restoreEnv("NALI_ALLOW_MOCK_GENERATION", originalEnv.allowMock);
   adminModule.getOptionalSupabaseAdminClient = originalGetAdmin;
 });
 

@@ -83,7 +83,7 @@ test.describe("NaLI Auth, Manus-like UI, and Persistence linking E2E", () => {
 
     // Initial guest workspace load
     await page.goto("/create-report");
-    await expect(page.locator("h1")).toContainText("Buat Laporan");
+    await expect(page.locator("h1")).toContainText("Apa yang bisa NaLI bantu susun?");
 
     // Check header states - Guest must be visible
     const guestHeaderTag = page.locator("span:has-text('Guest')");

@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 require("../helpers/register-ts.cjs");
+process.env.NALI_ALLOW_MOCK_GENERATION = "true";
 const { POST: postGenerate } = require("../../src/app/api/reports/generate/route");
 const { validateReportRequest, buildReportPrompt } = require("../../src/lib/reports/reportGenerator");
 const { naliModels } = require("../../src/lib/models/naliModels");

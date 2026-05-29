@@ -37,8 +37,10 @@ function requestFor(modelId, options = {}) {
 test("premium report access is unlocked only by a valid trusted internal QA header", async () => {
   const originalFounderToken = process.env.NALI_FOUNDER_ADMIN_TOKEN;
   const originalProviderKey = process.env.OPENROUTER_API_KEY;
+  const originalMockFlag = process.env.NALI_ALLOW_MOCK_GENERATION;
   process.env.NALI_FOUNDER_ADMIN_TOKEN = internalQaToken;
   delete process.env.OPENROUTER_API_KEY;
+  process.env.NALI_ALLOW_MOCK_GENERATION = "true";
 
   try {
     for (const modelId of ["obsidian", "zephyr"]) {
@@ -79,6 +81,7 @@ test("premium report access is unlocked only by a valid trusted internal QA head
   } finally {
     restoreEnv("NALI_FOUNDER_ADMIN_TOKEN", originalFounderToken);
     restoreEnv("OPENROUTER_API_KEY", originalProviderKey);
+    restoreEnv("NALI_ALLOW_MOCK_GENERATION", originalMockFlag);
   }
 });
 

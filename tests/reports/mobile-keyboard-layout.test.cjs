@@ -47,13 +47,13 @@ test("AgentWorkspace tracks composer focus state and adjusts bottom padding dyna
     "Bottom composer container must retain env(safe-area-inset-bottom) support",
   );
 
-  // 5. Suggested actions retain min-h-[44px] touch targets and wrapping
+  // 5. Suggested actions retain h-[42px] touch targets and wrapping
   assert.match(
     code,
-    /flex flex-wrap justify-center gap-2 py-1/,
+    /flex flex-wrap justify-center gap-3 py-2/,
     "Bottom composer suggested actions container should wrap flex items",
   );
-  assert.match(code, /min-h-\[44px\]/, "Suggested action buttons must keep a minimum touch target height of 44px");
+  assert.match(code, /h-\[42px\]/, "Suggested action buttons must keep a touch target height of 42px");
 
   // 6. Public mobile flow shows one report action without internal tier buttons
   assert.match(code, /Buat Laporan/);

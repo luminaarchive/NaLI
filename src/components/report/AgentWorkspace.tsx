@@ -8,12 +8,16 @@ import {
   AlertTriangle,
   ArrowLeft,
   ArrowRight,
+  Beaker,
+  BookOpen,
   CheckCircle2,
   ChevronDown,
   Clipboard,
+  Clock,
   Compass,
   Download,
   FileText,
+  FolderOpen,
   LockKeyhole,
   Loader2,
   Menu,
@@ -22,6 +26,7 @@ import {
   Send,
   ShieldCheck,
   Sparkles,
+  StickyNote,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -685,6 +690,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     if (!trimmed) return;
 
     if (!integrityConsent) {
+      setShowMoreOptions(true);
       setError({ message: "Centang pernyataan integritas akademik NaLI terlebih dahulu." });
       return;
     }
@@ -1169,20 +1175,20 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
   const renderComposer = (isCentered: boolean) => {
     return (
-      <div className={cn("w-full space-y-4 text-left", isCentered ? "max-w-[620px] mx-auto" : "max-w-[760px] mx-auto")}>
+      <div className={cn("w-full space-y-4 text-left", isCentered ? "max-w-[820px] mx-auto" : "max-w-[760px] mx-auto")}>
         <form
           onSubmit={messages.length === 0 ? handleInitialSubmit : handleFollowUpSubmit}
           className="group relative w-full"
         >
           {/* Rounded composer card */}
-          <div className="absolute -inset-0.5 rounded-3xl bg-[#00FFB3]/10 opacity-30 blur-md transition duration-500 group-focus-within:opacity-60 group-hover:opacity-50" />
 
-          <div className="relative flex min-h-[48px] flex-col gap-2 rounded-3xl border border-[#1e2e25] bg-[#0c140f] p-3 shadow-2xl transition duration-300 focus-within:border-[#00FFB3]/30 focus-within:bg-[#0c140f] sm:min-h-[56px]">
+
+          <div className="relative flex min-h-[48px] flex-col gap-2 rounded-[22px] border border-white/[0.11] bg-[#222] p-3 shadow-2xl transition duration-300 focus-within:border-white/[0.18] sm:min-h-[56px]">
             {/* Input area */}
             <div className="w-full px-2 py-1">
               <textarea
                 ref={isCentered ? composerRef : undefined}
-                rows={isCentered ? 3 : 1}
+                rows={isCentered ? 4 : 1}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => setIsComposerFocused(true)}
@@ -1195,7 +1201,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                       ? "Tulis tugas, catatan lapangan, atau bahan laporan..."
                       : "Ketik instruksi penyuntingan draf lanjutan (misal: 'perpendek', 'tulis kesimpulan formal')..."
                 }
-                className="max-h-32 w-full resize-none border-none bg-transparent py-1 text-[14px] leading-6 text-white placeholder-white/30 outline-none disabled:opacity-50"
+                className="max-h-40 w-full resize-none border-none bg-transparent py-1 text-[14px] leading-6 text-white placeholder-white/35 outline-none disabled:opacity-50"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
@@ -1206,7 +1212,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             </div>
 
             {/* Bottom action row inside composer */}
-            <div className="flex items-center justify-between border-t border-white/[0.04] pt-2 px-1">
+            <div className="flex items-center justify-between pt-1 px-1">
               {/* Left action icons */}
               <div className="flex items-center gap-1.5 text-white/40">
                 <button
@@ -1228,7 +1234,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     showManualChecklistDirectly && "bg-white/10 text-white"
                   )}
                 >
-                  <CheckCircle2 className="h-4 w-4 text-[#00FFB3]" />
+                  <CheckCircle2 className="h-4 w-4 text-white/50" />
                 </button>
                 <button
                   type="button"
@@ -1241,7 +1247,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     showMoreOptions && "bg-white/10 text-white"
                   )}
                 >
-                  <FileText className="h-4 w-4 text-sky-400" />
+                  <FileText className="h-4 w-4 text-white/50" />
                 </button>
               </div>
 
@@ -1251,11 +1257,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 disabled={
                   activeRunStatus === "running" ||
                   !query.trim() ||
-                  (messages.length === 0 && !integrityConsent) ||
                   isRateLimited
                 }
                 aria-label={selectedMode === "draft_from_materials" ? "Buat Laporan" : "Buat Panduan Awal"}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white text-zinc-950 transition duration-200 hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-30 sm:h-12 sm:w-12"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-zinc-950 transition duration-200 hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-30"
               >
                 {activeRunStatus === "running" ? (
                   <Loader2 className="h-4 w-4 animate-spin text-zinc-950" />
@@ -1269,7 +1274,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
         {/* Composer action chips (only shown when idle) */}
         {activeRunStatus === "idle" && (
-          <div className="flex flex-wrap justify-center gap-2 py-1">
+          <div className="flex flex-wrap justify-center gap-3 py-2">
             <button
               type="button"
               onClick={() => {
@@ -1278,8 +1283,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 setTimeout(() => composerRef.current?.focus(), 50);
               }}
               className={cn(
-                "inline-flex min-h-[44px] cursor-pointer items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-2 text-xs transition duration-200 hover:bg-white/[0.06]",
-                selectedMode === "draft_from_materials" ? "text-white border-[#00FFB3]/25 bg-[#00FFB3]/5" : "text-white/70"
+                "inline-flex h-[42px] cursor-pointer items-center rounded-full border border-white/[0.07] bg-[#2a2a2a] px-4 py-2 text-xs transition duration-200 hover:bg-[#333]",
+                selectedMode === "draft_from_materials" ? "text-white border-white/[0.15]" : "text-white/70"
               )}
             >
               Buat laporan
@@ -1291,7 +1296,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 setQuery("Bantu saya menyusun draf kandidat jurnal IMRaD untuk topik: ");
                 setTimeout(() => composerRef.current?.focus(), 50);
               }}
-              className="inline-flex min-h-[44px] cursor-pointer items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-2 text-xs text-white/70 transition duration-200 hover:bg-white/[0.06]"
+              className="inline-flex h-[42px] cursor-pointer items-center rounded-full border border-white/[0.07] bg-[#2a2a2a] px-4 py-2 text-xs text-white/70 transition duration-200 hover:bg-[#333]"
             >
               Draf jurnal
             </button>
@@ -1301,7 +1306,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 setQuery("Cek kekuatan bukti lapangan dan cari batasan klaim untuk: ");
                 setTimeout(() => composerRef.current?.focus(), 50);
               }}
-              className="inline-flex min-h-[44px] cursor-pointer items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-2 text-xs text-white/70 transition duration-200 hover:bg-white/[0.06]"
+              className="inline-flex h-[42px] cursor-pointer items-center rounded-full border border-white/[0.07] bg-[#2a2a2a] px-4 py-2 text-xs text-white/70 transition duration-200 hover:bg-[#333]"
             >
               Cek bukti
             </button>
@@ -1311,8 +1316,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 setShowManualChecklistDirectly(!showManualChecklistDirectly);
               }}
               className={cn(
-                "inline-flex min-h-[44px] cursor-pointer items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-2 text-xs transition duration-200 hover:bg-white/[0.06]",
-                showManualChecklistDirectly ? "text-[#00FFB3] border-[#00FFB3]/30 bg-[#00FFB3]/5" : "text-white/70"
+                "inline-flex h-[42px] cursor-pointer items-center rounded-full border border-white/[0.07] bg-[#2a2a2a] px-4 py-2 text-xs transition duration-200 hover:bg-[#333]",
+                showManualChecklistDirectly ? "text-white border-white/[0.15]" : "text-white/70"
               )}
             >
               Checklist manual
@@ -1322,7 +1327,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               onClick={() => {
                 setSidebarOpen(true);
               }}
-              className="inline-flex min-h-[44px] cursor-pointer items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-2 text-xs text-white/70 transition duration-200 hover:bg-white/[0.06]"
+              className="inline-flex h-[42px] cursor-pointer items-center rounded-full border border-white/[0.07] bg-[#2a2a2a] px-4 py-2 text-xs text-white/70 transition duration-200 hover:bg-[#333]"
             >
               Riwayat lokal
             </button>
@@ -1330,8 +1335,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               type="button"
               onClick={() => setShowMoreOptions(!showMoreOptions)}
               className={cn(
-                "inline-flex min-h-[44px] cursor-pointer items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-2 text-xs transition duration-200 hover:bg-white/[0.06]",
-                showMoreOptions ? "text-white border-white/20 bg-white/10" : "text-white/70"
+                "inline-flex h-[42px] cursor-pointer items-center rounded-full border border-white/[0.07] bg-[#2a2a2a] px-4 py-2 text-xs transition duration-200 hover:bg-[#333]",
+                showMoreOptions ? "text-white border-white/[0.15]" : "text-white/70"
               )}
             >
               More
@@ -1341,8 +1346,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
         {/* Collapsible Options Panel */}
         {showMoreOptions && (
-          <div className="rounded-2xl border border-[#1e2e25]/80 bg-[#0c140f]/60 p-4 space-y-4 shadow-xl backdrop-blur-md">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-[#a1b3a8] border-b border-white/[0.04] pb-2">
+          <div className="rounded-2xl border border-white/[0.09] bg-[#222]/80 p-4 space-y-4 shadow-xl backdrop-blur-md">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50 border-b border-white/[0.04] pb-2">
               Opsi Penyusunan
             </h4>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -1358,8 +1363,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     className={cn(
                       "flex-1 rounded-xl border py-2 px-3 text-xs font-semibold transition duration-150",
                       selectedMode === "draft_from_materials"
-                        ? "border-[#00FFB3]/30 bg-[#00FFB3]/5 text-[#f5f0e8]"
-                        : "border-white/[0.08] bg-[#0c140f] text-white/50 hover:bg-white/[0.02]"
+                        ? "border-white/[0.15] bg-white/[0.08] text-[#f5f0e8]"
+                        : "border-white/[0.08] bg-[#1e1e1e] text-white/50 hover:bg-white/[0.04]"
                     )}
                   >
                     Punya Bahan
@@ -1370,8 +1375,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     className={cn(
                       "flex-1 rounded-xl border py-2 px-3 text-xs font-semibold transition duration-150",
                       selectedMode === "start_from_zero"
-                        ? "border-[#00FFB3]/30 bg-[#00FFB3]/5 text-[#f5f0e8]"
-                        : "border-white/[0.08] bg-[#0c140f] text-white/50 hover:bg-white/[0.02]"
+                        ? "border-white/[0.15] bg-white/[0.08] text-[#f5f0e8]"
+                        : "border-white/[0.08] bg-[#1e1e1e] text-white/50 hover:bg-white/[0.04]"
                     )}
                   >
                     Mulai dari Nol
@@ -1387,10 +1392,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 <select
                   value={selectedTemplate}
                   onChange={(e) => setSelectedTemplate(e.target.value)}
-                  className="w-full rounded-xl border border-white/[0.08] bg-[#0c140f] px-3 py-2 text-xs text-[#f5f0e8] focus:border-[#00FFB3]/30 focus:outline-none"
+                  className="w-full rounded-xl border border-white/[0.08] bg-[#1e1e1e] px-3 py-2 text-xs text-[#f5f0e8] focus:border-white/[0.15] focus:outline-none"
                 >
                   {templates.map((tpl) => (
-                    <option key={tpl} value={tpl} className="bg-[#0c140f] text-[#f5f0e8]">
+                    <option key={tpl} value={tpl} className="bg-[#1e1e1e] text-[#f5f0e8]">
                       {tpl}
                     </option>
                   ))}
@@ -1418,7 +1423,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         {showManualChecklistDirectly && (() => {
           const checklist = generateManualChecklist(selectedTemplate, selectedMode);
           return (
-            <div className="rounded-2xl border border-white/[0.08] bg-[#0c140f]/40 p-4 space-y-4 text-xs shadow-xl">
+            <div className="rounded-2xl border border-white/[0.09] bg-[#222]/60 p-4 space-y-4 text-xs shadow-xl">
               <div className="flex items-center justify-between border-b border-white/[0.08] pb-2">
                 <div>
                   <h5 className="font-serif text-sm font-bold text-white">{checklist.title}</h5>
@@ -1437,7 +1442,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 <p className="font-bold text-white/80">Butir Observasi / Data Yang Diperlukan:</p>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {checklist.items.map((item) => (
-                    <div key={item.id} className="rounded-lg border border-white/[0.04] bg-[#0c140f]/60 p-2.5">
+                    <div key={item.id} className="rounded-lg border border-white/[0.04] bg-[#1e1e1e]/60 p-2.5">
                       <p className="font-semibold text-white/70">{item.label}</p>
                       <p className="text-[10px] text-white/40 leading-relaxed mt-0.5">{item.description}</p>
                     </div>
@@ -1466,11 +1471,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           );
         })()}
 
-        {messages.length === 0 && !integrityConsent && (
-          <p className="text-[11px] text-amber-400/80 leading-relaxed border border-amber-500/10 bg-amber-500/5 p-2 rounded-xl">
-            ⚠️ Mohon aktifkan opsi &ldquo;Persetujuan Integritas&rdquo; di bawah tombol &ldquo;More&rdquo; untuk mengirim.
-          </p>
-        )}
+
       </div>
     );
   };
@@ -1479,20 +1480,23 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     error?.status === 429 || (error?.retryAfterSeconds !== undefined && error.retryAfterSeconds > 0);
 
   return (
-    <div className="relative flex min-h-screen w-screen overflow-hidden bg-[#060a07] text-[#f5f0e8]">
+    <div className="relative flex min-h-screen w-screen overflow-hidden bg-[#191919] text-[#f5f0e8]">
 
       {/* --- Sidebar --- */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-[#121c16] bg-[#090f0c] transition-transform duration-300 md:static md:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex w-[250px] flex-col border-r border-white/[0.07] bg-[#191919] transition-transform duration-300 md:static md:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <div className="flex h-14 items-center justify-between border-b border-[#121c16] px-4">
-          <NaLILogo size={28} variant="light" />
+        <div className="flex h-16 items-center justify-between border-b border-white/[0.07] px-4">
+          <div className="flex items-center gap-2">
+            <NaLILogo size={24} variant="light" />
+            <span className="text-sm font-semibold text-white/80">NaLI</span>
+          </div>
           <button
             aria-label="Tutup riwayat"
-            className="inline-flex h-11 w-11 items-center justify-center text-white/40 hover:text-white md:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-white/40 hover:bg-white/[0.05] hover:text-white md:hidden"
             onClick={() => setSidebarOpen(false)}
           >
             <X className="h-5 w-5" />
@@ -1513,36 +1517,36 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               setShowManualChecklistDirectly(false);
               router.push("/create-report");
             }}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#00FFB3]/25 bg-[#00FFB3]/5 px-4 py-3 text-sm font-semibold text-[#00FFB3] transition duration-200 hover:bg-[#00FFB3]/10"
+            className="flex w-full items-center justify-center gap-2 rounded-[10px] bg-[#2a2a2a] px-4 py-2.5 text-sm font-semibold text-white/90 transition duration-200 hover:bg-[#333]"
           >
             <Plus className="h-4 w-4" />
-            Mulai Baru
+            Buat laporan baru
           </button>
         </div>
 
         {/* Navigation Section */}
-        <div className="space-y-1 px-3 py-2">
+        <div className="space-y-0.5 px-3 py-2">
           <button
             type="button"
-            className="flex w-full items-center gap-2.5 rounded-xl bg-white/[0.06] px-3.5 py-2.5 text-left text-xs font-semibold text-white transition duration-150"
+            className="flex h-10 w-full items-center gap-3 rounded-[10px] bg-white/[0.06] px-3.5 text-left text-sm font-medium text-white/90 transition duration-150"
           >
-            <Sparkles className="h-4 w-4 text-[#00FFB3]" />
+            <Sparkles className="h-4 w-4 text-white/60" />
             Agent
           </button>
           {[
-            { label: "Laporan", icon: "📋" },
-            { label: "Draf Jurnal", icon: "🔬" },
-            { label: "Catatan", icon: "📝" },
-            { label: "Library", icon: "📁" },
-            { label: "Scheduled", icon: "⏰" },
+            { label: "Laporan", icon: Clipboard },
+            { label: "Draf Jurnal", icon: Beaker },
+            { label: "Catatan", icon: StickyNote },
+            { label: "Library", icon: BookOpen },
+            { label: "Scheduled", icon: Clock },
           ].map((item, idx) => (
             <div
               key={idx}
-              className="flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-left text-xs text-white/30 cursor-not-allowed select-none"
+              className="flex h-9 w-full items-center justify-between rounded-[10px] px-3.5 text-left text-sm text-white/35 cursor-not-allowed select-none"
               title={`${item.label} (Coming Soon)`}
             >
-              <span className="flex items-center gap-2.5">
-                <span>{item.icon}</span>
+              <span className="flex items-center gap-3">
+                <item.icon className="h-4 w-4" />
                 {item.label}
               </span>
               <span className="text-[9px] font-bold tracking-wider text-white/20 uppercase">Soon</span>
@@ -1555,14 +1559,14 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           <p className="px-3.5 py-1.5 text-[10px] font-bold tracking-[0.08em] text-white/25 uppercase">
             Projects
           </p>
-          <div className="flex items-center gap-2.5 rounded-xl px-3.5 py-2 text-xs text-white/70">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          <div className="flex h-9 items-center gap-3 rounded-[10px] px-3.5 text-sm text-white/70">
+            <FolderOpen className="h-4 w-4 text-white/40" />
             <span>NaLI</span>
           </div>
         </div>
 
         {/* All Tasks (Local drafts/recovery list) */}
-        <div className="flex-1 space-y-1 overflow-y-auto px-3 py-2 border-t border-white/[0.04] mt-2">
+        <div className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2 border-t border-white/[0.05] mt-2">
           <p className="px-3.5 py-1.5 text-[10px] font-bold tracking-[0.08em] text-white/25 uppercase">
             All Tasks / Riwayat Tugas
           </p>
@@ -1576,9 +1580,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                   setSidebarOpen(false);
                   handleRestoreSnapshot(item);
                 }}
-                className="flex w-full flex-col gap-0.5 rounded-xl px-3.5 py-2 text-left text-xs transition duration-150 hover:bg-white/[0.04]"
+                className="flex w-full flex-col gap-0.5 rounded-[10px] px-3.5 py-2 text-left text-sm transition duration-150 hover:bg-white/[0.04]"
               >
-                <span className="truncate font-semibold text-white/70">{item.title}</span>
+                <span className="truncate font-medium text-white/70">{item.title}</span>
                 <span className="text-[10px] text-white/30">
                   {new Date(item.timestamp).toLocaleTimeString("id-ID", {
                     hour: "2-digit",
@@ -1591,7 +1595,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         </div>
 
         {/* Bottom Status Block */}
-        <div className="border-t border-white/[0.06] p-4 bg-[#070c09] space-y-2">
+        <div className="border-t border-white/[0.05] p-4 bg-[#161616] space-y-2">
           <div className="flex items-center justify-between text-[11px] text-white/40">
             <span className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -1614,38 +1618,30 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       {/* --- Main Workspace Content --- */}
       <div className="relative flex flex-1 flex-col overflow-hidden">
         {/* Workspace Header */}
-        <header className="z-30 flex h-14 shrink-0 items-center justify-between border-b border-[#14261c] bg-[#060b08]/80 px-4 backdrop-blur-md">
+        <header className="z-30 flex h-16 shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#191919]/95 px-4 backdrop-blur-md">
           <div className="flex items-center gap-3">
             <button
               aria-label="Buka riwayat"
-              className="inline-flex h-11 w-11 items-center justify-center text-white/60 hover:text-white md:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-white/60 hover:bg-white/[0.05] hover:text-white md:hidden"
               onClick={() => setSidebarOpen(true)}
             >
               <Menu className="h-5 w-5" />
             </button>
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/40 transition-colors hover:text-white"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/50 transition-colors hover:text-white"
             >
               <ArrowLeft className="h-4 w-4" />
               Keluar
             </Link>
+            <span className="hidden sm:inline-flex items-center gap-1 text-xs text-white/30">
+              <ChevronDown className="h-3 w-3" />
+              NaLI 1.0 Alpha
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <Link
-              href="/pricing"
-              className="hidden min-h-[44px] items-center px-3 text-xs font-semibold text-white/45 transition hover:text-white sm:inline-flex"
-            >
-              Harga
-            </Link>
-            <Link
-              href="/learn-report"
-              className="hidden min-h-[44px] items-center px-3 text-xs font-semibold text-white/45 transition hover:text-white md:inline-flex"
-            >
-              Panduan
-            </Link>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 font-mono text-[11px] font-semibold text-white/60">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 font-mono text-[11px] font-semibold text-white/55">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
               {selectedMode === "start_from_zero" ? "Panduan Awal" : "Laporan NaLI"}
             </span>
@@ -1671,7 +1667,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           </div>
         </header>
 
-        <main className="z-10 flex-1 space-y-6 overflow-x-hidden overflow-y-auto px-4 py-6 md:px-8">
+        <main className="z-10 flex-1 space-y-6 overflow-x-hidden overflow-y-auto px-4 py-6 md:px-8 bg-[#191919]">
           <div
             className={cn(
               "mx-auto max-w-[760px] space-y-6",
@@ -1682,13 +1678,13 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           >
             {messages.length === 0 ? (
               /* --- Empty State / Centered Workspace --- */
-              <div className="flex flex-col items-center justify-center pt-10 text-center max-w-[620px] mx-auto w-full">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 font-mono text-[10px] font-semibold text-white/55 mb-6 uppercase tracking-wider">
+              <div className="flex flex-col items-center justify-center pt-16 sm:pt-[100px] text-center max-w-[820px] mx-auto w-full">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.07] bg-[#2a2a2a] px-3.5 py-1.5 font-mono text-[10px] font-semibold text-white/55 mb-8 uppercase tracking-wider">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   Public Alpha | AI aktif saat kapasitas tersedia
                 </span>
                 
-                <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-semibold leading-[1.2] text-[#f5f0e8] mb-8 tracking-tight">
+                <h1 className="font-serif text-3xl sm:text-[40px] md:text-[48px] font-semibold leading-[1.15] text-[#f5f0e8] mb-10 tracking-tight">
                   Apa yang bisa NaLI bantu susun?
                 </h1>
                 
@@ -2393,7 +2389,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
         {/* Bottom Composer and Control chips */}
         {messages.length > 0 && (
-          <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#060a07] via-[#060a07]/95 to-transparent px-4 pt-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:px-8">
+          <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#191919] via-[#191919]/95 to-transparent px-4 pt-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:px-8">
             <div className="mx-auto max-w-[760px] space-y-3">
               {renderComposer(false)}
             </div>

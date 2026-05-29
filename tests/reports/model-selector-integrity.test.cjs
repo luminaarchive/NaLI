@@ -144,7 +144,7 @@ test("single-report controls preserve mobile safe-area paddings and touch target
   assert.match(workspaceSrc, /min-h-\[44px\]/);
 
   assert.match(formSrc, /min-h-12/);
-  assert.match(workspaceSrc, /h-11 w-11/);
+  assert.match(workspaceSrc, /h-9 w-9/);
 
   // Ensure mobile form safe-bottom padding classes are untouched
   assert.match(formSrc, /safe-bottom/);

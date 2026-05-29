@@ -22,5 +22,8 @@ export default defineConfig({
     url: "http://localhost:3000",
     reuseExistingServer: true,
     timeout: 120000,
+    env: {
+      NALI_ALLOW_MOCK_GENERATION: "true",
+    },
   },
 });
