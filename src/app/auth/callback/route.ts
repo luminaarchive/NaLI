@@ -1,25 +1,44 @@
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
-  const requestUrl = new URL(request.url);
-  const code = requestUrl.searchParams.get("code");
-  const next = requestUrl.searchParams.get("next") || "/create-report";
+  const { searchParams, origin } = new URL(request.url);
+  const code = searchParams.get("code");
+  const error = searchParams.get("error");
+  const next = searchParams.get("next") ?? "/create-report";
+
+  if (error) {
+    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error)}`);
+  }
 
   // Validate the redirect path to prevent open redirect attacks
-  const isSafeRedirect = next.startsWith("/") && !next.startsWith("//");
-  const safeNext = isSafeRedirect ? next : "/create-report";
+  const isSafeNext = next.startsWith("/") && !next.startsWith("//");
+  const safeNext = isSafeNext ? next : "/create-report";
 
   if (code) {
-    const supabase = await createServerSupabaseClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    
-    if (error) {
-      return NextResponse.redirect(new URL("/login?error=confirmation_failed", request.url));
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll: () => cookieStore.getAll(),
+          setAll: (cookiesToSet) => {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
+
+    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (!exchangeError) {
+      return NextResponse.redirect(`${origin}${safeNext}`);
     }
   }
 
-  // Handle auto linking of guest history after OAuth callback
-  const response = NextResponse.redirect(new URL(safeNext, request.url));
-  return response;
+  return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`);
 }
