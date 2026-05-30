@@ -1,252 +1,251 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ShieldCheck, Database, Leaf, ShieldAlert, FileSearch, FileText, GraduationCap, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Download, Edit3, FileText, MessageSquare, Search } from "lucide-react";
 import { PublicAppShell } from "@/components/ui/PublicAppShell";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { siteMetadata } from "@/lib/seo/siteMetadata";
+import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: siteMetadata.routes.learnReport.title,
-  description: siteMetadata.routes.learnReport.description,
-  alternates: {
-    canonical: `${siteMetadata.canonicalBase}/learn-report`,
-  },
-};
-
-const capabilities = [
+const steps = [
   {
-    icon: Leaf,
-    title: "Identifikasi Spesies",
-    desc: "Nama ilmiah, famili, status konservasi IUCN",
+    icon: Edit3,
+    title: "Tulis atau tempel bahan kamu",
+    description:
+      "Salin catatan lapangan, data praktikum, atau hasil survei langsung ke kotak teks. Tidak perlu format khusus.",
+    direction: "left" as const,
   },
   {
-    icon: Database,
-    title: "Analisis Habitat",
-    desc: "Tipe vegetasi, elevasi, kawasan perlindungan",
-  },
-  {
-    icon: ShieldAlert,
-    title: "Konteks Ancaman",
-    desc: "Tekanan deforestasi, perburuan, perdagangan ilegal",
-  },
-  {
-    icon: FileSearch,
-    title: "Referensi Ilmiah",
-    desc: "Sitasi dari literatur yang relevan dengan caveats",
+    icon: Search,
+    title: "NaLI analisis bukti",
+    description:
+      "NaLI membaca bahan kamu, mengidentifikasi klaim, dan menandai mana yang punya bukti kuat dan mana yang kurang.",
+    direction: "right" as const,
   },
   {
     icon: FileText,
-    title: "Laporan Lapangan",
-    desc: "Format standar untuk dokumentasi survey",
+    title: "Laporan berbasis bukti dibuat",
+    description:
+      "Draft laporan ilmiah muncul dengan tabel bukti, catatan ketidakpastian, dan label inferensi yang jelas.",
+    direction: "left" as const,
   },
   {
-    icon: GraduationCap,
-    title: "Integritas Akademik",
-    desc: "Gate khusus untuk penggunaan pendidikan",
+    icon: MessageSquare,
+    title: "Tanya dan revisi lewat chat",
+    description:
+      "Tanya NaLI untuk memperjelas bagian tertentu, menambah rekomendasi, atau merevisi kesimpulan.",
+    direction: "right" as const,
   },
-] as const;
+  {
+    icon: Download,
+    title: "Unduh sebagai PDF",
+    description:
+      "Ekspor laporan sebagai PDF berformat akademik, siap dikumpulkan atau dijadikan draft jurnal.",
+    direction: "left" as const,
+  },
+];
+
+const useCases = [
+  {
+    title: "Laporan Observasi Satwa",
+    description:
+      "Ideal untuk ranger dan peneliti yang mendokumentasikan satwa liar di lapangan.",
+  },
+  {
+    title: "Laporan Praktikum Biologi",
+    description:
+      "Untuk mahasiswa yang perlu menyusun laporan lab dengan struktur ilmiah yang benar.",
+  },
+  {
+    title: "Laporan KKN Lingkungan",
+    description:
+      "Bantu tim KKN menyusun laporan dampak lingkungan berbasis data survei yang dikumpulkan.",
+  },
+];
+
+function AnimatedStep({
+  step,
+  index,
+}: {
+  step: (typeof steps)[number];
+  index: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const Icon = step.icon;
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "flex gap-6 items-start transition-all duration-500 ease-out",
+        visible
+          ? "opacity-100 translate-x-0"
+          : step.direction === "left"
+          ? "opacity-0 -translate-x-10"
+          : "opacity-0 translate-x-10"
+      )}
+    >
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#1e3525]/10 border border-[#1e3525]/12">
+        <Icon className="h-5 w-5 text-[#1e3525]" />
+      </div>
+      <div>
+        <div className="flex items-center gap-3 mb-2">
+          <span className="text-xs font-bold text-[#1e3525]/40 uppercase tracking-widest">
+            Langkah {index + 1}
+          </span>
+        </div>
+        <h3 className="font-serif text-lg font-bold text-[#1e3525] mb-2">
+          {step.title}
+        </h3>
+        <p className="text-sm leading-relaxed text-[#4a6455]">{step.description}</p>
+      </div>
+    </div>
+  );
+}
+
+function AnimatedCard({
+  title,
+  description,
+  index,
+}: {
+  title: string;
+  description: string;
+  index: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      style={{ transitionDelay: `${index * 100}ms` }}
+      className={cn(
+        "rounded-2xl border border-[#1e3525]/12 bg-white/60 p-6 shadow-[0_4px_20px_rgba(30,53,37,0.03)] transition-all duration-500 ease-out",
+        visible ? "opacity-100 scale-100" : "opacity-0 scale-95"
+      )}
+    >
+      <h3 className="font-serif text-base font-bold text-[#1e3525] mb-2">{title}</h3>
+      <p className="text-sm leading-relaxed text-[#4a6455]">{description}</p>
+    </div>
+  );
+}
 
 export default function LearnReportPage() {
   return (
     <PublicAppShell isHomepage={true}>
-      <main className="flex-1 px-4 pt-20 pb-24 sm:px-6 lg:px-8 bg-[#f5f0e8] text-[#1e3525]">
+      <main className="flex-1 bg-[#f5f0e8] text-[#1e3525]">
         {/* HERO SECTION */}
-        <section className="mx-auto max-w-[1040px] text-center mb-20">
+        <section className="mx-auto max-w-[1040px] px-4 pt-20 pb-16 text-center sm:px-6 lg:px-8">
           <span className="inline-flex min-h-8 items-center rounded-full border border-[#1e3525]/12 bg-[#1e3525]/5 px-3.5 py-1 text-xs font-bold tracking-wider text-[#1e3525] uppercase">
             Panduan
           </span>
-          <h1 className="mt-6 text-4xl font-serif font-bold tracking-tight text-[#1e3525] sm:text-5xl">
-            Cara Kerja NaLI
+          <h1 className="mt-6 font-serif text-[clamp(28px,4vw,48px)] font-bold leading-[1.15] text-[#1e3525] tracking-tight">
+            Cara menggunakan NaLI
           </h1>
-          <p className="mx-auto mt-4 max-w-[620px] text-sm leading-6 text-[#4a6455]">
-            Sistem penyusunan laporan berbasis bukti yang transparan, jujur, dan berintegritas. Mulai dari satu topik.
+          <p className="mx-auto mt-4 max-w-[560px] text-sm leading-relaxed text-[#4a6455]">
+            Dari catatan mentah ke laporan siap pakai — dalam 3 langkah
           </p>
-        </section>
 
-        {/* HOW IT WORKS SECTION */}
-        <section className="mx-auto max-w-[960px] mb-24">
-          <div className="grid gap-10 md:grid-cols-3 text-center">
-            {/* Step 1 */}
-            <div className="space-y-4">
-              <span className="block font-serif text-6xl font-extrabold text-[#1e3525]/20">
-                01
-              </span>
-              <h3 className="font-serif text-lg font-bold text-[#1e3525]">Input Catatan & Bahan</h3>
-              <p className="text-xs leading-6 text-[#4a6455] max-w-[280px] mx-auto">
-                Paste text materials or start with one topic. Tempel catatan lapangan, lokasi, spesies, atau bahan mentah Anda.
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="space-y-4">
-              <span className="block font-serif text-6xl font-extrabold text-[#1e3525]/20">
-                02
-              </span>
-              <h3 className="font-serif text-lg font-bold text-[#1e3525]">Penyusunan Terstruktur</h3>
-              <p className="text-xs leading-6 text-[#4a6455] max-w-[280px] mx-auto">
-                NaLI menyusun input Anda dengan struktur laporan, peta klaim-bukti, dan batasan inferensi. Integrasi data eksternal akan dibuka bertahap.
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="space-y-4">
-              <span className="block font-serif text-6xl font-extrabold text-[#1e3525]/20">
-                03
-              </span>
-              <h3 className="font-serif text-lg font-bold text-[#1e3525]">Analisis Batas Bukti</h3>
-              <p className="text-xs leading-6 text-[#4a6455] max-w-[280px] mx-auto">
-                Terima draf laporan yang memisahkan bukti nyata dari inferensi AI, lengkap dengan ceklis bukti yang masih kurang.
-              </p>
-            </div>
+          {/* Animated demo typing effect */}
+          <div className="mx-auto mt-10 max-w-[560px] rounded-2xl border border-[#1e3525]/12 bg-white/60 p-5 text-left shadow-[0_4px_20px_rgba(30,53,37,0.04)]">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[#4a6455]/60">
+              Contoh input
+            </p>
+            <p className="text-sm text-[#1e3525] leading-relaxed typing-demo">
+              Saya mengamati burung elang jawa di lereng Gunung Merbabu pada ketinggian 2.100 mdpl...
+            </p>
+            <style jsx>{`
+              @keyframes typing {
+                from { width: 0 }
+                to { width: 100% }
+              }
+              .typing-demo {
+                overflow: hidden;
+                white-space: nowrap;
+                animation: typing 3.5s steps(60, end) infinite alternate;
+                border-right: 2px solid #1e3525;
+              }
+            `}</style>
           </div>
         </section>
 
-        {/* EVIDENCE LADDER SECTION */}
-        <section className="mx-auto max-w-[840px] mb-24">
-          <h2 className="text-center font-serif text-2xl font-bold text-[#1e3525] tracking-tight mb-8">
-            Tangga Kualitas Bukti (Evidence Quality Ladder)
+        {/* STEPS SECTION */}
+        <section className="mx-auto max-w-[760px] px-4 pb-24 sm:px-6 lg:px-8">
+          <h2 className="text-center font-serif text-2xl font-bold text-[#1e3525] mb-14 tracking-tight">
+            5 Langkah NaLI
           </h2>
-          <p className="text-center text-xs text-[#4a6455] mb-12 max-w-[540px] mx-auto leading-relaxed">
-            NaLI memetakan seberapa kuat klaim laporan Anda berdasarkan kelengkapan bukti yang disediakan secara bertahap.
-          </p>
-          <div className="relative border-l border-[#1e3525]/12 ml-4 md:ml-8 pl-6 md:pl-10 space-y-12">
-            {[
-              {
-                step: "Level 1: Ide Awal / Start From Zero",
-                desc: "Hanya berupa pertanyaan, topik umum, atau request penulisan. NaLI hanya memberikan panduan awal belajar dan struktur penelitian, belum berupa draf laporan berbasis bukti.",
-                badge: "Hanya Panduan"
-              },
-              {
-                step: "Level 2: Draf Berbasis Konteks",
-                desc: "Pengguna memberikan catatan/bahan mentah minimal. NaLI menyusun draf awal tetapi menandai batasan klaim yang belum didukung bukti kuat.",
-                badge: "Draf Awal"
-              },
-              {
-                step: "Level 3: Draf Dengan Bukti Pengguna",
-                desc: "Bahan yang diinput menyertakan bukti spesifik (nama spesies, lokasi, elevasi). NaLI memetakan bukti tersebut ke dalam bab laporan terkait.",
-                badge: "Bukti Pengguna"
-              },
-              {
-                step: "Level 4: Draf Dengan Bukti Lebih Kuat",
-                desc: "Bukti pengguna diperkuat oleh literatur atau data pendukung lainnya. Status verifikasi ditandai: 'Source verification belum aktif di MVP ini'.",
-                badge: "Bukti Kuat"
-              },
-              {
-                step: "Level 5: Field-Grade / Terverifikasi Ahli",
-                desc: "Laporan draf telah divalidasi secara manual oleh tim lapangan atau ahli ekologi profesional. (Fitur ini belum aktif ).",
-                badge: "Coming Soon"
-              }
-            ].map((ladder, idx) => (
-              <div key={idx} className="relative">
-                <span className="absolute -left-[35px] md:-left-[51px] top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-white border border-[#1e3525]/12 text-[10px] font-bold text-[#1e3525]">
-                  {idx + 1}
-                </span>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                  <h4 className="font-serif text-base font-bold text-[#1e3525]">{ladder.step}</h4>
-                  <span className="inline-flex items-center rounded-full bg-[#1e3525]/5 border border-[#1e3525]/10 px-2.5 py-0.5 text-[10px] font-medium text-[#1e3525] w-max">
-                    {ladder.badge}
-                  </span>
-                </div>
-                <p className="text-xs leading-relaxed text-[#4a6455]">{ladder.desc}</p>
-              </div>
+          <div className="space-y-12">
+            {steps.map((step, i) => (
+              <AnimatedStep key={i} step={step} index={i} />
             ))}
           </div>
         </section>
 
-        {/* EVIDENCE BOUNDARY SECTION */}
-        <section className="mx-auto max-w-[760px] mb-24">
-          <div className="rounded-2xl border border-[#1e3525]/12 bg-white/50 p-6 sm:p-8 shadow-[0_4px_24px_rgba(30,53,37,0.02)]">
-            <div className="flex items-center gap-3 mb-6">
-              <ShieldCheck className="h-6 w-6 text-[#1e3525] flex-shrink-0" />
-              <h2 className="font-serif text-xl font-bold text-[#1e3525]">Batas Bukti NaLI</h2>
-            </div>
-            
-            <Alert className="border-[#1e3525]/10 bg-[#1e3525]/3 p-5 text-left mb-6">
-              <AlertDescription className="space-y-4 text-xs leading-6 text-[#4a6455]">
-                <p>
-                  Dokumen ini adalah draf bantuan belajar/penulisan berbasis bukti. Pengguna wajib memeriksa,
-                  mengedit, memverifikasi sumber, dan bertanggung jawab penuh atas dokumen akhir. NaLI tidak boleh
-                  digunakan untuk memalsukan data, mengarang referensi, melakukan plagiarisme, atau mengklaim karya
-                  AI sebagai karya final tanpa revision.
-                </p>
-                <p>
-                  Panduan ini belum menjadi draf laporan berbasis bukti karena bahan observasi atau sumber belum
-                  tersedia. Pengguna perlu mengumpulkan data, catatan, foto, sumber, atau hasil pengamatan terlebih
-                  dahulu sebelum NaLI dapat menyusun draf laporan.
-                </p>
-              </AlertDescription>
-            </Alert>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              {[
-                "Bukan hasil akhir",
-                "Tanpa referensi buatan",
-                "Tanpa fabrikasi data",
-                "Verifikasi manusia mutlak",
-              ].map((item) => (
-                <div key={item} className="flex gap-2 items-center text-xs text-[#4a6455] bg-white/70 rounded-xl px-4 py-3.5 border border-[#1e3525]/10 shadow-sm">
-                  <CheckCircle2 className="h-4 w-4 text-[#1e3525] flex-shrink-0" />
-                  <span className="font-semibold">{item}</span>
-                </div>
+        {/* USE CASES SECTION */}
+        <section className="bg-white/40 border-t border-[#1e3525]/10 px-4 py-20 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[960px]">
+            <h2 className="text-center font-serif text-2xl font-bold text-[#1e3525] mb-4 tracking-tight">
+              Untuk siapa NaLI dibuat?
+            </h2>
+            <p className="mx-auto mb-12 max-w-[480px] text-center text-sm text-[#4a6455] leading-relaxed">
+              Pelajari bagaimana NaLI membantu berbagai profil pengguna.
+            </p>
+            <div className="grid gap-6 sm:grid-cols-3">
+              {useCases.map((uc, i) => (
+                <AnimatedCard key={i} title={uc.title} description={uc.description} index={i} />
               ))}
             </div>
           </div>
         </section>
 
-        {/* WHAT NALI DOES NOT DO SECTION */}
-        <section className="mx-auto max-w-[760px] mb-24">
-          <div className="rounded-2xl border border-red-500/10 bg-red-500/5 p-6 sm:p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <ShieldAlert className="h-6 w-6 text-red-700 flex-shrink-0" />
-              <h2 className="font-serif text-xl font-bold text-red-700">Yang NaLI Tidak Lakukan </h2>
-            </div>
-            <ul className="space-y-4 text-xs text-[#4a6455]">
-              <li className="flex gap-3">
-                <span className="text-red-700 font-bold select-none">&bull;</span>
-                <div>
-                  <strong className="text-[#1e3525] block mb-0.5 font-bold">Tidak melakukan verifikasi lapangan otomatis</strong>
-                  NaLI tidak memverifikasi keberadaan spesies di lapangan secara fisik. Semua klaim berbasis data sepenuhnya bergantung pada kebenaran catatan yang diinput oleh pengguna.
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-red-700 font-bold select-none">&bull;</span>
-                <div>
-                  <strong className="text-[#1e3525] block mb-0.5 font-bold">Tidak memfabrikasi atau mengarang bukti</strong>
-                  NaLI dilarang keras mengarang koordinat geografis, statistik satwa, tanggal observasi, atau bukti ilmiah palsu. Jika bukti tidak disediakan, NaLI akan mencatatnya sebagai &ldquo;bukti yang masih kurang&rdquo;.
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-red-700 font-bold select-none">&bull;</span>
-                <div>
-                  <strong className="text-[#1e3525] block mb-0.5 font-bold">Tidak mengklaim validitas literatur secara mutlak</strong>
-                  Sistem verifikasi literatur (Crossref/NCBI) belum diaktifkan secara otomatis. Pengguna wajib memverifikasi secara mandiri setiap sitasi dan DOI yang tercantum dalam draf.
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-red-700 font-bold select-none">&bull;</span>
-                <div>
-                  <strong className="text-[#1e3525] block mb-0.5 font-bold">Bukan alat joki tugas atau plagiarisme</strong>
-                  NaLI tidak dirancang untuk memotong proses akademik atau mengelabui sistem deteksi plagiarisme. Hasil generator adalah draf bantuan belajar/penulisan berbasis bukti yang wajib diperbaiki dan ditelaah secara kritis oleh pengguna.
-                </div>
-              </li>
-            </ul>
-          </div>
-        </section>
-
         {/* CTA SECTION */}
-        <section className="mx-auto max-w-[760px] text-center">
-          <h2 className="font-serif text-2xl font-bold text-[#1e3525] mb-4">Siap Memulai?</h2>
-          <p className="text-xs text-[#4a6455] mb-8 max-w-[480px] mx-auto leading-relaxed">
-            Mulai draf laporan biodiversitas pertamamu sekarang menggunakan input catatan lapangan atau topik observasi.
-          </p>
-          <div className="flex justify-center">
+        <section className="px-4 py-20 text-center sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[560px]">
+            <h2 className="font-serif text-2xl font-bold text-[#1e3525] mb-4">
+              Siap memulai?
+            </h2>
+            <p className="mb-8 text-sm text-[#4a6455] leading-relaxed">
+              Buat laporan pertamamu sekarang dari catatan lapangan atau data observasi.
+            </p>
             <Link
               href="/create-report"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#1e3525] px-6 text-xs font-bold text-white hover:bg-[#162d1d] transition-all"
+              className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-xl bg-[#1e3525] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#162d1d] sm:w-auto"
             >
-              Mulai Susun Laporan
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              Mulai Buat Laporan
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </section>
