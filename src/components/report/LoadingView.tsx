@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { CheckCircle2 } from "lucide-react";
 
 const WORK_STEPS = [
   "Membaca konteks input",
@@ -16,25 +16,20 @@ const WORK_STEPS = [
 interface LoadingViewProps {
   prompt: string;
   model?: string | null;
+  /** 0-7: which step is currently active based on real stream content */
+  activeStep?: number;
+  /** Accumulated streaming text so far */
+  streamingText?: string;
 }
 
-export function LoadingView({ prompt, model }: LoadingViewProps) {
-  const [activeStep, setActiveStep] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveStep((prev) => {
-        if (prev < WORK_STEPS.length - 1) return prev + 1;
-        clearInterval(interval);
-        return prev;
-      });
-    }, 700);
-    return () => clearInterval(interval);
-  }, []);
+export function LoadingView({ prompt, model, activeStep = 0, streamingText = "" }: LoadingViewProps) {
+  const preview = streamingText.length > 0
+    ? streamingText.slice(-120).replace(/\n+/g, " ").trim()
+    : null;
 
   return (
     <div className="flex flex-col items-center justify-center pt-12 sm:pt-20 max-w-[520px] mx-auto w-full text-center">
-      {/* Pulse logo */}
+      {/* Pulse animation */}
       <div className="relative mb-8">
         <div className="h-14 w-14 rounded-full bg-[#00FFB3]/10 flex items-center justify-center">
           <div className="h-10 w-10 rounded-full bg-[#00FFB3]/20 flex items-center justify-center animate-pulse">
@@ -58,37 +53,55 @@ export function LoadingView({ prompt, model }: LoadingViewProps) {
         </div>
       )}
 
-      {/* Animated steps */}
-      <div className="w-full space-y-2 text-left">
-        {WORK_STEPS.map((step, idx) => (
-          <div
-            key={step}
-            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all duration-500 ${
-              idx === activeStep
-                ? "bg-[#00FFB3]/8 text-[#00FFB3]"
-                : idx < activeStep
-                ? "text-white/50"
-                : "text-white/20"
-            }`}
-          >
-            <span
-              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold transition-colors ${
-                idx < activeStep
-                  ? "bg-[#00FFB3]/20 text-[#00FFB3]"
-                  : idx === activeStep
-                  ? "bg-[#00FFB3]/30 text-[#00FFB3] animate-pulse"
-                  : "bg-white/[0.04] text-white/20"
+      {/* Real-time step list */}
+      <div className="w-full space-y-1.5 text-left">
+        {WORK_STEPS.map((step, idx) => {
+          const isCompleted = idx < activeStep;
+          const isActive = idx === activeStep;
+          const isPending = idx > activeStep;
+
+          return (
+            <div
+              key={step}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all duration-300 ${
+                isActive
+                  ? "bg-[#00FFB3]/8 text-[#00FFB3]"
+                  : isCompleted
+                  ? "text-white/70"
+                  : "text-white/25"
               }`}
             >
-              {idx < activeStep ? "✓" : idx + 1}
-            </span>
-            <span className="text-xs font-medium">{step}</span>
-          </div>
-        ))}
+              {/* Icon */}
+              {isCompleted ? (
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-[#00FFB3]" />
+              ) : isActive ? (
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#00FFB3]/30 animate-pulse">
+                  <span className="h-2 w-2 rounded-full bg-[#00FFB3]" />
+                </span>
+              ) : (
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/[0.10]">
+                  <span className="text-[9px] font-bold text-white/20">{idx + 1}</span>
+                </span>
+              )}
+
+              <span className={`text-xs ${isActive ? "font-semibold" : "font-medium"}`}>
+                {step}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
+      {/* Live streaming text preview */}
+      {preview && (
+        <div className="mt-6 w-full rounded-xl border border-white/[0.06] bg-black/20 px-3 py-2 text-left font-mono text-[10px] text-white/35 leading-relaxed line-clamp-2 overflow-hidden">
+          {preview}
+          <span className="inline-block w-1.5 h-3 bg-[#00FFB3]/50 ml-0.5 animate-pulse align-middle" />
+        </div>
+      )}
+
       {model && (
-        <p className="mt-6 text-[10px] italic text-white/25">
+        <p className="mt-4 text-[10px] italic text-white/25">
           Model: {model}
         </p>
       )}

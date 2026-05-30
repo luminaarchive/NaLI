@@ -236,6 +236,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [usedModel, setUsedModel] = useState<string | null>(null);
   const [newError, setNewError] = useState<string>("Terjadi kesalahan.");
+  // FIX 2: streaming state
+  const [streamingText, setStreamingText] = useState<string>("");
+  const [activeStreamStep, setActiveStreamStep] = useState<number>(0);
 
   // Welcome banner (first login)
   const [showWelcome, setShowWelcome] = useState(false);
@@ -761,16 +764,74 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
   useEffect(() => { refreshHistory(); }, [refreshHistory]);
 
+  // FIX 1D: load session from URL on mount (e.g. /create-report?session=UUID)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sid = params.get("session");
+    if (sid) {
+      handleLoadSession(sid);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleNewReport = useCallback(() => {
     setViewMode("empty");
     setCurrentPrompt(null);
     setCurrentResult(null);
     setCurrentSessionId(null);
     setUsedModel(null);
+    setStreamingText("");
+    setActiveStreamStep(0);
     setMessages([]);
     setReport(null);
     setQuery("");
     setError(null);
+    window.history.pushState({}, "", "/create-report");
+  }, []);
+
+  // Detect which agentic step is active based on streamed markdown content
+  function detectActiveStep(text: string): number {
+    if (text.includes("## Kesimpulan")) return 7;
+    if (text.includes("## Catatan Ketidakpastian")) return 6;
+    if (text.includes("## Tabel Bukti")) return 5;
+    if (text.includes("## Temuan Utama")) return 4;
+    if (text.includes("## Konteks")) return 3;
+    if (text.includes("## Ringkasan")) return 2;
+    if (text.includes("#")) return 1;
+    return 0;
+  }
+
+  // FIX 1: Load a saved session from report_sessions into ResultView
+  const handleLoadSession = useCallback(async (sessionId: string) => {
+    setViewMode("loading");
+    setCurrentResult(null);
+    setCurrentPrompt(null);
+    setStreamingText("");
+    setActiveStreamStep(0);
+
+    try {
+      const { data: session, error: dbError } = await supabase
+        .from("report_sessions")
+        .select("id, title, prompt, result, model_used, created_at")
+        .eq("id", sessionId)
+        .single();
+
+      if (dbError || !session) {
+        setNewError("Laporan tidak ditemukan atau sudah dihapus.");
+        setViewMode("error");
+        return;
+      }
+
+      setCurrentPrompt(session.prompt ?? "");
+      setCurrentResult(session.result ?? "");
+      setCurrentSessionId(session.id);
+      setUsedModel((session as any).model_used ?? "openrouter/free");
+      setViewMode("result");
+      window.history.pushState({}, "", `/create-report?session=${session.id}`);
+    } catch {
+      setNewError("Gagal memuat laporan.");
+      setViewMode("error");
+    }
   }, []);
 
   const handleNewSubmit = useCallback(async (promptText: string) => {
@@ -787,40 +848,59 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     setCurrentPrompt(trimmed);
     setCurrentResult(null);
     setCurrentSessionId(null);
-
-    // Guest: save to localStorage immediately
-    if (!currentUser) {
-      try {
-        const guestSessions = JSON.parse(window.localStorage.getItem("nali_sessions") || "[]");
-        guestSessions.unshift({
-          id: typeof crypto !== "undefined" ? crypto.randomUUID() : `g-${Date.now()}`,
-          title: trimmed.slice(0, 60),
-          prompt: trimmed,
-          created_at: new Date().toISOString(),
-        });
-        window.localStorage.setItem("nali_sessions", JSON.stringify(guestSessions.slice(0, 50)));
-      } catch { /* ignore */ }
-    }
+    setStreamingText("");
+    setActiveStreamStep(0);
+    window.history.pushState({}, "", "/create-report");
 
     try {
       const res = await fetch("/api/generate-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: trimmed, sessionId: null }),
+        body: JSON.stringify({ prompt: trimmed }),
       });
-      const data = await res.json();
 
-      if (!res.ok) {
-        setNewError(data.error || "Terjadi kesalahan.");
+      if (!res.ok || !res.body) {
+        const data = await res.json().catch(() => ({}));
+        setNewError((data as any).error || "Terjadi kesalahan.");
         setViewMode("error");
         return;
       }
 
-      setCurrentResult(data.result);
-      setCurrentSessionId(data.sessionId || null);
-      setUsedModel(data.model || null);
-      setViewMode("result");
-      refreshHistory();
+      // Consume SSE stream
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = "";
+
+      outer: while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        for (const line of chunk.split("\n")) {
+          if (!line.startsWith("data: ")) continue;
+          const raw = line.slice(6).trim();
+          if (!raw) continue;
+
+          try {
+            const parsed = JSON.parse(raw);
+
+            if (parsed.token) {
+              accumulated += parsed.token;
+              setStreamingText(accumulated);
+              setUsedModel(parsed.model ?? null);
+              setActiveStreamStep(detectActiveStep(accumulated));
+            }
+
+            if (parsed.done) {
+              setCurrentResult(accumulated || null);
+              setCurrentSessionId(parsed.sessionId ?? null);
+              setViewMode("result");
+              refreshHistory();
+              break outer;
+            }
+          } catch { /* skip malformed chunks */ }
+        }
+      }
     } catch {
       setNewError("Koneksi bermasalah. Periksa internet kamu.");
       setViewMode("error");
@@ -1566,17 +1646,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           <button
             onClick={() => {
               setSidebarOpen(false);
-              setQuery("");
-              setMessages([]);
-              setReport(null);
-              setActiveRunStatus("idle");
-              setReportStatus("idle");
-              setError(null);
-              setShowManualChecklistDirectly(false);
-              const sessionId = typeof crypto !== "undefined" && "randomUUID" in crypto
-                ? crypto.randomUUID()
-                : `s-${Date.now().toString(36)}`;
-              router.push(`/create-report?session=${sessionId}`);
+              handleNewReport();
             }}
             className="flex w-full items-center justify-center gap-2 rounded-[10px] bg-[#2a2a2a] px-4 py-2.5 text-sm font-semibold text-white/90 transition duration-200 hover:bg-[#333]"
           >
@@ -1648,8 +1718,16 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               sessionHistory.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => setSidebarOpen(false)}
-                  className="flex w-full flex-col gap-0.5 rounded-[10px] px-3.5 py-2 text-left text-sm transition duration-150 hover:bg-white/[0.04]"
+                  onClick={() => {
+                    setSidebarOpen(false);
+                    handleLoadSession(item.id);
+                  }}
+                  className={cn(
+                    "flex w-full flex-col gap-0.5 rounded-[10px] px-3.5 py-2 text-left text-sm transition duration-150 hover:bg-white/[0.05]",
+                    currentSessionId === item.id
+                      ? "border-l-2 border-[#00FFB3] bg-white/[0.08]"
+                      : "",
+                  )}
                 >
                   <span className="truncate font-medium text-white/70">{item.title}</span>
                   <span className="text-[10px] text-white/30">
@@ -1779,7 +1857,12 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           >
             {messages.length === 0 ? (
               viewMode === "loading" ? (
-                <LoadingView prompt={currentPrompt || ""} model={usedModel} />
+                <LoadingView
+                  prompt={currentPrompt || ""}
+                  model={usedModel}
+                  activeStep={activeStreamStep}
+                  streamingText={streamingText}
+                />
               ) : viewMode === "result" ? (
                 <ResultView
                   prompt={currentPrompt || ""}
