@@ -48,6 +48,7 @@ import {
 import { validateComposerInput } from "@/lib/reports/inputValidation";
 import { useDebouncedComposerValidation } from "@/lib/reports/useDebouncedValidation";
 import { generateManualChecklist } from "@/lib/reports/manualFallbackChecklist";
+import { UserProfileButton } from "@/components/UserProfileButton";
 
 // Types matching backend AgentMessage schema
 type AgentMessage = {
@@ -220,6 +221,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const [user, setUser] = useState<any>(null);
   const [userLoading, setUserLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [migrationToast, setMigrationToast] = useState(false);
+  const migrationShownRef = useRef(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -227,13 +230,31 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       setUserLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      // Show migration toast once when user signs in and has local threads
+      if (event === "SIGNED_IN" && !migrationShownRef.current) {
+        try {
+          const stored = window.localStorage.getItem("nali-threads");
+          const threads = stored ? JSON.parse(stored) : [];
+          if (threads.length > 0) {
+            migrationShownRef.current = true;
+            setMigrationToast(true);
+          }
+        } catch { /* ignore */ }
+      }
     });
 
     return () => {
       subscription.unsubscribe();
     };
+  }, []);
+
+  // Listen for open-sidebar-history custom event from UserProfileButton
+  useEffect(() => {
+    const handler = () => setSidebarOpen(true);
+    window.addEventListener("nali:open-sidebar-history", handler);
+    return () => window.removeEventListener("nali:open-sidebar-history", handler);
   }, []);
 
   useEffect(() => {
@@ -1619,25 +1640,11 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               {selectedMode === "start_from_zero" ? "Panduan Awal" : "Laporan NaLI"}
             </span>
 
-            {/* Auth display top-right */}
-            {!userLoading && (
-              user ? (
-                <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#00FFB3]/20 text-[11px] font-bold text-[#00FFB3]">
-                    {(user.email?.[0] ?? "U").toUpperCase()}
-                  </div>
-                </div>
-              ) : (
-                <Link
-                  href={`/login?next=${encodeURIComponent(
-                    report?.id ? `/report/${report.id}` : "/create-report"
-                  )}`}
-                  className="inline-flex h-8 items-center rounded-lg border border-white/[0.08] px-3 text-xs font-semibold text-white/60 transition hover:text-white hover:border-white/20"
-                >
-                  Masuk
-                </Link>
-              )
-            )}
+            <UserProfileButton
+              loginHref={`/login?next=${encodeURIComponent(
+                report?.id ? `/report/${report.id}` : "/create-report"
+              )}`}
+            />
           </div>
         </header>
 
@@ -2374,11 +2381,44 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       {toast && (
         <div className={cn(
           "fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl border px-4 py-3 shadow-xl backdrop-blur-xl transition-all duration-300",
-          toast.type === "success" 
+          toast.type === "success"
             ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
             : "border-red-500/20 bg-red-500/10 text-red-300"
         )}>
           <span>{toast.message}</span>
+        </div>
+      )}
+
+      {/* Migration toast: offer to move local history to account */}
+      {migrationToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[calc(100vw-48px)] rounded-2xl border border-white/[0.12] bg-[#1a1a1a] px-5 py-4 shadow-2xl">
+          <p className="text-sm font-semibold text-white mb-1">Pindahkan riwayat lokal ke akun?</p>
+          <p className="text-xs text-white/50 mb-4">Riwayat laporan lokal di perangkat ini bisa disimpan ke akun kamu.</p>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                setMigrationToast(false);
+                const res = await fetch("/api/auth/link-guest", { method: "POST" });
+                const data = await res.json();
+                if (data.success) {
+                  setToast({ message: "Riwayat berhasil dipindahkan ke akun.", type: "success" });
+                  loadRecentThreads();
+                } else {
+                  setToast({ message: "Gagal memindahkan riwayat.", type: "error" });
+                }
+                setTimeout(() => setToast(null), 4000);
+              }}
+              className="flex-1 rounded-xl bg-[#00FFB3] px-3 py-2 text-xs font-bold text-[#050F12] transition hover:bg-[#00FFB3]/90"
+            >
+              Ya, pindahkan
+            </button>
+            <button
+              onClick={() => setMigrationToast(false)}
+              className="flex-1 rounded-xl border border-white/[0.08] px-3 py-2 text-xs font-semibold text-white/50 transition hover:text-white"
+            >
+              Biarkan lokal
+            </button>
+          </div>
         </div>
       )}
 

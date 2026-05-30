@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { NaLILogo } from "@/components/ui/NaLILogo";
+import { UserProfileButton } from "@/components/UserProfileButton";
 import {
   BookOpen,
   Clipboard,
@@ -228,20 +229,7 @@ export default function AgentPage() {
             <span className="text-sm font-semibold text-white/80">NaLI Agent</span>
           </div>
           <div className="flex items-center gap-2">
-            {!userLoading && (
-              user ? (
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#00FFB3]/20 text-[11px] font-bold text-[#00FFB3]">
-                  {(user.email?.[0] ?? "U").toUpperCase()}
-                </div>
-              ) : (
-                <Link
-                  href="/login"
-                  className="inline-flex h-8 items-center rounded-lg border border-white/[0.08] px-3 text-xs font-semibold text-white/60 transition hover:text-white hover:border-white/20"
-                >
-                  Masuk
-                </Link>
-              )
-            )}
+            <UserProfileButton />
           </div>
         </header>
 
