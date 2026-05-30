@@ -1,32 +1,46 @@
 import type { Metadata } from "next";
-import { SpeciesClient } from "@/components/report/SpeciesClient";
+import Link from "next/link";
+import { ArrowRight, Leaf } from "lucide-react";
 import { PublicAppShell } from "@/components/ui/PublicAppShell";
-import { siteMetadata } from "@/lib/seo/siteMetadata";
 
 export const metadata: Metadata = {
-  title: "Inteligensi Spesies | NaLI Wildlife Intelligence",
-  description: "Riset mendalam untuk satwa liar Indonesia. Dapatkan data status konservasi IUCN, sebaran habitat, ancaman, dan rekomendasi aksi.",
-  alternates: {
-    canonical: `${siteMetadata.canonicalBase}/species`,
-  },
+  title: "Inteligensi Spesies | NaLI",
+  description:
+    "Database spesies satwa liar Indonesia dengan status konservasi IUCN, distribusi habitat, dan konteks lokal. Sedang dalam pengembangan.",
+  robots: { index: false, follow: false },
 };
 
 export default function SpeciesPage() {
   return (
     <PublicAppShell>
-      <main className="flex-1 px-4 pt-20 pb-16 sm:px-6 lg:px-8 bg-[#060b08]">
-        <div className="mx-auto max-w-[1040px] text-center">
-          <span className="inline-flex min-h-8 items-center rounded-full border border-[#00FFB3]/25 bg-[#00FFB3]/5 px-3.5 py-1 text-xs font-bold tracking-wider text-[#00FFB3] uppercase">
-            Intelligence Fusion
+      <main className="flex flex-1 flex-col items-center justify-center bg-[#060b08] px-4 py-24 text-[#f5f0e8]">
+        <div className="mx-auto max-w-[480px] text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#00FFB3]/20 bg-[#00FFB3]/5">
+            <Leaf className="h-8 w-8 text-[#00FFB3]/70" />
+          </div>
+
+          <span className="mb-6 inline-flex items-center rounded-full border border-[#00FFB3]/25 bg-[#00FFB3]/5 px-3 py-1 text-xs font-semibold tracking-wider text-[#00FFB3] uppercase">
+            Segera Hadir
           </span>
-          <h1 className="mt-6 text-4xl font-serif font-bold tracking-tight text-[#f5f0e8] sm:text-5xl">
-            Inteligensi Spesies
-          </h1>
-          <p className="mx-auto mt-4 max-w-[620px] text-sm leading-6 text-[#a1b3a8] mb-12">
-            Riset mendalam untuk satwa liar Indonesia. Masukkan nama spesies, kawasan, atau topik konservasi.
+
+          <h1 className="mb-4 font-serif text-3xl font-bold text-[#f5f0e8]">Inteligensi Spesies</h1>
+
+          <p className="mb-8 text-sm leading-relaxed text-[#a1b3a8]">
+            Database spesies satwa liar Indonesia dengan status konservasi IUCN, distribusi habitat, dan konteks lokal.
+            Sedang dalam pengembangan aktif.
           </p>
 
-          <SpeciesClient />
+          <p className="mb-8 text-xs text-[#a1b3a8]/70">
+            Sementara, gunakan NaLI untuk riset spesies via laporan berbasis catatan lapangan kamu.
+          </p>
+
+          <Link
+            href="/create-report"
+            className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[#00FFB3] px-6 text-sm font-semibold text-[#060b08] transition hover:bg-[#00e6a1]"
+          >
+            Buat Laporan Riset Spesies
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </main>
     </PublicAppShell>

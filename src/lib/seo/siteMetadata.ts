@@ -1,36 +1,47 @@
 const rawUrl = process.env.NEXT_PUBLIC_APP_URL || "https://naliai.vercel.app";
-export const siteUrl = rawUrl.includes("verdantai.vercel.app")
-  ? "https://naliai.vercel.app"
-  : rawUrl;
+export const siteUrl = rawUrl.includes("verdantai.vercel.app") ? "https://naliai.vercel.app" : rawUrl;
 
 export const siteMetadata = {
   siteName: "NaLI",
-  productDescriptor: "Nature & Evidence Intelligence OS",
-  defaultTitle: "NaLI - Nature & Evidence Intelligence OS",
-  defaultDescription: "NaLI membantu menyusun draf laporan lingkungan dan observasi berbasis konteks, bukti, dan batasan klaim secara jujur untuk pengguna Indonesia.",
+  productDescriptor: "Laporan lapangan berbasis bukti untuk Indonesia",
+  defaultTitle: "NaLI",
+  defaultDescription:
+    "Ubah catatan lapangan jadi laporan ilmiah dalam menit. Gratis untuk mahasiswa, ranger, dan peneliti Indonesia.",
   canonicalBase: siteUrl,
-  
+
   // Public static routes registry
   routes: {
     home: {
-      title: "NaLI - Nature & Evidence Intelligence OS",
-      description: "Nature & Evidence Intelligence OS. Ubah catatan lapangan, praktikum, dan materi observasi lingkungan menjadi draf laporan terstruktur berbasis bukti secara instan dan jujur.",
+      title: "NaLI",
+      description:
+        "Ubah catatan lapangan jadi laporan ilmiah dalam menit. Gratis untuk mahasiswa, ranger, dan peneliti Indonesia.",
     },
     learnReport: {
-      title: "NaLI Learn & Report - Public Mode Panduan Belajar",
-      description: "Pelajari cara menyusun laporan praktikum, observasi lingkungan, dan kegiatan lapangan dengan evidence table, uncertainty note, dan verifikasi batas bukti secara terstruktur.",
+      title: "NaLI — Panduan",
+      description:
+        "Panduan lengkap cara menggunakan NaLI untuk menyusun laporan lapangan, praktikum biologi, dan laporan KKN berbasis bukti.",
     },
     createReport: {
-      title: "Buat Laporan & Kerangka Observasi - Workspace NaLI",
-      description: "Mulai menyusun draf laporan lingkungan dengan template terstruktur, pengisian konteks opsional (Make It Mine), dan pengawasan kejujuran klaim akademik.",
+      title: "NaLI — Buat Laporan",
+      description:
+        "Buat laporan lapangan berbasis bukti dari catatan observasi, data praktikum, atau hasil survei kamu. Gratis, tanpa format khusus.",
     },
     pricing: {
-      title: "Daftar Paket Laporan Beta - NaLI",
-      description: "Informasi paket Laporan NaLI untuk persiapan rilis berbayar. Pembayaran dan checkout belum aktif .",
+      title: "NaLI — Harga",
+      description:
+        "Mulai gratis dengan 3 laporan per bulan. Upgrade ke Sapling Rp 45.000 atau Forest Keeper Rp 149.000 untuk laporan tak terbatas dan ekspor PDF.",
     },
     fieldIntelligence: {
-      title: "Field Intelligence & Observasi Lapangan Profesional - NaLI",
-      description: "Informasi roadmap Layer Profesional NaLI. Deteksi jenis satwa, Darwin Core export compliance, dan integrasi spatial PostGIS/H3 saat ini belum aktif.",
+      title: "NaLI — Field Intelligence",
+      description: "Layer profesional NaLI untuk ranger, peneliti, dan tim konservasi. Dalam pengembangan aktif.",
+    },
+    fieldNotes: {
+      title: "NaLI — Catatan Lapangan",
+      description: "Dokumentasikan catatan lapangan dan observasi lapangan kamu secara terstruktur dengan NaLI.",
+    },
+    signup: {
+      title: "NaLI — Daftar",
+      description: "Buat akun NaLI gratis. Mulai dokumentasi lapangan dan laporan ilmiah berbasis bukti.",
     },
   },
 

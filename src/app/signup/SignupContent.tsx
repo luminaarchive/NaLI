@@ -7,90 +7,113 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { NaLILogoMark } from "@/components/ui/NaLILogo";
 
-function LoginForm() {
+function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/create-report";
-  const linkGuest = searchParams.get("linkGuest") || "";
-  const callbackError = searchParams.get("error");
 
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [error, setError] = useState<string | null>(
-    callbackError === "confirmation_failed"
-      ? "Konfirmasi akun gagal. Coba klik link di email lagi atau daftar ulang."
-      : null,
-  );
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
 
-  const handleLogin = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password !== confirm) {
+      setError("Kata sandi tidak cocok.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Kata sandi minimal 8 karakter.");
+      return;
+    }
     setLoading(true);
     setError(null);
 
-    const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
-    if (loginError) {
-      const msg = loginError.message.toLowerCase();
-      if (msg.includes("email not confirmed") || msg.includes("not confirmed")) {
-        setError("Email kamu belum dikonfirmasi. Cek inbox atau folder spam kamu.");
-      } else {
-        setError("Email atau password salah. Coba lagi.");
-      }
+    const { error: signupError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullName },
+      },
+    });
+
+    if (signupError) {
+      const isDuplicate =
+        signupError.message.toLowerCase().includes("already registered") ||
+        signupError.message.toLowerCase().includes("already exists") ||
+        (signupError as any).status === 400;
+      setError(isDuplicate ? "DUPLICATE_EMAIL" : signupError.message);
       setLoading(false);
       return;
     }
 
-    // Redirect to next path (default: /create-report), appending linkGuest if set
-    const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/create-report";
-    const redirectUrl = linkGuest ? `${safeNext}${safeNext.includes("?") ? "&" : "?"}linkGuest=1` : safeNext;
-    router.replace(redirectUrl);
-    router.refresh();
+    setSuccess(true);
+    setLoading(false);
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleSignup = async () => {
     setError(null);
     setGoogleLoading(true);
-
-    const redirectPath = linkGuest ? `${next}${next.includes("?") ? "&" : "?"}linkGuest=1` : next;
 
     try {
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectPath)}`,
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
           queryParams: {
             access_type: "offline",
             prompt: "consent",
           },
         },
       });
-
       if (oauthError) {
-        setError("Login Google gagal. Coba lagi.");
+        setError("Daftar dengan Google gagal. Coba lagi.");
         setGoogleLoading(false);
       }
     } catch {
-      setError("Login Google gagal. Coba lagi.");
+      setError("Daftar dengan Google gagal. Coba lagi.");
       setGoogleLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <div className="relative w-full max-w-[400px] rounded-3xl border border-white/[0.06] bg-white/[0.02] p-8 text-center shadow-2xl backdrop-blur-md">
+        <NaLILogoMark size={48} variant="light" className="mx-auto mb-6" />
+        <h1 className="mb-3 font-serif text-2xl font-semibold text-white">Cek email kamu</h1>
+        <p className="mb-4 text-sm leading-relaxed text-white/60">
+          Kami sudah kirim link konfirmasi ke <span className="font-medium text-white">{email}</span>. Klik link itu
+          untuk mengaktifkan akun kamu.
+        </p>
+        <p className="mb-6 text-xs text-white/35">Tidak dapat email? Cek folder spam.</p>
+        <Link
+          href="/"
+          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-white px-6 text-sm font-semibold text-[#09090b] transition hover:bg-white/90"
+        >
+          Kembali ke beranda
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full max-w-[400px] rounded-none border-0 border-white/[0.06] bg-white/[0.02] p-6 shadow-2xl backdrop-blur-md sm:rounded-3xl sm:border sm:p-8">
       <div className="mb-8 flex flex-col items-center text-center">
         <NaLILogoMark size={48} variant="light" className="mb-4" />
-        <h1 className="font-serif text-2xl font-semibold tracking-wide text-white">Masuk ke NaLI</h1>
-        <p className="mt-2 text-xs leading-relaxed text-white/50">
-          Lanjutkan laporan, catatan, dan riwayat kerja berbasis bukti.
-        </p>
+        <h1 className="font-serif text-2xl font-semibold tracking-wide text-white">Buat Akun NaLI</h1>
+        <p className="mt-2 text-xs leading-relaxed text-white/50">Mulai dokumentasi lapangan kamu</p>
       </div>
 
       <div className="space-y-4">
-        {/* Google OAuth (Primary) */}
         <button
-          onClick={handleGoogleLogin}
+          onClick={handleGoogleSignup}
           disabled={googleLoading || loading}
           className="flex min-h-12 w-full items-center justify-center gap-3 rounded-lg border border-white/[0.12] bg-white text-sm font-semibold text-[#1f1f1f] transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
         >
@@ -120,13 +143,26 @@ function LoginForm() {
         </button>
 
         <div className="my-4 flex items-center">
-          <div className="flex-grow border-t border-white/[0.06]"></div>
+          <div className="flex-grow border-t border-white/[0.06]" />
           <span className="px-3 text-[10px] font-medium tracking-widest text-white/35 uppercase">atau</span>
-          <div className="flex-grow border-t border-white/[0.06]"></div>
+          <div className="flex-grow border-t border-white/[0.06]" />
         </div>
 
-        {/* Email Password Form */}
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleSignup} className="space-y-3">
+          <div>
+            <label className="mb-1.5 block text-[10px] font-semibold tracking-[0.1em] text-white/40 uppercase">
+              Nama Lengkap
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="Nama lengkap"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="min-h-11 w-full rounded-xl border border-white/[0.08] bg-white/[0.02] px-3.5 text-[16px] leading-snug text-white placeholder-white/20 transition focus:border-white/20 focus:outline-none"
+            />
+          </div>
+
           <div>
             <label className="mb-1.5 block text-[10px] font-semibold tracking-[0.1em] text-white/40 uppercase">
               Email
@@ -144,14 +180,15 @@ function LoginForm() {
 
           <div>
             <label className="mb-1.5 block text-[10px] font-semibold tracking-[0.1em] text-white/40 uppercase">
-              Kata Sandi
+              Kata Sandi (Min. 8 Karakter)
             </label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
-                autoComplete="current-password"
+                autoComplete="new-password"
                 required
-                placeholder="••••••••"
+                minLength={8}
+                placeholder="Min. 8 karakter"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="min-h-11 w-full rounded-xl border border-white/[0.08] bg-white/[0.02] pr-11 pl-3.5 text-[16px] leading-snug text-white placeholder-white/20 transition focus:border-white/20 focus:outline-none"
@@ -162,14 +199,49 @@ function LoginForm() {
                 aria-label="Tampilkan kata sandi"
                 className="absolute top-1/2 right-3.5 -translate-y-1/2 text-white/40 hover:text-white"
               >
-                {showPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-[10px] font-semibold tracking-[0.1em] text-white/40 uppercase">
+              Konfirmasi Kata Sandi
+            </label>
+            <div className="relative">
+              <input
+                type={showConfirm ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                minLength={8}
+                placeholder="Ulangi kata sandi"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                className="min-h-11 w-full rounded-xl border border-white/[0.08] bg-white/[0.02] pr-11 pl-3.5 text-[16px] leading-snug text-white placeholder-white/20 transition focus:border-white/20 focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm(!showConfirm)}
+                aria-label="Tampilkan konfirmasi"
+                className="absolute top-1/2 right-3.5 -translate-y-1/2 text-white/40 hover:text-white"
+              >
+                {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
 
           {error && (
             <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-400">
-              {error === "BLOCKED BY DASHBOARD CONFIG" ? "Login Google belum dikonfigurasi. Hubungi admin." : error}
+              {error === "DUPLICATE_EMAIL" ? (
+                <span>
+                  Email ini sudah terdaftar. Silakan masuk dengan akun yang ada.{" "}
+                  <Link href="/login" className="font-semibold text-red-300 underline underline-offset-2">
+                    Masuk sekarang
+                  </Link>
+                </span>
+              ) : (
+                error
+              )}
             </div>
           )}
 
@@ -179,25 +251,22 @@ function LoginForm() {
             className="flex min-h-12 w-full items-center justify-center gap-3 rounded-xl bg-white text-sm font-semibold text-[#09090b] transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            Masuk
+            Daftar
           </button>
         </form>
       </div>
 
-      <p className="mt-8 text-center text-xs text-white/40">
-        Belum punya akun?{" "}
-        <Link
-          href={`/register?next=${encodeURIComponent(next)}${linkGuest ? `&linkGuest=${linkGuest}` : ""}`}
-          className="font-semibold text-white underline-offset-4 hover:underline"
-        >
-          Buat akun
+      <p className="mt-6 text-center text-xs text-white/40">
+        Sudah punya akun?{" "}
+        <Link href="/login" className="font-semibold text-white underline-offset-4 hover:underline">
+          Masuk
         </Link>
       </p>
     </div>
   );
 }
 
-export default function LoginPage() {
+export function SignupContent() {
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#050F12] px-4 text-[#f5f0e8] sm:px-6">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(20,53,37,0.15)_0%,rgba(0,0,0,0)_70%)]" />
@@ -215,12 +284,12 @@ export default function LoginPage() {
       </div>
       <Suspense
         fallback={
-          <div className="relative flex min-h-[400px] w-full max-w-[400px] items-center justify-center rounded-3xl border border-white/[0.06] bg-white/[0.02] p-8 shadow-2xl backdrop-blur-md">
+          <div className="relative flex min-h-[400px] w-full max-w-[400px] items-center justify-center rounded-3xl border border-white/[0.06] bg-white/[0.02] p-8">
             <Loader2 className="h-6 w-6 animate-spin text-white/40" />
           </div>
         }
       >
-        <LoginForm />
+        <SignupForm />
       </Suspense>
     </main>
   );

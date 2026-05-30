@@ -87,11 +87,13 @@ export default async function RootLayout({
         <link rel="icon" href="/icon.svg?v=3" type="image/svg+xml" />
         <link rel="shortcut icon" href="/favicon.ico?v=3" />
         <link rel="apple-touch-icon" href="/apple-icon.png?v=3" />
-        <meta name="theme-color" content="#f5f0e8" />
+        <meta name="theme-color" content="#050F12" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
-      <body className={`${lora.variable} ${plusJakartaSans.variable} flex min-h-screen flex-col overflow-x-hidden bg-background text-foreground font-sans antialiased`}>
+      <body
+        className={`${lora.variable} ${plusJakartaSans.variable} bg-background text-foreground flex min-h-screen flex-col overflow-x-hidden font-sans antialiased`}
+      >
         <I18nProvider initialLanguage={language}>{children}</I18nProvider>
       </body>
     </html>

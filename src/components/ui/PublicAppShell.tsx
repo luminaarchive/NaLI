@@ -14,6 +14,12 @@ interface PublicAppShellProps {
   isHomepage?: boolean;
 }
 
+const NAV_LINKS = [
+  { href: "/create-report", label: "Buat Laporan" },
+  { href: "/field-notes", label: "Catatan" },
+  { href: "/learn-report", label: "Panduan" },
+  { href: "/pricing", label: "Harga" },
+] as const;
 
 export function PublicAppShell({ children, isHomepage = false }: PublicAppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -31,87 +37,41 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
       <header
         className={cn(
           "sticky top-0 z-50 flex h-14 items-center border-b backdrop-blur-sm",
-          isHomepage
-            ? "border-[#1e3525]/10 bg-[#f5f0e8]/95"
-            : "border-[#14261c] bg-[#060b08]/95",
+          isHomepage ? "border-[#1e3525]/10 bg-[#f5f0e8]/95" : "border-[#14261c] bg-[#060b08]/95",
         )}
       >
         <div className="mx-auto flex h-full w-full max-w-[1120px] items-center justify-between px-4 sm:px-6">
           <NaLILogo size={30} variant={logoVariant} />
 
+          {/* Desktop nav */}
           <nav aria-label="Navigasi utama" className="hidden items-center gap-6 md:flex">
-            <Link
-              className={cn(
-                "text-sm transition-colors font-medium",
-                isHomepage
-                  ? "text-[#1e3525]/65 hover:text-[#1e3525]"
-                  : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
-              )}
-              href="/create-report"
-            >
-              Buat Laporan
-            </Link>
-
-            <Link
-              className={cn(
-                "text-sm transition-colors font-medium",
-                isHomepage
-                  ? "text-[#1e3525]/65 hover:text-[#1e3525]"
-                  : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
-              )}
-              href="/field-notes"
-            >
-              Catatan
-            </Link>
-
-            <Link
-              className={cn(
-                "text-sm transition-colors font-medium",
-                isHomepage
-                  ? "text-[#1e3525]/65 hover:text-[#1e3525]"
-                  : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
-              )}
-              href="/pricing"
-            >
-              Harga
-            </Link>
-
-            <Link
-              className={cn(
-                "text-sm transition-colors font-medium",
-                isHomepage
-                  ? "text-[#1e3525]/65 hover:text-[#1e3525]"
-                  : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
-              )}
-              href="/learn-report"
-            >
-              Panduan
-            </Link>
-
-            <Link
-              className={cn(
-                "text-sm transition-colors font-medium",
-                isHomepage
-                  ? "text-[#1e3525]/65 hover:text-[#1e3525]"
-                  : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
-              )}
-              href="/#status"
-            >
-              Status
-            </Link>
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                className={cn(
+                  "text-sm font-medium transition-colors",
+                  isHomepage ? "text-[#1e3525]/65 hover:text-[#1e3525]" : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
+                )}
+                href={link.href}
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
 
+          {/* Desktop right: profile + CTA */}
           <div className="hidden items-center gap-3 md:flex">
             <UserProfileButton />
             <Link
-              className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#1e3525] px-4 text-sm font-medium text-[#f5f0e8] transition-colors hover:bg-[#162d1d]"
+              className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#1e3525] px-4 text-sm font-semibold text-[#f5f0e8] transition-colors hover:bg-[#162d1d]"
               href="/create-report"
             >
-              Mulai Susun Laporan
+              Mulai Gratis
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </div>
 
+          {/* Mobile hamburger */}
           <Sheet onOpenChange={setMobileOpen} open={mobileOpen}>
             <SheetTrigger asChild>
               <Button
@@ -137,74 +97,27 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
                 <SheetDescription className="sr-only">Navigasi halaman publik NaLI</SheetDescription>
               </SheetHeader>
               <nav aria-label="Navigasi seluler" className="flex flex-col gap-1 px-4 pt-3">
-                <Link
-                  className={cn(
-                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors",
-                    isHomepage
-                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
-                      : "text-[#f5f0e8] hover:bg-white/5",
-                  )}
-                  href="/create-report"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Buat Laporan
-                </Link>
-                <Link
-                  className={cn(
-                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors",
-                    isHomepage
-                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
-                      : "text-[#f5f0e8] hover:bg-white/5",
-                  )}
-                  href="/field-notes"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  📝 Catatan Lapangan
-                </Link>
-                <Link
-                  className={cn(
-                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors",
-                    isHomepage
-                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
-                      : "text-[#f5f0e8] hover:bg-white/5",
-                  )}
-                  href="/pricing"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Harga
-                </Link>
-                <Link
-                  className={cn(
-                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors",
-                    isHomepage
-                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
-                      : "text-[#f5f0e8] hover:bg-white/5",
-                  )}
-                  href="/learn-report"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Panduan
-                </Link>
-                <Link
-                  className={cn(
-                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors",
-                    isHomepage
-                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
-                      : "text-[#f5f0e8] hover:bg-white/5",
-                  )}
-                  href="/#status"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Status
-                </Link>
+                {NAV_LINKS.map((link) => (
+                  <Link
+                    key={link.href}
+                    className={cn(
+                      "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors",
+                      isHomepage ? "text-[#1e3525] hover:bg-[#1e3525]/5" : "text-[#f5f0e8] hover:bg-white/5",
+                    )}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
                 <div className="mt-5 flex flex-col gap-2 border-t border-current/10 pt-5">
                   <UserProfileButton />
                   <Link
-                    className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[#1e3525] px-4 text-sm font-medium text-[#f5f0e8]"
+                    className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[#1e3525] px-4 text-sm font-semibold text-[#f5f0e8]"
                     href="/create-report"
                     onClick={() => setMobileOpen(false)}
                   >
-                    Mulai Susun Laporan
+                    Mulai Gratis
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </Link>
                 </div>
@@ -221,8 +134,8 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
           <div className="mb-8 border-b border-[#f5f0e8]/10 pb-8">
             <NaLILogo size={30} variant="light" />
             <p className="mt-3 max-w-[380px] text-sm leading-6 text-[#f5f0e8]/60">
-              Nature Life Intelligence and Human Assistance. Draft laporan berbasis bahan pengguna. Batas bukti
-              tetap terlihat dan pemeriksaan akhir tetap milik pengguna.
+              Laporan lapangan berbasis bukti untuk Indonesia. Draft berbasis bahan pengguna, batas bukti transparan,
+              pemeriksaan akhir milik pengguna.
             </p>
           </div>
 
@@ -239,21 +152,19 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
             <FooterGroup
               label="NaLI"
               links={[
-                { href: "/learn-report", label: "Evidence Boundary" },
-                { href: "/learn-report", label: "Integritas Akademik" },
-                { href: "/privacy", label: "Privacy" },
+                { href: "/learn-report", label: "Cara Kerja" },
+                { href: "/privacy", label: "Kebijakan Privasi" },
               ]}
             />
             <div>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[#00FFB3]/80">Status Rilis</p>
+              <p className="mb-3 text-xs font-semibold tracking-widest text-[#00FFB3]/80 uppercase">Status</p>
               <div className="flex flex-col gap-2 text-sm text-[#f5f0e8]/60">
-                <span>Pembayaran belum aktif</span>
-                <span>Upload belum aktif</span>
-                <span>Source verification belum aktif</span>
+                <span>Pembayaran dalam proses</span>
+                <span>Source verification segera hadir</span>
               </div>
             </div>
             <div>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[#00FFB3]/80">NatIve</p>
+              <p className="mb-3 text-xs font-semibold tracking-widest text-[#00FFB3]/80 uppercase">NatIve</p>
               <p className="text-sm leading-6 text-[#f5f0e8]/60">
                 Mendorong keadilan bukti di ekosistem konservasi Indonesia.
               </p>
@@ -273,7 +184,7 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
 function FooterGroup({ label, links }: { label: string; links: ReadonlyArray<{ href: string; label: string }> }) {
   return (
     <div>
-      <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[#00FFB3]/80">{label}</p>
+      <p className="mb-3 text-xs font-semibold tracking-widest text-[#00FFB3]/80 uppercase">{label}</p>
       <nav aria-label={label} className="flex flex-col gap-1">
         {links.map((link) => (
           <Link
