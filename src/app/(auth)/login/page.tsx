@@ -78,7 +78,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="relative w-full max-w-[400px] rounded-3xl border border-white/[0.06] bg-white/[0.02] p-8 shadow-2xl backdrop-blur-md">
+    <div className="relative w-full max-w-[400px] rounded-none sm:rounded-3xl border-0 sm:border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8 shadow-2xl backdrop-blur-md">
       <div className="flex flex-col items-center text-center mb-8">
         <NaLILogoMark size={48} variant="light" className="mb-4" />
         <h1 className="font-serif text-2xl font-semibold text-white tracking-wide">Masuk ke NaLI</h1>
@@ -126,7 +126,7 @@ function LoginForm() {
               placeholder="nama@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full min-h-11 rounded-xl border border-white/[0.08] bg-white/[0.02] px-3.5 text-sm text-white placeholder-white/20 transition focus:border-white/20 focus:outline-none"
+              className="w-full min-h-11 rounded-xl border border-white/[0.08] bg-white/[0.02] px-3.5 text-[16px] leading-snug text-white placeholder-white/20 transition focus:border-white/20 focus:outline-none"
             />
           </div>
 
@@ -142,7 +142,7 @@ function LoginForm() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full min-h-11 rounded-xl border border-white/[0.08] bg-white/[0.02] pl-3.5 pr-11 text-sm text-white placeholder-white/20 transition focus:border-white/20 focus:outline-none"
+                className="w-full min-h-11 rounded-xl border border-white/[0.08] bg-white/[0.02] pl-3.5 pr-11 text-[16px] leading-snug text-white placeholder-white/20 transition focus:border-white/20 focus:outline-none"
               />
               <button
                 type="button"
@@ -187,7 +187,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen bg-[#050a07] text-[#f5f0e8] flex items-center justify-center px-4 relative overflow-hidden">
+    <main className="min-h-screen bg-[#050a07] text-[#f5f0e8] flex items-center justify-center px-4 sm:px-6 relative overflow-hidden">
       {/* Decorative premium radial gradient background */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(20,53,37,0.15)_0%,rgba(0,0,0,0)_70%)] pointer-events-none" />
       

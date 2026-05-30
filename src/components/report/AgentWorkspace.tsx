@@ -1689,10 +1689,20 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   return (
     <div className="relative flex min-h-screen w-screen overflow-hidden bg-[#191919] text-[#f5f0e8]">
 
+      {/* Mobile overlay backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* --- Sidebar --- */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-[250px] flex-col border-r border-white/[0.07] bg-[#191919] transition-transform duration-300 md:static md:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex flex-col border-r border-white/[0.07] bg-[#191919] transition-transform duration-300 md:static md:translate-x-0",
+          "w-[85vw] max-w-[320px] md:w-[250px]",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -1903,7 +1913,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 font-mono text-[11px] font-semibold text-white/55">
+            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 font-mono text-[11px] font-semibold text-white/55">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
               {selectedMode === "start_from_zero" ? "Panduan Awal" : "Laporan NaLI"}
             </span>

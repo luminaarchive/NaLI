@@ -194,11 +194,12 @@ export default function FieldNotesPage() {
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="rounded-xl bg-[#1e3525] text-white hover:bg-[#162d1d] flex items-center gap-2 cursor-pointer">
+              {/* Desktop button */}
+              <Button className="hidden sm:flex rounded-xl bg-[#1e3525] text-white hover:bg-[#162d1d] items-center gap-2 cursor-pointer">
                 <Plus className="h-4 w-4" /> Catatan Baru
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-white border border-[#1e3525]/12 rounded-2xl text-[#1e3525] w-full max-w-[calc(100vw-32px)] sm:max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+            <DialogContent className="bg-white border-0 sm:border border-[#1e3525]/12 rounded-none sm:rounded-2xl text-[#1e3525] w-full max-w-full sm:max-w-lg h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto shadow-2xl m-0 sm:m-auto">
               <DialogHeader>
                 <DialogTitle className="font-serif text-[#1e3525]">Catatan Lapangan Baru</DialogTitle>
               </DialogHeader>
@@ -311,6 +312,15 @@ export default function FieldNotesPage() {
           </div>
         )}
       </div>
+
+      {/* Mobile FAB - only visible on small screens */}
+      <button
+        onClick={() => setDialogOpen(true)}
+        className="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#1e3525] text-white shadow-[0_4px_20px_rgba(30,53,37,0.25)] transition hover:bg-[#162d1d] sm:hidden z-50"
+        aria-label="Catatan Baru"
+      >
+        <Plus className="h-6 w-6" />
+      </button>
     </PublicAppShell>
   );
 }
