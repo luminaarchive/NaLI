@@ -39,6 +39,7 @@ export function ResultView({
   const [promptExpanded, setPromptExpanded] = useState(false);
   const [isPDFGenerating, setIsPDFGenerating] = useState(false);
   const [followUpError, setFollowUpError] = useState<string | null>(null);
+  const [isFollowUpStreaming, setIsFollowUpStreaming] = useState(false);
 
   const generatedAt = new Date().toLocaleString("id-ID", {
     day: "2-digit",
@@ -92,6 +93,7 @@ export function ResultView({
   // FollowUpComposer handlers
   const handleStreamStart = (userMsg: ConversationMessage) => {
     setFollowUpError(null);
+    setIsFollowUpStreaming(true);
     const emptyAssistant: ConversationMessage = {
       role: "assistant",
       content: "",
@@ -112,10 +114,12 @@ export function ResultView({
   };
 
   const handleStreamDone = (finalSessionId: string | null) => {
+    setIsFollowUpStreaming(false);
     if (finalSessionId) onSessionIdUpdate(finalSessionId);
   };
 
   const handleFollowUpError = (msg: string) => {
+    setIsFollowUpStreaming(false);
     setFollowUpError(msg);
     // Remove the optimistic empty assistant message
     onConversationUpdate((prev: ConversationMessage[]) => {
@@ -235,7 +239,10 @@ export function ResultView({
       </div>
 
       {/* Conversation thread (follow-ups after messages[2]) */}
-      <ConversationThread messages={conversationMessages} />
+      <ConversationThread
+        messages={conversationMessages}
+        isLastMessageStreaming={isFollowUpStreaming}
+      />
 
       {/* Error from follow-up */}
       {followUpError && (
