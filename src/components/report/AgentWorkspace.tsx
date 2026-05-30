@@ -49,6 +49,10 @@ import { validateComposerInput } from "@/lib/reports/inputValidation";
 import { useDebouncedComposerValidation } from "@/lib/reports/useDebouncedValidation";
 import { generateManualChecklist } from "@/lib/reports/manualFallbackChecklist";
 import { UserProfileButton } from "@/components/UserProfileButton";
+import { LoadingView } from "@/components/report/LoadingView";
+import { ResultView } from "@/components/report/ResultView";
+import { ErrorView } from "@/components/report/ErrorView";
+import { EmptyState } from "@/components/report/EmptyState";
 
 // Types matching backend AgentMessage schema
 type AgentMessage = {
@@ -223,6 +227,27 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [migrationToast, setMigrationToast] = useState(false);
   const migrationShownRef = useRef(false);
+
+  // New view-mode state for Sprint 2-4
+  type ViewMode = "empty" | "loading" | "result" | "error";
+  const [viewMode, setViewMode] = useState<ViewMode>("empty");
+  const [currentPrompt, setCurrentPrompt] = useState<string | null>(null);
+  const [currentResult, setCurrentResult] = useState<string | null>(null);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [usedModel, setUsedModel] = useState<string | null>(null);
+  const [newError, setNewError] = useState<string>("Terjadi kesalahan.");
+
+  // Welcome banner (first login)
+  const [showWelcome, setShowWelcome] = useState(false);
+  useEffect(() => {
+    if (user && !userLoading) {
+      const welcomed = window.localStorage.getItem("nali_welcomed");
+      if (!welcomed) setShowWelcome(true);
+    }
+  }, [user, userLoading]);
+
+  // Session history from report_sessions table
+  const [sessionHistory, setSessionHistory] = useState<Array<{ id: string; title: string; created_at: string }>>([]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -716,18 +741,102 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     }, 2800);
   };
 
-  const handleInitialSubmit = async (e?: FormEvent, retryQuery?: string) => {
-    if (e) e.preventDefault();
-    const trimmed = (retryQuery !== undefined ? retryQuery : query).trim();
+  // Sprint 2-4: refresh history from report_sessions
+  const refreshHistory = useCallback(async () => {
+    try {
+      if (user) {
+        const { data } = await supabase
+          .from("report_sessions")
+          .select("id, title, created_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(30);
+        setSessionHistory(data || []);
+      } else {
+        const stored = JSON.parse(window.localStorage.getItem("nali_sessions") || "[]");
+        setSessionHistory(stored);
+      }
+    } catch { /* ignore */ }
+  }, [user]);
+
+  useEffect(() => { refreshHistory(); }, [refreshHistory]);
+
+  const handleNewReport = useCallback(() => {
+    setViewMode("empty");
+    setCurrentPrompt(null);
+    setCurrentResult(null);
+    setCurrentSessionId(null);
+    setUsedModel(null);
+    setMessages([]);
+    setReport(null);
+    setQuery("");
+    setError(null);
+  }, []);
+
+  const handleNewSubmit = useCallback(async (promptText: string) => {
+    const trimmed = promptText.trim();
     if (!trimmed) return;
 
-    // Client-side auth guard: middleware protects the route but double-check here
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     if (!currentUser) {
       router.push("/login?next=/create-report");
       return;
     }
 
+    setViewMode("loading");
+    setCurrentPrompt(trimmed);
+    setCurrentResult(null);
+    setCurrentSessionId(null);
+
+    // Guest: save to localStorage immediately
+    if (!currentUser) {
+      try {
+        const guestSessions = JSON.parse(window.localStorage.getItem("nali_sessions") || "[]");
+        guestSessions.unshift({
+          id: typeof crypto !== "undefined" ? crypto.randomUUID() : `g-${Date.now()}`,
+          title: trimmed.slice(0, 60),
+          prompt: trimmed,
+          created_at: new Date().toISOString(),
+        });
+        window.localStorage.setItem("nali_sessions", JSON.stringify(guestSessions.slice(0, 50)));
+      } catch { /* ignore */ }
+    }
+
+    try {
+      const res = await fetch("/api/generate-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: trimmed, sessionId: null }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setNewError(data.error || "Terjadi kesalahan.");
+        setViewMode("error");
+        return;
+      }
+
+      setCurrentResult(data.result);
+      setCurrentSessionId(data.sessionId || null);
+      setUsedModel(data.model || null);
+      setViewMode("result");
+      refreshHistory();
+    } catch {
+      setNewError("Koneksi bermasalah. Periksa internet kamu.");
+      setViewMode("error");
+    }
+  }, [router, refreshHistory]);
+
+  const handleInitialSubmit = async (e?: FormEvent, retryQuery?: string) => {
+    if (e) e.preventDefault();
+    const trimmed = (retryQuery !== undefined ? retryQuery : query).trim();
+    if (!trimmed) return;
+    setQuery("");
+    await handleNewSubmit(trimmed);
+  };
+
+  // Legacy path kept for existing report/id follow-up flows
+  const _handleLegacyInitialSubmit = async (trimmed: string) => {
     setError(null);
     setNotice(null);
     setLastAttemptedQuery(trimmed);
@@ -908,7 +1017,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     } finally {
       setOptimisticSteps([]);
       setActiveRunStatus("idle");
-      setQuery("");
     }
   };
 
@@ -1531,26 +1639,31 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             {user ? "Tersimpan di akun kamu" : "Tersimpan di perangkat ini"}
           </p>
           {user ? (
-            recentThreads.length === 0 ? (
-              <p className="px-3.5 py-4 text-xs text-white/30 italic">Belum ada riwayat akun</p>
+            sessionHistory.length === 0 ? (
+              <div className="px-3.5 py-6 text-center">
+                <p className="text-xs text-white/30 font-medium mb-1">Belum ada laporan</p>
+                <p className="text-[10px] text-white/20">Laporan yang kamu buat akan muncul di sini</p>
+              </div>
             ) : (
-              recentThreads.map((item) => (
+              sessionHistory.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => {
-                    setSidebarOpen(false);
-                    loadReport(item.id);
-                  }}
+                  onClick={() => setSidebarOpen(false)}
                   className="flex w-full flex-col gap-0.5 rounded-[10px] px-3.5 py-2 text-left text-sm transition duration-150 hover:bg-white/[0.04]"
                 >
                   <span className="truncate font-medium text-white/70">{item.title}</span>
-                  <span className="text-[10px] text-white/30">{item.created_at}</span>
+                  <span className="text-[10px] text-white/30">
+                    {new Date(item.created_at).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
+                  </span>
                 </button>
               ))
             )
           ) : (
             snapshots.length === 0 ? (
-              <p className="px-3.5 py-4 text-xs text-white/30 italic">Belum ada tugas</p>
+              <div className="px-3.5 py-6 text-center">
+                <p className="text-xs text-white/30 font-medium mb-1">Belum ada laporan</p>
+                <p className="text-[10px] text-white/20">Laporan yang kamu buat akan muncul di sini</p>
+              </div>
             ) : (
               snapshots.map((item) => (
                 <button
@@ -1665,19 +1778,57 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             )}
           >
             {messages.length === 0 ? (
-              /* --- Empty State / Centered Workspace --- */
-              <div className="flex flex-col items-center justify-center pt-16 sm:pt-[100px] text-center max-w-[820px] mx-auto w-full">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.07] bg-[#2a2a2a] px-3.5 py-1.5 font-mono text-[10px] font-semibold text-white/55 mb-8 uppercase tracking-wider">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Public Alpha | AI aktif saat kapasitas tersedia
-                </span>
-                
-                <h1 className="font-serif text-3xl sm:text-[40px] md:text-[48px] font-semibold leading-[1.15] text-[#f5f0e8] mb-10 tracking-tight">
-                  Apa yang bisa NaLI bantu susun?
-                </h1>
-                
-                {renderComposer(true)}
-              </div>
+              viewMode === "loading" ? (
+                <LoadingView prompt={currentPrompt || ""} model={usedModel} />
+              ) : viewMode === "result" ? (
+                <ResultView
+                  prompt={currentPrompt || ""}
+                  result={currentResult || ""}
+                  model={usedModel}
+                  sessionId={currentSessionId}
+                  onNewReport={handleNewReport}
+                />
+              ) : viewMode === "error" ? (
+                <ErrorView
+                  message={newError}
+                  onRetry={() => currentPrompt && handleNewSubmit(currentPrompt)}
+                  onNew={handleNewReport}
+                />
+              ) : (
+                /* --- Empty State / Centered Workspace --- */
+                <div className="flex flex-col items-center justify-center pt-12 sm:pt-[80px] text-center max-w-[820px] mx-auto w-full">
+                  {/* First-login welcome banner */}
+                  {showWelcome && (
+                    <div className="w-full mb-6 flex items-start gap-3 rounded-xl border-l-2 border-[#00FFB3]/50 bg-[#00FFB3]/5 px-4 py-3 text-left">
+                      <div className="flex-1 text-xs text-white/70 leading-relaxed">
+                        Selamat datang di NaLI. Mulai dengan menempelkan catatan lapangan atau data observasi kamu di kotak di bawah.
+                      </div>
+                      <button
+                        onClick={() => {
+                          window.localStorage.setItem("nali_welcomed", "true");
+                          setShowWelcome(false);
+                        }}
+                        className="shrink-0 text-xs font-semibold text-[#00FFB3]/70 hover:text-[#00FFB3] transition-colors"
+                      >
+                        Mengerti
+                      </button>
+                    </div>
+                  )}
+
+                  <h1 className="font-serif text-3xl sm:text-[40px] md:text-[48px] font-semibold leading-[1.15] text-[#f5f0e8] mb-4 tracking-tight">
+                    Apa yang bisa NaLI bantu susun?
+                  </h1>
+
+                  <EmptyState
+                    onSampleClick={(text) => {
+                      setQuery(text);
+                      setTimeout(() => composerRef.current?.focus(), 50);
+                    }}
+                  />
+
+                  {renderComposer(true)}
+                </div>
+              )
             ) : (
               /* --- Chat message feed --- */
               messages.map((message, index) => {
