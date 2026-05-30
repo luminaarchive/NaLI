@@ -6,7 +6,13 @@ import { cookies } from "next/headers";
 
 const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
 
-export const maxDuration = 60; // Vercel hobby plan max
+export const maxDuration = 60;
+
+interface ConversationMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: string;
+}
 
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
@@ -19,7 +25,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const prompt = body?.prompt;
+  const prompt = body?.prompt as string | undefined;
+  const incomingMessages = (body?.messages as ConversationMessage[] | undefined) ?? [];
+  const sessionId = body?.sessionId as string | null | undefined;
 
   if (!prompt || String(prompt).trim().length < 10) {
     return new Response(
@@ -36,7 +44,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Resolve auth BEFORE creating the stream — cannot await inside ReadableStream
+  // Resolve auth before stream creation
   const cookieStore = await cookies();
   const rawUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://dummy.supabase.co").trim().replace(/\/rest\/v1\/?$/, "");
   const anonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "dummy").trim();
@@ -50,7 +58,18 @@ export async function POST(req: NextRequest) {
   });
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Find a responsive model with streaming enabled
+  const promptStr = String(prompt).trim();
+  const isMultiTurn = incomingMessages.length > 0;
+
+  // Build messages array for OpenRouter
+  const openRouterMessages: Array<{ role: string; content: string }> = [
+    { role: "system", content: NALI_SYSTEM_PROMPT },
+    ...(isMultiTurn
+      ? incomingMessages.map((m) => ({ role: m.role, content: m.content }))
+      : []),
+    { role: "user", content: promptStr },
+  ];
+
   const models = await fetchAvailableFreeModels();
   let openRouterResponse: Response | null = null;
   let usedModel: string | null = null;
@@ -67,10 +86,7 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           model,
-          messages: [
-            { role: "system", content: NALI_SYSTEM_PROMPT },
-            { role: "user", content: String(prompt).trim() },
-          ],
+          messages: openRouterMessages,
           max_tokens: 2000,
           temperature: 0.3,
           stream: true,
@@ -93,12 +109,12 @@ export async function POST(req: NextRequest) {
 
   const encoder = new TextEncoder();
   const upstreamReader = openRouterResponse.body.getReader();
-  const promptStr = String(prompt).trim();
 
   const stream = new ReadableStream({
     async start(controller) {
       const decoder = new TextDecoder();
       let fullText = "";
+      const now = new Date().toISOString();
 
       try {
         while (true) {
@@ -115,37 +131,57 @@ export async function POST(req: NextRequest) {
               const token: string = parsed.choices?.[0]?.delta?.content ?? "";
               if (token) {
                 fullText += token;
-                controller.enqueue(
-                  encoder.encode(`data: ${JSON.stringify({ token, model: usedModel })}\n\n`),
-                );
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ token, model: usedModel })}\n\n`));
               }
-            } catch { /* skip malformed SSE chunks */ }
+            } catch { /* skip malformed */ }
           }
         }
 
-        // Stream complete — persist to Supabase if authenticated
-        let savedSessionId: string | null = null;
+        // Persist to Supabase after stream complete
+        let savedSessionId: string | null = sessionId ?? null;
+
         if (user && fullText.trim()) {
-          const title = promptStr.slice(0, 60) + (promptStr.length > 60 ? "..." : "");
-          const { data: newSession } = await supabase
-            .from("report_sessions")
-            .insert({
-              user_id: user.id,
-              title,
-              prompt: promptStr,
-              result: fullText,
-              model_used: usedModel,
-            })
-            .select("id")
-            .single();
-          savedSessionId = newSession?.id ?? null;
+          const userMsg: ConversationMessage = { role: "user", content: promptStr, timestamp: now };
+          const assistantMsg: ConversationMessage = { role: "assistant", content: fullText, timestamp: new Date().toISOString() };
+
+          if (isMultiTurn && sessionId) {
+            // Append to existing session
+            const { data: existing } = await supabase
+              .from("report_sessions")
+              .select("messages")
+              .eq("id", sessionId)
+              .eq("user_id", user.id)
+              .single();
+
+            const existingMessages: ConversationMessage[] = (existing?.messages as ConversationMessage[]) ?? [];
+            const updatedMessages = [...existingMessages, userMsg, assistantMsg];
+
+            await supabase
+              .from("report_sessions")
+              .update({ messages: updatedMessages, result: fullText, updated_at: new Date().toISOString() })
+              .eq("id", sessionId)
+              .eq("user_id", user.id);
+          } else {
+            // Create new session
+            const title = promptStr.slice(0, 60) + (promptStr.length > 60 ? "..." : "");
+            const initialMessages: ConversationMessage[] = [userMsg, assistantMsg];
+            const { data: newSession } = await supabase
+              .from("report_sessions")
+              .insert({
+                user_id: user.id,
+                title,
+                prompt: promptStr,
+                result: fullText,
+                model_used: usedModel,
+                messages: initialMessages,
+              })
+              .select("id")
+              .single();
+            savedSessionId = newSession?.id ?? null;
+          }
         }
 
-        controller.enqueue(
-          encoder.encode(
-            `data: ${JSON.stringify({ done: true, sessionId: savedSessionId, model: usedModel })}\n\n`,
-          ),
-        );
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true, sessionId: savedSessionId, model: usedModel })}\n\n`));
         controller.close();
       } catch (err) {
         controller.error(err);

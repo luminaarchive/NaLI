@@ -53,6 +53,7 @@ import { LoadingView } from "@/components/report/LoadingView";
 import { ResultView } from "@/components/report/ResultView";
 import { ErrorView } from "@/components/report/ErrorView";
 import { EmptyState } from "@/components/report/EmptyState";
+import type { ConversationMessage } from "@/components/report/ConversationThread";
 
 // Types matching backend AgentMessage schema
 type AgentMessage = {
@@ -239,6 +240,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   // FIX 2: streaming state
   const [streamingText, setStreamingText] = useState<string>("");
   const [activeStreamStep, setActiveStreamStep] = useState<number>(0);
+
+  // Feature 1: continuous conversation
+  const [conversationMessages, setConversationMessages] = useState<ConversationMessage[]>([]);
 
   // Welcome banner (first login)
   const [showWelcome, setShowWelcome] = useState(false);
@@ -782,6 +786,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     setUsedModel(null);
     setStreamingText("");
     setActiveStreamStep(0);
+    setConversationMessages([]);
     setMessages([]);
     setReport(null);
     setQuery("");
@@ -823,9 +828,21 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       }
 
       setCurrentPrompt(session.prompt ?? "");
-      setCurrentResult(session.result ?? "");
+      setCurrentResult((session as any).result ?? "");
       setCurrentSessionId(session.id);
       setUsedModel((session as any).model_used ?? "openrouter/free");
+      // Load conversation messages: DB has full history, first 2 = initial exchange
+      const dbMessages = ((session as any).messages as ConversationMessage[]) ?? [];
+      // Ensure first two slots are from prompt/result for backward compat
+      if (dbMessages.length === 0) {
+        const init: ConversationMessage[] = [
+          { role: "user", content: session.prompt ?? "", timestamp: (session as any).created_at ?? new Date().toISOString() },
+          { role: "assistant", content: (session as any).result ?? "", timestamp: (session as any).created_at ?? new Date().toISOString() },
+        ];
+        setConversationMessages(init);
+      } else {
+        setConversationMessages(dbMessages);
+      }
       setViewMode("result");
       window.history.pushState({}, "", `/create-report?session=${session.id}`);
     } catch {
@@ -894,6 +911,12 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             if (parsed.done) {
               setCurrentResult(accumulated || null);
               setCurrentSessionId(parsed.sessionId ?? null);
+              // Seed conversation with the initial exchange
+              const now = new Date().toISOString();
+              setConversationMessages([
+                { role: "user", content: trimmed, timestamp: now },
+                { role: "assistant", content: accumulated, timestamp: now },
+              ]);
               setViewMode("result");
               refreshHistory();
               break outer;
@@ -1870,6 +1893,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                   model={usedModel}
                   sessionId={currentSessionId}
                   onNewReport={handleNewReport}
+                  conversationMessages={conversationMessages}
+                  onConversationUpdate={setConversationMessages}
+                  onSessionIdUpdate={(id) => setCurrentSessionId(id)}
                 />
               ) : viewMode === "error" ? (
                 <ErrorView
