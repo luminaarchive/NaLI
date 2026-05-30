@@ -30,6 +30,10 @@ import {
 import { cn } from "@/lib/utils";
 import { FluidVideoBackground } from "@/components/ui/FluidVideoBackground";
 import { NaLILogo, NaLILogoMark } from "@/components/ui/NaLILogo";
+import { NaLIChatLogo } from "@/components/report/NaLIChatLogo";
+import { AttachmentButton } from "@/components/composer/AttachmentButton";
+import { AttachedFileChip } from "@/components/composer/AttachedFileChip";
+import type { ExtractedFile } from "@/lib/extract-file-content";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { ReportResult, DraftReport, StartFromZeroGuide } from "@/lib/reports/reportGenerator";
@@ -240,6 +244,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   // FIX 2: streaming state
   const [streamingText, setStreamingText] = useState<string>("");
   const [activeStreamStep, setActiveStreamStep] = useState<number>(0);
+
+  // File upload state
+  const [attachedFile, setAttachedFile] = useState<ExtractedFile | null>(null);
+  const [isExtractingFile, setIsExtractingFile] = useState(false);
 
   // Feature 1: continuous conversation
   const [conversationMessages, setConversationMessages] = useState<ConversationMessage[]>([]);
@@ -851,9 +859,39 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     }
   }, []);
 
+  const handleFileAttach = async (file: File) => {
+    setIsExtractingFile(true);
+    setError(null);
+    try {
+      const { extractFileContent } = await import("@/lib/extract-file-content");
+      const extracted = await extractFileContent(file);
+      setAttachedFile(extracted);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Gagal membaca file. Coba format lain.";
+      setError({ message: msg });
+    } finally {
+      setIsExtractingFile(false);
+    }
+  };
+
   const handleNewSubmit = useCallback(async (promptText: string) => {
     const trimmed = promptText.trim();
-    if (!trimmed) return;
+    const currentFile = attachedFile;
+    if (!trimmed && !currentFile) return;
+
+    // Build enriched prompt
+    let fullPrompt = trimmed;
+    let imageBase64: string | undefined;
+    if (currentFile) {
+      if (currentFile.type === "pdf" || currentFile.type === "text") {
+        const fileBlock = `\n\n--- Lampiran: ${currentFile.name} ---\n${currentFile.content.slice(0, 8000)}`;
+        fullPrompt = trimmed ? `${trimmed}${fileBlock}` : `Tolong analisis dokumen berikut:${fileBlock}`;
+      } else if (currentFile.type === "image") {
+        imageBase64 = currentFile.base64;
+        if (!trimmed) fullPrompt = "Tolong analisis gambar yang dilampirkan.";
+      }
+    }
+    setAttachedFile(null);
 
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     if (!currentUser) {
@@ -862,7 +900,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     }
 
     setViewMode("loading");
-    setCurrentPrompt(trimmed);
+    setCurrentPrompt(trimmed || currentFile?.name || "");
     setCurrentResult(null);
     setCurrentSessionId(null);
     setStreamingText("");
@@ -873,7 +911,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       const res = await fetch("/api/generate-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: trimmed }),
+        body: JSON.stringify({ prompt: fullPrompt, imageBase64 }),
       });
 
       if (!res.ok || !res.body) {
@@ -928,12 +966,12 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       setNewError("Koneksi bermasalah. Periksa internet kamu.");
       setViewMode("error");
     }
-  }, [router, refreshHistory]);
+  }, [router, refreshHistory, attachedFile]);
 
   const handleInitialSubmit = async (e?: FormEvent, retryQuery?: string) => {
     if (e) e.preventDefault();
     const trimmed = (retryQuery !== undefined ? retryQuery : query).trim();
-    if (!trimmed) return;
+    if (!trimmed && !attachedFile) return;
     setQuery("");
     await handleNewSubmit(trimmed);
   };
@@ -1428,6 +1466,16 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
 
           <div className="relative flex min-h-[48px] flex-col gap-2 rounded-[22px] border border-white/[0.11] bg-[#222] p-3 shadow-2xl transition duration-300 focus-within:border-white/[0.18] sm:min-h-[56px]">
+            {/* Attached file chip */}
+            {attachedFile && (
+              <div className="px-2 pt-1">
+                <AttachedFileChip
+                  file={attachedFile}
+                  onRemove={() => setAttachedFile(null)}
+                  isLoading={isExtractingFile}
+                />
+              </div>
+            )}
             {/* Input area */}
             <div className="w-full px-2 py-1">
               <textarea
@@ -1459,14 +1507,13 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             <div className="flex items-center justify-between pt-1 px-1">
               {/* Left action icons */}
               <div className="flex items-center gap-1.5 text-white/40">
-                <button
-                  type="button"
-                  disabled
-                  title="Lampirkan file (Belum aktif)"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-white/[0.04] disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
+                <AttachmentButton
+                  onFileSelected={handleFileAttach}
+                  disabled={activeRunStatus === "running" || isExtractingFile}
+                />
+                {isExtractingFile && (
+                  <span className="text-[11px] text-white/40">Membaca file...</span>
+                )}
                 <button
                   type="button"
                   onClick={() => {
@@ -1500,7 +1547,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 type="submit"
                 disabled={
                   activeRunStatus === "running" ||
-                  !query.trim() ||
+                  (!query.trim() && !attachedFile) ||
                   isRateLimited
                 }
                 aria-label={selectedMode === "draft_from_materials" ? "Buat Laporan" : "Buat Panduan Awal"}
@@ -1652,7 +1699,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         {/* Logo header */}
         <div className="flex h-16 items-center justify-between border-b border-white/[0.07] px-4">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <NaLILogo size={24} variant="light" />
+            <NaLIChatLogo size={32} />
             <span className="text-sm font-semibold text-white/80">NaLI</span>
           </Link>
           <button

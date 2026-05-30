@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 export function NaLIChatLogo({
   size = 32,
@@ -12,53 +13,90 @@ export function NaLIChatLogo({
   className?: string;
 }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 40 40"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      aria-hidden="true"
+    <div
+      className={`nali-logo-container ${animated ? "nali-logo-animated" : ""} ${className}`.trim()}
+      style={{ width: size, height: size, position: "relative", display: "inline-block" }}
     >
-      <rect width="40" height="40" rx="10" fill="#050F12" />
-
-      {/* Letter N - two verticals + diagonal */}
-      <path
-        d="M10 30 L10 10 L20 25 L30 10 L30 30"
-        stroke="white"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
+      <Image
+        src="/nali-logo.png"
+        alt="NaLI"
+        width={size}
+        height={size}
+        style={{ borderRadius: "20%", display: "block", position: "relative", zIndex: 1 }}
+        unoptimized
       />
 
-      {/* Bioluminescent pulse wave through the center of N */}
-      <path
-        d="M6 20 L13 20 L16 14 L20 26 L24 20 L34 20"
-        stroke="#00FFB3"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-        className={animated ? "nali-pulse-wave" : ""}
-      />
-    </svg>
+      {animated && (
+        <svg
+          width={size}
+          height={size}
+          viewBox="0 0 100 100"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            zIndex: 2,
+            pointerEvents: "none",
+            borderRadius: "20%",
+            overflow: "visible",
+          }}
+          aria-hidden="true"
+        >
+          <defs>
+            <filter id="nali-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2.5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+
+            {/* Three wavy N strokes traced from the logo */}
+            <path
+              id="nali-path-outer"
+              d="M 10 85 C 9 62 9 42 13 20 C 14 11 22 6 33 9 C 46 13 53 32 50 52 C 47 67 50 76 58 79 C 67 82 73 75 76 63 C 79 51 80 35 80 19 C 80 11 84 6 90 8"
+              fill="none"
+            />
+            <path
+              id="nali-path-mid"
+              d="M 16 85 C 15 62 15 42 19 21 C 20 13 27 9 37 11 C 50 15 56 33 53 52 C 50 66 53 74 61 77 C 69 80 74 73 76 61 C 79 49 80 34 80 20 C 80 12 83 8 89 10"
+              fill="none"
+            />
+            <path
+              id="nali-path-inner"
+              d="M 22 85 C 21 62 21 42 24 22 C 25 14 32 11 41 13 C 53 17 59 34 56 52 C 53 65 56 72 63 75 C 70 78 74 71 76 59 C 79 47 79 33 79 21 C 79 13 82 9 88 11"
+              fill="none"
+            />
+          </defs>
+
+          <circle r="2.5" fill="#00FFB3" filter="url(#nali-glow)" opacity="0.9">
+            <animateMotion dur="2.4s" repeatCount="indefinite" rotate="auto">
+              <mpath href="#nali-path-outer" />
+            </animateMotion>
+          </circle>
+
+          <circle r="2" fill="#7fffdf" filter="url(#nali-glow)" opacity="0.7">
+            <animateMotion dur="2.4s" begin="-0.8s" repeatCount="indefinite" rotate="auto">
+              <mpath href="#nali-path-mid" />
+            </animateMotion>
+          </circle>
+
+          <circle r="1.5" fill="#00FFB3" filter="url(#nali-glow)" opacity="0.6">
+            <animateMotion dur="2.4s" begin="-1.6s" repeatCount="indefinite" rotate="auto">
+              <mpath href="#nali-path-inner" />
+            </animateMotion>
+          </circle>
+        </svg>
+      )}
+    </div>
   );
 }
 
 export function NaLIChatLogoAnimated({ size = 32 }: { size?: number }) {
-  const br = Math.round(size / 4) + 3;
-  return (
-    <div
-      className="nali-logo-glow-wrapper"
-      style={{ width: size, height: size, borderRadius: br }}
-    >
-      <div className="nali-swoosh-ring" style={{ borderRadius: br }} />
-      <NaLIChatLogo size={size} animated={true} />
-    </div>
-  );
+  return <NaLIChatLogo size={size} animated={true} />;
 }
+
+/* ---- ThoughtLine & generateAgenticThoughts (used by LoadingView) ---- */
 
 interface ThoughtLineProps {
   text: string;
@@ -66,7 +104,7 @@ interface ThoughtLineProps {
   delay: number;
 }
 
-function ThoughtLine({ text, isActive, delay }: ThoughtLineProps) {
+export function ThoughtLine({ text, isActive, delay }: ThoughtLineProps) {
   const [visible, setVisible] = useState(delay === 0);
 
   useEffect(() => {
@@ -124,7 +162,6 @@ const BASE_THOUGHTS = [
 function getContextualThoughts(prompt: string): string[] {
   const p = prompt.toLowerCase();
   const thoughts: string[] = [];
-
   if (p.includes("elang") || p.includes("burung") || p.includes("satwa")) {
     thoughts.push("Mencocokkan spesies dengan basis data taksonomi Indonesia...");
     thoughts.push("Memeriksa status konservasi IUCN...");
@@ -147,7 +184,6 @@ function getContextualThoughts(prompt: string): string[] {
     thoughts.push("Menerapkan struktur IMRaD: Introduction, Methods, Results...");
     thoughts.push("Menyesuaikan dengan standar penulisan ilmiah...");
   }
-
   return thoughts;
 }
 
@@ -160,5 +196,3 @@ export function generateAgenticThoughts(prompt: string, activeStep: number): str
   }
   return all.slice(0, Math.min(activeStep + 2, all.length));
 }
-
-export { ThoughtLine };

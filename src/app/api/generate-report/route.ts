@@ -28,6 +28,10 @@ export async function POST(req: NextRequest) {
   const prompt = body?.prompt as string | undefined;
   const incomingMessages = (body?.messages as ConversationMessage[] | undefined) ?? [];
   const sessionId = body?.sessionId as string | null | undefined;
+  const imageBase64 = body?.imageBase64 as string | undefined;
+
+  // Validate imageBase64 format if present
+  const validImage = imageBase64 && typeof imageBase64 === "string" && imageBase64.startsWith("data:image/");
 
   if (!prompt || String(prompt).trim().length < 10) {
     return new Response(
@@ -61,16 +65,33 @@ export async function POST(req: NextRequest) {
   const promptStr = String(prompt).trim();
   const isMultiTurn = incomingMessages.length > 0;
 
+  // Build the last user message — support multimodal content for images
+  type UserContent = string | Array<{ type: string; [k: string]: unknown }>;
+  const userContent: UserContent = validImage
+    ? [
+        { type: "image_url", image_url: { url: imageBase64 } },
+        { type: "text", text: promptStr },
+      ]
+    : promptStr;
+
   // Build messages array for OpenRouter
-  const openRouterMessages: Array<{ role: string; content: string }> = [
+  const openRouterMessages: Array<{ role: string; content: UserContent }> = [
     { role: "system", content: NALI_SYSTEM_PROMPT },
     ...(isMultiTurn
       ? incomingMessages.map((m) => ({ role: m.role, content: m.content }))
       : []),
-    { role: "user", content: promptStr },
+    { role: "user", content: userContent },
   ];
 
-  const models = await fetchAvailableFreeModels();
+  // Vision-capable models take priority when an image is attached
+  const VISION_MODELS = [
+    "meta-llama/llama-4-maverick:free",
+    "meta-llama/llama-4-scout:free",
+    "meta-llama/llama-3.2-11b-vision-instruct:free",
+    "google/gemma-3-27b-it:free",
+  ];
+
+  const models = validImage ? VISION_MODELS : await fetchAvailableFreeModels();
   let openRouterResponse: Response | null = null;
   let usedModel: string | null = null;
 
