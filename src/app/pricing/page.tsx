@@ -1,189 +1,313 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { Check, X, HelpCircle, ArrowRight } from "lucide-react";
-import { PublicAppShell } from "@/components/ui/PublicAppShell";
-import { Badge } from "@/components/ui/badge";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { siteMetadata } from "@/lib/seo/siteMetadata";
-import { PricingCards } from "@/components/report/PricingCards";
-import { PricingInterestCapture } from "@/components/report/PricingInterestCapture";
+"use client";
 
-export const metadata: Metadata = {
-  title: siteMetadata.routes.pricing.title,
-  description: siteMetadata.routes.pricing.description,
-  alternates: {
-    canonical: `${siteMetadata.canonicalBase}/pricing`,
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Check, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
+import { PublicAppShell } from "@/components/ui/PublicAppShell";
+import { cn } from "@/lib/utils";
+
+const PLANS = [
+  {
+    id: "seeds",
+    name: "Seeds",
+    badge: "Mulai dari sini",
+    price: 0,
+    priceLabel: "Rp 0",
+    features: ["3 laporan/bulan", "Format markdown", "Riwayat lokal"],
+    highlight: false,
+    ctaLabel: "Mulai Gratis",
+    ctaHref: "/signup",
   },
-};
+  {
+    id: "sapling",
+    name: "Sapling",
+    badge: "Paling Populer",
+    price: 45000,
+    priceLabel: "Rp 45.000",
+    features: ["Laporan tak terbatas", "Ekspor PDF", "Riwayat akun", "Prioritas model AI"],
+    highlight: true,
+    ctaLabel: "Berlangganan Sapling",
+    ctaHref: null,
+  },
+  {
+    id: "forest_keeper",
+    name: "Forest Keeper",
+    badge: "Untuk Profesional",
+    price: 149000,
+    priceLabel: "Rp 149.000",
+    features: [
+      "Semua fitur Sapling",
+      "Analisis jurnal",
+      "Akses model terbaik",
+      "Dukungan prioritas",
+    ],
+    highlight: false,
+    ctaLabel: "Berlangganan Forest Keeper",
+    ctaHref: null,
+  },
+];
+
+const FAQ = [
+  {
+    q: "Apakah bisa batal kapan saja?",
+    a: "Ya, bisa dibatalkan kapan saja tanpa biaya tambahan.",
+  },
+  {
+    q: "Metode pembayaran apa yang diterima?",
+    a: "Transfer bank, kartu kredit, GoPay, OVO, QRIS via Midtrans.",
+  },
+  {
+    q: "Apakah data laporan saya aman?",
+    a: "Ya, data tersimpan di server terenkripsi dan tidak dibagikan ke pihak ketiga.",
+  },
+];
+
+function PlanCard({ plan }: { plan: (typeof PLANS)[number] }) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubscribe() {
+    setError(null);
+    setLoading(true);
+
+    // Check if user is logged in
+    const { supabase } = await import("@/lib/supabase/client");
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      router.push(`/login?next=/pricing`);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/payment/create-transaction", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: plan.id }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Gagal membuat transaksi.");
+        setLoading(false);
+        return;
+      }
+
+      const { token } = data;
+      if (!token) {
+        setError("Token pembayaran tidak valid.");
+        setLoading(false);
+        return;
+      }
+
+      // Load Midtrans Snap
+      const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY;
+      const snapSrc = process.env.MIDTRANS_IS_PRODUCTION === "true"
+        ? "https://app.midtrans.com/snap/snap.js"
+        : "https://app.sandbox.midtrans.com/snap/snap.js";
+
+      if (!(window as any).snap) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = snapSrc;
+          if (clientKey) script.setAttribute("data-client-key", clientKey);
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error("Gagal memuat payment gateway."));
+          document.head.appendChild(script);
+        });
+      }
+
+      (window as any).snap.pay(token, {
+        onSuccess: () => router.push("/create-report?subscribed=true"),
+        onError: () => setError("Pembayaran gagal. Coba lagi."),
+        onClose: () => setLoading(false),
+      });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div
+      className={cn(
+        "relative flex flex-col rounded-2xl border p-6 shadow-[0_4px_24px_rgba(30,53,37,0.04)] bg-white transition-all",
+        plan.highlight
+          ? "border-[#1e3525] shadow-[0_4px_24px_rgba(30,53,37,0.10)]"
+          : "border-[#1e3525]/12"
+      )}
+    >
+      {plan.highlight && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+          <span className="inline-flex items-center rounded-full bg-[#1e3525] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+            {plan.badge}
+          </span>
+        </div>
+      )}
+
+      <div className="mb-6">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-serif text-xl font-bold text-[#1e3525]">{plan.name}</h3>
+          {!plan.highlight && (
+            <span className="inline-flex items-center rounded-full border border-[#1e3525]/12 bg-[#1e3525]/5 px-2.5 py-0.5 text-[10px] font-semibold text-[#1e3525]">
+              {plan.badge}
+            </span>
+          )}
+        </div>
+        <p className="mt-4 text-3xl font-extrabold text-[#1e3525]">
+          {plan.priceLabel}
+          {plan.price > 0 && (
+            <span className="text-sm font-normal text-[#4a6455]">/bulan</span>
+          )}
+        </p>
+      </div>
+
+      <ul className="flex-1 space-y-3 mb-8">
+        {plan.features.map((f) => (
+          <li key={f} className="flex items-start gap-2.5 text-sm text-[#4a6455]">
+            <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#1e3525]" />
+            {f}
+          </li>
+        ))}
+      </ul>
+
+      {error && (
+        <p className="mb-3 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-600">
+          {error}
+        </p>
+      )}
+
+      {plan.ctaHref ? (
+        <Link
+          href={plan.ctaHref}
+          className={cn(
+            "flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl text-sm font-bold transition",
+            plan.highlight
+              ? "bg-[#1e3525] text-white hover:bg-[#162d1d]"
+              : "border border-[#1e3525]/20 text-[#1e3525] hover:bg-[#1e3525]/5"
+          )}
+        >
+          {plan.ctaLabel}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      ) : (
+        <button
+          onClick={handleSubscribe}
+          disabled={loading}
+          className={cn(
+            "flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-60",
+            plan.highlight
+              ? "bg-[#1e3525] text-white hover:bg-[#162d1d]"
+              : "border border-[#1e3525]/20 text-[#1e3525] hover:bg-[#1e3525]/5"
+          )}
+        >
+          {loading ? "Memproses..." : plan.ctaLabel}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function FaqItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-xl border border-[#1e3525]/12 bg-white/50">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between px-5 py-4 text-left text-sm font-semibold text-[#1e3525]"
+      >
+        {q}
+        {open ? (
+          <ChevronUp className="h-4 w-4 shrink-0 text-[#4a6455]" />
+        ) : (
+          <ChevronDown className="h-4 w-4 shrink-0 text-[#4a6455]" />
+        )}
+      </button>
+      {open && (
+        <p className="border-t border-[#1e3525]/8 px-5 pb-4 pt-3 text-xs leading-relaxed text-[#4a6455]">
+          {a}
+        </p>
+      )}
+    </div>
+  );
+}
 
 export default function PricingPage() {
+  const searchParams = useSearchParams();
+  const paymentStatus = searchParams?.get("payment");
+
   return (
     <PublicAppShell isHomepage={true}>
-      {/* ALPHA WARNING BANNER */}
-      <Alert className="rounded-none border-t-0 border-x-0 border-b border-amber-500/10 bg-amber-500/5 py-2 px-4 text-center">
-        <AlertDescription className="text-xs sm:text-sm font-bold text-amber-800 leading-none">
-          NaLI dalam public alpha non-paid &middot; Pembayaran dan checkout belum aktif 
-        </AlertDescription>
-      </Alert>
+      <main className="flex-1 bg-[#f5f0e8] text-[#1e3525] px-4 pt-16 pb-24 sm:px-6 lg:px-8">
+        {paymentStatus === "success" && (
+          <div className="mx-auto mb-6 max-w-[760px] rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-800">
+            Pembayaran berhasil! Selamat bergabung di paket premium NaLI.
+          </div>
+        )}
+        {paymentStatus === "error" && (
+          <div className="mx-auto mb-6 max-w-[760px] rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-800">
+            Pembayaran gagal atau dibatalkan. Silakan coba lagi.
+          </div>
+        )}
 
-      <main className="flex-1 px-4 pt-16 pb-24 sm:px-6 lg:px-8 bg-[#f5f0e8] text-[#1e3525]">
-        {/* HERO SECTION */}
-        <section className="mx-auto max-w-[1040px] text-center mb-16">
+        {/* HERO */}
+        <section className="mx-auto max-w-[760px] text-center mb-14">
           <span className="inline-flex min-h-8 items-center rounded-full border border-[#1e3525]/12 bg-[#1e3525]/5 px-3.5 py-1 text-xs font-bold tracking-wider text-[#1e3525] uppercase">
-            Pricing
+            Harga
           </span>
-          <h1 className="mt-6 text-4xl font-serif font-bold tracking-tight text-[#1e3525] sm:text-5xl">
+          <h1 className="mt-6 font-serif text-[clamp(28px,4vw,44px)] font-bold tracking-tight text-[#1e3525]">
             Paket Laporan NaLI
           </h1>
-          <p className="sr-only">Aturan penggunaan Laporan</p>
-          <p className="mx-auto mt-4 max-w-[620px] text-sm leading-6 text-[#4a6455]">
+          <p className="mx-auto mt-4 max-w-[480px] text-sm leading-relaxed text-[#4a6455]">
             Mulai gratis. Tingkatkan saat kamu siap.
           </p>
         </section>
 
         {/* PRICING CARDS */}
-        <section className="mx-auto max-w-[1040px] mb-24">
-          <PricingCards />
-
-          <div className="mt-12 rounded-2xl border border-[#1e3525]/12 bg-white/50 p-6 text-center max-w-2xl mx-auto shadow-[0_4px_20px_rgba(30,53,37,0.02)]">
-            <h3 className="font-serif text-[#1e3525] text-lg font-bold mb-2">
-              Beri tahu saya saat paket berbayar diaktifkan
-            </h3>
-            <p className="text-xs text-[#4a6455] mb-6">
-              Dapatkan email pemberitahuan resmi saat pembayaran instan via Midtrans siap dirilis ke publik.
-            </p>
-            <PricingInterestCapture />
+        <section className="mx-auto max-w-[960px] mb-10">
+          <div className="grid gap-6 sm:grid-cols-3">
+            {PLANS.map((plan) => (
+              <PlanCard key={plan.id} plan={plan} />
+            ))}
           </div>
+          <p className="mt-6 text-center text-sm font-medium text-[#4a6455]">
+            Hemat 20% dengan berlangganan tahunan
+          </p>
         </section>
 
-        {/* FEATURE COMPARISON TABLE */}
-        <section className="mx-auto max-w-[840px] mb-24">
-          <h2 className="text-center font-serif text-2xl font-bold text-[#1e3525] tracking-tight mb-8">
-            Perbandingan Detail Fitur
-          </h2>
-          <div className="overflow-x-auto rounded-xl border border-[#1e3525]/12 bg-white/50 shadow-[0_4px_20px_rgba(30,53,37,0.02)]">
-            <table className="w-full border-collapse text-left text-xs">
-              <thead>
-                <tr className="border-b border-[#1e3525]/12 bg-[#1e3525]/5">
-                  <th className="p-4 font-bold text-[#1e3525]">Fitur</th>
-                  <th className="p-4 font-bold text-[#1e3525]">Seeds</th>
-                  <th className="p-4 font-bold text-[#1e3525]">Sapling</th>
-                  <th className="p-4 font-bold text-[#1e3525]">Forest Keeper</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#1e3525]/8">
-                {[
-                  { name: "Laporan Cepat (Quick Mode)", seeds: true, sapling: true, keeper: true },
-                  { name: "Laporan Lengkap (Deep Mode)", seeds: false, sapling: true, keeper: true },
-                  { name: "Export PDF/DOCX", seeds: false, sapling: true, keeper: true },
-                  { name: "Chat Session Tersimpan", seeds: true, sapling: true, keeper: true },
-                  { name: "Akses Spesies Database", seeds: true, sapling: true, keeper: true },
-                  { name: "Fitur Kolaborasi Tim", seeds: false, sapling: false, keeper: true },
-                  { name: "Kustomisasi Pilot Mountain", seeds: false, sapling: false, keeper: true },
-                ].map((row) => (
-                  <tr key={row.name} className="hover:bg-[#1e3525]/2">
-                    <td className="p-4 font-semibold text-[#1e3525]">{row.name}</td>
-                    <td className="p-4">
-                      {row.seeds ? (
-                        <Check className="h-4 w-4 text-emerald-600" />
-                      ) : (
-                        <X className="h-4 w-4 text-[#4a6455]/25" />
-                      )}
-                    </td>
-                    <td className="p-4">
-                      {row.sapling ? (
-                        <Check className="h-4 w-4 text-emerald-600" />
-                      ) : (
-                        <X className="h-4 w-4 text-[#4a6455]/25" />
-                      )}
-                    </td>
-                    <td className="p-4">
-                      {row.keeper ? (
-                        <Check className="h-4 w-4 text-emerald-600" />
-                      ) : (
-                        <X className="h-4 w-4 text-[#4a6455]/25" />
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {/* FAQ SECTION */}
-        <section className="mx-auto max-w-[760px]">
+        {/* FAQ */}
+        <section className="mx-auto max-w-[760px] mb-16">
           <h2 className="text-center font-serif text-2xl font-bold text-[#1e3525] tracking-tight mb-8">
             Pertanyaan Umum
           </h2>
-          <Accordion type="single" collapsible className="space-y-3">
-            <AccordionItem value="faq-1" className="border border-[#1e3525]/12 bg-white/50 rounded-xl px-4">
-              <AccordionTrigger className="text-[#1e3525] hover:text-emerald-700 py-4 font-semibold">
-                Kapan paket berbayar dibuka?
-              </AccordionTrigger>
-              <AccordionContent className="text-xs leading-relaxed text-[#4a6455] pb-4">
-                Setelah fase public alpha selesai. Kamu akan diberitahu terlebih dahulu melalui email sebelum pembayaran diaktifkan.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="faq-2" className="border border-[#1e3525]/12 bg-white/50 rounded-xl px-4">
-              <AccordionTrigger className="text-[#1e3525] hover:text-emerald-700 py-4 font-semibold">
-                Apakah data lapangan saya aman?
-              </AccordionTrigger>
-              <AccordionContent className="text-xs leading-relaxed text-[#4a6455] pb-4">
-                Ya. Semua data tersimpan di Supabase dengan enkripsi. Batas bukti tetap milik pengguna, NaLI tidak mengklaim kepemilikan atas observasi lapangan kamu.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="faq-3" className="border border-[#1e3525]/12 bg-white/50 rounded-xl px-4">
-              <AccordionTrigger className="text-[#1e3525] hover:text-emerald-700 py-4 font-semibold">
-                Apa perbedaan Laporan Cepat dan Laporan Lengkap?
-              </AccordionTrigger>
-              <AccordionContent className="text-xs leading-relaxed text-[#4a6455] pb-4">
-                Laporan Cepat menghasilkan ringkasan singkat dalam hitungan detik. Laporan Lengkap melakukan analisis mendalam dengan referensi ilmiah, konteks habitat, dan rekomendasi konservasi.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="faq-4" className="border border-[#1e3525]/12 bg-white/50 rounded-xl px-4">
-              <AccordionTrigger className="text-[#1e3525] hover:text-emerald-700 py-4 font-semibold">
-                Apakah ada diskon untuk peneliti dan NGO?
-              </AccordionTrigger>
-              <AccordionContent className="text-xs leading-relaxed text-[#4a6455] pb-4">
-                Kami sedang merancang program khusus untuk institusi penelitian dan NGO konservasi Indonesia. Hubungi kami untuk informasi lebih lanjut.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="faq-5" className="border border-[#1e3525]/12 bg-white/50 rounded-xl px-4">
-              <AccordionTrigger className="text-[#1e3525] hover:text-emerald-700 py-4 font-semibold">
-                Bagaimana cara kerja paket tim Forest Keeper?
-              </AccordionTrigger>
-              <AccordionContent className="text-xs leading-relaxed text-[#4a6455] pb-4">
-                Forest Keeper memungkinkan hingga 5 anggota tim berbagi workspace, session history, dan data pilot mountain. Cocok untuk tim ranger, peneliti lapangan, atau NGO kecil.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+          <div className="space-y-3">
+            {FAQ.map((item) => (
+              <FaqItem key={item.q} q={item.q} a={item.a} />
+            ))}
+          </div>
         </section>
 
-        {/* CALL TO ACTION */}
-        <section className="mx-auto max-w-[1040px] mt-24">
+        {/* CTA */}
+        <section className="mx-auto max-w-[760px]">
           <div className="relative overflow-hidden rounded-3xl border border-[#1e3525]/12 bg-white/80 p-8 text-center sm:p-12 shadow-[0_4px_24px_rgba(30,53,37,0.02)]">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-600/5 to-transparent opacity-30" />
-            <h2 className="relative z-10 text-3xl font-serif font-bold text-[#1e3525] tracking-tight mb-4">
+            <h2 className="font-serif text-2xl font-bold text-[#1e3525] mb-4">
               Siap menyusun laporan lapangan?
             </h2>
-            <p className="relative z-10 mx-auto max-w-[540px] text-xs text-[#4a6455] leading-relaxed mb-8">
-              Mulai secara gratis di fase public alpha ini. Draf awal menyertakan disclaimers dan batas bukti secara transparan.
+            <p className="mx-auto max-w-[480px] text-sm text-[#4a6455] leading-relaxed mb-8">
+              Mulai gratis. Draft awal menyertakan disclaimer dan batas bukti secara transparan.
             </p>
-            <div className="relative z-10 flex justify-center">
-              <Link
-                href="/create-report"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#1e3525] px-6 text-xs font-bold text-white hover:bg-[#162d1d] transition-all"
-              >
-                Buat Laporan
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
-            </div>
+            <Link
+              href="/create-report"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#1e3525] px-6 text-sm font-bold text-white hover:bg-[#162d1d] transition-all"
+            >
+              Buat Laporan Gratis
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </section>
       </main>
