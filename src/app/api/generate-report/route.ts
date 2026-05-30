@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { fetchAvailableFreeModels } from "@/lib/openrouter-models";
-import { NALI_SYSTEM_PROMPT } from "@/lib/nali-system-prompt";
+import { NALI_SYSTEM_PROMPT, NALI_FOLLOWUP_SYSTEM_PROMPT } from "@/lib/nali-system-prompt";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
@@ -65,6 +65,9 @@ export async function POST(req: NextRequest) {
   const promptStr = String(prompt).trim();
   const isMultiTurn = incomingMessages.length > 0;
 
+  // Follow-up conversations use conversational prompt; initial reports use structured prompt
+  const systemPrompt = isMultiTurn ? NALI_FOLLOWUP_SYSTEM_PROMPT : NALI_SYSTEM_PROMPT;
+
   // Build the last user message — support multimodal content for images
   type UserContent = string | Array<{ type: string; [k: string]: unknown }>;
   const userContent: UserContent = validImage
@@ -76,7 +79,7 @@ export async function POST(req: NextRequest) {
 
   // Build messages array for OpenRouter
   const openRouterMessages: Array<{ role: string; content: UserContent }> = [
-    { role: "system", content: NALI_SYSTEM_PROMPT },
+    { role: "system", content: systemPrompt },
     ...(isMultiTurn
       ? incomingMessages.map((m) => ({ role: m.role, content: m.content }))
       : []),

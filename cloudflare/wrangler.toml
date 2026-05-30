@@ -1,0 +1,6 @@
+name = "nali-security-worker"
+main = "nali-security-worker.js"
+compatibility_date = "2026-01-01"
+
+[env.production]
+route = { pattern = "naliai.id/*", zone_name = "naliai.id" }

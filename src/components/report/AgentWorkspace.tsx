@@ -31,7 +31,7 @@ import { cn } from "@/lib/utils";
 import { FluidVideoBackground } from "@/components/ui/FluidVideoBackground";
 import { NaLILogo, NaLILogoMark } from "@/components/ui/NaLILogo";
 import { NaLIChatLogo } from "@/components/report/NaLIChatLogo";
-import { AttachmentButton } from "@/components/composer/AttachmentButton";
+import { UploadDropdown } from "@/components/composer/UploadDropdown";
 import { AttachedFileChip } from "@/components/composer/AttachedFileChip";
 import type { ExtractedFile } from "@/lib/extract-file-content";
 import { Badge } from "@/components/ui/badge";
@@ -1507,7 +1507,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             <div className="flex items-center justify-between pt-1 px-1">
               {/* Left action icons */}
               <div className="flex items-center gap-1.5 text-white/40">
-                <AttachmentButton
+                <UploadDropdown
                   onFileSelected={handleFileAttach}
                   disabled={activeRunStatus === "running" || isExtractingFile}
                 />

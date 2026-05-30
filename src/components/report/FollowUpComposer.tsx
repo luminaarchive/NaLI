@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { Send } from "lucide-react";
 import type { ConversationMessage } from "./ConversationThread";
-import { AttachmentButton } from "@/components/composer/AttachmentButton";
+import { UploadDropdown } from "@/components/composer/UploadDropdown";
 import { AttachedFileChip } from "@/components/composer/AttachedFileChip";
 import type { ExtractedFile } from "@/lib/extract-file-content";
 
@@ -162,7 +162,7 @@ export function FollowUpComposer({
           />
 
           <div className="flex items-center gap-1 shrink-0">
-            <AttachmentButton
+            <UploadDropdown
               onFileSelected={handleFileAttach}
               disabled={loading || isExtractingFile}
             />
