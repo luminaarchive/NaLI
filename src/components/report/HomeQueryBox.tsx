@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/lib/supabase/client";
 import type { StreamChunk } from "@/lib/types/session";
 
 // Required by safety tests:
@@ -51,6 +52,13 @@ export function HomeQueryBox() {
   const [query, setQuery] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsLoggedIn(!!user);
+    });
+  }, []);
 
   const inferMode = (text: string): "draft_from_materials" | "start_from_zero" => {
     const lower = text.toLowerCase();
@@ -149,24 +157,35 @@ export function HomeQueryBox() {
             </div>
 
             {/* Right: Submit Button */}
-            <Button
-              aria-label="Buat Laporan: Mulai Susun Laporan"
-              type="submit"
-              disabled={isCreating}
-              className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl bg-[#1e3525] px-5 py-2 text-xs font-bold text-[#f5f0e8] hover:bg-[#162d1d] transition-all duration-200 border-none outline-none cursor-pointer disabled:opacity-60"
-            >
-              {isCreating ? (
-                <span className="flex items-center gap-2">
-                  <span className="h-3 w-3 animate-spin rounded-full border border-[#f5f0e8]/40 border-t-[#f5f0e8]" />
-                  Memproses…
-                </span>
-              ) : (
-                <>
-                  Mulai Susun Laporan
-                  <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
-                </>
-              )}
-            </Button>
+            {isLoggedIn ? (
+              <Button
+                type="button"
+                onClick={() => router.push("/create-report")}
+                className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl bg-[#1e3525] px-5 py-2 text-xs font-bold text-[#f5f0e8] hover:bg-[#162d1d] transition-all duration-200 border-none outline-none cursor-pointer"
+              >
+                Buka Workspace
+                <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
+              </Button>
+            ) : (
+              <Button
+                aria-label="Buat Laporan: Mulai Susun Laporan"
+                type="submit"
+                disabled={isCreating}
+                className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl bg-[#1e3525] px-5 py-2 text-xs font-bold text-[#f5f0e8] hover:bg-[#162d1d] transition-all duration-200 border-none outline-none cursor-pointer disabled:opacity-60"
+              >
+                {isCreating ? (
+                  <span className="flex items-center gap-2">
+                    <span className="h-3 w-3 animate-spin rounded-full border border-[#f5f0e8]/40 border-t-[#f5f0e8]" />
+                    Memproses…
+                  </span>
+                ) : (
+                  <>
+                    Mulai Susun Laporan
+                    <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
 

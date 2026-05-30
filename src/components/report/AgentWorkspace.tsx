@@ -721,6 +721,13 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     const trimmed = (retryQuery !== undefined ? retryQuery : query).trim();
     if (!trimmed) return;
 
+    // Client-side auth guard: middleware protects the route but double-check here
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (!currentUser) {
+      router.push("/login?next=/create-report");
+      return;
+    }
+
     setError(null);
     setNotice(null);
     setLastAttemptedQuery(trimmed);

@@ -47,7 +47,15 @@ function SignupForm() {
     });
 
     if (signupError) {
-      setError(signupError.message);
+      const isDuplicate =
+        signupError.message.toLowerCase().includes("already registered") ||
+        signupError.message.toLowerCase().includes("already exists") ||
+        (signupError as any).status === 400;
+      setError(
+        isDuplicate
+          ? "DUPLICATE_EMAIL"
+          : signupError.message,
+      );
       setLoading(false);
       return;
     }
@@ -87,15 +95,16 @@ function SignupForm() {
       <div className="relative w-full max-w-[400px] rounded-3xl border border-white/[0.06] bg-white/[0.02] p-8 shadow-2xl backdrop-blur-md text-center">
         <NaLILogoMark size={48} variant="light" className="mb-6 mx-auto" />
         <h1 className="font-serif text-2xl font-semibold text-white mb-3">Cek email kamu</h1>
-        <p className="text-sm text-white/60 leading-relaxed mb-6">
-          Kami telah mengirimkan tautan konfirmasi ke{" "}
-          <span className="text-white font-medium">{email}</span>. Buka email tersebut untuk mengaktifkan akun kamu.
+        <p className="text-sm text-white/60 leading-relaxed mb-4">
+          Kami sudah kirim link konfirmasi ke{" "}
+          <span className="text-white font-medium">{email}</span>. Klik link itu untuk mengaktifkan akun kamu.
         </p>
+        <p className="text-xs text-white/35 mb-6">Tidak dapat email? Cek folder spam.</p>
         <Link
-          href="/login"
+          href="/"
           className="inline-flex min-h-11 items-center justify-center rounded-xl bg-white px-6 text-sm font-semibold text-[#09090b] hover:bg-white/90 transition"
         >
-          Kembali ke Masuk
+          Kembali ke beranda
         </Link>
       </div>
     );
@@ -220,7 +229,16 @@ function SignupForm() {
 
           {error && (
             <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-400">
-              {error}
+              {error === "DUPLICATE_EMAIL" ? (
+                <span>
+                  Email ini sudah terdaftar. Silakan masuk dengan akun yang ada.{" "}
+                  <Link href="/login" className="font-semibold text-red-300 underline underline-offset-2">
+                    Masuk sekarang
+                  </Link>
+                </span>
+              ) : (
+                error
+              )}
             </div>
           )}
 

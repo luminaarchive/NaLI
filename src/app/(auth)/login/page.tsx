@@ -13,11 +13,16 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/create-report";
   const linkGuest = searchParams.get("linkGuest") || "";
+  const callbackError = searchParams.get("error");
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    callbackError === "confirmation_failed"
+      ? "Konfirmasi akun gagal. Coba klik link di email lagi atau daftar ulang."
+      : null,
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -28,13 +33,19 @@ function LoginForm() {
 
     const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
     if (loginError) {
-      setError(loginError.message === "Invalid login credentials" ? "Email atau kata sandi tidak valid." : loginError.message);
+      const msg = loginError.message.toLowerCase();
+      if (msg.includes("email not confirmed") || msg.includes("not confirmed")) {
+        setError("Email kamu belum dikonfirmasi. Cek inbox atau folder spam kamu.");
+      } else {
+        setError("Email atau password salah. Coba lagi.");
+      }
       setLoading(false);
       return;
     }
 
-    // Redirect to next path, appending linkGuest if set
-    const redirectUrl = linkGuest ? `${next}${next.includes("?") ? "&" : "?"}linkGuest=1` : next;
+    // Redirect to next path (default: /create-report), appending linkGuest if set
+    const safeNext = (next.startsWith("/") && !next.startsWith("//")) ? next : "/create-report";
+    const redirectUrl = linkGuest ? `${safeNext}${safeNext.includes("?") ? "&" : "?"}linkGuest=1` : safeNext;
     router.replace(redirectUrl);
     router.refresh();
   };

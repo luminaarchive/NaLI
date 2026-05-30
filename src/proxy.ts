@@ -34,7 +34,12 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
+
+  // Routes that require authentication
   const isProtectedPath =
+    pathname.startsWith("/create-report") ||
+    pathname.startsWith("/settings") ||
+    // Legacy app routes
     pathname.startsWith("/alerts") ||
     pathname.startsWith("/archive") ||
     pathname.startsWith("/cases") ||
@@ -45,17 +50,31 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/observe") ||
     pathname.startsWith("/system");
 
-  const isAuthPath = pathname.startsWith("/login") || pathname.startsWith("/register");
+  // Auth pages — logged-in users should not linger here
+  const isAuthPath =
+    pathname === "/login" ||
+    pathname.startsWith("/login/") ||
+    pathname === "/signup" ||
+    pathname.startsWith("/signup/") ||
+    pathname === "/register" ||
+    pathname.startsWith("/register/");
 
-  if (isProtectedPath && !user) {
-    const nextUrl = pathname + request.nextUrl.search;
-    return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(nextUrl)}`, request.url));
+  // Logged-in user visits landing page → send to workspace
+  if (user && pathname === "/") {
+    return NextResponse.redirect(new URL("/create-report", request.url));
   }
 
-  if (isAuthPath && user) {
-    const next = request.nextUrl.searchParams.get("next") || "/archive";
+  // Logged-in user visits an auth page → send to workspace
+  if (user && isAuthPath) {
+    const next = request.nextUrl.searchParams.get("next") || "/create-report";
     const isSafe = next.startsWith("/") && !next.startsWith("//");
-    return NextResponse.redirect(new URL(isSafe ? next : "/archive", request.url));
+    return NextResponse.redirect(new URL(isSafe ? next : "/create-report", request.url));
+  }
+
+  // Unauthenticated user visits a protected route → send to login
+  if (!user && isProtectedPath) {
+    const nextUrl = pathname + request.nextUrl.search;
+    return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(nextUrl)}`, request.url));
   }
 
   return supabaseResponse;
