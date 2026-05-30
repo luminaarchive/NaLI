@@ -17,62 +17,16 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export default function AgentPage() {
-  const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [userLoading, setUserLoading] = useState(true);
+interface AgentSidebarProps {
+  sidebarOpen: boolean;
+  setSidebarOpen: (v: boolean) => void;
+  user: any;
+  userLoading: boolean;
+  onNewReport: () => void;
+}
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-      setUserLoading(false);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const cards = [
-    {
-      icon: Clipboard,
-      title: "Laporan",
-      description: "Susun dan kelola laporan berbasis bukti",
-      href: "/create-report",
-      active: true,
-    },
-    {
-      icon: BookOpen,
-      title: "Draf Jurnal",
-      description: "Buat draf jurnal ilmiah berbasis IMRaD",
-      href: "/create-report",
-      active: true,
-    },
-    {
-      icon: StickyNote,
-      title: "Catatan",
-      description: "Kelola catatan lapangan observasi",
-      href: "/field-notes",
-      active: true,
-    },
-    {
-      icon: BookOpen,
-      title: "Library",
-      description: "Kelola referensi dan pustaka penelitian",
-      href: null,
-      active: false,
-    },
-    {
-      icon: Clock,
-      title: "Scheduled",
-      description: "Atur tugas terjadwal dan otomasi laporan",
-      href: null,
-      active: false,
-    },
-  ];
-
-  const Sidebar = () => (
+function AgentSidebar({ sidebarOpen, setSidebarOpen, user, userLoading, onNewReport }: AgentSidebarProps) {
+  return (
     <aside
       className={cn(
         "fixed inset-y-0 left-0 z-40 flex w-[250px] flex-col border-r border-white/[0.07] bg-[#191919] transition-transform duration-300 md:static md:translate-x-0",
@@ -95,12 +49,7 @@ export default function AgentPage() {
 
       <div className="p-3">
         <button
-          onClick={() => {
-            const sessionId = typeof crypto !== "undefined" && "randomUUID" in crypto
-              ? crypto.randomUUID()
-              : `s-${Date.now().toString(36)}`;
-            router.push(`/create-report?session=${sessionId}`);
-          }}
+          onClick={onNewReport}
           className="flex w-full items-center justify-center gap-2 rounded-[10px] bg-[#2a2a2a] px-4 py-2.5 text-sm font-semibold text-white/90 transition duration-200 hover:bg-[#333]"
         >
           <Plus className="h-4 w-4" />
@@ -159,7 +108,7 @@ export default function AgentPage() {
               <button
                 onClick={async () => {
                   await supabase.auth.signOut();
-                  router.push("/");
+                  window.location.href = "/";
                 }}
                 className="shrink-0 text-[11px] font-semibold text-white/35 hover:text-white/60 transition-colors"
               >
@@ -185,10 +134,79 @@ export default function AgentPage() {
       </div>
     </aside>
   );
+}
+
+const CARDS = [
+  {
+    icon: Clipboard,
+    title: "Laporan",
+    description: "Susun dan kelola laporan berbasis bukti",
+    href: "/create-report",
+    active: true,
+  },
+  {
+    icon: BookOpen,
+    title: "Draf Jurnal",
+    description: "Buat draf jurnal ilmiah berbasis IMRaD",
+    href: "/create-report",
+    active: true,
+  },
+  {
+    icon: StickyNote,
+    title: "Catatan",
+    description: "Kelola catatan lapangan observasi",
+    href: "/field-notes",
+    active: true,
+  },
+  {
+    icon: BookOpen,
+    title: "Library",
+    description: "Kelola referensi dan pustaka penelitian",
+    href: null,
+    active: false,
+  },
+  {
+    icon: Clock,
+    title: "Scheduled",
+    description: "Atur tugas terjadwal dan otomasi laporan",
+    href: null,
+    active: false,
+  },
+] as const;
+
+export default function AgentPage() {
+  const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [userLoading, setUserLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      setUserLoading(false);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleNewReport = () => {
+    const sessionId = typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `s-${Date.now().toString(36)}`;
+    router.push(`/create-report?session=${sessionId}`);
+  };
 
   return (
     <div className="relative flex min-h-screen w-screen overflow-hidden bg-[#191919] text-[#f5f0e8]">
-      <Sidebar />
+      <AgentSidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        user={user}
+        userLoading={userLoading}
+        onNewReport={handleNewReport}
+      />
 
       {sidebarOpen && (
         <div
@@ -235,7 +253,7 @@ export default function AgentPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {cards.map((card) => {
+              {CARDS.map((card) => {
                 const Icon = card.icon;
                 if (!card.active) {
                   return (
@@ -259,7 +277,7 @@ export default function AgentPage() {
                 return (
                   <Link
                     key={card.title}
-                    href={card.href!}
+                    href={card.href}
                     className="group relative rounded-2xl border border-white/[0.09] bg-[#222]/60 p-5 transition duration-200 hover:border-white/[0.15] hover:bg-[#2a2a2a]"
                   >
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#00FFB3]/10 mb-3 transition duration-200 group-hover:bg-[#00FFB3]/15">
