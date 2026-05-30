@@ -41,7 +41,6 @@ export async function GET(req: NextRequest) {
       .limit(20);
 
     if (error) {
-      console.warn("Error fetching reports from database:", error.message);
       return NextResponse.json({ reports: [] });
     }
 
@@ -59,8 +58,7 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({ reports: formattedReports });
-  } catch (err: any) {
-    console.error("GET /api/reports handler error:", err);
+  } catch {
     return NextResponse.json({ reports: [] });
   }
 }
