@@ -8,7 +8,6 @@ import {
   AlertTriangle,
   ArrowLeft,
   ArrowRight,
-  Beaker,
   BookOpen,
   CheckCircle2,
   ChevronDown,
@@ -17,7 +16,6 @@ import {
   Compass,
   Download,
   FileText,
-  FolderOpen,
   LockKeyhole,
   Loader2,
   Menu,
@@ -702,12 +700,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     const trimmed = (retryQuery !== undefined ? retryQuery : query).trim();
     if (!trimmed) return;
 
-    if (!integrityConsent) {
-      setShowMoreOptions(true);
-      setError({ message: "Centang pernyataan integritas akademik NaLI terlebih dahulu." });
-      return;
-    }
-
     setError(null);
     setNotice(null);
     setLastAttemptedQuery(trimmed);
@@ -1285,77 +1277,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           </div>
         </form>
 
-        {/* Composer action chips (only shown when idle) */}
-        {activeRunStatus === "idle" && (
-          <div className="flex flex-wrap justify-center gap-3 py-2">
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedMode("draft_from_materials");
-                setQuery("Bantu saya menyusun draf laporan terstruktur dari bahan ini");
-                setTimeout(() => composerRef.current?.focus(), 50);
-              }}
-              className={cn(
-                "inline-flex h-[42px] cursor-pointer items-center rounded-full border border-white/[0.07] bg-[#2a2a2a] px-4 py-2 text-xs transition duration-200 hover:bg-[#333]",
-                selectedMode === "draft_from_materials" ? "text-white border-white/[0.15]" : "text-white/70"
-              )}
-            >
-              Buat laporan
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedMode("draft_from_materials");
-                setQuery("Bantu saya menyusun draf kandidat jurnal IMRaD untuk topik: ");
-                setTimeout(() => composerRef.current?.focus(), 50);
-              }}
-              className="inline-flex h-[42px] cursor-pointer items-center rounded-full border border-white/[0.07] bg-[#2a2a2a] px-4 py-2 text-xs text-white/70 transition duration-200 hover:bg-[#333]"
-            >
-              Draf jurnal
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setQuery("Cek kekuatan bukti lapangan dan cari batasan klaim untuk: ");
-                setTimeout(() => composerRef.current?.focus(), 50);
-              }}
-              className="inline-flex h-[42px] cursor-pointer items-center rounded-full border border-white/[0.07] bg-[#2a2a2a] px-4 py-2 text-xs text-white/70 transition duration-200 hover:bg-[#333]"
-            >
-              Cek bukti
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowManualChecklistDirectly(!showManualChecklistDirectly);
-              }}
-              className={cn(
-                "inline-flex h-[42px] cursor-pointer items-center rounded-full border border-white/[0.07] bg-[#2a2a2a] px-4 py-2 text-xs transition duration-200 hover:bg-[#333]",
-                showManualChecklistDirectly ? "text-white border-white/[0.15]" : "text-white/70"
-              )}
-            >
-              Checklist manual
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setSidebarOpen(true);
-              }}
-              className="inline-flex h-[42px] cursor-pointer items-center rounded-full border border-white/[0.07] bg-[#2a2a2a] px-4 py-2 text-xs text-white/70 transition duration-200 hover:bg-[#333]"
-            >
-              Riwayat lokal
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowMoreOptions(!showMoreOptions)}
-              className={cn(
-                "inline-flex h-[42px] cursor-pointer items-center rounded-full border border-white/[0.07] bg-[#2a2a2a] px-4 py-2 text-xs transition duration-200 hover:bg-[#333]",
-                showMoreOptions ? "text-white border-white/[0.15]" : "text-white/70"
-              )}
-            >
-              More
-            </button>
-          </div>
-        )}
 
         {/* Collapsible Options Panel */}
         {showMoreOptions && (
@@ -1416,19 +1337,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               </div>
             </div>
 
-            {/* Academic Integrity consent checkbox (inline inside options) */}
-            <label className="flex cursor-pointer items-start gap-2.5 text-[11px] leading-5 text-white/40 transition hover:text-white/60 pt-2 border-t border-white/[0.04]">
-              <input
-                type="checkbox"
-                checked={integrityConsent}
-                onChange={(e) => setIntegrityConsent(e.target.checked)}
-                className="mt-0.5 h-3.5 w-3.5 rounded border-white/20 bg-transparent accent-emerald-500 focus:ring-0 focus:ring-offset-0"
-              />
-              <span>
-                Saya menyetujui pernyataan integritas akademik NaLI. Output adalah draf/panduan awal belajar, bukan
-                plagiarisme atau karya akhir otomatis.
-              </span>
-            </label>
           </div>
         )}
 
@@ -1502,11 +1410,12 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
+        {/* Logo header */}
         <div className="flex h-16 items-center justify-between border-b border-white/[0.07] px-4">
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <NaLILogo size={24} variant="light" />
             <span className="text-sm font-semibold text-white/80">NaLI</span>
-          </div>
+          </Link>
           <button
             aria-label="Tutup riwayat"
             className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-white/40 hover:bg-white/[0.05] hover:text-white md:hidden"
@@ -1528,53 +1437,60 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               setReportStatus("idle");
               setError(null);
               setShowManualChecklistDirectly(false);
-              router.push("/create-report");
+              const sessionId = typeof crypto !== "undefined" && "randomUUID" in crypto
+                ? crypto.randomUUID()
+                : `s-${Date.now().toString(36)}`;
+              router.push(`/create-report?session=${sessionId}`);
             }}
             className="flex w-full items-center justify-center gap-2 rounded-[10px] bg-[#2a2a2a] px-4 py-2.5 text-sm font-semibold text-white/90 transition duration-200 hover:bg-[#333]"
           >
             <Plus className="h-4 w-4" />
-            Buat laporan baru
+            Buat Laporan Baru
           </button>
         </div>
 
         {/* Navigation Section */}
         <div className="space-y-0.5 px-3 py-2">
-          <button
-            type="button"
-            className="flex h-10 w-full items-center gap-3 rounded-[10px] bg-white/[0.06] px-3.5 text-left text-sm font-medium text-white/90 transition duration-150"
+          <Link
+            href="/create-report"
+            className="flex h-10 w-full items-center gap-3 rounded-[10px] bg-white/[0.06] px-3.5 text-left text-sm font-medium text-white/90 transition duration-150 hover:bg-white/[0.09]"
           >
-            <Sparkles className="h-4 w-4 text-white/60" />
+            <Clipboard className="h-4 w-4 text-white/60" />
+            Laporan
+          </Link>
+          <Link
+            href="/agent"
+            className="flex h-10 w-full items-center gap-3 rounded-[10px] px-3.5 text-left text-sm font-medium text-white/60 transition duration-150 hover:bg-white/[0.05] hover:text-white/90"
+          >
+            <Sparkles className="h-4 w-4 text-white/40" />
             Agent
-          </button>
-          {[
-            { label: "Laporan", icon: Clipboard },
-            { label: "Draf Jurnal", icon: Beaker },
-            { label: "Catatan", icon: StickyNote },
-            { label: "Library", icon: BookOpen },
-            { label: "Scheduled", icon: Clock },
-          ].map((item, idx) => (
-            <div
-              key={idx}
-              className="flex h-9 w-full items-center justify-between rounded-[10px] px-3.5 text-left text-sm text-white/35 cursor-not-allowed select-none"
-              title={`${item.label} (Coming Soon)`}
-            >
-              <span className="flex items-center gap-3">
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </span>
-              <span className="text-[9px] font-bold tracking-wider text-white/20 uppercase">Soon</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Projects Section */}
-        <div className="px-3 py-2">
-          <p className="px-3.5 py-1.5 text-[10px] font-bold tracking-[0.08em] text-white/25 uppercase">
-            Projects
-          </p>
-          <div className="flex h-9 items-center gap-3 rounded-[10px] px-3.5 text-sm text-white/70">
-            <FolderOpen className="h-4 w-4 text-white/40" />
-            <span>NaLI</span>
+          </Link>
+          <Link
+            href="/field-notes"
+            className="flex h-10 w-full items-center gap-3 rounded-[10px] px-3.5 text-left text-sm font-medium text-white/60 transition duration-150 hover:bg-white/[0.05] hover:text-white/90"
+          >
+            <StickyNote className="h-4 w-4 text-white/40" />
+            Catatan
+          </Link>
+          <div
+            className="flex h-9 w-full items-center justify-between rounded-[10px] px-3.5 text-sm text-white/30 cursor-not-allowed select-none"
+            title="Library (Segera hadir)"
+          >
+            <span className="flex items-center gap-3">
+              <BookOpen className="h-4 w-4" />
+              Library
+            </span>
+            <span className="text-[9px] font-bold tracking-wider text-white/20 uppercase">Soon</span>
+          </div>
+          <div
+            className="flex h-9 w-full items-center justify-between rounded-[10px] px-3.5 text-sm text-white/30 cursor-not-allowed select-none"
+            title="Scheduled (Segera hadir)"
+          >
+            <span className="flex items-center gap-3">
+              <Clock className="h-4 w-4" />
+              Scheduled
+            </span>
+            <span className="text-[9px] font-bold tracking-wider text-white/20 uppercase">Soon</span>
           </div>
         </div>
 
@@ -1630,24 +1546,45 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           )}
         </div>
 
-        {/* Bottom Status Block */}
-        <div className="border-t border-white/[0.05] p-4 bg-[#161616] space-y-2">
-          <div className="flex items-center justify-between text-[11px] text-white/40">
-            <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              Public Alpha
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-zinc-500" />
-              PDF locked
-            </span>
-          </div>
-          <div className="flex items-center justify-between text-[11px] text-white/40">
-            <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-              AI capacity limited
-            </span>
-          </div>
+        {/* Bottom Auth + Version Block */}
+        <div className="border-t border-white/[0.05] p-3 bg-[#161616] space-y-2">
+          {!userLoading && (
+            user ? (
+              <div className="flex items-center justify-between gap-2 rounded-[10px] bg-white/[0.04] px-3 py-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#00FFB3]/20 text-[11px] font-bold text-[#00FFB3]">
+                    {(user.email?.[0] ?? "U").toUpperCase()}
+                  </div>
+                  <span className="truncate text-[11px] text-white/60">{user.email}</span>
+                </div>
+                <button
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    router.push("/");
+                  }}
+                  className="shrink-0 text-[11px] font-semibold text-white/35 hover:text-white/60 transition-colors"
+                >
+                  Keluar
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-2 rounded-[10px] bg-white/[0.04] px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[0.08] text-[11px] font-bold text-white/40">
+                    ?
+                  </div>
+                  <span className="text-[11px] text-white/40">Tamu</span>
+                </div>
+                <Link
+                  href="/login"
+                  className="shrink-0 text-[11px] font-semibold text-[#00FFB3]/70 hover:text-[#00FFB3] transition-colors"
+                >
+                  Masuk
+                </Link>
+              </div>
+            )
+          )}
+          <div className="px-1 text-[10px] text-white/20">NaLI 1.0 Alpha</div>
         </div>
       </aside>
 
@@ -1682,22 +1619,23 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               {selectedMode === "start_from_zero" ? "Panduan Awal" : "Laporan NaLI"}
             </span>
 
-            {/* Auth Session Dropdown / Guest Link Account button */}
+            {/* Auth display top-right */}
             {!userLoading && (
               user ? (
-                <UserDropdown user={user} />
-              ) : (
                 <div className="flex items-center gap-2">
-                  <span className="hidden sm:inline text-[11px] font-semibold text-white/40">Guest</span>
-                  <Link
-                    href={`/login?next=${encodeURIComponent(
-                      report?.id ? `/report/${report.id}` : "/create-report"
-                    )}&linkGuest=1`}
-                    className="inline-flex h-8 items-center rounded-lg bg-white/10 px-3 text-xs font-semibold text-white transition hover:bg-white/15"
-                  >
-                    Simpan ke akun
-                  </Link>
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#00FFB3]/20 text-[11px] font-bold text-[#00FFB3]">
+                    {(user.email?.[0] ?? "U").toUpperCase()}
+                  </div>
                 </div>
+              ) : (
+                <Link
+                  href={`/login?next=${encodeURIComponent(
+                    report?.id ? `/report/${report.id}` : "/create-report"
+                  )}`}
+                  className="inline-flex h-8 items-center rounded-lg border border-white/[0.08] px-3 text-xs font-semibold text-white/60 transition hover:text-white hover:border-white/20"
+                >
+                  Masuk
+                </Link>
               )
             )}
           </div>
