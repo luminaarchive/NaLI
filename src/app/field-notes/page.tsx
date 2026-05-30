@@ -9,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, FileText, MapPin, Calendar, Mountain } from "lucide-react";
 
 interface FieldNote {
@@ -82,13 +81,13 @@ export default function FieldNotesPage() {
   }, []);
 
   async function saveNote() {
-    if (!form.title.trim() || !form.raw_notes.trim() || saving) return;
+    if (!form.raw_notes.trim() || saving) return;
     setSaving(true);
 
     const localSave = () => {
       const newNote: FieldNote = {
         id: `local-note-${Date.now()}`,
-        title: form.title.trim(),
+        title: form.title.trim() || form.raw_notes.slice(0, 40),
         raw_notes: form.raw_notes.trim(),
         location_name: form.location_name || null,
         mountain_context: form.mountain || null,
@@ -205,54 +204,29 @@ export default function FieldNotesPage() {
               </DialogHeader>
               <div className="flex flex-col gap-4 mt-2">
                 <div>
-                  <Label className="text-[#4a6455] text-xs mb-1.5 block">Judul *</Label>
-                  <Input value={form.title} onChange={e => setForm(p => ({...p,title:e.target.value}))} placeholder="Contoh: Observasi Macan Tutul - Merbabu 2706" className="bg-white border-[#1e3525]/12 text-[#1e3525] placeholder:text-[#4a6455]/40 rounded-xl focus-visible:ring-[#1e3525]/30" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-[#4a6455] text-xs mb-1.5 block">Lokasi</Label>
-                    <Input value={form.location_name} onChange={e => setForm(p => ({...p,location_name:e.target.value}))} placeholder="Nama lokasi" className="bg-white border-[#1e3525]/12 text-[#1e3525] placeholder:text-[#4a6455]/40 rounded-xl focus-visible:ring-[#1e3525]/30" />
-                  </div>
-                  <div>
-                    <Label className="text-[#4a6455] text-xs mb-1.5 block">Elevasi (m)</Label>
-                    <Input type="number" value={form.elevation_m} onChange={e => setForm(p => ({...p,elevation_m:e.target.value}))} placeholder="Contoh: 2400" className="bg-white border-[#1e3525]/12 text-[#1e3525] placeholder:text-[#4a6455]/40 rounded-xl focus-visible:ring-[#1e3525]/30" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-[#4a6455] text-xs mb-1.5 block">Gunung Pilot</Label>
-                    <Select value={form.mountain} onValueChange={v => setForm(p => ({...p,mountain:v}))}>
-                      <SelectTrigger className="bg-white border-[#1e3525]/12 text-[#1e3525] rounded-xl"><SelectValue placeholder="Pilih..." /></SelectTrigger>
-                      <SelectContent className="bg-white border-[#1e3525]/12">
-                        {MOUNTAINS.map(m => <SelectItem key={m} value={m} className="text-[#4a6455] focus:text-[#1e3525] focus:bg-[#1e3525]/5 capitalize cursor-pointer">{m}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-[#4a6455] text-xs mb-1.5 block">Tipe Habitat</Label>
-                    <Select value={form.habitat_type} onValueChange={v => setForm(p => ({...p,habitat_type:v}))}>
-                      <SelectTrigger className="bg-white border-[#1e3525]/12 text-[#1e3525] rounded-xl"><SelectValue placeholder="Pilih..." /></SelectTrigger>
-                      <SelectContent className="bg-white border-[#1e3525]/12">
-                        {HABITATS.map(h => <SelectItem key={h.value} value={h.value} className="text-[#4a6455] focus:text-[#1e3525] focus:bg-[#1e3525]/5 cursor-pointer">{h.label}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-[#4a6455] text-xs mb-1.5 block">Tanggal Observasi</Label>
-                  <Input type="datetime-local" value={form.observed_at} onChange={e => setForm(p => ({...p,observed_at:e.target.value}))} className="bg-white border-[#1e3525]/12 text-[#1e3525] rounded-xl focus-visible:ring-[#1e3525]/30" />
-                </div>
-                <div>
-                  <Label className="text-[#4a6455] text-xs mb-1.5 block">Kondisi Cuaca</Label>
-                  <Input value={form.weather_notes} onChange={e => setForm(p => ({...p,weather_notes:e.target.value}))} placeholder="Cerah, berawan, kabut, hujan ringan..." className="bg-white border-[#1e3525]/12 text-[#1e3525] placeholder:text-[#4a6455]/40 rounded-xl focus-visible:ring-[#1e3525]/30" />
+                  <Label className="text-[#4a6455] text-xs mb-1.5 block">Judul (opsional)</Label>
+                  <Input value={form.title} onChange={e => setForm(p => ({...p,title:e.target.value}))} placeholder="Judul catatan (opsional)" className="bg-white border-[#1e3525]/12 text-[#1e3525] placeholder:text-[#4a6455]/40 rounded-xl focus-visible:ring-[#1e3525]/30" />
                 </div>
                 <div>
                   <Label className="text-[#4a6455] text-xs mb-1.5 block">Catatan Lapangan *</Label>
-                  <Textarea value={form.raw_notes} onChange={e => setForm(p => ({...p,raw_notes:e.target.value}))} placeholder="Deskripsikan observasi secara bebas: spesies yang ditemukan, perilaku, kondisi habitat, tanda-tanda kehadiran, ancaman yang terlihat..." rows={5} className="bg-white border-[#1e3525]/12 text-[#1e3525] placeholder:text-[#4a6455]/40 rounded-xl resize-none focus-visible:ring-[#1e3525]/30" />
+                  <Textarea value={form.raw_notes} onChange={e => setForm(p => ({...p,raw_notes:e.target.value}))} placeholder="Tulis observasi lapangan kamu di sini..." rows={5} className="bg-white border-[#1e3525]/12 text-[#1e3525] placeholder:text-[#4a6455]/40 rounded-xl resize-none focus-visible:ring-[#1e3525]/30" />
                 </div>
-                <Button onClick={saveNote} disabled={!form.title.trim() || !form.raw_notes.trim() || saving} className="w-full rounded-xl bg-[#1e3525] text-white hover:bg-[#162d1d] disabled:opacity-50 cursor-pointer">
-                  {saving ? "Menyimpan..." : "Simpan Catatan"}
-                </Button>
+                <div>
+                  <Label className="text-[#4a6455] text-xs mb-1.5 block">Lokasi</Label>
+                  <Input value={form.location_name} onChange={e => setForm(p => ({...p,location_name:e.target.value}))} placeholder="Lokasi (contoh: Lereng Semeru, 2.100 mdpl)" className="bg-white border-[#1e3525]/12 text-[#1e3525] placeholder:text-[#4a6455]/40 rounded-xl focus-visible:ring-[#1e3525]/30" />
+                </div>
+                <div>
+                  <Label className="text-[#4a6455] text-xs mb-1.5 block">Tanggal Observasi</Label>
+                  <Input type="date" value={form.observed_at} onChange={e => setForm(p => ({...p,observed_at:e.target.value}))} defaultValue={new Date().toISOString().slice(0, 10)} className="bg-white border-[#1e3525]/12 text-[#1e3525] rounded-xl focus-visible:ring-[#1e3525]/30" />
+                </div>
+                <div className="flex gap-3 pt-1">
+                  <Button onClick={saveNote} disabled={!form.raw_notes.trim() || saving} className="flex-1 rounded-xl bg-[#1e3525] text-white hover:bg-[#162d1d] disabled:opacity-50 cursor-pointer">
+                    {saving ? "Menyimpan..." : "Simpan Catatan"}
+                  </Button>
+                  <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)} className="flex-1 rounded-xl text-[#4a6455] hover:text-[#1e3525] cursor-pointer">
+                    Batal
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
