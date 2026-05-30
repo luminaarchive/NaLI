@@ -3,17 +3,11 @@
 import { useState, useEffect, type ReactNode } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
-import { ArrowRight, Menu, ChevronDown } from "lucide-react";
+import { ArrowRight, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NaLILogo } from "@/components/ui/NaLILogo";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 
 interface PublicAppShellProps {
   children: ReactNode;
@@ -80,64 +74,6 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
             >
               Buat Laporan
             </Link>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className={cn(
-                    "flex items-center gap-1 text-sm font-medium transition-colors outline-none cursor-pointer",
-                    isHomepage
-                      ? "text-[#1e3525]/65 hover:text-[#1e3525]"
-                      : "text-[#f5f0e8]/65 hover:text-[#f5f0e8]",
-                  )}
-                >
-                  Fitur
-                  <ChevronDown className="h-3 w-3 stroke-[2.5] opacity-70" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="start"
-                className="mt-1 w-48 rounded-xl border p-1 shadow-lg bg-[#08100c] border-[#14261c] text-[#f5f0e8]"
-              >
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/species"
-                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-[#a1b3a8] transition-colors hover:bg-[#14261c] hover:text-[#f5f0e8] focus:bg-[#14261c] focus:text-[#f5f0e8]"
-                  >
-                    <span>🔬</span>
-                    <span>Spesies Intelligence</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/field-report"
-                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-[#a1b3a8] transition-colors hover:bg-[#14261c] hover:text-[#f5f0e8] focus:bg-[#14261c] focus:text-[#f5f0e8]"
-                  >
-                    <span>📋</span>
-                    <span>Field Report Builder</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/projects"
-                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-[#a1b3a8] transition-colors hover:bg-[#14261c] hover:text-[#f5f0e8] focus:bg-[#14261c] focus:text-[#f5f0e8]"
-                  >
-                    <span>📁</span>
-                    <span>Proyek Riset</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/skills"
-                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-[#a1b3a8] transition-colors hover:bg-[#14261c] hover:text-[#f5f0e8] focus:bg-[#14261c] focus:text-[#f5f0e8]"
-                  >
-                    <span>⚡</span>
-                    <span>NaLI Skills</span>
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
 
             <Link
               className={cn(
@@ -272,54 +208,6 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
                 </Link>
                 <Link
                   className={cn(
-                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors pl-6",
-                    isHomepage
-                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
-                      : "text-[#f5f0e8] hover:bg-white/5",
-                  )}
-                  href="/species"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  🔬 Spesies Intelligence
-                </Link>
-                <Link
-                  className={cn(
-                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors pl-6",
-                    isHomepage
-                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
-                      : "text-[#f5f0e8] hover:bg-white/5",
-                  )}
-                  href="/field-report"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  📋 Field Report Builder
-                </Link>
-                <Link
-                  className={cn(
-                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors pl-6",
-                    isHomepage
-                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
-                      : "text-[#f5f0e8] hover:bg-white/5",
-                  )}
-                  href="/projects"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  📁 Proyek Riset
-                </Link>
-                <Link
-                  className={cn(
-                    "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors pl-6",
-                    isHomepage
-                      ? "text-[#1e3525] hover:bg-[#1e3525]/5"
-                      : "text-[#f5f0e8] hover:bg-white/5",
-                  )}
-                  href="/skills"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  ⚡ NaLI Skills
-                </Link>
-                <Link
-                  className={cn(
                     "flex min-h-[44px] items-center rounded-lg px-2 text-sm font-medium transition-colors",
                     isHomepage
                       ? "text-[#1e3525] hover:bg-[#1e3525]/5"
@@ -425,10 +313,6 @@ export function PublicAppShell({ children, isHomepage = false }: PublicAppShellP
               label="Produk"
               links={[
                 { href: "/create-report", label: "Buat Laporan" },
-                { href: "/species", label: "Spesies Intelligence" },
-                { href: "/field-report", label: "Field Report Builder" },
-                { href: "/projects", label: "Proyek Riset" },
-                { href: "/skills", label: "NaLI Skills" },
                 { href: "/field-notes", label: "Catatan Lapangan" },
                 { href: "/pricing", label: "Harga" },
                 { href: "/learn-report", label: "Panduan" },
