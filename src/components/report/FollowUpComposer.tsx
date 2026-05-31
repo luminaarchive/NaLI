@@ -1,11 +1,17 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Send } from "lucide-react";
 import type { ConversationMessage } from "./ConversationThread";
 import { UploadDropdown } from "@/components/composer/UploadDropdown";
 import { AttachedFileChip } from "@/components/composer/AttachedFileChip";
 import type { ExtractedFile } from "@/lib/extract-file-content";
+
+export interface FollowUpComposerHandle {
+  /** Replace the composer text and move focus + cursor to the end. */
+  prefill: (text: string) => void;
+  focus: () => void;
+}
 
 interface FollowUpComposerProps {
   sessionId: string | null;
@@ -14,21 +20,35 @@ interface FollowUpComposerProps {
   onStreamToken: (token: string) => void;
   onStreamDone: (finalSessionId: string | null, fullText?: string) => void;
   onError: (msg: string) => void;
+  placeholder?: string;
 }
 
-export function FollowUpComposer({
-  sessionId,
-  conversationMessages,
-  onStreamStart,
-  onStreamToken,
-  onStreamDone,
-  onError,
-}: FollowUpComposerProps) {
+export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpComposerProps>(function FollowUpComposer(
+  { sessionId, conversationMessages, onStreamStart, onStreamToken, onStreamDone, onError, placeholder },
+  ref,
+) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [attachedFile, setAttachedFile] = useState<ExtractedFile | null>(null);
   const [isExtractingFile, setIsExtractingFile] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    prefill: (text: string) => {
+      setInput(text);
+      setTimeout(() => {
+        const el = textareaRef.current;
+        if (!el) return;
+        el.focus();
+        const end = el.value.length;
+        el.setSelectionRange(end, end);
+        el.style.height = "auto";
+        el.style.height = `${Math.min(el.scrollHeight, 100)}px`;
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 60);
+    },
+    focus: () => textareaRef.current?.focus(),
+  }));
 
   const followUpCount = Math.floor(conversationMessages.slice(2).length / 2);
 
@@ -157,7 +177,7 @@ export function FollowUpComposer({
               }
             }}
             disabled={loading}
-            placeholder="Tanya lebih lanjut atau minta revisi..."
+            placeholder={placeholder ?? "Tanya lebih lanjut atau minta revisi..."}
             rows={1}
             className="max-h-[100px] flex-1 resize-none bg-transparent text-sm leading-6 text-white/80 placeholder-white/25 outline-none disabled:opacity-50"
             style={{ lineHeight: "1.5rem" }}
@@ -184,4 +204,4 @@ export function FollowUpComposer({
       <p className="mt-2 text-[10px] text-white/20">Tekan Enter untuk kirim, Shift+Enter untuk baris baru</p>
     </div>
   );
-}
+});

@@ -2000,14 +2000,23 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     </div>
                   )}
 
-                  <h1 className="mb-4 font-serif text-3xl leading-[1.15] font-semibold tracking-tight text-[#f5f0e8] sm:text-[40px] md:text-[48px]">
-                    Apa yang bisa NaLI bantu susun?
+                  <h1 className="mb-3 font-serif text-3xl leading-[1.15] font-semibold tracking-tight text-[#f5f0e8] sm:text-[40px] md:text-[48px]">
+                    Ceritakan apa yang kamu temukan
                   </h1>
+                  <p className="mb-8 max-w-[560px] text-sm leading-relaxed text-white/45 sm:text-base">
+                    Tulis catatan lapangan, deskripsi spesimen, atau data survei. NaLI mengubahnya jadi laporan ilmiah.
+                  </p>
 
                   <EmptyState
                     onSampleClick={(text) => {
                       setQuery(text);
-                      setTimeout(() => composerRef.current?.focus(), 50);
+                      setTimeout(() => {
+                        const el = composerRef.current;
+                        if (!el) return;
+                        el.focus();
+                        const end = el.value.length;
+                        el.setSelectionRange(end, end);
+                      }, 50);
                     }}
                   />
 
