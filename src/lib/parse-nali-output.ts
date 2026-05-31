@@ -1,46 +1,31 @@
-export interface PalantirScore {
-  overall: number;
-  level: string;
-  geneticPillar: number;
-  visualPillar: number;
-  habitatPillar: number;
-  integrityPillar: number;
-  linguisticMultiplier: number;
-  temporalDecayFactor: number;
-  entityResolution: string;
-}
+export type AvailStatus = "ADA" | "TIDAK_ADA" | "KURANG";
 
-export interface NaLIIntelligenceHeader {
+export interface NaLIHeader {
   tipeLaporan: string;
-  domain: string;
-  palantir: PalantirScore;
-  kualitasBukti: "Rendah" | "Sedang" | "Kuat" | "Forensik Grade";
-  risikoKlaim: "Rendah" | "Sedang" | "Tinggi";
-  kesiapanPublikasi: string;
-  entitasOPL: {
-    taxon: string;
-    lokasi: string;
-    waktu: string;
-    observer: string;
-    sampel: string;
+  kualitasBukti: "Rendah" | "Sedang" | "Kuat" | "Forensik" | string;
+  risikoKlaim: "Rendah" | "Sedang" | "Tinggi" | string;
+  bahasaUser: "Objektif" | "Campuran" | "Bias" | string;
+  evidenceAvailability: {
+    genetik: AvailStatus;
+    visual: AvailStatus;
+    lokasi_gps: AvailStatus;
+    timestamp: AvailStatus;
+    metode: AvailStatus;
+    multiple_observer: AvailStatus;
   };
 }
 
 export interface EvidenceRow {
   klaim: string;
-  pilarBukti: string;
   sumber: string;
-  status: "Terkonfirmasi" | "Inferensi AI" | "Bukti kurang";
-  risiko: "Rendah" | "Sedang" | "Tinggi";
-  kelemahan: string;
+  status: "Terkonfirmasi" | "Inferensi AI" | "Bukti kurang" | string;
+  keterangan: string;
 }
 
 export interface MissingEvidenceItem {
-  impactScore: number;
   number: number;
   item: string;
-  impact: string;
-  cara: string;
+  reason: string;
 }
 
 export interface FollowUpQuestion {
@@ -51,20 +36,33 @@ export interface FollowUpQuestion {
 
 export interface ParsedNaLIOutput {
   version: "v1" | "v2";
-  header: NaLIIntelligenceHeader | null;
+  header: NaLIHeader | null;
   reportMarkdown: string;
   evidenceTable: EvidenceRow[];
   missingEvidence: MissingEvidenceItem[];
   followUpQuestions: FollowUpQuestion[];
-  integrityStatement: string;
   hasStructuredOutput: boolean;
 }
 
-export function parseNaLIOutput(raw: string): ParsedNaLIOutput {
-  const isV2 = raw.includes("---NALI-INTELLIGENCE-HEADER---");
-  const isV1 = !isV2 && raw.includes("---NALI-HEADER---");
+function parseAvailStatus(val: string | undefined): AvailStatus {
+  const v = (val ?? "").trim().toUpperCase();
+  if (v === "ADA") return "ADA";
+  if (v === "KURANG") return "KURANG";
+  return "TIDAK_ADA";
+}
 
-  if (!isV2 && !isV1) {
+function extractField(text: string, key: string): string {
+  const m = text.match(new RegExp(`${key}:\\s*(.+)`));
+  return m?.[1]?.trim() ?? "";
+}
+
+export function parseNaLIOutput(raw: string): ParsedNaLIOutput {
+  // Detect new simple format (---NALI-HEADER---) or old complex format
+  const hasNewHeader = raw.includes("---NALI-HEADER---");
+  const hasOldHeader = raw.includes("---NALI-INTELLIGENCE-HEADER---");
+  const isStructured = hasNewHeader || hasOldHeader;
+
+  if (!isStructured) {
     return {
       version: "v1",
       header: null,
@@ -72,80 +70,70 @@ export function parseNaLIOutput(raw: string): ParsedNaLIOutput {
       evidenceTable: [],
       missingEvidence: [],
       followUpQuestions: [],
-      integrityStatement: "",
       hasStructuredOutput: false,
     };
   }
 
   const result: ParsedNaLIOutput = {
-    version: isV2 ? "v2" : "v1",
+    version: "v2",
     header: null,
     reportMarkdown: "",
     evidenceTable: [],
     missingEvidence: [],
     followUpQuestions: [],
-    integrityStatement: "",
     hasStructuredOutput: true,
   };
 
-  if (isV2) {
-    const headerMatch = raw.match(/---NALI-INTELLIGENCE-HEADER---([\s\S]*?)---END-INTELLIGENCE-HEADER---/);
+  if (hasNewHeader) {
+    // Parse new simple ---NALI-HEADER--- format
+    const headerMatch = raw.match(/---NALI-HEADER---([\s\S]*?)---END-HEADER---/);
     if (headerMatch) {
       const h = headerMatch[1];
-
-      const overallMatch = h.match(/PALANTIR CONFIDENCE SCORE:\s*([\d.]+)%/);
-      const levelMatch = h.match(/PALANTIR CONFIDENCE SCORE:.*?[—\-]\s*(.+)/);
-      const geneticMatch = h.match(/Pilar Genetik.*?:\s*([\d.]+)\//);
-      const visualMatch = h.match(/Pilar Visual.*?:\s*([\d.]+)\//);
-      const habitatMatch = h.match(/Pilar Habitat.*?:\s*([\d.]+)\//);
-      const integrityMatch = h.match(/Pilar Integritas.*?:\s*([\d.]+)\//);
-      const liMatch = h.match(/Linguistic Integrity Multiplier:\s*([\d.]+)/);
-      const decayMatch = h.match(/Temporal Decay Factor: P\(t\) = ([\d.]+)/);
-      const entityMatch = h.match(/Entity Resolution:\s*(.+)/);
-      const tipeLaporanMatch = h.match(/Tipe Laporan:\s*(.+)/);
-      const domainMatch = h.match(/Domain:\s*(.+)/);
-      const kualitasMatch = h.match(/Kualitas Bukti:\s*(.+)/);
-      const risikoMatch = h.match(/Risiko Klaim:\s*(.+)/);
-      const publikasiMatch = h.match(/Kesiapan Publikasi:\s*(.+)/);
-      const taxonMatch = h.match(/- Taxon:\s*(.+)/);
-      const lokasiMatch = h.match(/- Lokasi:\s*(.+)/);
-      const waktuMatch = h.match(/- Waktu:\s*(.+)/);
-      const observerMatch = h.match(/- Observer:\s*(.+)/);
-      const sampelMatch = h.match(/- Sampel:\s*(.+)/);
-
       result.header = {
-        tipeLaporan: tipeLaporanMatch?.[1]?.trim() ?? "",
-        domain: domainMatch?.[1]?.trim() ?? "",
-        palantir: {
-          overall: parseFloat(overallMatch?.[1] ?? "0"),
-          level: levelMatch?.[1]?.trim() ?? "",
-          geneticPillar: parseFloat(geneticMatch?.[1] ?? "0"),
-          visualPillar: parseFloat(visualMatch?.[1] ?? "0"),
-          habitatPillar: parseFloat(habitatMatch?.[1] ?? "0"),
-          integrityPillar: parseFloat(integrityMatch?.[1] ?? "0"),
-          linguisticMultiplier: parseFloat(liMatch?.[1] ?? "1"),
-          temporalDecayFactor: parseFloat(decayMatch?.[1] ?? "1"),
-          entityResolution: entityMatch?.[1]?.trim() ?? "",
-        },
-        kualitasBukti: (kualitasMatch?.[1]?.trim() ?? "Rendah") as NaLIIntelligenceHeader["kualitasBukti"],
-        risikoKlaim: (risikoMatch?.[1]?.trim() ?? "Sedang") as NaLIIntelligenceHeader["risikoKlaim"],
-        kesiapanPublikasi: publikasiMatch?.[1]?.trim() ?? "",
-        entitasOPL: {
-          taxon: taxonMatch?.[1]?.trim() ?? "tidak disebutkan",
-          lokasi: lokasiMatch?.[1]?.trim() ?? "tidak disebutkan",
-          waktu: waktuMatch?.[1]?.trim() ?? "tidak disebutkan",
-          observer: observerMatch?.[1]?.trim() ?? "tidak disebutkan",
-          sampel: sampelMatch?.[1]?.trim() ?? "tidak ada",
+        tipeLaporan: extractField(h, "Tipe"),
+        kualitasBukti: extractField(h, "Kualitas_Bukti"),
+        risikoKlaim: extractField(h, "Risiko_Klaim"),
+        bahasaUser: extractField(h, "Bahasa_User"),
+        evidenceAvailability: {
+          genetik: parseAvailStatus(extractField(h, "Genetik")),
+          visual: parseAvailStatus(extractField(h, "Visual")),
+          lokasi_gps: parseAvailStatus(extractField(h, "Lokasi_GPS")),
+          timestamp: parseAvailStatus(extractField(h, "Timestamp")),
+          metode: parseAvailStatus(extractField(h, "Metode")),
+          multiple_observer: parseAvailStatus(extractField(h, "Observer")),
         },
       };
     }
+
+    const afterHeader = raw.split("---END-HEADER---")[1] ?? "";
+    result.reportMarkdown = afterHeader.split("---NALI-EVIDENCE-TABLE---")[0].trim();
+  } else {
+    // Old ---NALI-INTELLIGENCE-HEADER--- format: extract what we can
+    const headerMatch = raw.match(/---NALI-INTELLIGENCE-HEADER---([\s\S]*?)---END-INTELLIGENCE-HEADER---/);
+    if (headerMatch) {
+      const h = headerMatch[1];
+      const kualitas = extractField(h, "Kualitas Bukti");
+      result.header = {
+        tipeLaporan: extractField(h, "Tipe Laporan"),
+        kualitasBukti: kualitas,
+        risikoKlaim: extractField(h, "Risiko Klaim"),
+        bahasaUser: "Campuran",
+        evidenceAvailability: {
+          genetik: "TIDAK_ADA",
+          visual: "TIDAK_ADA",
+          lokasi_gps: "TIDAK_ADA",
+          timestamp: "TIDAK_ADA",
+          metode: "TIDAK_ADA",
+          multiple_observer: "TIDAK_ADA",
+        },
+      };
+    }
+
+    const afterHeader = raw.split("---END-INTELLIGENCE-HEADER---")[1] ?? "";
+    result.reportMarkdown = afterHeader.split("---NALI-EVIDENCE-TABLE---")[0].trim();
   }
 
-  const headerEndTag = isV2 ? "---END-INTELLIGENCE-HEADER---" : "---END-HEADER---";
-  const afterHeader = raw.split(headerEndTag)[1] ?? "";
-  const evidenceStartTag = "---NALI-EVIDENCE-TABLE---";
-  result.reportMarkdown = afterHeader.split(evidenceStartTag)[0].trim();
-
+  // Parse evidence table (shared logic — handles 3-4 column format)
   const tableMatch = raw.match(/---NALI-EVIDENCE-TABLE---([\s\S]*?)---END-EVIDENCE-TABLE---/);
   if (tableMatch) {
     const rows = tableMatch[1]
@@ -158,54 +146,47 @@ export function parseNaLIOutput(raw: string): ParsedNaLIOutput {
         .split("|")
         .map((c) => c.trim())
         .filter(Boolean);
-      if (cells.length >= 4) {
+      if (cells.length >= 3) {
         result.evidenceTable.push({
           klaim: cells[0] ?? "",
-          pilarBukti: cells[1] ?? "",
-          sumber: cells[2] ?? "",
-          status: (cells[3] as EvidenceRow["status"]) ?? "Bukti kurang",
-          risiko: (cells[4] as EvidenceRow["risiko"]) ?? "Sedang",
-          kelemahan: cells[5] ?? cells[3] ?? "",
+          sumber: cells[1] ?? "",
+          status: cells[2] ?? "Bukti kurang",
+          keterangan: cells[3] ?? "",
         });
       }
     }
   }
 
+  // Parse missing evidence
   const missingMatch = raw.match(/---NALI-MISSING-EVIDENCE---([\s\S]*?)---END-MISSING-EVIDENCE---/);
   if (missingMatch) {
     const lines = missingMatch[1].trim().split("\n").filter(Boolean);
     lines.forEach((line, i) => {
-      const cleaned = line.replace(/^\[[\d.]+\]\s*\d+\.\s*/, "").replace(/^\d+\.\s*/, "");
-      const parts = cleaned.split(" — ");
-      result.missingEvidence.push({
-        impactScore: parseFloat(line.match(/\[([\d.]+)\]/)?.[1] ?? "0"),
-        number: i + 1,
-        item: parts[0]?.trim() ?? cleaned,
-        impact: parts[1]?.trim() ?? "",
-        cara: parts[2]?.trim() ?? "",
-      });
+      const cleaned = line.replace(/^\d+\.\s*/, "");
+      const dashIdx = cleaned.indexOf(" — ");
+      const item = dashIdx >= 0 ? cleaned.slice(0, dashIdx).trim() : cleaned.trim();
+      const reason = dashIdx >= 0 ? cleaned.slice(dashIdx + 3).trim() : "";
+      result.missingEvidence.push({ number: i + 1, item, reason });
     });
   }
 
-  const fupMatch = raw.match(/---NALI-FOLLOWUP-QUESTIONS---([\s\S]*?)---END-FOLLOWUP-QUESTIONS---/);
+  // Parse follow-up questions: support both ---NALI-QUESTIONS--- and ---NALI-FOLLOWUP-QUESTIONS---
+  const fupMatch =
+    raw.match(/---NALI-QUESTIONS---([\s\S]*?)---END-QUESTIONS---/) ??
+    raw.match(/---NALI-FOLLOWUP-QUESTIONS---([\s\S]*?)---END-FOLLOWUP-QUESTIONS---/);
+
   if (fupMatch) {
     const lines = fupMatch[1]
       .trim()
       .split("\n")
-      .filter((l) => l.match(/^Q\d:/));
+      .filter((l) => /^Q\d:/.test(l));
     lines.forEach((line, i) => {
-      const question = line.replace(/^Q\d:\s*/, "").trim();
       result.followUpQuestions.push({
         number: i + 1,
-        question,
+        question: line.replace(/^Q\d:\s*/, "").trim(),
         gapType: "auto-detected",
       });
     });
-  }
-
-  const integrityMatch = raw.match(/---NALI-INTEGRITY-STATEMENT---([\s\S]*?)---END-INTEGRITY-STATEMENT---/);
-  if (integrityMatch) {
-    result.integrityStatement = integrityMatch[1].trim();
   }
 
   return result;

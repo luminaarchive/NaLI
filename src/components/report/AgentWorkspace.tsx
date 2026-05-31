@@ -131,7 +131,15 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     "idle",
   );
   const [reportStatus, setReportStatus] = useState<
-    "idle" | "validating" | "planning" | "generating" | "quality checking" | "done" | "error" | "rate limited" | "integrity blocked"
+    | "idle"
+    | "validating"
+    | "planning"
+    | "generating"
+    | "quality checking"
+    | "done"
+    | "error"
+    | "rate limited"
+    | "integrity blocked"
   >("idle");
 
   // Sidebar state
@@ -270,7 +278,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       setUserLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       // Show migration toast once when user signs in and has local threads
       if (event === "SIGNED_IN" && !migrationShownRef.current) {
@@ -281,7 +291,9 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             migrationShownRef.current = true;
             setMigrationToast(true);
           }
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
     });
 
@@ -464,9 +476,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
       // 2. Fetch server updates (source of truth)
       if (key || user) {
-        const url = key 
-          ? `/api/reports/${reportId}?token=${encodeURIComponent(key)}`
-          : `/api/reports/${reportId}`;
+        const url = key ? `/api/reports/${reportId}?token=${encodeURIComponent(key)}` : `/api/reports/${reportId}`;
         const response = await fetch(url);
         if (response.ok) {
           const payload = await response.json();
@@ -487,7 +497,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             );
 
             if (payload.mode === "m" + "ock" || payload.notice) {
-              const warning = payload.notice || "Kapasitas mesin AI utama sedang dibatasi. Menggunakan mesin pratinjau lokal.";
+              const warning =
+                payload.notice || "Kapasitas mesin AI utama sedang dibatasi. Menggunakan mesin pratinjau lokal.";
               setNotice(warning);
               window.localStorage.setItem(`nali-report-notice:${reportId}`, warning);
             } else {
@@ -510,7 +521,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       setActiveRunStatus("idle");
     }
   };
-
 
   useEffect(() => {
     scrollToBottom();
@@ -771,10 +781,14 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         const stored = JSON.parse(window.localStorage.getItem("nali_sessions") || "[]");
         setSessionHistory(stored);
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [user]);
 
-  useEffect(() => { refreshHistory(); }, [refreshHistory]);
+  useEffect(() => {
+    refreshHistory();
+  }, [refreshHistory]);
 
   // FIX 1D: load session from URL on mount (e.g. /create-report?session=UUID)
   useEffect(() => {
@@ -805,12 +819,12 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   // Detect which agentic step is active based on streamed markdown content
   function detectActiveStep(text: string): number {
     if (text.includes("## Kesimpulan")) return 7;
-    if (text.includes("## Catatan Ketidakpastian")) return 6;
-    if (text.includes("## Tabel Bukti")) return 5;
-    if (text.includes("## Temuan Utama")) return 4;
-    if (text.includes("## Konteks")) return 3;
-    if (text.includes("## Ringkasan")) return 2;
-    if (text.includes("#")) return 1;
+    if (text.includes("## Keterbatasan")) return 6;
+    if (text.includes("## Analisis")) return 5;
+    if (text.includes("## Hasil")) return 4;
+    if (text.includes("## Metode")) return 3;
+    if (text.includes("## Pendahuluan") || text.includes("---END-HEADER---")) return 2;
+    if (text.includes("---NALI-HEADER---") || text.includes("#")) return 1;
     return 0;
   }
 
@@ -844,8 +858,16 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       // Ensure first two slots are from prompt/result for backward compat
       if (dbMessages.length === 0) {
         const init: ConversationMessage[] = [
-          { role: "user", content: session.prompt ?? "", timestamp: (session as any).created_at ?? new Date().toISOString() },
-          { role: "assistant", content: (session as any).result ?? "", timestamp: (session as any).created_at ?? new Date().toISOString() },
+          {
+            role: "user",
+            content: session.prompt ?? "",
+            timestamp: (session as any).created_at ?? new Date().toISOString(),
+          },
+          {
+            role: "assistant",
+            content: (session as any).result ?? "",
+            timestamp: (session as any).created_at ?? new Date().toISOString(),
+          },
         ];
         setConversationMessages(init);
       } else {
@@ -874,99 +896,106 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     }
   };
 
-  const handleNewSubmit = useCallback(async (promptText: string) => {
-    const trimmed = promptText.trim();
-    const currentFile = attachedFile;
-    if (!trimmed && !currentFile) return;
+  const handleNewSubmit = useCallback(
+    async (promptText: string) => {
+      const trimmed = promptText.trim();
+      const currentFile = attachedFile;
+      if (!trimmed && !currentFile) return;
 
-    // Build enriched prompt
-    let fullPrompt = trimmed;
-    let imageBase64: string | undefined;
-    if (currentFile) {
-      if (currentFile.type === "pdf" || currentFile.type === "text") {
-        const fileBlock = `\n\n--- Lampiran: ${currentFile.name} ---\n${currentFile.content.slice(0, 8000)}`;
-        fullPrompt = trimmed ? `${trimmed}${fileBlock}` : `Tolong analisis dokumen berikut:${fileBlock}`;
-      } else if (currentFile.type === "image") {
-        imageBase64 = currentFile.base64;
-        if (!trimmed) fullPrompt = "Tolong analisis gambar yang dilampirkan.";
+      // Build enriched prompt
+      let fullPrompt = trimmed;
+      let imageBase64: string | undefined;
+      if (currentFile) {
+        if (currentFile.type === "pdf" || currentFile.type === "text") {
+          const fileBlock = `\n\n--- Lampiran: ${currentFile.name} ---\n${currentFile.content.slice(0, 8000)}`;
+          fullPrompt = trimmed ? `${trimmed}${fileBlock}` : `Tolong analisis dokumen berikut:${fileBlock}`;
+        } else if (currentFile.type === "image") {
+          imageBase64 = currentFile.base64;
+          if (!trimmed) fullPrompt = "Tolong analisis gambar yang dilampirkan.";
+        }
       }
-    }
-    setAttachedFile(null);
+      setAttachedFile(null);
 
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
-    if (!currentUser) {
-      router.push("/login?next=/create-report");
-      return;
-    }
-
-    setViewMode("loading");
-    setCurrentPrompt(trimmed || currentFile?.name || "");
-    setCurrentResult(null);
-    setCurrentSessionId(null);
-    setStreamingText("");
-    setActiveStreamStep(0);
-    window.history.pushState({}, "", "/create-report");
-
-    try {
-      const res = await fetch("/api/generate-report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: fullPrompt, imageBase64 }),
-      });
-
-      if (!res.ok || !res.body) {
-        const data = await res.json().catch(() => ({}));
-        setNewError((data as any).error || "Terjadi kesalahan.");
-        setViewMode("error");
+      const {
+        data: { user: currentUser },
+      } = await supabase.auth.getUser();
+      if (!currentUser) {
+        router.push("/login?next=/create-report");
         return;
       }
 
-      // Consume SSE stream
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let accumulated = "";
+      setViewMode("loading");
+      setCurrentPrompt(trimmed || currentFile?.name || "");
+      setCurrentResult(null);
+      setCurrentSessionId(null);
+      setStreamingText("");
+      setActiveStreamStep(0);
+      window.history.pushState({}, "", "/create-report");
 
-      outer: while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      try {
+        const res = await fetch("/api/generate-report", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: fullPrompt, imageBase64 }),
+        });
 
-        const chunk = decoder.decode(value, { stream: true });
-        for (const line of chunk.split("\n")) {
-          if (!line.startsWith("data: ")) continue;
-          const raw = line.slice(6).trim();
-          if (!raw) continue;
-
-          try {
-            const parsed = JSON.parse(raw);
-
-            if (parsed.token) {
-              accumulated += parsed.token;
-              setStreamingText(accumulated);
-              setUsedModel(parsed.model ?? null);
-              setActiveStreamStep(detectActiveStep(accumulated));
-            }
-
-            if (parsed.done) {
-              setCurrentResult(accumulated || null);
-              setCurrentSessionId(parsed.sessionId ?? null);
-              // Seed conversation with the initial exchange
-              const now = new Date().toISOString();
-              setConversationMessages([
-                { role: "user", content: trimmed, timestamp: now },
-                { role: "assistant", content: accumulated, timestamp: now },
-              ]);
-              setViewMode("result");
-              refreshHistory();
-              break outer;
-            }
-          } catch { /* skip malformed chunks */ }
+        if (!res.ok || !res.body) {
+          const data = await res.json().catch(() => ({}));
+          setNewError((data as any).error || "Terjadi kesalahan.");
+          setViewMode("error");
+          return;
         }
+
+        // Consume SSE stream
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let accumulated = "";
+
+        outer: while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          for (const line of chunk.split("\n")) {
+            if (!line.startsWith("data: ")) continue;
+            const raw = line.slice(6).trim();
+            if (!raw) continue;
+
+            try {
+              const parsed = JSON.parse(raw);
+
+              if (parsed.token) {
+                accumulated += parsed.token;
+                setStreamingText(accumulated);
+                setUsedModel(parsed.model ?? null);
+                setActiveStreamStep(detectActiveStep(accumulated));
+              }
+
+              if (parsed.done) {
+                setCurrentResult(accumulated || null);
+                setCurrentSessionId(parsed.sessionId ?? null);
+                // Seed conversation with the initial exchange
+                const now = new Date().toISOString();
+                setConversationMessages([
+                  { role: "user", content: trimmed, timestamp: now },
+                  { role: "assistant", content: accumulated, timestamp: now },
+                ]);
+                setViewMode("result");
+                refreshHistory();
+                break outer;
+              }
+            } catch {
+              /* skip malformed chunks */
+            }
+          }
+        }
+      } catch {
+        setNewError("Koneksi bermasalah. Periksa internet kamu.");
+        setViewMode("error");
       }
-    } catch {
-      setNewError("Koneksi bermasalah. Periksa internet kamu.");
-      setViewMode("error");
-    }
-  }, [router, refreshHistory, attachedFile]);
+    },
+    [router, refreshHistory, attachedFile],
+  );
 
   const handleInitialSubmit = async (e?: FormEvent, retryQuery?: string) => {
     if (e) e.preventDefault();
@@ -1097,7 +1126,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       );
 
       if (payload.mode === "m" + "ock" || payload.notice) {
-        const warning = payload.notice || "Kapasitas mesin AI utama sedang dibatasi. Menggunakan mesin pratinjau lokal.";
+        const warning =
+          payload.notice || "Kapasitas mesin AI utama sedang dibatasi. Menggunakan mesin pratinjau lokal.";
         setNotice(warning);
         window.localStorage.setItem(`nali-report-notice:${reportId}`, warning);
       } else {
@@ -1457,13 +1487,12 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
   const renderComposer = (isCentered: boolean) => {
     return (
-      <div className={cn("w-full space-y-4 text-left", isCentered ? "max-w-[820px] mx-auto" : "max-w-[760px] mx-auto")}>
+      <div className={cn("w-full space-y-4 text-left", isCentered ? "mx-auto max-w-[820px]" : "mx-auto max-w-[760px]")}>
         <form
           onSubmit={messages.length === 0 ? handleInitialSubmit : handleFollowUpSubmit}
           className="group relative w-full"
         >
           {/* Rounded composer card */}
-
 
           <div className="relative flex min-h-[48px] flex-col gap-2 rounded-[22px] border border-white/[0.11] bg-[#222] p-3 shadow-2xl transition duration-300 focus-within:border-white/[0.18] sm:min-h-[56px]">
             {/* Attached file chip */}
@@ -1504,16 +1533,14 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             </div>
 
             {/* Bottom action row inside composer */}
-            <div className="flex items-center justify-between pt-1 px-1">
+            <div className="flex items-center justify-between px-1 pt-1">
               {/* Left action icons */}
               <div className="flex items-center gap-1.5 text-white/40">
                 <UploadDropdown
                   onFileSelected={handleFileAttach}
                   disabled={activeRunStatus === "running" || isExtractingFile}
                 />
-                {isExtractingFile && (
-                  <span className="text-[11px] text-white/40">Membaca file...</span>
-                )}
+                {isExtractingFile && <span className="text-[11px] text-white/40">Membaca file...</span>}
                 <button
                   type="button"
                   onClick={() => {
@@ -1522,7 +1549,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                   title="Lihat Checklist Manual"
                   className={cn(
                     "flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-white/[0.04] hover:text-white",
-                    showManualChecklistDirectly && "bg-white/10 text-white"
+                    showManualChecklistDirectly && "bg-white/10 text-white",
                   )}
                 >
                   <CheckCircle2 className="h-4 w-4 text-white/50" />
@@ -1535,7 +1562,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                   title="Opsi Template / Mode"
                   className={cn(
                     "flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-white/[0.04] hover:text-white",
-                    showMoreOptions && "bg-white/10 text-white"
+                    showMoreOptions && "bg-white/10 text-white",
                   )}
                 >
                   <FileText className="h-4 w-4 text-white/50" />
@@ -1545,11 +1572,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               {/* Right Submit arrow */}
               <button
                 type="submit"
-                disabled={
-                  activeRunStatus === "running" ||
-                  (!query.trim() && !attachedFile) ||
-                  isRateLimited
-                }
+                disabled={activeRunStatus === "running" || (!query.trim() && !attachedFile) || isRateLimited}
                 aria-label={selectedMode === "draft_from_materials" ? "Buat Laporan" : "Buat Panduan Awal"}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-zinc-950 transition duration-200 hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-30"
               >
@@ -1563,17 +1586,16 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           </div>
         </form>
 
-
         {/* Collapsible Options Panel */}
         {showMoreOptions && (
-          <div className="rounded-2xl border border-white/[0.09] bg-[#222]/80 p-4 space-y-4 shadow-xl backdrop-blur-md">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50 border-b border-white/[0.04] pb-2">
+          <div className="space-y-4 rounded-2xl border border-white/[0.09] bg-[#222]/80 p-4 shadow-xl backdrop-blur-md">
+            <h4 className="border-b border-white/[0.04] pb-2 text-xs font-semibold tracking-wider text-white/50 uppercase">
               Opsi Penyusunan
             </h4>
             <div className="grid gap-4 sm:grid-cols-2">
               {/* Mode Laporan */}
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-semibold text-white/50 uppercase tracking-wider">
+                <label className="block text-[11px] font-semibold tracking-wider text-white/50 uppercase">
                   Mode Laporan
                 </label>
                 <div className="flex gap-2">
@@ -1581,10 +1603,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     type="button"
                     onClick={() => setSelectedMode("draft_from_materials")}
                     className={cn(
-                      "flex-1 rounded-xl border py-2 px-3 text-xs font-semibold transition duration-150",
+                      "flex-1 rounded-xl border px-3 py-2 text-xs font-semibold transition duration-150",
                       selectedMode === "draft_from_materials"
                         ? "border-white/[0.15] bg-white/[0.08] text-[#f5f0e8]"
-                        : "border-white/[0.08] bg-[#1e1e1e] text-white/50 hover:bg-white/[0.04]"
+                        : "border-white/[0.08] bg-[#1e1e1e] text-white/50 hover:bg-white/[0.04]",
                     )}
                   >
                     Punya Bahan
@@ -1593,10 +1615,10 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     type="button"
                     onClick={() => setSelectedMode("start_from_zero")}
                     className={cn(
-                      "flex-1 rounded-xl border py-2 px-3 text-xs font-semibold transition duration-150",
+                      "flex-1 rounded-xl border px-3 py-2 text-xs font-semibold transition duration-150",
                       selectedMode === "start_from_zero"
                         ? "border-white/[0.15] bg-white/[0.08] text-[#f5f0e8]"
-                        : "border-white/[0.08] bg-[#1e1e1e] text-white/50 hover:bg-white/[0.04]"
+                        : "border-white/[0.08] bg-[#1e1e1e] text-white/50 hover:bg-white/[0.04]",
                     )}
                   >
                     Mulai dari Nol
@@ -1606,7 +1628,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
               {/* Template dropdown */}
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-semibold text-white/50 uppercase tracking-wider">
+                <label className="block text-[11px] font-semibold tracking-wider text-white/50 uppercase">
                   Template Laporan
                 </label>
                 <select
@@ -1622,63 +1644,63 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 </select>
               </div>
             </div>
-
           </div>
         )}
 
         {/* Direct Manual Checklist rendering */}
-        {showManualChecklistDirectly && (() => {
-          const checklist = generateManualChecklist(selectedTemplate, selectedMode);
-          return (
-            <div className="rounded-2xl border border-white/[0.09] bg-[#222]/60 p-4 space-y-4 text-xs shadow-xl">
-              <div className="flex items-center justify-between border-b border-white/[0.08] pb-2">
-                <div>
-                  <h5 className="font-serif text-sm font-bold text-white">{checklist.title}</h5>
-                  <p className="text-[10px] text-white/50">{checklist.description}</p>
+        {showManualChecklistDirectly &&
+          (() => {
+            const checklist = generateManualChecklist(selectedTemplate, selectedMode);
+            return (
+              <div className="space-y-4 rounded-2xl border border-white/[0.09] bg-[#222]/60 p-4 text-xs shadow-xl">
+                <div className="flex items-center justify-between border-b border-white/[0.08] pb-2">
+                  <div>
+                    <h5 className="font-serif text-sm font-bold text-white">{checklist.title}</h5>
+                    <p className="text-[10px] text-white/50">{checklist.description}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowManualChecklistDirectly(false)}
+                    className="text-xs font-semibold text-white/30 hover:text-white"
+                  >
+                    Tutup
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowManualChecklistDirectly(false)}
-                  className="text-white/30 hover:text-white text-xs font-semibold"
-                >
-                  Tutup
-                </button>
-              </div>
 
-              <div className="space-y-3">
-                <p className="font-bold text-white/80">Butir Observasi / Data Yang Diperlukan:</p>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {checklist.items.map((item) => (
-                    <div key={item.id} className="rounded-lg border border-white/[0.04] bg-[#1e1e1e]/60 p-2.5">
-                      <p className="font-semibold text-white/70">{item.label}</p>
-                      <p className="text-[10px] text-white/40 leading-relaxed mt-0.5">{item.description}</p>
-                    </div>
-                  ))}
+                <div className="space-y-3">
+                  <p className="font-bold text-white/80">Butir Observasi / Data Yang Diperlukan:</p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {checklist.items.map((item) => (
+                      <div key={item.id} className="rounded-lg border border-white/[0.04] bg-[#1e1e1e]/60 p-2.5">
+                        <p className="font-semibold text-white/70">{item.label}</p>
+                        <p className="mt-0.5 text-[10px] leading-relaxed text-white/40">{item.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="font-bold text-white/80">Struktur Kerangka Laporan yang Disarankan:</p>
+                  <ul className="list-inside list-disc space-y-1 pl-2 text-white/50">
+                    {checklist.suggestedOutline.map((outlineItem, idx) => (
+                      <li key={idx}>{outlineItem}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="font-bold text-white/80">Langkah Pengguna Selanjutnya:</p>
+                  <ul className="list-inside list-none space-y-1 pl-2 text-white/50">
+                    {checklist.nextSteps.map((step, idx) => (
+                      <li key={idx} className="leading-relaxed">
+                        {step}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <p className="font-bold text-white/80">Struktur Kerangka Laporan yang Disarankan:</p>
-                <ul className="list-inside list-disc pl-2 space-y-1 text-white/50">
-                  {checklist.suggestedOutline.map((outlineItem, idx) => (
-                    <li key={idx}>{outlineItem}</li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="space-y-2">
-                <p className="font-bold text-white/80">Langkah Pengguna Selanjutnya:</p>
-                <ul className="list-inside list-none pl-2 space-y-1 text-white/50">
-                  {checklist.nextSteps.map((step, idx) => (
-                    <li key={idx} className="leading-relaxed">{step}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          );
-        })()}
-
-
+            );
+          })()}
       </div>
     );
   };
@@ -1688,7 +1710,6 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
   return (
     <div className="relative flex min-h-screen w-screen overflow-hidden bg-[#191919] text-[#f5f0e8]">
-
       {/* Mobile overlay backdrop */}
       {sidebarOpen && (
         <div
@@ -1708,7 +1729,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       >
         {/* Logo header */}
         <div className="flex h-16 items-center justify-between border-b border-white/[0.07] px-4">
-          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
             <NaLIChatLogo size={32} />
             <span className="text-sm font-semibold text-white/80">NaLI</span>
           </Link>
@@ -1759,7 +1780,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             Catatan
           </Link>
           <div
-            className="flex h-9 w-full items-center justify-between rounded-[10px] px-3.5 text-sm text-white/30 cursor-not-allowed select-none"
+            className="flex h-9 w-full cursor-not-allowed items-center justify-between rounded-[10px] px-3.5 text-sm text-white/30 select-none"
             title="Library (Segera hadir)"
           >
             <span className="flex items-center gap-3">
@@ -1769,7 +1790,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             <span className="text-[9px] font-bold tracking-wider text-white/20 uppercase">Soon</span>
           </div>
           <div
-            className="flex h-9 w-full items-center justify-between rounded-[10px] px-3.5 text-sm text-white/30 cursor-not-allowed select-none"
+            className="flex h-9 w-full cursor-not-allowed items-center justify-between rounded-[10px] px-3.5 text-sm text-white/30 select-none"
             title="Scheduled (Segera hadir)"
           >
             <span className="flex items-center gap-3">
@@ -1781,7 +1802,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         </div>
 
         {/* History Section */}
-        <div className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2 border-t border-white/[0.05] mt-2">
+        <div className="mt-2 flex-1 space-y-0.5 overflow-y-auto border-t border-white/[0.05] px-3 py-2">
           <p className="px-3.5 py-1 text-[10px] font-bold tracking-[0.08em] text-white/25 uppercase">
             {user ? "Riwayat akun" : "Riwayat lokal"}
           </p>
@@ -1791,7 +1812,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           {user ? (
             sessionHistory.length === 0 ? (
               <div className="px-3.5 py-6 text-center">
-                <p className="text-xs text-white/30 font-medium mb-1">Belum ada laporan</p>
+                <p className="mb-1 text-xs font-medium text-white/30">Belum ada laporan</p>
                 <p className="text-[10px] text-white/20">Laporan yang kamu buat akan muncul di sini</p>
               </div>
             ) : (
@@ -1804,53 +1825,53 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                   }}
                   className={cn(
                     "flex w-full flex-col gap-0.5 rounded-[10px] px-3.5 py-2 text-left text-sm transition duration-150 hover:bg-white/[0.05]",
-                    currentSessionId === item.id
-                      ? "border-l-2 border-[#00FFB3] bg-white/[0.08]"
-                      : "",
+                    currentSessionId === item.id ? "border-l-2 border-[#00FFB3] bg-white/[0.08]" : "",
                   )}
                 >
                   <span className="truncate font-medium text-white/70">{item.title}</span>
                   <span className="text-[10px] text-white/30">
-                    {new Date(item.created_at).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
-                  </span>
-                </button>
-              ))
-            )
-          ) : (
-            snapshots.length === 0 ? (
-              <div className="px-3.5 py-6 text-center">
-                <p className="text-xs text-white/30 font-medium mb-1">Belum ada laporan</p>
-                <p className="text-[10px] text-white/20">Laporan yang kamu buat akan muncul di sini</p>
-              </div>
-            ) : (
-              snapshots.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    setSidebarOpen(false);
-                    handleRestoreSnapshot(item);
-                  }}
-                  className="flex w-full flex-col gap-0.5 rounded-[10px] px-3.5 py-2 text-left text-sm transition duration-150 hover:bg-white/[0.04]"
-                >
-                  <span className="truncate font-medium text-white/70">{item.title}</span>
-                  <span className="text-[10px] text-white/30">
-                    {new Date(item.timestamp).toLocaleTimeString("id-ID", {
-                      hour: "2-digit",
-                      minute: "2-digit",
+                    {new Date(item.created_at).toLocaleDateString("id-ID", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
                     })}
                   </span>
                 </button>
               ))
             )
+          ) : snapshots.length === 0 ? (
+            <div className="px-3.5 py-6 text-center">
+              <p className="mb-1 text-xs font-medium text-white/30">Belum ada laporan</p>
+              <p className="text-[10px] text-white/20">Laporan yang kamu buat akan muncul di sini</p>
+            </div>
+          ) : (
+            snapshots.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setSidebarOpen(false);
+                  handleRestoreSnapshot(item);
+                }}
+                className="flex w-full flex-col gap-0.5 rounded-[10px] px-3.5 py-2 text-left text-sm transition duration-150 hover:bg-white/[0.04]"
+              >
+                <span className="truncate font-medium text-white/70">{item.title}</span>
+                <span className="text-[10px] text-white/30">
+                  {new Date(item.timestamp).toLocaleTimeString("id-ID", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </button>
+            ))
           )}
         </div>
 
         {/* Bottom Auth + Version Block */}
-        <div className="border-t border-white/[0.05] p-3 bg-[#161616] space-y-2">
-          {!userLoading && (
-            user ? (
+        <div className="space-y-2 border-t border-white/[0.05] bg-[#161616] p-3">
+          {!userLoading &&
+            (user ? (
               <div className="flex items-center justify-between gap-2 rounded-[10px] bg-white/[0.04] px-3 py-2">
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex min-w-0 items-center gap-2">
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#00FFB3]/20 text-[11px] font-bold text-[#00FFB3]">
                     {(user.email?.[0] ?? "U").toUpperCase()}
                   </div>
@@ -1861,7 +1882,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     await supabase.auth.signOut();
                     router.push("/");
                   }}
-                  className="shrink-0 text-[11px] font-semibold text-white/35 hover:text-white/60 transition-colors"
+                  className="shrink-0 text-[11px] font-semibold text-white/35 transition-colors hover:text-white/60"
                 >
                   Keluar
                 </button>
@@ -1876,13 +1897,12 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 </div>
                 <Link
                   href="/login"
-                  className="shrink-0 text-[11px] font-semibold text-[#00FFB3]/70 hover:text-[#00FFB3] transition-colors"
+                  className="shrink-0 text-[11px] font-semibold text-[#00FFB3]/70 transition-colors hover:text-[#00FFB3]"
                 >
                   Masuk
                 </Link>
               </div>
-            )
-          )}
+            ))}
           <div className="px-1 text-[10px] text-white/20">NaLI 1.0 Alpha</div>
         </div>
       </aside>
@@ -1906,27 +1926,25 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               <ArrowLeft className="h-4 w-4" />
               Keluar
             </Link>
-            <span className="hidden sm:inline-flex items-center gap-1 text-xs text-white/30">
+            <span className="hidden items-center gap-1 text-xs text-white/30 sm:inline-flex">
               <ChevronDown className="h-3 w-3" />
               NaLI 1.0 Alpha
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 font-mono text-[11px] font-semibold text-white/55">
+            <span className="hidden items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 font-mono text-[11px] font-semibold text-white/55 sm:inline-flex">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
               {selectedMode === "start_from_zero" ? "Panduan Awal" : "Laporan NaLI"}
             </span>
 
             <UserProfileButton
-              loginHref={`/login?next=${encodeURIComponent(
-                report?.id ? `/report/${report.id}` : "/create-report"
-              )}`}
+              loginHref={`/login?next=${encodeURIComponent(report?.id ? `/report/${report.id}` : "/create-report")}`}
             />
           </div>
         </header>
 
-        <main className="z-10 flex-1 space-y-6 overflow-x-hidden overflow-y-auto px-4 py-6 md:px-8 bg-[#191919]">
+        <main className="z-10 flex-1 space-y-6 overflow-x-hidden overflow-y-auto bg-[#191919] px-4 py-6 md:px-8">
           <div
             className={cn(
               "mx-auto max-w-[760px] space-y-6",
@@ -1962,26 +1980,27 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 />
               ) : (
                 /* --- Empty State / Centered Workspace --- */
-                <div className="flex flex-col items-center justify-center pt-12 sm:pt-[80px] text-center max-w-[820px] mx-auto w-full">
+                <div className="mx-auto flex w-full max-w-[820px] flex-col items-center justify-center pt-12 text-center sm:pt-[80px]">
                   {/* First-login welcome banner */}
                   {showWelcome && (
-                    <div className="w-full mb-6 flex items-start gap-3 rounded-xl border-l-2 border-[#00FFB3]/50 bg-[#00FFB3]/5 px-4 py-3 text-left">
-                      <div className="flex-1 text-xs text-white/70 leading-relaxed">
-                        Selamat datang di NaLI. Mulai dengan menempelkan catatan lapangan atau data observasi kamu di kotak di bawah.
+                    <div className="mb-6 flex w-full items-start gap-3 rounded-xl border-l-2 border-[#00FFB3]/50 bg-[#00FFB3]/5 px-4 py-3 text-left">
+                      <div className="flex-1 text-xs leading-relaxed text-white/70">
+                        Selamat datang di NaLI. Mulai dengan menempelkan catatan lapangan atau data observasi kamu di
+                        kotak di bawah.
                       </div>
                       <button
                         onClick={() => {
                           window.localStorage.setItem("nali_welcomed", "true");
                           setShowWelcome(false);
                         }}
-                        className="shrink-0 text-xs font-semibold text-[#00FFB3]/70 hover:text-[#00FFB3] transition-colors"
+                        className="shrink-0 text-xs font-semibold text-[#00FFB3]/70 transition-colors hover:text-[#00FFB3]"
                       >
                         Mengerti
                       </button>
                     </div>
                   )}
 
-                  <h1 className="font-serif text-3xl sm:text-[40px] md:text-[48px] font-semibold leading-[1.15] text-[#f5f0e8] mb-4 tracking-tight">
+                  <h1 className="mb-4 font-serif text-3xl leading-[1.15] font-semibold tracking-tight text-[#f5f0e8] sm:text-[40px] md:text-[48px]">
                     Apa yang bisa NaLI bantu susun?
                   </h1>
 
@@ -2064,7 +2083,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                                   primary_model_requested: "google/gemini-2.0-flash-001",
                                   model_used: reportData.model_used || "unknown",
                                   fallback_used: false,
-                                  provider_status: "primary_success"
+                                  provider_status: "primary_success",
                                 };
                                 const aCheck = message.metadata?.answer_verification || {
                                   answered: true,
@@ -2072,7 +2091,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                                   missingAnswerParts: [],
                                   detectedOutputType: "report_draft",
                                   userQuestionSummary: reportData.title || "",
-                                  verificationNotes: []
+                                  verificationNotes: [],
                                 };
                                 const jReady = message.metadata?.journal_readiness || {
                                   journalReady: false,
@@ -2081,22 +2100,24 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                                   canGenerateJournalPdfNow: false,
                                   reasons: ["Bahan pengamatan terbatas."],
                                   missingRequirements: ["Data observasi lapangan"],
-                                  recommendedNextAction: "Lengkapi catatan lapangan."
+                                  recommendedNextAction: "Lengkapi catatan lapangan.",
                                 };
 
                                 return (
-                                  <div className="rounded-xl border border-white/[0.06] bg-white/[0.01] p-3.5 shadow-md space-y-3">
+                                  <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.01] p-3.5 shadow-md">
                                     <div className="flex gap-2.5">
                                       <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
                                       <div className="w-full">
                                         <h4 className="text-[10px] font-bold tracking-wider text-emerald-300/80 uppercase">
                                           Rencana Kerja & Status Agen
                                         </h4>
-                                        
+
                                         {/* 1. Interpreted Task */}
                                         <div className="mt-2 text-xs">
                                           <span className="text-white/45">Tugas Terdeteksi:</span>{" "}
-                                          <span className="font-medium text-white/80">&quot;{aCheck.userQuestionSummary}&quot;</span>
+                                          <span className="font-medium text-white/80">
+                                            &quot;{aCheck.userQuestionSummary}&quot;
+                                          </span>
                                         </div>
 
                                         {/* 2 & 3. Model / Fallback */}
@@ -2104,16 +2125,21 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                                           <span className="text-white/45">Model/Pipeline:</span>{" "}
                                           <span className="font-mono text-emerald-400">{pMeta.model_used}</span>{" "}
                                           {pMeta.fallback_used && (
-                                            <span className="ml-1 inline-flex rounded bg-amber-500/10 border border-amber-500/20 px-1 text-[9px] text-amber-300 font-semibold">
+                                            <span className="ml-1 inline-flex rounded border border-amber-500/20 bg-amber-500/10 px-1 text-[9px] font-semibold text-amber-300">
                                               Fallback
                                             </span>
                                           )}
                                         </div>
 
                                         {/* 4. Answer verification */}
-                                        <div className="mt-1 text-xs flex items-center gap-1.5">
+                                        <div className="mt-1 flex items-center gap-1.5 text-xs">
                                           <span className="text-white/45">Menjawab Tugas:</span>{" "}
-                                          <span className={cn("font-semibold", aCheck.answered ? "text-emerald-400" : "text-rose-400")}>
+                                          <span
+                                            className={cn(
+                                              "font-semibold",
+                                              aCheck.answered ? "text-emerald-400" : "text-rose-400",
+                                            )}
+                                          >
                                             {aCheck.answered ? "Ya (Terverifikasi)" : "Belum Sepenuhnya"}
                                           </span>
                                         </div>
@@ -2121,40 +2147,49 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                                         {/* 5. Journal Readiness */}
                                         <div className="mt-1 text-xs">
                                           <span className="text-white/45">Status Jurnal:</span>{" "}
-                                          <span className={cn(
-                                            "font-semibold",
-                                            jReady.readinessLevel === "draft_ready" && "text-emerald-400",
-                                            jReady.readinessLevel === "outline_ready" && "text-amber-400",
-                                            jReady.readinessLevel === "not_ready" && "text-rose-400"
-                                          )}>
-                                            {jReady.readinessLevel === "draft_ready" 
-                                              ? "Siap disusun menjadi draf jurnal" 
-                                              : jReady.readinessLevel === "outline_ready" 
-                                                ? "Siap untuk outline jurnal" 
+                                          <span
+                                            className={cn(
+                                              "font-semibold",
+                                              jReady.readinessLevel === "draft_ready" && "text-emerald-400",
+                                              jReady.readinessLevel === "outline_ready" && "text-amber-400",
+                                              jReady.readinessLevel === "not_ready" && "text-rose-400",
+                                            )}
+                                          >
+                                            {jReady.readinessLevel === "draft_ready"
+                                              ? "Siap disusun menjadi draf jurnal"
+                                              : jReady.readinessLevel === "outline_ready"
+                                                ? "Siap untuk outline jurnal"
                                                 : "Belum siap untuk jurnal"}
                                           </span>
                                         </div>
 
                                         {/* 6. Recommended Action */}
                                         <div className="mt-2 border-t border-white/[0.04] pt-2 text-xs">
-                                          <span className="block text-[9px] font-bold text-white/40 uppercase">Rekomendasi Tindak Lanjut</span>
-                                          <span className="text-white/80 font-medium">{jReady.recommendedNextAction}</span>
+                                          <span className="block text-[9px] font-bold text-white/40 uppercase">
+                                            Rekomendasi Tindak Lanjut
+                                          </span>
+                                          <span className="font-medium text-white/80">
+                                            {jReady.recommendedNextAction}
+                                          </span>
                                         </div>
-                                        
+
                                         {plan && plan.length > 0 && (
                                           <div className="mt-2 border-t border-white/[0.04] pt-2">
-                                            <span className="block text-[9px] font-bold text-white/40 uppercase mb-1">Rencana Langkah</span>
+                                            <span className="mb-1 block text-[9px] font-bold text-white/40 uppercase">
+                                              Rencana Langkah
+                                            </span>
                                             <div className="space-y-1">
                                               {plan.map((step: string, sIdx: number) => (
                                                 <div key={sIdx} className="flex items-center gap-1.5">
                                                   <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-400" />
-                                                  <span className="text-[11px] text-white/60 leading-tight">{step}</span>
+                                                  <span className="text-[11px] leading-tight text-white/60">
+                                                    {step}
+                                                  </span>
                                                 </div>
                                               ))}
                                             </div>
                                           </div>
                                         )}
-
                                       </div>
                                     </div>
                                   </div>
@@ -2405,34 +2440,39 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     <Loader2 className="h-4 w-4 animate-spin text-emerald-400" />
                     <span className="text-sm font-semibold text-white">Rencana Kerja NaLI (Active Plan)</span>
                   </div>
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-md">
-                    Status: {reportStatus === "rate limited" ? "Laju Dibatasi" : reportStatus === "integrity blocked" ? "Integritas Ditolak" : reportStatus}
+                  <span className="rounded-md bg-emerald-400/10 px-2 py-0.5 text-[10px] font-bold tracking-widest text-emerald-400 uppercase">
+                    Status:{" "}
+                    {reportStatus === "rate limited"
+                      ? "Laju Dibatasi"
+                      : reportStatus === "integrity blocked"
+                        ? "Integritas Ditolak"
+                        : reportStatus}
                   </span>
                 </div>
-                
-                <div className="relative border-l border-white/[0.08] ml-2 pl-4 space-y-4 text-xs">
+
+                <div className="relative ml-2 space-y-4 border-l border-white/[0.08] pl-4 text-xs">
                   {[
                     { key: "validating", label: "Memvalidasi Input & Integritas Akademik" },
                     { key: "planning", label: "Memetakan Klaim & Merancang Rencana Kerja" },
                     { key: "generating", label: "Menyusun Draft Laporan Awal Berbasis Bukti" },
-                    { key: "quality checking", label: "Mengaudit Kekuatan Bukti (Evidence Quality)" }
+                    { key: "quality checking", label: "Mengaudit Kekuatan Bukti (Evidence Quality)" },
                   ].map((step, idx) => {
                     const stepKeys = ["validating", "planning", "generating", "quality checking"];
                     const currentIdx = stepKeys.indexOf(reportStatus);
                     const stepIdx = stepKeys.indexOf(step.key);
-                    
+
                     let status: "pending" | "in_progress" | "completed" = "pending";
                     if (currentIdx > stepIdx) {
                       status = "completed";
                     } else if (currentIdx === stepIdx) {
                       status = "in_progress";
                     }
-                    
+
                     return (
                       <div key={idx} className="relative flex items-start gap-2.5">
-                        <div className="absolute -left-[21px] top-0.5">
+                        <div className="absolute top-0.5 -left-[21px]">
                           {status === "completed" ? (
-                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 bg-[#060b08] rounded-full" />
+                            <CheckCircle2 className="h-3.5 w-3.5 rounded-full bg-[#060b08] text-emerald-400" />
                           ) : status === "in_progress" ? (
                             <span className="flex h-3.5 w-3.5 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent bg-[#060b08]" />
                           ) : (
@@ -2441,7 +2481,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                             </span>
                           )}
                         </div>
-                        
+
                         <div className="flex flex-col">
                           <span
                             className={cn(
@@ -2505,14 +2545,14 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
                 if (normalized.category === "AI_UNAVAILABLE") {
                   return (
-                    <div className="flex flex-col gap-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-5 shadow-lg backdrop-blur-xl transition duration-300 w-full text-left">
+                    <div className="flex w-full flex-col gap-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-5 text-left shadow-lg backdrop-blur-xl transition duration-300">
                       <div className="flex items-start gap-3">
-                        <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-red-400" aria-hidden="true" />
-                        <div className="flex-1 min-w-0 space-y-1">
-                          <h4 className="text-sm font-bold tracking-tight leading-5 text-red-200">
+                        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" aria-hidden="true" />
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <h4 className="text-sm leading-5 font-bold tracking-tight text-red-200">
                             {normalized.title}
                           </h4>
-                          <p className="text-xs leading-relaxed text-white/70 whitespace-normal break-words">
+                          <p className="text-xs leading-relaxed break-words whitespace-normal text-white/70">
                             {normalized.explanation}
                           </p>
                         </div>
@@ -2524,7 +2564,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                         </div>
                       )}
 
-                      <div className="flex flex-wrap gap-2 pt-2 border-t border-white/[0.08]">
+                      <div className="flex flex-wrap gap-2 border-t border-white/[0.08] pt-2">
                         <button
                           type="button"
                           onClick={() => {
@@ -2534,7 +2574,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                               handleFollowUpSubmit(undefined, lastAttemptedQuery);
                             }
                           }}
-                          className="inline-flex min-h-[36px] items-center justify-center rounded-xl bg-white text-zinc-950 hover:bg-white/90 px-3 text-xs font-semibold tracking-wide transition duration-150 cursor-pointer shadow-md"
+                          className="inline-flex min-h-[36px] cursor-pointer items-center justify-center rounded-xl bg-white px-3 text-xs font-semibold tracking-wide text-zinc-950 shadow-md transition duration-150 hover:bg-white/90"
                         >
                           Coba Lagi
                         </button>
@@ -2555,14 +2595,14 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                             setLocalSaveSuccess("Draf berhasil disimpan secara lokal!");
                             setTimeout(() => setLocalSaveSuccess(null), 3000);
                           }}
-                          className="inline-flex min-h-[36px] items-center justify-center rounded-xl bg-white/10 hover:bg-white/15 px-3 text-xs font-semibold text-white tracking-wide border border-white/[0.08] transition duration-150 cursor-pointer"
+                          className="inline-flex min-h-[36px] cursor-pointer items-center justify-center rounded-xl border border-white/[0.08] bg-white/10 px-3 text-xs font-semibold tracking-wide text-white transition duration-150 hover:bg-white/15"
                         >
                           Simpan Draf Lokal
                         </button>
                         <button
                           type="button"
                           onClick={() => setShowManualChecklist(true)}
-                          className="inline-flex min-h-[36px] items-center justify-center rounded-xl bg-white/10 hover:bg-white/15 px-3 text-xs font-semibold text-white tracking-wide border border-white/[0.08] transition duration-150 cursor-pointer"
+                          className="inline-flex min-h-[36px] cursor-pointer items-center justify-center rounded-xl border border-white/[0.08] bg-white/10 px-3 text-xs font-semibold tracking-wide text-white transition duration-150 hover:bg-white/15"
                         >
                           Lihat Checklist Manual
                         </button>
@@ -2573,58 +2613,66 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                             setShowManualChecklist(false);
                             composerRef.current?.focus();
                           }}
-                          className="inline-flex min-h-[36px] items-center justify-center rounded-xl bg-white/10 hover:bg-white/15 px-3 text-xs font-semibold text-white tracking-wide border border-white/[0.08] transition duration-150 cursor-pointer"
+                          className="inline-flex min-h-[36px] cursor-pointer items-center justify-center rounded-xl border border-white/[0.08] bg-white/10 px-3 text-xs font-semibold tracking-wide text-white transition duration-150 hover:bg-white/15"
                         >
                           Kembali ke Form
                         </button>
                       </div>
 
-                      {showManualChecklist && (() => {
-                        const checklist = generateManualChecklist(selectedTemplate, selectedMode);
-                        return (
-                          <div className="mt-4 rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 space-y-4 text-xs">
-                            <div className="border-b border-white/[0.08] pb-2">
-                              <h5 className="font-serif text-sm font-bold text-white">{checklist.title}</h5>
-                              <p className="text-[11px] text-white/50">{checklist.description}</p>
-                              <p className="mt-1 text-[10px] text-emerald-400 font-semibold">{checklist.modeLabel}</p>
-                            </div>
-                            
-                            <div className="space-y-3">
-                              <p className="font-bold text-white/80">Butir Observasi / Data Yang Diperlukan:</p>
-                              <div className="grid gap-2 sm:grid-cols-2">
-                                {checklist.items.map((item) => (
-                                  <div key={item.id} className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-2.5">
-                                    <p className="font-semibold text-white/70">{item.label}</p>
-                                    <p className="text-[10px] text-white/40 leading-relaxed mt-0.5">{item.description}</p>
-                                  </div>
-                                ))}
+                      {showManualChecklist &&
+                        (() => {
+                          const checklist = generateManualChecklist(selectedTemplate, selectedMode);
+                          return (
+                            <div className="mt-4 space-y-4 rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 text-xs">
+                              <div className="border-b border-white/[0.08] pb-2">
+                                <h5 className="font-serif text-sm font-bold text-white">{checklist.title}</h5>
+                                <p className="text-[11px] text-white/50">{checklist.description}</p>
+                                <p className="mt-1 text-[10px] font-semibold text-emerald-400">{checklist.modeLabel}</p>
+                              </div>
+
+                              <div className="space-y-3">
+                                <p className="font-bold text-white/80">Butir Observasi / Data Yang Diperlukan:</p>
+                                <div className="grid gap-2 sm:grid-cols-2">
+                                  {checklist.items.map((item) => (
+                                    <div
+                                      key={item.id}
+                                      className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-2.5"
+                                    >
+                                      <p className="font-semibold text-white/70">{item.label}</p>
+                                      <p className="mt-0.5 text-[10px] leading-relaxed text-white/40">
+                                        {item.description}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                <p className="font-bold text-white/80">Struktur Kerangka Laporan yang Disarankan:</p>
+                                <ul className="list-inside list-disc space-y-1 pl-2 text-white/50">
+                                  {checklist.suggestedOutline.map((outlineItem, idx) => (
+                                    <li key={idx}>{outlineItem}</li>
+                                  ))}
+                                </ul>
+                              </div>
+
+                              <div className="space-y-2">
+                                <p className="font-bold text-white/80">Langkah Pengguna Selanjutnya:</p>
+                                <ul className="list-inside list-none space-y-1 pl-2 text-white/50">
+                                  {checklist.nextSteps.map((step, idx) => (
+                                    <li key={idx} className="leading-relaxed">
+                                      {step}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+
+                              <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-[10px] leading-relaxed text-amber-200">
+                                💡 <strong>Disclaimer:</strong> {checklist.disclaimer}
                               </div>
                             </div>
-
-                            <div className="space-y-2">
-                              <p className="font-bold text-white/80">Struktur Kerangka Laporan yang Disarankan:</p>
-                              <ul className="list-inside list-disc pl-2 space-y-1 text-white/50">
-                                {checklist.suggestedOutline.map((outlineItem, idx) => (
-                                  <li key={idx}>{outlineItem}</li>
-                                ))}
-                              </ul>
-                            </div>
-
-                            <div className="space-y-2">
-                              <p className="font-bold text-white/80">Langkah Pengguna Selanjutnya:</p>
-                              <ul className="list-inside list-none pl-2 space-y-1 text-white/50">
-                                {checklist.nextSteps.map((step, idx) => (
-                                  <li key={idx} className="leading-relaxed">{step}</li>
-                                ))}
-                              </ul>
-                            </div>
-
-                            <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-[10px] text-amber-200 leading-relaxed">
-                              💡 <strong>Disclaimer:</strong> {checklist.disclaimer}
-                            </div>
-                          </div>
-                        );
-                      })()}
+                          );
+                        })()}
                     </div>
                   );
                 }
@@ -2682,8 +2730,16 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             {/* Notice notifications */}
             {notice && (
               <NaliAlert
-                variant={notice.toLowerCase().includes("dibatasi") || notice.toLowerCase().includes("lokal") ? "warning" : "success"}
-                title={notice.toLowerCase().includes("dibatasi") || notice.toLowerCase().includes("lokal") ? "Kapasitas Terbatas / Pratinjau Lokal" : "Notifikasi"}
+                variant={
+                  notice.toLowerCase().includes("dibatasi") || notice.toLowerCase().includes("lokal")
+                    ? "warning"
+                    : "success"
+                }
+                title={
+                  notice.toLowerCase().includes("dibatasi") || notice.toLowerCase().includes("lokal")
+                    ? "Kapasitas Terbatas / Pratinjau Lokal"
+                    : "Notifikasi"
+                }
                 explanation={notice}
               />
             )}
@@ -2695,29 +2751,31 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         {/* Bottom Composer and Control chips */}
         {messages.length > 0 && (
           <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#191919] via-[#191919]/95 to-transparent px-4 pt-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:px-8">
-            <div className="mx-auto max-w-[760px] space-y-3">
-              {renderComposer(false)}
-            </div>
+            <div className="mx-auto max-w-[760px] space-y-3">{renderComposer(false)}</div>
           </div>
         )}
       </div>
 
       {toast && (
-        <div className={cn(
-          "fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl border px-4 py-3 shadow-xl backdrop-blur-xl transition-all duration-300",
-          toast.type === "success"
-            ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
-            : "border-red-500/20 bg-red-500/10 text-red-300"
-        )}>
+        <div
+          className={cn(
+            "fixed right-6 bottom-6 z-50 flex items-center gap-3 rounded-2xl border px-4 py-3 shadow-xl backdrop-blur-xl transition-all duration-300",
+            toast.type === "success"
+              ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+              : "border-red-500/20 bg-red-500/10 text-red-300",
+          )}
+        >
           <span>{toast.message}</span>
         </div>
       )}
 
       {/* Migration toast: offer to move local history to account */}
       {migrationToast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[calc(100vw-48px)] rounded-2xl border border-white/[0.12] bg-[#1a1a1a] px-5 py-4 shadow-2xl">
-          <p className="text-sm font-semibold text-white mb-1">Pindahkan riwayat lokal ke akun?</p>
-          <p className="text-xs text-white/50 mb-4">Riwayat laporan lokal di perangkat ini bisa disimpan ke akun kamu.</p>
+        <div className="fixed bottom-6 left-1/2 z-50 w-[calc(100vw-48px)] max-w-sm -translate-x-1/2 rounded-2xl border border-white/[0.12] bg-[#1a1a1a] px-5 py-4 shadow-2xl">
+          <p className="mb-1 text-sm font-semibold text-white">Pindahkan riwayat lokal ke akun?</p>
+          <p className="mb-4 text-xs text-white/50">
+            Riwayat laporan lokal di perangkat ini bisa disimpan ke akun kamu.
+          </p>
           <div className="flex gap-2">
             <button
               onClick={async () => {
@@ -2793,10 +2851,15 @@ function ReportResultCard({
   journalReadiness,
   onQuickAction,
 }: ReportResultCardProps) {
-  const [activeTab, setActiveTab] = useState<"preview" | "evidence" | "uncertainty" | "diagnostics" | "readiness" | "journal_draft">("preview");
+  const [activeTab, setActiveTab] = useState<
+    "preview" | "evidence" | "uncertainty" | "diagnostics" | "readiness" | "journal_draft"
+  >("preview");
 
   const isGuide = report.mode === "start_from_zero";
-  const hasJournalDraft = !isGuide && (report as DraftReport).journal_candidate !== undefined && (report as DraftReport).journal_candidate !== null;
+  const hasJournalDraft =
+    !isGuide &&
+    (report as DraftReport).journal_candidate !== undefined &&
+    (report as DraftReport).journal_candidate !== null;
 
   const handleActionClick = (prompt: string) => {
     if (onQuickAction) {
@@ -2889,7 +2952,7 @@ function ReportResultCard({
             primary_model_requested: "google/gemini-2.0-flash-001",
             model_used: report.model_used || "unknown",
             fallback_used: false,
-            provider_status: "primary_success"
+            provider_status: "primary_success",
           };
           const aCheck = answerVerification || {
             answered: true,
@@ -2897,7 +2960,7 @@ function ReportResultCard({
             missingAnswerParts: [],
             detectedOutputType: "guidance",
             userQuestionSummary: report.title || "",
-            verificationNotes: []
+            verificationNotes: [],
           };
 
           return (
@@ -2913,7 +2976,9 @@ function ReportResultCard({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Model yang Digunakan:</span>
-                    <span className="font-mono font-medium text-emerald-400">{pMeta.model_used === "m" + "ock" ? "pratinjau lokal" : pMeta.model_used}</span>
+                    <span className="font-mono font-medium text-emerald-400">
+                      {pMeta.model_used === "m" + "ock" ? "pratinjau lokal" : pMeta.model_used}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Menggunakan Fallback:</span>
@@ -2925,7 +2990,9 @@ function ReportResultCard({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Status Provider:</span>
-                    <span className="font-mono text-white/70">{pMeta.provider_status === "m" + "ock_fallback" ? "pratinjau lokal" : pMeta.provider_status}</span>
+                    <span className="font-mono text-white/70">
+                      {pMeta.provider_status === "m" + "ock_fallback" ? "pratinjau lokal" : pMeta.provider_status}
+                    </span>
                   </div>
                 </div>
                 {pMeta.fallback_used && (
@@ -2942,7 +3009,7 @@ function ReportResultCard({
                 <div className="mt-2 space-y-2 text-xs">
                   <div>
                     <span className="block text-white/45">Pertanyaan/Tugas Terdeteksi:</span>
-                    <p className="mt-0.5 italic text-white/85">&quot;{aCheck.userQuestionSummary}&quot;</p>
+                    <p className="mt-0.5 text-white/85 italic">&quot;{aCheck.userQuestionSummary}&quot;</p>
                   </div>
                   <div className="flex justify-between border-t border-white/[0.04] pt-2">
                     <span className="text-white/45">Apakah NaLI menjawab tugas?</span>
@@ -2952,13 +3019,19 @@ function ReportResultCard({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Tingkat Keyakinan:</span>
-                    <span className={cn(
-                      "font-bold uppercase",
-                      aCheck.answerConfidence === "high" && "text-emerald-400",
-                      aCheck.answerConfidence === "medium" && "text-amber-400",
-                      aCheck.answerConfidence === "low" && "text-rose-400"
-                    )}>
-                      {aCheck.answerConfidence === "high" ? "Tinggi" : aCheck.answerConfidence === "medium" ? "Sedang" : "Rendah"}
+                    <span
+                      className={cn(
+                        "font-bold uppercase",
+                        aCheck.answerConfidence === "high" && "text-emerald-400",
+                        aCheck.answerConfidence === "medium" && "text-amber-400",
+                        aCheck.answerConfidence === "low" && "text-rose-400",
+                      )}
+                    >
+                      {aCheck.answerConfidence === "high"
+                        ? "Tinggi"
+                        : aCheck.answerConfidence === "medium"
+                          ? "Sedang"
+                          : "Rendah"}
                     </span>
                   </div>
                   {aCheck.missingAnswerParts && aCheck.missingAnswerParts.length > 0 && (
@@ -2994,7 +3067,7 @@ function ReportResultCard({
             canGenerateJournalPdfNow: false,
             reasons: ["Bahan pengamatan sangat terbatas."],
             missingRequirements: ["Data observasi lapangan"],
-            recommendedNextAction: "Kumpulkan catatan observasi lapangan terlebih dahulu."
+            recommendedNextAction: "Kumpulkan catatan observasi lapangan terlebih dahulu.",
           };
 
           return (
@@ -3006,22 +3079,26 @@ function ReportResultCard({
                 <div className="mt-2 space-y-2 text-xs">
                   <div className="flex justify-between">
                     <span className="text-white/45">Status Kelayakan:</span>
-                    <span className={cn(
-                      "font-bold uppercase",
-                      jReady.readinessLevel === "draft_ready" && "text-emerald-400",
-                      jReady.readinessLevel === "outline_ready" && "text-amber-400",
-                      jReady.readinessLevel === "not_ready" && "text-rose-400"
-                    )}>
-                      {jReady.readinessLevel === "draft_ready" 
-                        ? "Siap disusun menjadi draf jurnal" 
-                        : jReady.readinessLevel === "outline_ready" 
-                          ? "Siap untuk outline jurnal" 
+                    <span
+                      className={cn(
+                        "font-bold uppercase",
+                        jReady.readinessLevel === "draft_ready" && "text-emerald-400",
+                        jReady.readinessLevel === "outline_ready" && "text-amber-400",
+                        jReady.readinessLevel === "not_ready" && "text-rose-400",
+                      )}
+                    >
+                      {jReady.readinessLevel === "draft_ready"
+                        ? "Siap disusun menjadi draf jurnal"
+                        : jReady.readinessLevel === "outline_ready"
+                          ? "Siap untuk outline jurnal"
                           : "Belum siap untuk jurnal"}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Draf Jurnal Tersedia:</span>
-                    <span className="font-semibold text-white/70">{jReady.canGenerateJournalDraft ? "Ya (Siap disusun)" : "Tidak"}</span>
+                    <span className="font-semibold text-white/70">
+                      {jReady.canGenerateJournalDraft ? "Ya (Siap disusun)" : "Tidak"}
+                    </span>
                   </div>
                   <div className="flex justify-between border-b border-white/[0.04] pb-2">
                     <span className="text-white/45">Ekspor PDF Jurnal Publik:</span>
@@ -3050,10 +3127,10 @@ function ReportResultCard({
                     </div>
                   )}
 
-                  <div className="mt-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3">
+                  <div className="mt-3 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3">
                     <span className="block font-semibold text-emerald-400">Rekomendasi Tindak Lanjut:</span>
-                    <p className="mt-1 text-white/80 font-medium">{jReady.recommendedNextAction}</p>
-                    
+                    <p className="mt-1 font-medium text-white/80">{jReady.recommendedNextAction}</p>
+
                     <div className="mt-2.5 flex flex-wrap gap-2">
                       <button
                         type="button"
@@ -3220,7 +3297,7 @@ function ReportResultCard({
             primary_model_requested: "google/gemini-2.0-flash-001",
             model_used: report.model_used || "unknown",
             fallback_used: false,
-            provider_status: "primary_success"
+            provider_status: "primary_success",
           };
           const aCheck = answerVerification || {
             answered: true,
@@ -3228,7 +3305,7 @@ function ReportResultCard({
             missingAnswerParts: [],
             detectedOutputType: "report_draft",
             userQuestionSummary: report.title || "",
-            verificationNotes: []
+            verificationNotes: [],
           };
 
           return (
@@ -3244,7 +3321,9 @@ function ReportResultCard({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Model yang Digunakan:</span>
-                    <span className="font-mono font-medium text-emerald-400">{pMeta.model_used === "m" + "ock" ? "pratinjau lokal" : pMeta.model_used}</span>
+                    <span className="font-mono font-medium text-emerald-400">
+                      {pMeta.model_used === "m" + "ock" ? "pratinjau lokal" : pMeta.model_used}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Menggunakan Fallback:</span>
@@ -3256,7 +3335,9 @@ function ReportResultCard({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Status Provider:</span>
-                    <span className="font-mono text-white/70">{pMeta.provider_status === "m" + "ock_fallback" ? "pratinjau lokal" : pMeta.provider_status}</span>
+                    <span className="font-mono text-white/70">
+                      {pMeta.provider_status === "m" + "ock_fallback" ? "pratinjau lokal" : pMeta.provider_status}
+                    </span>
                   </div>
                 </div>
                 {pMeta.fallback_used && (
@@ -3273,7 +3354,7 @@ function ReportResultCard({
                 <div className="mt-2 space-y-2 text-xs">
                   <div>
                     <span className="block text-white/45">Pertanyaan/Tugas Terdeteksi:</span>
-                    <p className="mt-0.5 italic text-white/85">&quot;{aCheck.userQuestionSummary}&quot;</p>
+                    <p className="mt-0.5 text-white/85 italic">&quot;{aCheck.userQuestionSummary}&quot;</p>
                   </div>
                   <div className="flex justify-between border-t border-white/[0.04] pt-2">
                     <span className="text-white/45">Apakah NaLI menjawab tugas?</span>
@@ -3283,13 +3364,19 @@ function ReportResultCard({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Tingkat Keyakinan:</span>
-                    <span className={cn(
-                      "font-bold uppercase",
-                      aCheck.answerConfidence === "high" && "text-emerald-400",
-                      aCheck.answerConfidence === "medium" && "text-amber-400",
-                      aCheck.answerConfidence === "low" && "text-rose-400"
-                    )}>
-                      {aCheck.answerConfidence === "high" ? "Tinggi" : aCheck.answerConfidence === "medium" ? "Sedang" : "Rendah"}
+                    <span
+                      className={cn(
+                        "font-bold uppercase",
+                        aCheck.answerConfidence === "high" && "text-emerald-400",
+                        aCheck.answerConfidence === "medium" && "text-amber-400",
+                        aCheck.answerConfidence === "low" && "text-rose-400",
+                      )}
+                    >
+                      {aCheck.answerConfidence === "high"
+                        ? "Tinggi"
+                        : aCheck.answerConfidence === "medium"
+                          ? "Sedang"
+                          : "Rendah"}
                     </span>
                   </div>
                   {aCheck.missingAnswerParts && aCheck.missingAnswerParts.length > 0 && (
@@ -3325,7 +3412,7 @@ function ReportResultCard({
             canGenerateJournalPdfNow: false,
             reasons: ["Bahan pengamatan sangat terbatas."],
             missingRequirements: ["Data observasi lapangan"],
-            recommendedNextAction: "Kumpulkan catatan observasi lapangan terlebih dahulu."
+            recommendedNextAction: "Kumpulkan catatan observasi lapangan terlebih dahulu.",
           };
 
           return (
@@ -3337,22 +3424,26 @@ function ReportResultCard({
                 <div className="mt-2 space-y-2 text-xs">
                   <div className="flex justify-between">
                     <span className="text-white/45">Status Kelayakan:</span>
-                    <span className={cn(
-                      "font-bold uppercase",
-                      jReady.readinessLevel === "draft_ready" && "text-emerald-400",
-                      jReady.readinessLevel === "outline_ready" && "text-amber-400",
-                      jReady.readinessLevel === "not_ready" && "text-rose-400"
-                    )}>
-                      {jReady.readinessLevel === "draft_ready" 
-                        ? "Siap disusun menjadi draf jurnal" 
-                        : jReady.readinessLevel === "outline_ready" 
-                          ? "Siap untuk outline jurnal" 
+                    <span
+                      className={cn(
+                        "font-bold uppercase",
+                        jReady.readinessLevel === "draft_ready" && "text-emerald-400",
+                        jReady.readinessLevel === "outline_ready" && "text-amber-400",
+                        jReady.readinessLevel === "not_ready" && "text-rose-400",
+                      )}
+                    >
+                      {jReady.readinessLevel === "draft_ready"
+                        ? "Siap disusun menjadi draf jurnal"
+                        : jReady.readinessLevel === "outline_ready"
+                          ? "Siap untuk outline jurnal"
                           : "Belum siap untuk jurnal"}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Draf Jurnal Tersedia:</span>
-                    <span className="font-semibold text-white/70">{jReady.canGenerateJournalDraft ? "Ya (Siap disusun)" : "Tidak"}</span>
+                    <span className="font-semibold text-white/70">
+                      {jReady.canGenerateJournalDraft ? "Ya (Siap disusun)" : "Tidak"}
+                    </span>
                   </div>
                   <div className="flex justify-between border-b border-white/[0.04] pb-2">
                     <span className="text-white/45">Ekspor PDF Jurnal Publik:</span>
@@ -3381,10 +3472,10 @@ function ReportResultCard({
                     </div>
                   )}
 
-                  <div className="mt-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3">
+                  <div className="mt-3 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3">
                     <span className="block font-semibold text-emerald-400">Rekomendasi Tindak Lanjut:</span>
-                    <p className="mt-1 text-white/80 font-medium">{jReady.recommendedNextAction}</p>
-                    
+                    <p className="mt-1 font-medium text-white/80">{jReady.recommendedNextAction}</p>
+
                     <div className="mt-2.5 flex flex-wrap gap-2">
                       <button
                         type="button"
@@ -3442,14 +3533,12 @@ function ReportResultCard({
             scientificNameDiscipline: "not_applicable" as const,
             ethicsSafetyNotePresent: false,
             referenceConsistencyStatus: "warning" as const,
-            quantitativeEvidenceLevel: "none" as const
+            quantitativeEvidenceLevel: "none" as const,
           };
 
           if (!candidate) {
             return (
-              <div className="text-white/45 text-xs">
-                Draf kandidat jurnal tidak tersedia untuk draf laporan ini.
-              </div>
+              <div className="text-xs text-white/45">Draf kandidat jurnal tidak tersedia untuk draf laporan ini.</div>
             );
           }
 
@@ -3473,12 +3562,12 @@ function ReportResultCard({
           return (
             <div className="space-y-5 text-sm leading-6 text-white/70">
               {/* Warnings and Wording Locks */}
-              <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-6 text-amber-200/80 space-y-2">
+              <div className="space-y-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-6 text-amber-200/80">
                 <div className="flex items-center gap-1.5 font-semibold text-amber-400">
                   <AlertTriangle className="h-4 w-4" />
                   <span>Draf kandidat jurnal (Belum siap publikasi final)</span>
                 </div>
-                <ul className="list-disc pl-4 space-y-1 text-white/75">
+                <ul className="list-disc space-y-1 pl-4 text-white/75">
                   <li>PDF jurnal publik belum aktif </li>
                   <li>Referensi hanya berdasarkan input pengguna</li>
                   <li>NaLI tidak membuat DOI, ISSN, nama jurnal, publisher, atau referensi palsu</li>
@@ -3487,13 +3576,13 @@ function ReportResultCard({
               </div>
 
               {/* Quality Evaluator Panel */}
-              <div className="rounded-xl border border-white/[0.05] bg-white/[0.01] p-4 text-xs space-y-3">
+              <div className="space-y-3 rounded-xl border border-white/[0.05] bg-white/[0.01] p-4 text-xs">
                 <div className="flex justify-between border-b border-white/[0.04] pb-2">
                   <span className="font-bold text-white/80">Benchmark Kualitas Akademik</span>
                   <span className="font-mono text-white/45">Sprint 4 QA Engine</span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
                       <span className="text-white/45">Skor Kualitas Jurnal:</span>
@@ -3501,11 +3590,13 @@ function ReportResultCard({
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/45">Tingkat Kelayakan:</span>
-                      <span className="font-semibold capitalize text-emerald-400/90">{quality.level}</span>
+                      <span className="font-semibold text-emerald-400/90 capitalize">{quality.level}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/45">Struktur Artikel Konservasi:</span>
-                      <span className={cn("font-medium", quality.imradComplete ? "text-emerald-400" : "text-amber-400")}>
+                      <span
+                        className={cn("font-medium", quality.imradComplete ? "text-emerald-400" : "text-amber-400")}
+                      >
                         {quality.imradComplete ? "Terpenuhi (IMRaD lengkap)" : "Belum Lengkap"}
                       </span>
                     </div>
@@ -3515,7 +3606,12 @@ function ReportResultCard({
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/45">Implikasi Konservasi (Implication):</span>
-                      <span className={cn("font-semibold", quality.hasConservationImplication ? "text-emerald-400" : "text-rose-400")}>
+                      <span
+                        className={cn(
+                          "font-semibold",
+                          quality.hasConservationImplication ? "text-emerald-400" : "text-rose-400",
+                        )}
+                      >
                         {quality.hasConservationImplication ? "Terpenuhi" : "Tidak Ada"}
                       </span>
                     </div>
@@ -3524,13 +3620,23 @@ function ReportResultCard({
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
                       <span className="text-white/45">Jumlah Kata Abstrak (Max 300):</span>
-                      <span className={cn("font-mono font-medium", quality.abstractWordCount <= 300 ? "text-emerald-400" : "text-rose-400")}>
+                      <span
+                        className={cn(
+                          "font-mono font-medium",
+                          quality.abstractWordCount <= 300 ? "text-emerald-400" : "text-rose-400",
+                        )}
+                      >
                         {quality.abstractWordCount} kata
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/45">Jumlah Kata Kunci (Max 8):</span>
-                      <span className={cn("font-mono font-medium", quality.keywordsCount <= 8 ? "text-emerald-400" : "text-rose-400")}>
+                      <span
+                        className={cn(
+                          "font-mono font-medium",
+                          quality.keywordsCount <= 8 ? "text-emerald-400" : "text-rose-400",
+                        )}
+                      >
                         {quality.keywordsCount}
                       </span>
                     </div>
@@ -3540,27 +3646,46 @@ function ReportResultCard({
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/45">Replikabilitas Metode (Replicability):</span>
-                      <span className={cn("font-semibold", quality.hasMethodsReplicability ? "text-emerald-400" : "text-rose-400")}>
+                      <span
+                        className={cn(
+                          "font-semibold",
+                          quality.hasMethodsReplicability ? "text-emerald-400" : "text-rose-400",
+                        )}
+                      >
                         {quality.hasMethodsReplicability ? "Terpenuhi" : "Tidak Ada"}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/45">Etika & Keamanan Populasi:</span>
-                      <span className={cn("font-semibold", quality.ethicsSafetyNotePresent ? "text-emerald-400" : "text-rose-400")}>
+                      <span
+                        className={cn(
+                          "font-semibold",
+                          quality.ethicsSafetyNotePresent ? "text-emerald-400" : "text-rose-400",
+                        )}
+                      >
                         {quality.ethicsSafetyNotePresent ? "Terpenuhi" : "Tidak Ada"}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="border-t border-white/[0.04] pt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 border-t border-white/[0.04] pt-2 md:grid-cols-2">
                   <div className="flex justify-between">
                     <span className="text-white/45">Tingkat Bukti Kuantitatif:</span>
                     <span className="font-mono text-emerald-400">{quality.quantitativeEvidenceLevel}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/45">Konsistensi Referensi (Citation):</span>
-                    <span className={cn("font-bold", quality.referenceConsistencyStatus === "safe" ? "text-emerald-400" : (quality.referenceConsistencyStatus === "blocked" ? "text-rose-400" : "text-amber-400"))}>
+                    <span
+                      className={cn(
+                        "font-bold",
+                        quality.referenceConsistencyStatus === "safe"
+                          ? "text-emerald-400"
+                          : quality.referenceConsistencyStatus === "blocked"
+                            ? "text-rose-400"
+                            : "text-amber-400",
+                      )}
+                    >
                       {quality.referenceConsistencyStatus}
                     </span>
                   </div>
@@ -3583,7 +3708,7 @@ function ReportResultCard({
                 )}
                 {quality.recommendedFixes && quality.recommendedFixes.length > 0 && (
                   <div className="border-t border-white/[0.04] pt-2">
-                    <span className="block text-emerald-400 font-semibold">Rekomendasi Perbaikan:</span>
+                    <span className="block font-semibold text-emerald-400">Rekomendasi Perbaikan:</span>
                     <ul className="mt-1 list-disc pl-4 text-emerald-300/80">
                       {quality.recommendedFixes.map((fix, idx) => (
                         <li key={idx}>{fix}</li>
@@ -3602,9 +3727,7 @@ function ReportResultCard({
               </div>
 
               <div className="border-t border-white/[0.04] pt-3">
-                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">
-                  Abstrak
-                </span>
+                <span className="block text-xs font-semibold tracking-wider text-emerald-400 uppercase">Abstrak</span>
                 <p className="mt-1 italic">{clientScrub(candidate.abstract)}</p>
               </div>
 
@@ -3663,7 +3786,7 @@ function ReportResultCard({
                 </span>
                 <div className="mt-1 space-y-1">
                   {Array.isArray(candidate.limitations) ? (
-                    <ul className="list-disc pl-4 space-y-0.5">
+                    <ul className="list-disc space-y-0.5 pl-4">
                       {candidate.limitations.map((l: string, idx: number) => (
                         <li key={idx}>{clientScrub(l)}</li>
                       ))}
@@ -3681,7 +3804,7 @@ function ReportResultCard({
                   </span>
                   <div className="mt-1 space-y-1">
                     {Array.isArray(candidate.futureResearch) ? (
-                      <ul className="list-disc pl-4 space-y-0.5">
+                      <ul className="list-disc space-y-0.5 pl-4">
                         {candidate.futureResearch.map((fr: string, idx: number) => (
                           <li key={idx}>{clientScrub(fr)}</li>
                         ))}
@@ -3704,7 +3827,7 @@ function ReportResultCard({
                       <div key={idx} className="space-y-1 border-l border-white/10 pl-3">
                         <span className="block text-xs font-bold text-white/80">{clientScrub(annex.label)}</span>
                         {Array.isArray(annex.details) ? (
-                          <ul className="list-disc pl-4 text-xs text-white/50 space-y-0.5">
+                          <ul className="list-disc space-y-0.5 pl-4 text-xs text-white/50">
                             {annex.details.map((detail: string, dIdx: number) => (
                               <li key={dIdx}>{clientScrub(detail)}</li>
                             ))}
@@ -3739,7 +3862,9 @@ function ReportResultCard({
                           <tr key={idx} className="border-b border-white/[0.04] last:border-none">
                             <td className="px-3 py-2.5 font-medium text-white/80">{clientScrub(row.claim)}</td>
                             <td className="px-3 py-2.5 text-white/60">{clientScrub(row.evidenceType)}</td>
-                            <td className="max-w-[200px] truncate px-3 py-2.5 text-white/50">{clientScrub(row.limitation)}</td>
+                            <td className="max-w-[200px] truncate px-3 py-2.5 text-white/50">
+                              {clientScrub(row.limitation)}
+                            </td>
                             <td className="px-3 py-2.5">
                               <span className="inline-flex rounded border border-white/[0.06] bg-white/[0.04] px-1.5 py-0.5 text-[9px] text-white/45">
                                 {clientScrub(row.source)}
@@ -3788,16 +3913,20 @@ function ReportResultCard({
                 </span>
                 <div className="mt-1 space-y-1">
                   {Array.isArray(candidate.referencesSuppliedByUser) ? (
-                    <ul className="list-disc pl-4 text-white/50 font-mono text-xs space-y-1">
+                    <ul className="list-disc space-y-1 pl-4 font-mono text-xs text-white/50">
                       {candidate.referencesSuppliedByUser.map((ref: string, idx: number) => (
                         <li key={idx}>{clientScrub(ref)}</li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="whitespace-pre-wrap text-white/50 font-mono text-xs">{clientScrub(candidate.referencesSuppliedByUser)}</p>
+                    <p className="font-mono text-xs whitespace-pre-wrap text-white/50">
+                      {clientScrub(candidate.referencesSuppliedByUser)}
+                    </p>
                   )}
                 </div>
-                <p className="mt-2.5 text-white/30 text-[10px] italic">{clientScrub(candidate.citationIntegrityNote)}</p>
+                <p className="mt-2.5 text-[10px] text-white/30 italic">
+                  {clientScrub(candidate.citationIntegrityNote)}
+                </p>
               </div>
             </div>
           );
@@ -3827,7 +3956,7 @@ function ReportResultCard({
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-white/[0.04] bg-white/[0.01] px-1 text-[11px] sm:px-4 sm:text-xs overflow-x-auto scrollbar-thin">
+      <div className="scrollbar-thin flex overflow-x-auto border-b border-white/[0.04] bg-white/[0.01] px-1 text-[11px] sm:px-4 sm:text-xs">
         <button
           type="button"
           onClick={() => setActiveTab("preview")}
@@ -4111,7 +4240,7 @@ export function UserDropdown({ user }: { user: any }) {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 mt-2 z-50 w-44 rounded-2xl border border-white/[0.08] bg-[#0c1612] p-1.5 shadow-xl backdrop-blur-xl">
+          <div className="absolute right-0 z-50 mt-2 w-44 rounded-2xl border border-white/[0.08] bg-[#0c1612] p-1.5 shadow-xl backdrop-blur-xl">
             <Link
               href="/create-report"
               onClick={() => setOpen(false)}

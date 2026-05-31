@@ -46,19 +46,20 @@ export function LoadingView({ prompt, activeStep = 0, streamingText = "" }: Load
       {streamingText.length > 0 && (
         <div
           style={{
-            maxWidth: "480px",
-            width: "100%",
-            padding: "8px 16px",
-            borderLeft: "2px solid #00FFB340",
-            color: "rgba(255,255,255,0.25)",
-            fontSize: "11px",
             fontFamily: "monospace",
-            lineHeight: "1.5",
+            fontSize: "11px",
+            color: "rgba(255,255,255,0.3)",
+            borderLeft: "2px solid #00FFB330",
+            paddingLeft: "12px",
+            marginTop: "16px",
+            maxWidth: "480px",
+            wordBreak: "break-word",
+            whiteSpace: "pre-wrap",
+            maxHeight: "60px",
             overflow: "hidden",
-            maxHeight: "48px",
           }}
         >
-          {streamingText.slice(-80)}
+          {streamingText.slice(-120)}
         </div>
       )}
     </div>

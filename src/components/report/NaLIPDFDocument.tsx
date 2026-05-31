@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { ParsedReport } from "@/lib/parse-report-markdown";
-import type { NaLIIntelligenceHeader, FollowUpQuestion } from "@/lib/parse-nali-output";
+import type { NaLIHeader, FollowUpQuestion } from "@/lib/parse-nali-output";
+import type { PalantirScore } from "@/lib/calculate-palantir-score";
 
 const TEAL = "#00875A";
 const DARK = "#1a1a1a";
@@ -319,7 +320,8 @@ interface Props {
   prompt: string;
   modelUsed: string;
   generatedAt: string;
-  v2Header?: NaLIIntelligenceHeader | null;
+  v2Header?: NaLIHeader | null;
+  v2PalantirScore?: PalantirScore;
   v2FollowUpQuestions?: FollowUpQuestion[];
 }
 
@@ -400,6 +402,7 @@ export function NaLIPDFDocument({
   modelUsed,
   generatedAt,
   v2Header,
+  v2PalantirScore,
   v2FollowUpQuestions,
 }: Props) {
   const abstractSection = sections.find(
@@ -408,7 +411,7 @@ export function NaLIPDFDocument({
   const otherSections = sections.filter((s) => s !== abstractSection);
 
   const shortPrompt = prompt.length > 160 ? prompt.slice(0, 160) + "..." : prompt;
-  const isV2 = !!v2Header;
+  const isV2 = !!v2Header && !!v2PalantirScore;
 
   return (
     <Document title={reportTitle} author="NaLI by NatIve" subject="Draft Laporan NaLI" creator="naliai.vercel.app">
@@ -429,32 +432,34 @@ export function NaLIPDFDocument({
         </View>
 
         {/* v2: Palantir Intelligence Summary */}
-        {isV2 && v2Header && (
+        {isV2 && v2PalantirScore && (
           <View style={styles.palantirBox}>
             <Text style={styles.palantirTitle}>Palantir Intelligence Summary</Text>
             <Text style={styles.palantirScoreLine}>
-              Palantir Confidence Score: {v2Header.palantir.overall.toFixed(0)}% - {v2Header.palantir.level}
+              Palantir Confidence Score: {v2PalantirScore.overall}% - {v2PalantirScore.level}
             </Text>
             <View style={styles.palantirPillarRow}>
               <Text style={styles.palantirPillarLabel}>Pilar Genetik (x0.60)</Text>
-              <Text style={styles.palantirPillarValue}>{v2Header.palantir.geneticPillar.toFixed(2)} / 1.00</Text>
+              <Text style={styles.palantirPillarValue}>{v2PalantirScore.genetic.toFixed(2)} / 1.00</Text>
             </View>
             <View style={styles.palantirPillarRow}>
               <Text style={styles.palantirPillarLabel}>Pilar Visual (x0.20)</Text>
-              <Text style={styles.palantirPillarValue}>{v2Header.palantir.visualPillar.toFixed(2)} / 1.00</Text>
+              <Text style={styles.palantirPillarValue}>{v2PalantirScore.visual.toFixed(2)} / 1.00</Text>
             </View>
             <View style={styles.palantirPillarRow}>
               <Text style={styles.palantirPillarLabel}>Pilar Habitat (x0.15)</Text>
-              <Text style={styles.palantirPillarValue}>{v2Header.palantir.habitatPillar.toFixed(2)} / 1.00</Text>
+              <Text style={styles.palantirPillarValue}>{v2PalantirScore.habitat.toFixed(2)} / 1.00</Text>
             </View>
             <View style={styles.palantirPillarRow}>
               <Text style={styles.palantirPillarLabel}>Pilar Integritas (x0.10)</Text>
-              <Text style={styles.palantirPillarValue}>{v2Header.palantir.integrityPillar.toFixed(2)} / 1.00</Text>
+              <Text style={styles.palantirPillarValue}>{v2PalantirScore.integrity.toFixed(2)} / 1.00</Text>
             </View>
-            <Text style={styles.palantirMetaRow}>
-              Kualitas Bukti: {v2Header.kualitasBukti} | Risiko Klaim: {v2Header.risikoKlaim} | Kesiapan Publikasi:{" "}
-              {v2Header.kesiapanPublikasi}
-            </Text>
+            {v2Header && (
+              <Text style={styles.palantirMetaRow}>
+                Kualitas Bukti: {v2Header.kualitasBukti} | Risiko Klaim: {v2Header.risikoKlaim} | Bahasa:{" "}
+                {v2Header.bahasaUser}
+              </Text>
+            )}
           </View>
         )}
 

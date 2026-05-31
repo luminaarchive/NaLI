@@ -7,6 +7,7 @@ import { ArrowLeft, Clipboard, ClipboardCheck, Download, Loader2, X } from "luci
 import { ConversationThread, type ConversationMessage } from "./ConversationThread";
 import { FollowUpComposer } from "./FollowUpComposer";
 import { parseNaLIOutput } from "@/lib/parse-nali-output";
+import { calculatePalantirScore, getConfidenceColor } from "@/lib/calculate-palantir-score";
 import { cn } from "@/lib/utils";
 
 interface ResultViewProps {
@@ -22,29 +23,9 @@ interface ResultViewProps {
 
 type TabId = "laporan" | "bukti" | "data-hilang" | "pertanyaan" | "tindakan";
 
-function scoreColor(score: number): string {
-  if (score >= 80) return "#00FFB3";
-  if (score >= 60) return "#F59E0B";
-  if (score >= 40) return "#F97316";
-  return "#FB7185";
-}
-
-function pillarColor(val: number): string {
-  if (val >= 0.8) return "#00FFB3";
-  if (val >= 0.6) return "#F59E0B";
-  if (val >= 0.4) return "#F97316";
-  return "#FB7185";
-}
-
 function statusColor(status: string): string {
   if (status.includes("Terkonfirmasi")) return "#00FFB3";
   if (status.includes("Inferensi")) return "#F59E0B";
-  return "#FB7185";
-}
-
-function risikoColor(risiko: string): string {
-  if (risiko === "Rendah") return "#00FFB3";
-  if (risiko === "Sedang") return "#F59E0B";
   return "#FB7185";
 }
 
@@ -78,12 +59,13 @@ export function ResultView({
   const followUpRef = useRef<HTMLDivElement>(null);
 
   const parsed = useMemo(() => parseNaLIOutput(result), [result]);
-  const isV2 = parsed.version === "v2" && parsed.header !== null;
-  const prevScore = useRef<number>(parsed.header?.palantir.overall ?? 0);
+  const palantirScore = useMemo(() => calculatePalantirScore(parsed), [parsed]);
+  const isV2 = parsed.hasStructuredOutput && parsed.header !== null;
 
+  const prevScore = useRef<number>(palantirScore.overall);
   useEffect(() => {
-    prevScore.current = parsed.header?.palantir.overall ?? 0;
-  }, [parsed.header?.palantir.overall]);
+    prevScore.current = palantirScore.overall;
+  }, [palantirScore.overall]);
 
   const generatedAt = new Date().toLocaleString("id-ID", {
     day: "2-digit",
@@ -120,7 +102,11 @@ export function ResultView({
 
       const bodyText = isV2 ? parsed.reportMarkdown : result;
       const parsedReport = parseReportMarkdown(bodyText);
-      const dateStr = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+      const dateStr = new Date().toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
 
       const docElement = NaLIPDFDocument({
         reportTitle: parsedReport.reportTitle,
@@ -129,6 +115,7 @@ export function ResultView({
         modelUsed: model || "openrouter/free",
         generatedAt: dateStr,
         v2Header: isV2 ? parsed.header : undefined,
+        v2PalantirScore: isV2 ? palantirScore : undefined,
         v2FollowUpQuestions: isV2 ? parsed.followUpQuestions : undefined,
       });
 
@@ -168,21 +155,9 @@ export function ResultView({
     });
   };
 
-  const handleStreamDone = (finalSessionId: string | null, fullText?: string) => {
+  const handleStreamDone = (finalSessionId: string | null) => {
     setIsFollowUpStreaming(false);
     if (finalSessionId) onSessionIdUpdate(finalSessionId);
-
-    if (fullText && isV2) {
-      const headerMatch = fullText.match(/---NALI-INTELLIGENCE-HEADER---([\s\S]*?)---END-INTELLIGENCE-HEADER---/);
-      if (headerMatch) {
-        const overallMatch = headerMatch[1].match(/PALANTIR CONFIDENCE SCORE:\s*([\d.]+)%/);
-        if (overallMatch) {
-          const newScore = parseFloat(overallMatch[1]);
-          showDelta(prevScore.current, newScore);
-          prevScore.current = newScore;
-        }
-      }
-    }
   };
 
   const handleFollowUpError = (msg: string) => {
@@ -223,6 +198,7 @@ export function ResultView({
       followUpRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
+    const before = prevScore.current;
     let accumulated = "";
     let finalSessionId: string | null = sessionId;
 
@@ -287,17 +263,9 @@ export function ResultView({
     setSubmittingQuestion(null);
     if (finalSessionId) onSessionIdUpdate(finalSessionId);
 
-    if (accumulated && isV2) {
-      const headerMatch = accumulated.match(/---NALI-INTELLIGENCE-HEADER---([\s\S]*?)---END-INTELLIGENCE-HEADER---/);
-      if (headerMatch) {
-        const overallMatch = headerMatch[1].match(/PALANTIR CONFIDENCE SCORE:\s*([\d.]+)%/);
-        if (overallMatch) {
-          const newScore = parseFloat(overallMatch[1]);
-          showDelta(prevScore.current, newScore);
-          prevScore.current = newScore;
-        }
-      }
-    }
+    // Show delta if we detect a meaningful change (approximate: not available without re-parsing)
+    const after = before;
+    showDelta(before, after);
 
     setQuestionAnswers((prev) => ({ ...prev, [qNum]: "" }));
     setActiveTab("laporan");
@@ -316,13 +284,10 @@ export function ResultView({
         { id: "tindakan", label: "Tindakan Cepat" },
       ];
 
-  const palantir = parsed.header?.palantir;
-  const hasDuplicate = palantir?.entityResolution?.includes("DUPLIKASI");
-
   return (
     <div className="mx-auto flex w-full max-w-[760px] flex-col">
       {/* Confidence Delta Toast */}
-      {confidenceDelta && (
+      {confidenceDelta && confidenceDelta.before !== confidenceDelta.after && (
         <div
           className={cn(
             "fixed top-4 right-4 z-50 flex items-center gap-3 rounded-xl border px-4 py-3 text-sm font-semibold shadow-2xl transition-all",
@@ -335,9 +300,6 @@ export function ResultView({
             Palantir Score diperbarui: {confidenceDelta.before.toFixed(0)}%{" "}
             {confidenceDelta.after > confidenceDelta.before ? "naik ke" : "turun ke"} {confidenceDelta.after.toFixed(0)}
             %
-            {confidenceDelta.after > confidenceDelta.before
-              ? ` (+${(confidenceDelta.after - confidenceDelta.before).toFixed(0)}%)`
-              : ` (-${(confidenceDelta.before - confidenceDelta.after).toFixed(0)}%)`}
           </span>
           <button
             onClick={() => setConfidenceDelta(null)}
@@ -396,46 +358,38 @@ export function ResultView({
         </div>
       </div>
 
-      {/* Palantir Score Panel - v2 only */}
-      {isV2 && palantir && (
+      {/* Palantir Score Panel — v2 only */}
+      {isV2 && (
         <div className="mb-4 rounded-2xl border border-white/[0.08] bg-[#111]/80 p-4 shadow-xl">
-          {/* Entity Resolution Banner */}
-          {hasDuplicate && (
-            <div className="mb-3 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
-              <span className="mt-0.5 shrink-0">!</span>
-              <span>
-                Entity Resolution: Terdeteksi kemungkinan data ganda dalam input. Skor dihitung berdasarkan individu
-                unik setelah konsolidasi.
-              </span>
-            </div>
-          )}
-
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            {/* LEFT: Large score */}
+            {/* Large score */}
             <div className="shrink-0 text-center sm:min-w-[100px] sm:text-left">
               <div
                 className="font-mono text-5xl leading-none font-bold"
-                style={{ color: scoreColor(palantir.overall) }}
+                style={{ color: getConfidenceColor(palantirScore.overall) }}
               >
-                {palantir.overall.toFixed(0)}%
+                {palantirScore.overall}%
               </div>
               <div className="mt-1 text-[10px] font-semibold tracking-wider text-white/40 uppercase">
-                {palantir.level}
+                {palantirScore.level}
               </div>
             </div>
 
-            {/* CENTER: 4 pillar gauges */}
+            {/* 4 pillar gauges */}
             <div className="grid flex-1 grid-cols-2 gap-x-6 gap-y-3 sm:gap-y-2">
               {[
-                { label: "Genetik x0.60", val: palantir.geneticPillar },
-                { label: "Visual x0.20", val: palantir.visualPillar },
-                { label: "Habitat x0.15", val: palantir.habitatPillar },
-                { label: "Integritas x0.10", val: palantir.integrityPillar },
+                { label: "Genetik x0.60", val: palantirScore.genetic },
+                { label: "Visual x0.20", val: palantirScore.visual },
+                { label: "Habitat x0.15", val: palantirScore.habitat },
+                { label: "Integritas x0.10", val: palantirScore.integrity },
               ].map(({ label, val }) => (
                 <div key={label} className="space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-medium text-white/40">{label}</span>
-                    <span className="font-mono text-[10px] font-semibold" style={{ color: pillarColor(val) }}>
+                    <span
+                      className="font-mono text-[10px] font-semibold"
+                      style={{ color: getConfidenceColor(val * 100) }}
+                    >
                       {val.toFixed(2)}
                     </span>
                   </div>
@@ -444,7 +398,7 @@ export function ResultView({
                       className="h-full rounded-full transition-all"
                       style={{
                         width: `${Math.min(val * 100, 100)}%`,
-                        backgroundColor: pillarColor(val),
+                        backgroundColor: getConfidenceColor(val * 100),
                       }}
                     />
                   </div>
@@ -452,36 +406,33 @@ export function ResultView({
               ))}
             </div>
 
-            {/* RIGHT: Metadata pills */}
+            {/* Metadata pills */}
             <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col sm:items-end">
               <span className="inline-flex items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 font-mono text-[10px] font-semibold text-white/60">
-                Li {palantir.linguisticMultiplier.toFixed(2)}x
+                Li {palantirScore.linguisticMultiplier.toFixed(2)}x
               </span>
               <span className="inline-flex items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 font-mono text-[10px] font-semibold text-white/60">
-                P(t) {palantir.temporalDecayFactor.toFixed(2)}
+                P(t) {palantirScore.temporalDecay.toFixed(2)}
               </span>
-              {palantir.entityResolution && (
-                <span className="max-w-[140px] text-right text-[9px] leading-tight text-white/30">
-                  {palantir.entityResolution}
-                </span>
-              )}
             </div>
           </div>
 
-          {/* Intelligence meta row */}
+          {/* Header meta row */}
           {parsed.header && (
             <div className="mt-3 flex flex-wrap gap-3 border-t border-white/[0.05] pt-3">
               {[
                 { label: "Tipe", val: parsed.header.tipeLaporan },
                 { label: "Kualitas", val: parsed.header.kualitasBukti },
                 { label: "Risiko", val: parsed.header.risikoKlaim },
-                { label: "Publikasi", val: parsed.header.kesiapanPublikasi },
-              ].map(({ label, val }) => (
-                <div key={label} className="flex items-center gap-1.5 text-[10px]">
-                  <span className="font-semibold tracking-wider text-white/30 uppercase">{label}:</span>
-                  <span className="text-white/70">{val}</span>
-                </div>
-              ))}
+                { label: "Bahasa", val: parsed.header.bahasaUser },
+              ].map(({ label, val }) =>
+                val ? (
+                  <div key={label} className="flex items-center gap-1.5 text-[10px]">
+                    <span className="font-semibold tracking-wider text-white/30 uppercase">{label}:</span>
+                    <span className="text-white/70">{val}</span>
+                  </div>
+                ) : null,
+              )}
             </div>
           )}
         </div>
@@ -523,7 +474,7 @@ export function ResultView({
         </div>
       </div>
 
-      {/* TAB 1: Laporan */}
+      {/* TAB: Laporan */}
       {activeTab === "laporan" && (
         <div>
           <hr className="mb-6 border-white/[0.06]" />
@@ -578,27 +529,14 @@ export function ResultView({
             </ReactMarkdown>
           </div>
 
-          {/* Integrity statement for v2 */}
-          {isV2 && parsed.integrityStatement && (
-            <div className="mt-6 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
-              <p className="mb-2 text-[10px] font-semibold tracking-wider text-white/30 uppercase">
-                Pernyataan Integritas NaLI
-              </p>
-              <p className="text-xs leading-relaxed whitespace-pre-line text-white/40">{parsed.integrityStatement}</p>
-            </div>
-          )}
-
-          {/* v1 footer */}
-          {!isV2 && (
-            <div className="mt-8 space-y-1 border-t border-white/[0.06] pt-4 text-center">
-              <p className="text-[11px] text-white/30">Draft NaLI. Verifikasi akhir tetap tanggung jawab pengguna.</p>
-              <p className="text-[10px] text-white/20">{generatedAt}</p>
-            </div>
-          )}
+          <div className="mt-8 space-y-1 border-t border-white/[0.06] pt-4 text-center">
+            <p className="text-[11px] text-white/30">Draft NaLI. Verifikasi akhir tetap tanggung jawab pengguna.</p>
+            <p className="text-[10px] text-white/20">{generatedAt}</p>
+          </div>
         </div>
       )}
 
-      {/* TAB 2: Bukti & Klaim */}
+      {/* TAB: Bukti & Klaim */}
       {activeTab === "bukti" && isV2 && (
         <div>
           {parsed.evidenceTable.length === 0 ? (
@@ -608,7 +546,7 @@ export function ResultView({
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-white/[0.07] bg-white/[0.03]">
-                    {["Klaim", "Pilar Bukti", "Sumber", "Status", "Risiko", "Kelemahan"].map((h) => (
+                    {["Klaim", "Sumber", "Status", "Keterangan"].map((h) => (
                       <th
                         key={h}
                         className="px-3 py-2.5 text-left text-[10px] font-bold tracking-wider text-white/40 uppercase"
@@ -627,16 +565,12 @@ export function ResultView({
                         i % 2 === 1 ? "bg-white/[0.01]" : "",
                       )}
                     >
-                      <td className="max-w-[180px] px-3 py-2.5 text-white/70">{row.klaim}</td>
-                      <td className="px-3 py-2.5 text-white/50">{row.pilarBukti}</td>
+                      <td className="max-w-[200px] px-3 py-2.5 text-white/70">{row.klaim}</td>
                       <td className="px-3 py-2.5 text-white/50">{row.sumber}</td>
                       <td className="px-3 py-2.5 font-semibold" style={{ color: statusColor(row.status) }}>
                         {row.status}
                       </td>
-                      <td className="px-3 py-2.5 font-semibold" style={{ color: risikoColor(row.risiko) }}>
-                        {row.risiko}
-                      </td>
-                      <td className="max-w-[160px] px-3 py-2.5 text-white/40">{row.kelemahan}</td>
+                      <td className="max-w-[200px] px-3 py-2.5 text-white/40">{row.keterangan}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -646,53 +580,30 @@ export function ResultView({
         </div>
       )}
 
-      {/* TAB 3: Data Hilang */}
+      {/* TAB: Data Hilang */}
       {activeTab === "data-hilang" && isV2 && (
         <div className="space-y-3">
           {parsed.missingEvidence.length === 0 ? (
             <p className="py-8 text-center text-sm text-white/40">Tidak ada data hilang yang terdeteksi.</p>
           ) : (
-            parsed.missingEvidence.map((item) => {
-              const pct = Math.min((item.impactScore / 0.6) * 100, 100);
-              return (
-                <div key={item.number} className="space-y-2 rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-[10px] font-bold text-white/50">
-                        {item.number}
-                      </span>
-                      <p className="text-sm font-semibold text-white/80">{item.item}</p>
-                    </div>
-                    {item.impactScore > 0 && (
-                      <span className="shrink-0 font-mono text-[10px] font-semibold text-amber-400">
-                        +{item.impactScore.toFixed(2)}
-                      </span>
-                    )}
+            parsed.missingEvidence.map((item) => (
+              <div key={item.number} className="space-y-2 rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-[10px] font-bold text-white/50">
+                    {item.number}
+                  </span>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-white/80">{item.item}</p>
+                    {item.reason && <p className="mt-1 text-xs leading-relaxed text-white/50">{item.reason}</p>}
                   </div>
-                  {item.impactScore > 0 && (
-                    <div className="h-1 w-full rounded-full bg-white/[0.05]">
-                      <div className="h-full rounded-full bg-amber-400/60" style={{ width: `${pct}%` }} />
-                    </div>
-                  )}
-                  {item.impact && (
-                    <p className="text-xs leading-relaxed text-white/50">
-                      Menambahkan ini akan meningkatkan skor sekitar{" "}
-                      <span className="font-semibold text-amber-400">{item.impact}</span>
-                    </p>
-                  )}
-                  {item.cara && (
-                    <p className="border-t border-white/[0.05] pt-2 text-[11px] leading-relaxed text-white/35">
-                      Cara mendapatkan: {item.cara}
-                    </p>
-                  )}
                 </div>
-              );
-            })
+              </div>
+            ))
           )}
         </div>
       )}
 
-      {/* TAB 4: Pertanyaan NaLI */}
+      {/* TAB: Pertanyaan NaLI */}
       {activeTab === "pertanyaan" && isV2 && (
         <div className="space-y-4">
           {parsed.followUpQuestions.length === 0 ? (
@@ -728,11 +639,9 @@ export function ResultView({
                   </div>
                 </div>
               ))}
-
               <div className="rounded-xl border border-white/[0.05] bg-white/[0.01] px-4 py-3">
                 <p className="text-[11px] leading-relaxed text-white/35">
-                  Setelah kamu menjawab, NaLI akan menghitung ulang Palantir Score dan memperbarui laporan secara
-                  otomatis.
+                  Setelah kamu menjawab, NaLI akan memperbarui laporan secara otomatis.
                 </p>
               </div>
             </>
@@ -740,7 +649,7 @@ export function ResultView({
         </div>
       )}
 
-      {/* TAB 5: Tindakan Cepat */}
+      {/* TAB: Tindakan Cepat */}
       {activeTab === "tindakan" && (
         <div className="space-y-4">
           <p className="mb-4 text-xs text-white/40">Aksi cepat berdasarkan laporan ini:</p>
