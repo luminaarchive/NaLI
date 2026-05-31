@@ -3,11 +3,11 @@
 import { type Dispatch, type SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ArrowLeft, Clipboard, ClipboardCheck, Download, Loader2, X } from "lucide-react";
+import { ArrowLeft, Clipboard, ClipboardCheck, Download, FileText, Loader2, X } from "lucide-react";
 import { ConversationThread, type ConversationMessage } from "./ConversationThread";
 import { FollowUpComposer } from "./FollowUpComposer";
-import { parseNaLIOutput } from "@/lib/parse-nali-output";
-import { calculatePalantirScore, getConfidenceColor } from "@/lib/calculate-palantir-score";
+import { parseNaLIOutput, type ParsedNaLIOutput } from "@/lib/parse-nali-output";
+import { calculatePalantirScore, getConfidenceColor, type PalantirScore } from "@/lib/calculate-palantir-score";
 import { cn } from "@/lib/utils";
 
 interface ResultViewProps {
@@ -49,6 +49,7 @@ export function ResultView({
   const [copied, setCopied] = useState(false);
   const [promptExpanded, setPromptExpanded] = useState(false);
   const [isPDFGenerating, setIsPDFGenerating] = useState(false);
+  const [exporting, setExporting] = useState<"pdf" | "docx" | null>(null);
   const [followUpError, setFollowUpError] = useState<string | null>(null);
   const [isFollowUpStreaming, setIsFollowUpStreaming] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("laporan");
@@ -130,6 +131,128 @@ export function ResultView({
       console.error("PDF generation failed:", e);
     } finally {
       setIsPDFGenerating(false);
+    }
+  };
+
+  function buildExportPayload(
+    parsedOut: ParsedNaLIOutput,
+    score: PalantirScore,
+    rawMarkdown: string,
+    promptText?: string,
+  ): Record<string, unknown> {
+    const titleMatch = rawMarkdown.match(/^#\s+(.+)/m);
+    const title = titleMatch?.[1]?.trim() || promptText?.slice(0, 80) || "Laporan NaLI";
+
+    const sections: Array<[string, string]> = [];
+    const headingRe = /^##\s+(.+)\n([\s\S]*?)(?=^##\s|\n---NALI|$)/gm;
+    let m: RegExpExecArray | null;
+    while ((m = headingRe.exec(rawMarkdown)) !== null) {
+      const heading = m[1].trim().toUpperCase();
+      const body = m[2].trim();
+      const skip = ["ABSTRAK", "ABSTRACT", "KATA KUNCI", "KEYWORDS"];
+      if (body && !skip.some((s) => heading.includes(s))) {
+        sections.push([heading, body]);
+      }
+    }
+
+    const absIdRe = /##\s+Abstrak\s*\n([\s\S]*?)(?=^##\s|---NALI)/im;
+    const absEnRe = /##\s+Abstract\s*\n([\s\S]*?)(?=^##\s|---NALI)/im;
+    const abstractId = absIdRe.exec(rawMarkdown)?.[1]?.trim() ?? "";
+    const abstractEn = absEnRe.exec(rawMarkdown)?.[1]?.trim() ?? "";
+
+    const evTable: string[][] = [["Klaim", "Pilar Bukti", "Status", "Catatan"]];
+    for (const row of parsedOut.evidenceTable) {
+      evTable.push([row.klaim || "", row.sumber || "", row.status || "", row.keterangan || ""]);
+    }
+
+    const missing = parsedOut.missingEvidence.map((item, i) => [
+      String(item.number ?? i + 1),
+      item.item ?? "",
+      item.reason ?? "",
+    ]);
+
+    const questions = parsedOut.followUpQuestions.map((q) => q.question ?? "");
+
+    const today = new Date().toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+
+    return {
+      title,
+      subtitle: "Draft Laporan Berbasis Bukti — NaLI Evidence Intelligence OS v2.0",
+      date: today,
+      score: score.overall,
+      level: score.level,
+      kualitas: parsedOut.header?.kualitasBukti ?? "Sedang",
+      risiko: parsedOut.header?.risikoKlaim ?? "Sedang",
+      tipe: parsedOut.header?.tipeLaporan ?? "Laporan",
+      g: score.genetic,
+      v: score.visual,
+      h: score.habitat,
+      i: score.integrity,
+      li: score.linguisticMultiplier,
+      decay: score.temporalDecay,
+      abstract_id: abstractId,
+      abstract_en: abstractEn,
+      keywords: (parsedOut.header?.tipeLaporan ?? "") + ", NaLI, laporan berbasis bukti",
+      sections:
+        sections.length > 0
+          ? sections
+          : [
+              [
+                "LAPORAN",
+                rawMarkdown
+                  .replace(/^#+.+$/gm, "")
+                  .trim()
+                  .slice(0, 2000),
+              ],
+            ],
+      ev_table: evTable.length > 1 ? evTable : [["Klaim", "Pilar Bukti", "Status", "Catatan"]],
+      missing,
+      questions,
+      refs: [],
+    };
+  }
+
+  const handleExport = async (format: "pdf" | "docx") => {
+    if (!result || !parsed || exporting) return;
+    setExporting(format);
+
+    try {
+      const payload = buildExportPayload(parsed, palantirScore, result, prompt || undefined);
+      const endpoint = format === "pdf" ? "/api/export-pdf" : "/api/export-docx";
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.text();
+        console.error(`Export ${format} failed (${res.status}):`, errBody);
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download =
+        String(payload.title)
+          .slice(0, 50)
+          .replace(/\s+/g, "_")
+          .replace(/[^a-zA-Z0-9_\-]/g, "") + `.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export error:", err);
+    } finally {
+      setExporting(null);
     }
   };
 
@@ -339,11 +462,11 @@ export function ResultView({
             )}
           </button>
           <button
-            onClick={handleDownloadPDF}
-            disabled={isPDFGenerating}
+            onClick={() => handleExport("pdf")}
+            disabled={exporting !== null || isPDFGenerating}
             className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-white/60 transition hover:bg-white/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {isPDFGenerating ? (
+            {exporting === "pdf" ? (
               <>
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 Menyiapkan PDF...
@@ -352,6 +475,23 @@ export function ResultView({
               <>
                 <Download className="h-3.5 w-3.5" />
                 Unduh PDF
+              </>
+            )}
+          </button>
+          <button
+            onClick={() => handleExport("docx")}
+            disabled={exporting !== null || isPDFGenerating}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-white/60 transition hover:bg-white/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {exporting === "docx" ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Menyiapkan DOCX...
+              </>
+            ) : (
+              <>
+                <FileText className="h-3.5 w-3.5" />
+                Unduh DOCX
               </>
             )}
           </button>
@@ -656,7 +796,8 @@ export function ResultView({
           <div className="flex flex-wrap gap-2">
             {[
               { label: "Salin teks laporan", action: handleCopy },
-              { label: "Unduh PDF", action: handleDownloadPDF },
+              { label: "Unduh PDF", action: () => handleExport("pdf") },
+              { label: "Unduh DOCX", action: () => handleExport("docx") },
               ...(isV2 && parsed.followUpQuestions.length > 0
                 ? [{ label: "Lihat pertanyaan follow-up", action: () => setActiveTab("pertanyaan") }]
                 : []),
