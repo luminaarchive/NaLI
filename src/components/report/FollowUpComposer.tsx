@@ -12,7 +12,7 @@ interface FollowUpComposerProps {
   conversationMessages: ConversationMessage[];
   onStreamStart: (userMsg: ConversationMessage) => void;
   onStreamToken: (token: string) => void;
-  onStreamDone: (finalSessionId: string | null) => void;
+  onStreamDone: (finalSessionId: string | null, fullText?: string) => void;
   onError: (msg: string) => void;
 }
 
@@ -96,6 +96,7 @@ export function FollowUpComposer({
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let finalSessionId: string | null = sessionId;
+      let accumulated = "";
 
       outer: while (true) {
         const { done, value } = await reader.read();
@@ -108,13 +109,18 @@ export function FollowUpComposer({
           if (!raw) continue;
           try {
             const parsed = JSON.parse(raw);
-            if (parsed.token) onStreamToken(parsed.token);
+            if (parsed.token) {
+              accumulated += parsed.token;
+              onStreamToken(parsed.token);
+            }
             if (parsed.done) {
               finalSessionId = parsed.sessionId ?? sessionId;
-              onStreamDone(finalSessionId);
+              onStreamDone(finalSessionId, accumulated);
               break outer;
             }
-          } catch { /* skip */ }
+          } catch {
+            /* skip */
+          }
         }
       }
     } catch {
@@ -128,19 +134,15 @@ export function FollowUpComposer({
   return (
     <div className="mt-8 border-t border-white/[0.06] pt-6">
       {followUpCount > 0 && (
-        <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/25">
+        <p className="mb-3 text-[10px] font-semibold tracking-wider text-white/25 uppercase">
           {followUpCount} pertukaran dalam sesi ini
         </p>
       )}
 
-      <div className="relative flex flex-col gap-1 rounded-2xl border border-[#00FFB3]/15 bg-white/[0.02] p-3 focus-within:border-[#00FFB3]/30 transition-colors">
+      <div className="relative flex flex-col gap-1 rounded-2xl border border-[#00FFB3]/15 bg-white/[0.02] p-3 transition-colors focus-within:border-[#00FFB3]/30">
         {/* Attached file chip */}
         {attachedFile && (
-          <AttachedFileChip
-            file={attachedFile}
-            onRemove={() => setAttachedFile(null)}
-            isLoading={isExtractingFile}
-          />
+          <AttachedFileChip file={attachedFile} onRemove={() => setAttachedFile(null)} isLoading={isExtractingFile} />
         )}
 
         <div className="flex items-end gap-2">
@@ -157,18 +159,13 @@ export function FollowUpComposer({
             disabled={loading}
             placeholder="Tanya lebih lanjut atau minta revisi..."
             rows={1}
-            className="flex-1 resize-none bg-transparent text-sm text-white/80 placeholder-white/25 outline-none max-h-[100px] leading-6 disabled:opacity-50"
+            className="max-h-[100px] flex-1 resize-none bg-transparent text-sm leading-6 text-white/80 placeholder-white/25 outline-none disabled:opacity-50"
             style={{ lineHeight: "1.5rem" }}
           />
 
-          <div className="flex items-center gap-1 shrink-0">
-            <UploadDropdown
-              onFileSelected={handleFileAttach}
-              disabled={loading || isExtractingFile}
-            />
-            {isExtractingFile && (
-              <span className="text-[11px] text-white/40">Membaca...</span>
-            )}
+          <div className="flex shrink-0 items-center gap-1">
+            <UploadDropdown onFileSelected={handleFileAttach} disabled={loading || isExtractingFile} />
+            {isExtractingFile && <span className="text-[11px] text-white/40">Membaca...</span>}
             <button
               onClick={handleSubmit}
               disabled={(!input.trim() && !attachedFile) || loading}
@@ -176,7 +173,7 @@ export function FollowUpComposer({
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#00FFB3] transition hover:bg-[#00FFB3]/90 disabled:cursor-not-allowed disabled:opacity-30"
             >
               {loading ? (
-                <span className="h-3 w-3 rounded-full border border-[#050F12]/40 border-t-[#050F12] animate-spin" />
+                <span className="h-3 w-3 animate-spin rounded-full border border-[#050F12]/40 border-t-[#050F12]" />
               ) : (
                 <Send className="h-3.5 w-3.5 text-[#050F12]" />
               )}
