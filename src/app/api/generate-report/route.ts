@@ -176,10 +176,13 @@ export async function POST(req: NextRequest) {
 
   // Resolve auth before stream creation
   const cookieStore = await cookies();
-  const rawUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://dummy.supabase.co")
-    .trim()
-    .replace(/\/rest\/v1\/?$/, "");
-  const anonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "dummy").trim();
+  // Use || (not ??) so an empty-string env var also falls back instead of
+  // crashing createServerClient. Matches src/proxy.ts behavior.
+  const rawUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || "https://dummy.supabase.co").replace(
+    /\/rest\/v1\/?$/,
+    "",
+  );
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || "dummy";
   const supabase = createServerClient(rawUrl, anonKey, {
     cookies: {
       getAll() {
@@ -241,12 +244,11 @@ export async function POST(req: NextRequest) {
     { role: "user", content: userContent },
   ];
 
-  // Vision-capable models for image prompts
+  // Vision-capable free models for image prompts (older llama-4 vision ids removed).
   const VISION_MODELS = [
-    "meta-llama/llama-4-maverick:free",
-    "meta-llama/llama-4-scout:free",
+    "nvidia/nemotron-nano-12b-v2-vl:free",
     "meta-llama/llama-3.2-11b-vision-instruct:free",
-    "google/gemma-3-27b-it:free",
+    "google/gemma-4-31b-it:free",
   ];
 
   // Use capable models for structured report generation; vision models override for images.
@@ -291,7 +293,7 @@ export async function POST(req: NextRequest) {
             body: JSON.stringify({
               model,
               messages: openRouterMessages,
-              max_tokens: 2500,
+              max_tokens: reportMode ? 4000 : 1200,
               temperature: 0.3,
               stream: true,
             }),

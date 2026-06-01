@@ -13,14 +13,15 @@ export const FREE_MODEL_WATERFALL = [
 
 // Capable model waterfall for NaLI structured reports.
 // These models handle complex system prompts and long context without hallucinating.
-// Intentionally excludes openrouter/free (routes to weak models) and gemma-3/scout.
+// Verified live on OpenRouter (older :free ids like qwen3-235b / llama-4 were removed).
+// Reasoning-only models (deepseek-r1, *-thinking) are excluded because they stream
+// chain-of-thought instead of content and come back empty.
 export const CAPABLE_MODEL_WATERFALL = [
-  "deepseek/deepseek-r1:free",
-  "qwen/qwen3-235b-a22b:free",
-  "meta-llama/llama-4-maverick:free",
+  "openai/gpt-oss-120b:free",
+  "meta-llama/llama-3.3-70b-instruct:free",
+  "qwen/qwen3-next-80b-a3b-instruct:free",
+  "google/gemma-4-31b-it:free",
   "openai/gpt-oss-20b:free",
-  "mistralai/mistral-small-3.1-24b-instruct:free",
-  "meta-llama/llama-4-scout:free",
 ] as const;
 
 // Minimum context length required to handle the NaLI system prompt + report
