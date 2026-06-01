@@ -24,6 +24,7 @@ import {
   Send,
   ShieldCheck,
   Sparkles,
+  Square,
   StickyNote,
   X,
 } from "lucide-react";
@@ -265,6 +266,12 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const [selectedTierId, setSelectedTierId] = useState<string>(DEFAULT_TIER_ID);
   const [thinkingElapsed, setThinkingElapsed] = useState<number>(0);
   const genStartRef = useRef<number>(0);
+  const genAbortRef = useRef<AbortController | null>(null);
+
+  // Sprint 19: stop an in-flight first-report generation
+  const handleStopGeneration = useCallback(() => {
+    genAbortRef.current?.abort();
+  }, []);
 
   // File upload state
   const [attachedFile, setAttachedFile] = useState<ExtractedFile | null>(null);
@@ -969,11 +976,15 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       genStartRef.current = Date.now();
       window.history.pushState({}, "", "/create-report");
 
+      const controller = new AbortController();
+      genAbortRef.current = controller;
+
       try {
         const res = await fetch("/api/generate-report", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt: fullPrompt, imageBase64, selectedModel: engineForTier(selectedTierId) }),
+          signal: controller.signal,
         });
 
         if (!res.ok || !res.body) {
@@ -1028,9 +1039,18 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
             }
           }
         }
-      } catch {
-        setNewError("Koneksi bermasalah. Periksa internet kamu.");
-        setViewMode("error");
+      } catch (err) {
+        if ((err as Error)?.name === "AbortError") {
+          // User stopped the generation — return to the empty composer state.
+          setViewMode("empty");
+          setStreamingText("");
+          setActiveStreamStep(0);
+        } else {
+          setNewError("Koneksi bermasalah. Periksa internet kamu.");
+          setViewMode("error");
+        }
+      } finally {
+        genAbortRef.current = null;
       }
     },
     [router, refreshHistory, attachedFile, selectedTierId],
@@ -2001,22 +2021,43 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           >
             {messages.length === 0 ? (
               viewMode === "loading" ? (
-                <div className="space-y-5 pt-6">
-                  {/* User's input shown as a chat bubble */}
-                  {currentPrompt && (
-                    <div className="flex justify-end">
-                      <div className="max-w-[70%] rounded-[16px_16px_4px_16px] border border-[#00FFB3]/15 bg-[#00FFB3]/[0.08] px-4 py-3 text-[14px] leading-6 text-[#f5f0e8]">
-                        {currentPrompt}
+                <div className="flex w-full flex-col">
+                  <div className="space-y-7 pt-4">
+                    {/* User's input shown as a chat bubble */}
+                    {currentPrompt && (
+                      <div className="flex justify-end">
+                        <div className="max-w-[75%] rounded-[16px_16px_4px_16px] border border-[#00FFB3]/[0.18] bg-[#00FFB3]/[0.10] px-4 py-3 text-[14.5px] leading-6 whitespace-pre-wrap text-white">
+                          {currentPrompt}
+                        </div>
+                      </div>
+                    )}
+                    {/* Agentic thinking, inline */}
+                    <div className="border-l-2 border-[#00FFB3]/30 pl-4">
+                      <ThinkingBlock
+                        activeStep={activeStreamStep}
+                        streamingText={streamingText}
+                        isComplete={false}
+                        modelName={usedModel ? labelForEngine(usedModel) : tierById(selectedTierId).label}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Composer stays pinned (disabled) with a stop button */}
+                  <div className="sticky bottom-0 z-20 -mx-4 mt-6 bg-gradient-to-t from-[#191919] via-[#191919] to-transparent px-4 pt-8 pb-4 md:-mx-8 md:px-8">
+                    <div className="mx-auto max-w-[760px]">
+                      <div className="flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-[#1a1a1a] p-3">
+                        <span className="flex-1 px-1 text-sm text-white/35">NaLI sedang menganalisis lapangan...</span>
+                        <button
+                          onClick={handleStopGeneration}
+                          type="button"
+                          aria-label="Hentikan"
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/90 transition hover:bg-white"
+                        >
+                          <Square className="h-3 w-3 fill-[#050F12] text-[#050F12]" />
+                        </button>
                       </div>
                     </div>
-                  )}
-                  {/* Agentic thinking, inline */}
-                  <ThinkingBlock
-                    activeStep={activeStreamStep}
-                    streamingText={streamingText}
-                    isComplete={false}
-                    modelName={usedModel ? labelForEngine(usedModel) : tierById(selectedTierId).label}
-                  />
+                  </div>
                 </div>
               ) : viewMode === "result" ? (
                 <ResultView

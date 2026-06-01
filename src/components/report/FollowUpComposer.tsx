@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { Send } from "lucide-react";
+import { Send, Square } from "lucide-react";
 import type { ConversationMessage } from "./ConversationThread";
 import { UploadDropdown } from "@/components/composer/UploadDropdown";
 import { AttachedFileChip } from "@/components/composer/AttachedFileChip";
@@ -21,10 +21,20 @@ interface FollowUpComposerProps {
   onStreamDone: (finalSessionId: string | null, fullText?: string) => void;
   onError: (msg: string) => void;
   placeholder?: string;
+  variant?: "inline" | "pinned";
 }
 
 export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpComposerProps>(function FollowUpComposer(
-  { sessionId, conversationMessages, onStreamStart, onStreamToken, onStreamDone, onError, placeholder },
+  {
+    sessionId,
+    conversationMessages,
+    onStreamStart,
+    onStreamToken,
+    onStreamDone,
+    onError,
+    placeholder,
+    variant = "inline",
+  },
   ref,
 ) {
   const [input, setInput] = useState("");
@@ -32,6 +42,11 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
   const [attachedFile, setAttachedFile] = useState<ExtractedFile | null>(null);
   const [isExtractingFile, setIsExtractingFile] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const handleStop = () => {
+    abortRef.current?.abort();
+  };
 
   useImperativeHandle(ref, () => ({
     prefill: (text: string) => {
@@ -95,6 +110,9 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
     };
     onStreamStart(userMsg);
 
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
       const res = await fetch("/api/generate-report", {
         method: "POST",
@@ -105,6 +123,7 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
           sessionId,
           imageBase64,
         }),
+        signal: controller.signal,
       });
 
       if (!res.ok || !res.body) {
@@ -143,23 +162,30 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
           }
         }
       }
-    } catch {
-      onError("Koneksi bermasalah. Coba lagi.");
+    } catch (err) {
+      if ((err as Error)?.name === "AbortError") {
+        onError("Dihentikan.");
+      } else {
+        onError("Koneksi bermasalah. Coba lagi.");
+      }
     } finally {
+      abortRef.current = null;
       setLoading(false);
       setTimeout(() => textareaRef.current?.focus(), 50);
     }
   };
 
+  const isPinned = variant === "pinned";
+
   return (
-    <div className="mt-8 border-t border-white/[0.06] pt-6">
-      {followUpCount > 0 && (
+    <div className={isPinned ? "" : "mt-8 border-t border-white/[0.06] pt-6"}>
+      {!isPinned && followUpCount > 0 && (
         <p className="mb-3 text-[10px] font-semibold tracking-wider text-white/25 uppercase">
           {followUpCount} pertukaran dalam sesi ini
         </p>
       )}
 
-      <div className="relative flex flex-col gap-1 rounded-2xl border border-[#00FFB3]/15 bg-white/[0.02] p-3 transition-colors focus-within:border-[#00FFB3]/30">
+      <div className="relative flex flex-col gap-1 rounded-2xl border border-[#00FFB3]/15 bg-[#1a1a1a] p-3 transition-colors focus-within:border-[#00FFB3]/30">
         {/* Attached file chip */}
         {attachedFile && (
           <AttachedFileChip file={attachedFile} onRemove={() => setAttachedFile(null)} isLoading={isExtractingFile} />
@@ -186,22 +212,31 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
           <div className="flex shrink-0 items-center gap-1">
             <UploadDropdown onFileSelected={handleFileAttach} disabled={loading || isExtractingFile} />
             {isExtractingFile && <span className="text-[11px] text-white/40">Membaca...</span>}
-            <button
-              onClick={handleSubmit}
-              disabled={(!input.trim() && !attachedFile) || loading}
-              aria-label="Kirim"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#00FFB3] transition hover:bg-[#00FFB3]/90 disabled:cursor-not-allowed disabled:opacity-30"
-            >
-              {loading ? (
-                <span className="h-3 w-3 animate-spin rounded-full border border-[#050F12]/40 border-t-[#050F12]" />
-              ) : (
+            {loading ? (
+              <button
+                onClick={handleStop}
+                type="button"
+                aria-label="Hentikan"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/90 transition hover:bg-white"
+              >
+                <Square className="h-3 w-3 fill-[#050F12] text-[#050F12]" />
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={!input.trim() && !attachedFile}
+                aria-label="Kirim"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#00FFB3] transition hover:bg-[#00FFB3]/90 disabled:cursor-not-allowed disabled:opacity-30"
+              >
                 <Send className="h-3.5 w-3.5 text-[#050F12]" />
-              )}
-            </button>
+              </button>
+            )}
           </div>
         </div>
       </div>
-      <p className="mt-2 text-[10px] text-white/20">Tekan Enter untuk kirim, Shift+Enter untuk baris baru</p>
+      {!isPinned && (
+        <p className="mt-2 text-[10px] text-white/20">Tekan Enter untuk kirim, Shift+Enter untuk baris baru</p>
+      )}
     </div>
   );
 });
