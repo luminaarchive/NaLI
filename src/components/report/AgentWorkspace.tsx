@@ -59,6 +59,8 @@ import { ErrorView } from "@/components/report/ErrorView";
 import { EmptyState } from "@/components/report/EmptyState";
 import { ThinkingBlock } from "@/components/agent/ThinkingBlock";
 import { ModelSelector } from "@/components/agent/ModelSelector";
+import { parseNaLIOutput } from "@/lib/parse-nali-output";
+import { calculatePalantirScore } from "@/lib/calculate-palantir-score";
 import {
   DEFAULT_TIER_ID,
   PREFERRED_MODEL_STORAGE_KEY,
@@ -67,6 +69,31 @@ import {
   tierById,
 } from "@/lib/nali-models";
 import type { ConversationMessage } from "@/components/report/ConversationThread";
+
+// Sprint 19.5: build REAL per-module signals from the live parsed output.
+// Every value here is parsed from NaLI's own structured output (never fabricated).
+function buildStreamSignals(text: string): (string | undefined)[] {
+  const out: (string | undefined)[] = new Array(10).fill(undefined);
+  const parsed = parseNaLIOutput(text);
+  const h = parsed.header;
+  if (!h) return out;
+  const score = calculatePalantirScore(parsed);
+  const ea = h.evidenceAvailability;
+  const adaCount = ea ? Object.values(ea).filter((v) => v === "ADA").length : 0;
+  const titleMatch = text.match(/^#\s+(.+)/m);
+
+  out[0] = h.tipeLaporan || undefined;
+  out[1] = ea ? `${adaCount} pilar bukti` : undefined;
+  out[2] = titleMatch ? titleMatch[1].trim().slice(0, 26) : undefined;
+  out[3] = h.risikoKlaim ? `risiko ${h.risikoKlaim.toLowerCase()}` : undefined;
+  out[4] = h.bahasaUser ? h.bahasaUser.toLowerCase() : undefined;
+  out[5] = `P(t) ${score.temporalDecay.toFixed(2)}`;
+  out[6] = `${score.overall}%`;
+  out[7] = parsed.missingEvidence.length ? `${parsed.missingEvidence.length} item` : undefined;
+  out[8] = parsed.followUpQuestions.length ? `${parsed.followUpQuestions.length} pertanyaan` : undefined;
+  out[9] = score.level;
+  return out;
+}
 
 // Types matching backend AgentMessage schema
 type AgentMessage = {
@@ -261,6 +288,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   // FIX 2: streaming state
   const [streamingText, setStreamingText] = useState<string>("");
   const [activeStreamStep, setActiveStreamStep] = useState<number>(0);
+  const [streamSignals, setStreamSignals] = useState<(string | undefined)[]>([]);
 
   // Sprint 18: NaLI processing tier (Peregrine / Obsidian / Zephyr) + timing
   const [selectedTierId, setSelectedTierId] = useState<string>(DEFAULT_TIER_ID);
@@ -961,7 +989,11 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       const {
         data: { user: currentUser },
       } = await supabase.auth.getUser();
-      if (!currentUser) {
+      // Dev-only bypass (mirrors the proxy guard) so the flow can be verified
+      // locally. Never active on Vercel builds (NODE_ENV === "production").
+      const devAuthBypass =
+        process.env.NODE_ENV === "development" && process.env.NEXT_PUBLIC_NALI_PREVIEW_BYPASS === "1";
+      if (!currentUser && !devAuthBypass) {
         router.push("/login?next=/create-report");
         return;
       }
@@ -972,6 +1004,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       setCurrentSessionId(null);
       setStreamingText("");
       setActiveStreamStep(0);
+      setStreamSignals([]);
       setThinkingElapsed(0);
       genStartRef.current = Date.now();
       window.history.pushState({}, "", "/create-report");
@@ -998,6 +1031,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let accumulated = "";
+        let lastStep = -1;
 
         outer: while (true) {
           const { done, value } = await reader.read();
@@ -1016,13 +1050,19 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 accumulated += parsed.token;
                 setStreamingText(accumulated);
                 setUsedModel(parsed.model ?? null);
-                setActiveStreamStep(detectActiveStep(accumulated));
+                const step = detectActiveStep(accumulated);
+                if (step !== lastStep) {
+                  lastStep = step;
+                  setActiveStreamStep(step);
+                  if (step >= 1) setStreamSignals(buildStreamSignals(accumulated));
+                }
               }
 
               if (parsed.done) {
                 setCurrentResult(accumulated || null);
                 setCurrentSessionId(parsed.sessionId ?? null);
                 setActiveStreamStep(10);
+                setStreamSignals(buildStreamSignals(accumulated));
                 setThinkingElapsed((Date.now() - genStartRef.current) / 1000);
                 // Seed conversation with the initial exchange
                 const now = new Date().toISOString();
@@ -1775,7 +1815,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     error?.status === 429 || (error?.retryAfterSeconds !== undefined && error.retryAfterSeconds > 0);
 
   return (
-    <div className="relative flex min-h-screen w-screen overflow-hidden bg-[#191919] text-[#f5f0e8]">
+    <div className="relative flex min-h-screen w-screen overflow-hidden bg-[#0A0A0A] text-[#f5f0e8]">
       {/* Mobile overlay backdrop */}
       {sidebarOpen && (
         <div
@@ -1788,7 +1828,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       {/* --- Sidebar --- */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex flex-col border-r border-white/[0.07] bg-[#191919] transition-transform duration-300 md:static md:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex flex-col border-r border-white/[0.07] bg-[#0D0D0D] transition-transform duration-300 md:static md:translate-x-0",
           "w-[85vw] max-w-[320px] md:w-[250px]",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
@@ -1976,7 +2016,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       {/* --- Main Workspace Content --- */}
       <div className="relative flex flex-1 flex-col overflow-hidden">
         {/* Workspace Header */}
-        <header className="z-30 flex h-16 shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#191919]/95 px-4 backdrop-blur-md">
+        <header className="z-30 flex h-16 shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#0A0A0A]/95 px-4 backdrop-blur-md">
           <div className="flex items-center gap-3">
             <button
               aria-label="Buka riwayat"
@@ -2010,7 +2050,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           </div>
         </header>
 
-        <main className="z-10 flex-1 space-y-6 overflow-x-hidden overflow-y-auto bg-[#191919] px-4 py-6 md:px-8">
+        <main className="z-10 flex-1 space-y-6 overflow-x-hidden overflow-y-auto bg-[#0A0A0A] px-4 py-6 md:px-8">
           <div
             className={cn(
               "mx-auto max-w-[760px] space-y-6",
@@ -2038,12 +2078,13 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                         streamingText={streamingText}
                         isComplete={false}
                         modelName={usedModel ? labelForEngine(usedModel) : tierById(selectedTierId).label}
+                        signals={streamSignals}
                       />
                     </div>
                   </div>
 
                   {/* Composer stays pinned (disabled) with a stop button */}
-                  <div className="sticky bottom-0 z-20 -mx-4 mt-6 bg-gradient-to-t from-[#191919] via-[#191919] to-transparent px-4 pt-8 pb-4 md:-mx-8 md:px-8">
+                  <div className="sticky bottom-0 z-20 -mx-4 mt-6 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A] to-transparent px-4 pt-8 pb-4 md:-mx-8 md:px-8">
                     <div className="mx-auto max-w-[760px]">
                       <div className="flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-[#1a1a1a] p-3">
                         <span className="flex-1 px-1 text-sm text-white/35">NaLI sedang menganalisis lapangan...</span>
@@ -2071,6 +2112,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                   onSessionIdUpdate={(id) => setCurrentSessionId(id)}
                   thinkingModelLabel={usedModel ? labelForEngine(usedModel) : tierById(selectedTierId).label}
                   thinkingElapsed={thinkingElapsed}
+                  selectedEngine={engineForTier(selectedTierId)}
                 />
               ) : viewMode === "error" ? (
                 <ErrorView
@@ -2106,7 +2148,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
                   <h1
                     className="mb-3 text-3xl leading-[1.15] tracking-tight text-[#f5f0e8] sm:text-[40px] md:text-[44px]"
-                    style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400 }}
+                    style={{ fontFamily: "var(--font-lora), Georgia, serif", fontWeight: 400 }}
                   >
                     Ceritakan apa yang kamu temukan
                   </h1>
@@ -2874,7 +2916,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
 
         {/* Bottom Composer and Control chips */}
         {messages.length > 0 && (
-          <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#191919] via-[#191919]/95 to-transparent px-4 pt-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:px-8">
+          <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/95 to-transparent px-4 pt-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:px-8">
             <div className="mx-auto max-w-[760px] space-y-3">{renderComposer(false)}</div>
           </div>
         )}

@@ -54,7 +54,7 @@ export function ModelSelector({ selectedId, onSelect, disabled }: ModelSelectorP
       {open && (
         <div
           role="listbox"
-          className="absolute bottom-[calc(100%+8px)] left-0 z-50 w-[320px] rounded-xl border border-white/[0.12] bg-[#161616] p-2 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+          className="absolute right-0 bottom-[calc(100%+8px)] z-50 w-[300px] max-w-[calc(100vw-2rem)] rounded-xl border border-white/[0.12] bg-[#161616] p-2 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
         >
           <p className="px-2 pt-1 pb-1.5 text-[10px] font-semibold tracking-wider text-white/35 uppercase">Mode NaLI</p>
           {NALI_TIERS.map((t) => {

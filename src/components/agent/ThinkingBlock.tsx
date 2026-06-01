@@ -32,6 +32,8 @@ interface ThinkingBlockProps {
   elapsedSeconds?: number;
   /** Start collapsed (used for the summary shown above a finished report). */
   defaultCollapsed?: boolean;
+  /** Real detected signals per step index (parsed from the live output). */
+  signals?: (string | undefined)[];
 }
 
 function stepStatus(i: number, activeStep: number, isComplete: boolean): StepStatus {
@@ -47,6 +49,7 @@ export function ThinkingBlock({
   modelName,
   elapsedSeconds,
   defaultCollapsed = false,
+  signals,
 }: ThinkingBlockProps) {
   const [expanded, setExpanded] = useState(!defaultCollapsed);
   const [liveSeconds, setLiveSeconds] = useState(0);
@@ -139,6 +142,9 @@ export function ThinkingBlock({
                   >
                     {label}
                   </span>
+                  {signals?.[i] && status !== "pending" && (
+                    <span className="truncate font-mono text-[11px] text-[#00897B]">→ {signals[i]}</span>
+                  )}
                 </li>
               );
             })}

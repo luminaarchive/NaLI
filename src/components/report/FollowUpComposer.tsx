@@ -22,6 +22,7 @@ interface FollowUpComposerProps {
   onError: (msg: string) => void;
   placeholder?: string;
   variant?: "inline" | "pinned";
+  selectedModel?: string;
 }
 
 export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpComposerProps>(function FollowUpComposer(
@@ -34,6 +35,7 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
     onError,
     placeholder,
     variant = "inline",
+    selectedModel,
   },
   ref,
 ) {
@@ -122,6 +124,7 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
           messages: conversationMessages,
           sessionId,
           imageBase64,
+          selectedModel,
         }),
         signal: controller.signal,
       });

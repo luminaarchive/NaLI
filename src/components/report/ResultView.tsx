@@ -21,6 +21,7 @@ interface ResultViewProps {
   onSessionIdUpdate: (id: string | null) => void;
   thinkingModelLabel?: string;
   thinkingElapsed?: number;
+  selectedEngine?: string;
 }
 
 function scoreOf(content: string): number {
@@ -37,6 +38,7 @@ export function ResultView({
   onSessionIdUpdate,
   thinkingModelLabel,
   thinkingElapsed,
+  selectedEngine,
 }: ResultViewProps) {
   const [exporting, setExporting] = useState<"pdf" | "docx" | null>(null);
   const [followUpError, setFollowUpError] = useState<string | null>(null);
@@ -265,7 +267,7 @@ export function ResultView({
   return (
     <div className="flex w-full flex-col">
       {/* Thin thread header */}
-      <div className="sticky top-0 z-20 -mx-4 mb-2 flex items-center justify-between gap-3 border-b border-white/[0.06] bg-[#191919]/95 px-4 py-2.5 backdrop-blur-sm md:-mx-8 md:px-8">
+      <div className="sticky top-0 z-20 -mx-4 mb-2 flex items-center justify-between gap-3 border-b border-white/[0.06] bg-[#0A0A0A]/95 px-4 py-2.5 backdrop-blur-sm md:-mx-8 md:px-8">
         <button
           onClick={onNewReport}
           className="inline-flex min-w-0 items-center gap-2 text-sm font-medium text-white/60 transition hover:text-white"
@@ -334,7 +336,7 @@ export function ResultView({
       </div>
 
       {/* Pinned composer */}
-      <div className="sticky bottom-0 z-20 -mx-4 mt-6 bg-gradient-to-t from-[#191919] via-[#191919] to-transparent px-4 pt-8 pb-4 md:-mx-8 md:px-8">
+      <div className="sticky bottom-0 z-20 -mx-4 mt-6 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A] to-transparent px-4 pt-8 pb-4 md:-mx-8 md:px-8">
         <div className="mx-auto max-w-[760px]">
           {followUpError && (
             <div className="mb-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-xs text-red-400">
@@ -344,6 +346,7 @@ export function ResultView({
           <FollowUpComposer
             ref={composerHandleRef}
             variant="pinned"
+            selectedModel={selectedEngine}
             sessionId={sessionId}
             conversationMessages={messages}
             placeholder={composerPlaceholder}

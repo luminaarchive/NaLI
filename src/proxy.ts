@@ -12,22 +12,18 @@ export async function proxy(request: NextRequest) {
   const cleanedUrl = rawUrl.replace(/\/rest\/v1\/?$/, "");
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || "dummy";
 
-  const supabase = createServerClient(
-    cleanedUrl,
-    anonKey,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options));
-        },
+  const supabase = createServerClient(cleanedUrl, anonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        supabaseResponse = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options));
       },
     },
-  );
+  });
 
   const {
     data: { user },
@@ -71,8 +67,13 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(isSafe ? next : "/create-report", request.url));
   }
 
+  // Local-development-only auth bypass for visual verification. This can NEVER
+  // be active on a Vercel deployment because every Vercel build runs with
+  // NODE_ENV === "production". Requires an explicit opt-in env flag as well.
+  const devAuthBypass = process.env.NODE_ENV === "development" && process.env.NALI_PREVIEW_BYPASS === "1";
+
   // Unauthenticated user visits a protected route → send to login
-  if (!user && isProtectedPath) {
+  if (!user && isProtectedPath && !devAuthBypass) {
     const nextUrl = pathname + request.nextUrl.search;
     return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(nextUrl)}`, request.url));
   }
