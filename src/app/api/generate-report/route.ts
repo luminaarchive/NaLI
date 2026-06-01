@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { CAPABLE_MODEL_WATERFALL } from "@/lib/openrouter-models";
-import { NALI_SYSTEM_PROMPT, NALI_FOLLOWUP_SYSTEM_PROMPT, NALI_CHAT_SYSTEM_PROMPT } from "@/lib/nali-system-prompt";
+import { NALI_SYSTEM_PROMPT, NALI_CHAT_SYSTEM_PROMPT } from "@/lib/nali-system-prompt";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
@@ -31,7 +31,6 @@ function detectReportIntent(
   historyHasReport: boolean,
   messages: ConversationMessage[],
 ): boolean {
-  if (historyHasReport) return true; // editing/refining an existing report
   if (hasImage) return true; // an uploaded image is field material
 
   const p = prompt.toLowerCase();
@@ -43,6 +42,19 @@ function detectReportIntent(
     /\b(laporan|jurnal)\s+(observasi|praktikum|kkn|lapangan|penelitian|ilmiah)\b/.test(p) ||
     /\b(format\s+imrad|jadikan\s+laporan|susun\s+laporan|buatkan\s+laporan)\b/.test(p);
   if (explicitReport) return true;
+
+  // Answering NaLI's follow-up questions provides evidence → regenerate the report.
+  if (/^jawaban\s+(untuk|pertanyaan)\b/.test(p.trim())) return true;
+
+  // Editing / refining within an existing report conversation → regenerate.
+  if (
+    historyHasReport &&
+    /\b(perpendek|perpanjang|ringkas|revisi|ubah|ganti|tambah(?:kan)?|perbaiki|format|tulis ulang|perbarui|update|sempurnakan|lengkapi|jadikan|koreksi)\b/.test(
+      p,
+    )
+  ) {
+    return true;
+  }
 
   // Short affirmative reply right after NaLI offered to build a report.
   const lastAssistant =
@@ -91,6 +103,10 @@ function detectReportIntent(
 
   if (!isQuestion && observationVerb && materialSignals >= 2) return true;
   if (!isQuestion && materialSignals >= 3) return true;
+
+  // Inside an active report conversation, any declarative detail (e.g. a short
+  // answer like "selama 10 menit, sendirian") counts as new evidence → update.
+  if (!isQuestion && historyHasReport && isMultiTurn && materialSignals >= 1) return true;
 
   return false; // conversational by default
 }
@@ -202,11 +218,10 @@ export async function POST(req: NextRequest) {
     incomingMessages,
   );
 
-  const systemPrompt = !reportMode
-    ? NALI_CHAT_SYSTEM_PROMPT
-    : historyHasReport
-      ? NALI_FOLLOWUP_SYSTEM_PROMPT
-      : NALI_SYSTEM_PROMPT;
+  // Report mode always produces the full structured report (fresh or updated with
+  // new evidence from a follow-up), so answering questions improves the report and
+  // its score. Non-report turns stay conversational.
+  const systemPrompt = reportMode ? NALI_SYSTEM_PROMPT : NALI_CHAT_SYSTEM_PROMPT;
 
   // Only gate on the journal header when generating a fresh report from scratch.
   // Chat mode and follow-ups stream directly (the header check would wrongly abort them).
