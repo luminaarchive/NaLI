@@ -200,6 +200,12 @@ export function NaLIMessage({
               >
                 {body}
               </ReactMarkdown>
+              {!isStreaming && body.trim().length === 0 && (
+                <p className="text-[14px] leading-relaxed text-white/55">
+                  Maaf, aku belum bisa menjawab itu. Coba ulangi dengan kalimat lain, atau tanyakan seputar alam, satwa,
+                  habitat, dan laporan lapangan.
+                </p>
+              )}
               {isStreaming && (
                 <span className="ml-0.5 inline-block h-4 w-2 animate-pulse bg-[#00FFB3]/60 align-middle" />
               )}

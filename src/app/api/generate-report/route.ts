@@ -95,6 +95,32 @@ function detectReportIntent(
   return false; // conversational by default
 }
 
+// Clearly harmful / off-mission requests. NaLI declines these with a message
+// instead of silently returning an empty bubble. Conservation discussion stays
+// allowed (e.g. "dampak kerusakan lingkungan"); only how-to-cause-harm is blocked.
+function detectHarmful(prompt: string): boolean {
+  const p = prompt.toLowerCase();
+  return (
+    // Weapons / explosives / dangerous devices
+    /\b(cara|bagaimana|gimana|tutorial|langkah)\b[\s\S]{0,30}\b(membuat|bikin|merakit|meracik)\b[\s\S]{0,30}\b(bom|peledak|bahan peledak|senjata|senjata api|granat|ranjau|napalm|tnt)\b/.test(
+      p,
+    ) ||
+    /\b(cara|bagaimana|gimana)\b[\s\S]{0,30}\b(meracun|meracuni|membunuh|menyakiti|melukai)\b[\s\S]{0,20}\b(orang|manusia|seseorang|warga)\b/.test(
+      p,
+    ) ||
+    // How to destroy / damage the environment, habitat, wildlife (instructions to cause harm)
+    /\b(cara|bagaimana|gimana|tutorial|langkah)\b[\s\S]{0,30}\b(merusak|menghancurkan|membakar|menggunduli|meracuni|mencemari|menebang ilegal)\b[\s\S]{0,30}\b(lingkungan|hutan|habitat|alam|ekosistem|sungai|laut|terumbu)\b/.test(
+      p,
+    ) ||
+    /\b(cara|bagaimana|gimana)\b[\s\S]{0,30}\b(berburu|membunuh|menangkap|menjual|menyelundupkan)\b[\s\S]{0,30}\b(satwa|hewan)\b[\s\S]{0,20}\b(dilindungi|langka|endemik)\b/.test(
+      p,
+    )
+  );
+}
+
+const NALI_DECLINE_MESSAGE =
+  "Maaf, aku tidak bisa membantu permintaan itu. Aku NaLI, asisten untuk konservasi alam, satwa, dan riset lapangan. Aku justru ada untuk melindungi lingkungan dan makhluk hidup. Kalau kamu mau, aku bisa bantu soal cara menjaga habitat, mengenali spesies, atau menyusun laporan lapangan berbasis bukti.";
+
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
@@ -164,6 +190,9 @@ export async function POST(req: NextRequest) {
     (m) => m.role === "assistant" && typeof m.content === "string" && m.content.includes(NALI_HEADER_MARKER),
   );
 
+  // Clearly harmful / off-mission requests get a deterministic NaLI decline.
+  const harmful = detectHarmful(promptStr);
+
   // Conversational by default; journal only on clear report intent.
   const reportMode = detectReportIntent(
     promptStr,
@@ -221,6 +250,14 @@ export async function POST(req: NextRequest) {
     async start(controller) {
       let fullText = "";
       let usedModel: string | null = null;
+
+      // Harmful / off-mission request → decline deterministically, no model call.
+      if (harmful) {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ token: NALI_DECLINE_MESSAGE })}\n\n`));
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true, sessionId: null })}\n\n`));
+        controller.close();
+        return;
+      }
 
       // Try each model in waterfall order.
       // Buffer the first HEADER_CHECK_CHARS characters before flushing to the client.
