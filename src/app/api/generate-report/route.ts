@@ -153,6 +153,11 @@ export async function POST(req: NextRequest) {
   const sessionId = body?.sessionId as string | null | undefined;
   const imageBase64 = body?.imageBase64 as string | undefined;
   const selectedModel = typeof body?.selectedModel === "string" ? (body.selectedModel as string) : undefined;
+  // Sprint 20: explicit "Susun Laporan" button forces the journal pipeline,
+  // bypassing keyword heuristics. An optional chosen format is injected so the
+  // report matches what the user picked in the clarifying step.
+  const forceReport = body?.forceReport === true;
+  const reportFormat = typeof body?.reportFormat === "string" ? (body.reportFormat as string).trim() : "";
 
   const validImage = imageBase64 && typeof imageBase64 === "string" && imageBase64.startsWith("data:image/");
 
@@ -212,14 +217,10 @@ export async function POST(req: NextRequest) {
   // Clearly harmful / off-mission requests get a deterministic NaLI decline.
   const harmful = detectHarmful(promptStr);
 
-  // Conversational by default; journal only on clear report intent.
-  const reportMode = detectReportIntent(
-    promptStr,
-    Boolean(validImage),
-    isMultiTurn,
-    historyHasReport,
-    incomingMessages,
-  );
+  // Conversational by default; journal only on clear report intent OR an explicit
+  // "Susun Laporan" button press (forceReport), which is the reliable trigger.
+  const reportMode =
+    forceReport || detectReportIntent(promptStr, Boolean(validImage), isMultiTurn, historyHasReport, incomingMessages);
 
   // Report mode always produces the full structured report (fresh or updated with
   // new evidence from a follow-up), so answering questions improves the report and
@@ -230,13 +231,19 @@ export async function POST(req: NextRequest) {
   // Chat mode and follow-ups stream directly (the header check would wrongly abort them).
   const gateHeader = reportMode && !isMultiTurn;
 
+  // When the report was triggered by the button with a chosen format, prepend a
+  // short instruction so the journal matches that format. The clean promptStr is
+  // still what gets persisted as the user message.
+  const effectivePrompt =
+    forceReport && reportFormat ? `[Jenis laporan yang diminta pengguna: ${reportFormat}]\n\n${promptStr}` : promptStr;
+
   type UserContent = string | Array<{ type: string; [k: string]: unknown }>;
   const userContent: UserContent = validImage
     ? [
         { type: "image_url", image_url: { url: imageBase64 } },
-        { type: "text", text: promptStr },
+        { type: "text", text: effectivePrompt },
       ]
-    : promptStr;
+    : effectivePrompt;
 
   const openRouterMessages: Array<{ role: string; content: UserContent }> = [
     { role: "system", content: systemPrompt },
@@ -267,6 +274,13 @@ export async function POST(req: NextRequest) {
     async start(controller) {
       let fullText = "";
       let usedModel: string | null = null;
+
+      // Tell the frontend up front which mode this turn renders as (chat = plain
+      // bubble, report = full journal pipeline). Consumers ignore non-token/done
+      // events, so this is backward compatible.
+      controller.enqueue(
+        encoder.encode(`data: ${JSON.stringify({ type: "mode", value: reportMode ? "report" : "chat" })}\n\n`),
+      );
 
       // Harmful / off-mission request → decline deterministically, no model call.
       if (harmful) {

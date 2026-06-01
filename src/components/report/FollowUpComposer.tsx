@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { Send, Square } from "lucide-react";
+import { FileText, Send, Square } from "lucide-react";
 import type { ConversationMessage } from "./ConversationThread";
 import { UploadDropdown } from "@/components/composer/UploadDropdown";
 import { AttachedFileChip } from "@/components/composer/AttachedFileChip";
@@ -11,6 +11,8 @@ export interface FollowUpComposerHandle {
   /** Replace the composer text and move focus + cursor to the end. */
   prefill: (text: string) => void;
   focus: () => void;
+  /** Force a report-mode generation from the whole conversation with a chosen format. */
+  submitReport: (format: string) => void;
 }
 
 interface FollowUpComposerProps {
@@ -23,6 +25,17 @@ interface FollowUpComposerProps {
   placeholder?: string;
   variant?: "inline" | "pinned";
   selectedModel?: string;
+  /** Pinned variant only: open the "Susun Laporan" clarifying step. */
+  onRequestReport?: () => void;
+}
+
+interface SubmitOptions {
+  /** Skip server keyword detection and force the journal pipeline. */
+  forceReport?: boolean;
+  /** Report type chosen in the clarifying step, injected into the prompt. */
+  reportFormat?: string;
+  /** Use this prompt instead of the composer text (button-driven generation). */
+  promptOverride?: string;
 }
 
 export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpComposerProps>(function FollowUpComposer(
@@ -36,6 +49,7 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
     placeholder,
     variant = "inline",
     selectedModel,
+    onRequestReport,
   },
   ref,
 ) {
@@ -65,6 +79,13 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
       }, 60);
     },
     focus: () => textareaRef.current?.focus(),
+    submitReport: (format: string) => {
+      handleSubmit({
+        forceReport: true,
+        reportFormat: format,
+        promptOverride: `Susun laporan (${format}) dari seluruh percakapan kita di atas.`,
+      });
+    },
   }));
 
   const followUpCount = Math.floor(conversationMessages.slice(2).length / 2);
@@ -83,10 +104,13 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
     }
   };
 
-  const handleSubmit = async () => {
-    const text = input.trim();
-    const currentFile = attachedFile;
-    if ((!text && !currentFile) || loading) return;
+  const handleSubmit = async (opts?: SubmitOptions) => {
+    if (loading) return;
+    const override = opts?.promptOverride;
+    const text = override !== undefined ? override.trim() : input.trim();
+    // Button-driven report generation ignores any attached file / composer text.
+    const currentFile = override !== undefined ? null : attachedFile;
+    if (!text && !currentFile) return;
 
     // Build enriched prompt
     let fullPrompt = text;
@@ -101,9 +125,11 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
       }
     }
 
-    setInput("");
-    if (textareaRef.current) textareaRef.current.style.height = "auto";
-    setAttachedFile(null);
+    if (override === undefined) {
+      setInput("");
+      if (textareaRef.current) textareaRef.current.style.height = "auto";
+      setAttachedFile(null);
+    }
     setLoading(true);
 
     const userMsg: ConversationMessage = {
@@ -126,6 +152,8 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
           sessionId,
           imageBase64,
           selectedModel,
+          forceReport: opts?.forceReport ?? false,
+          reportFormat: opts?.reportFormat,
         }),
         signal: controller.signal,
       });
@@ -219,6 +247,19 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
           />
 
           <div className="flex shrink-0 items-center gap-1">
+            {/* Sprint 20: reliable report trigger. Opens the clarifying step instead of
+                generating immediately. Pinned (in-conversation) only — hidden on empty state. */}
+            {isPinned && onRequestReport && !loading && (
+              <button
+                onClick={onRequestReport}
+                type="button"
+                aria-label="Susun Laporan"
+                className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#00FFB3]/25 bg-[#00FFB3]/[0.08] px-3 py-1.5 text-[11.5px] font-semibold text-[#00FFB3]/90 transition hover:bg-[#00FFB3]/[0.14] hover:text-[#00FFB3]"
+              >
+                <FileText className="h-3.5 w-3.5" />
+                Susun Laporan
+              </button>
+            )}
             <UploadDropdown onFileSelected={handleFileAttach} disabled={loading || isExtractingFile} />
             {isExtractingFile && <span className="text-[11px] text-white/40">Membaca...</span>}
             {loading ? (
@@ -232,7 +273,7 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
               </button>
             ) : (
               <button
-                onClick={handleSubmit}
+                onClick={() => handleSubmit()}
                 disabled={!input.trim() && !attachedFile}
                 aria-label="Kirim"
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#00FFB3] transition hover:bg-[#00FFB3]/90 disabled:cursor-not-allowed disabled:opacity-30"

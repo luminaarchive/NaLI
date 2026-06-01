@@ -1,13 +1,14 @@
 "use client";
 
 import { type Dispatch, type SetStateAction, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Clipboard, Download, FileText, MoreHorizontal, Plus } from "lucide-react";
+import { ArrowLeft, Clipboard, Download, FileText, MoreHorizontal, Plus, Sparkles, X } from "lucide-react";
 import { type ConversationMessage } from "./ConversationThread";
 import { FollowUpComposer, type FollowUpComposerHandle } from "./FollowUpComposer";
 import { parseNaLIOutput, type ParsedNaLIOutput } from "@/lib/parse-nali-output";
 import { calculatePalantirScore, type PalantirScore } from "@/lib/calculate-palantir-score";
 import { UserMessage } from "@/components/agent/UserMessage";
 import { NaLIMessage } from "@/components/agent/NaLIMessage";
+import { NaLIChatLogo } from "./NaLIChatLogo";
 import { cn } from "@/lib/utils";
 
 interface ResultViewProps {
@@ -28,6 +29,47 @@ function scoreOf(content: string): number {
   return calculatePalantirScore(parseNaLIOutput(content)).overall;
 }
 
+// Report types offered in the clarifying step (Sprint 20, Part 5).
+const REPORT_FORMATS = [
+  "Observasi Satwa",
+  "Laporan KKN",
+  "Draft Jurnal Ilmiah",
+  "Praktikum Biologi",
+  "Survei Biodiversitas",
+  "Ringkasan Umum",
+] as const;
+
+// Lightweight scan of the conversation to flag which core fields are still missing,
+// so the clarifying step only asks for what isn't already there. Heuristic only —
+// it never fabricates data, just nudges the user.
+function detectMissingData(messages: ConversationMessage[]): string[] {
+  const text = messages
+    .map((m) => m.content)
+    .join("\n")
+    .toLowerCase();
+  const missing: string[] = [];
+  const hasSpecies =
+    /\b(spesies|species|jenis|burung|elang|macan|harimau|orangutan|owa|lutung|ular|katak|kupu|primata|mamalia|reptil|amfibi|ikan|serangga|tumbuhan|pohon|anggrek)\b/.test(
+      text,
+    );
+  const hasLocation =
+    /\b(lokasi|koordinat|gps|lintang|bujur|desa|hutan|gunung|taman nasional|tn\b|kawasan|kabupaten|provinsi|-?\d{1,3}\.\d{3,})\b/.test(
+      text,
+    );
+  const hasTime =
+    /\b(tanggal|jam|pukul|pagi|siang|sore|malam|kemarin|hari ini|\d{1,2}[/-]\d{1,2}|\d{1,2}\s+(jan|feb|mar|apr|mei|jun|jul|agu|sep|okt|nov|des))\b/.test(
+      text,
+    );
+  const hasEvidence = /\b(foto|video|gambar|rekaman|audio|sampel|spesimen|jejak|kotoran|suara|dokumentasi)\b/.test(
+    text,
+  );
+  if (!hasSpecies) missing.push("spesies / objek pengamatan");
+  if (!hasLocation) missing.push("lokasi / koordinat GPS");
+  if (!hasTime) missing.push("tanggal & jam");
+  if (!hasEvidence) missing.push("bukti (foto/video/sampel)");
+  return missing;
+}
+
 export function ResultView({
   prompt,
   result,
@@ -44,6 +86,9 @@ export function ResultView({
   const [followUpError, setFollowUpError] = useState<string | null>(null);
   const [isFollowUpStreaming, setIsFollowUpStreaming] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // Sprint 20: clarifying gate state for the "Susun Laporan" button.
+  const [reportGateOpen, setReportGateOpen] = useState(false);
+  const [gateFormat, setGateFormat] = useState<string | null>(null);
   const composerHandleRef = useRef<FollowUpComposerHandle>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -74,7 +119,7 @@ export function ResultView({
   // Auto-scroll to the newest content.
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, isFollowUpStreaming]);
+  }, [messages, isFollowUpStreaming, reportGateOpen]);
 
   // Close the header menu on outside click.
   useEffect(() => {
@@ -237,6 +282,21 @@ export function ResultView({
     ? "NaLI sedang menganalisis lapangan..."
     : "Jawab pertanyaan NaLI, tambah data, atau minta revisi...";
 
+  // Core fields still absent from the conversation (shown in the clarifying step).
+  const missingData = useMemo(() => detectMissingData(messages), [messages]);
+
+  const openReportGate = () => {
+    setGateFormat(null);
+    setReportGateOpen(true);
+  };
+
+  const handleGenerateReport = () => {
+    const fmt = gateFormat ?? "Ringkasan Umum";
+    setReportGateOpen(false);
+    setGateFormat(null);
+    composerHandleRef.current?.submitReport(fmt);
+  };
+
   // Index of the last assistant message (for isLatest / isStreaming).
   const lastAssistantIdx = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) if (messages[i].role === "assistant") return i;
@@ -338,6 +398,74 @@ export function ResultView({
             />
           );
         })}
+
+        {/* Clarifying step — confirmation gate before the journal pipeline runs (Sprint 20). */}
+        {reportGateOpen && (
+          <div className="rounded-2xl border border-[#00FFB3]/20 bg-[#00FFB3]/[0.03] p-4">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <NaLIChatLogo size={18} />
+                <span className="text-[12px] font-semibold text-white/70">Sebelum aku susun laporannya</span>
+              </div>
+              <button
+                onClick={() => setReportGateOpen(false)}
+                aria-label="Tutup"
+                className="flex h-6 w-6 items-center justify-center rounded-md text-white/40 transition hover:bg-white/[0.06] hover:text-white"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            <p className="mb-2.5 text-[12.5px] leading-relaxed text-white/60">Pilih jenis laporan yang kamu mau:</p>
+            <div className="mb-4 flex flex-wrap gap-2">
+              {REPORT_FORMATS.map((fmt) => {
+                const active = gateFormat === fmt;
+                return (
+                  <button
+                    key={fmt}
+                    onClick={() => setGateFormat(fmt)}
+                    className={cn(
+                      "rounded-full border px-3 py-1.5 text-[12px] font-medium transition",
+                      active
+                        ? "border-[#00FFB3]/50 bg-[#00FFB3]/15 text-[#00FFB3]"
+                        : "border-white/[0.1] bg-white/[0.03] text-white/60 hover:border-white/20 hover:text-white/85",
+                    )}
+                  >
+                    {fmt}
+                  </button>
+                );
+              })}
+            </div>
+
+            {missingData.length > 0 && (
+              <div className="mb-4 rounded-xl border border-white/[0.07] bg-white/[0.02] px-3.5 py-3">
+                <p className="mb-1.5 text-[11.5px] font-semibold text-white/55">
+                  Data ini belum ada di percakapan (boleh dilengkapi, boleh dilewati):
+                </p>
+                <ul className="space-y-1">
+                  {missingData.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-[12px] text-white/50">
+                      <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-[#F59E0B]/70" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={handleGenerateReport}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#00FFB3] px-4 py-2 text-[12.5px] font-semibold text-[#050F12] transition hover:bg-[#00FFB3]/90"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Susun Laporan Sekarang
+              </button>
+              <span className="text-[11.5px] text-white/35">atau lengkapi datanya dulu di kotak bawah</span>
+            </div>
+          </div>
+        )}
+
         <div ref={bottomRef} />
       </div>
 
@@ -360,6 +488,7 @@ export function ResultView({
             onStreamToken={handleStreamTokenAccumulate}
             onStreamDone={handleStreamDone}
             onError={handleFollowUpError}
+            onRequestReport={openReportGate}
           />
         </div>
       </div>
