@@ -4,49 +4,61 @@ interface EmptyStateProps {
   onSampleClick: (text: string) => void;
 }
 
-// Short, relatable starter prompts. Clicking pre-fills the composer and the
-// user completes it. Keeps the first step effortless for field users.
-const SAMPLES = [
+// Starter chips. Clicking pre-fills the composer with a short template that
+// guides the user to add the specific field data NaLI needs.
+const CHIPS = [
   {
     icon: "🦅",
-    label: "Saya melihat burung yang tidak biasa di hutan",
-    fill: "Saya melihat burung yang tidak biasa di hutan. ",
+    label: "Observasi satwa",
+    template:
+      "Saya mengamati [spesies] di [lokasi, koordinat GPS jika ada] pada [tanggal dan jam]. Jumlah individu: [berapa ekor]. Kondisi habitat: [deskripsi]. Perilaku yang teramati: [tambahkan detail].",
   },
   {
     icon: "🐾",
-    label: "Menemukan jejak besar di tepi sungai, ukuran sekitar 15 cm",
-    fill: "Menemukan jejak besar di tepi sungai, ukuran sekitar 15 cm. ",
+    label: "Jejak & spoor",
+    template:
+      "Saya menemukan jejak di [lokasi, koordinat GPS jika ada] pada [tanggal dan jam]. Ukuran jejak: [panjang x lebar cm]. Karakteristik: [pola, kedalaman, substrat]. [Tambahkan detail lain yang kamu amati].",
   },
   {
     icon: "🌿",
-    label: "Survei transek vegetasi di gunung",
-    fill: "Survei transek vegetasi di Gunung ",
+    label: "Survei vegetasi",
+    template:
+      "Survei transek vegetasi di [lokasi, ketinggian] pada [tanggal]. Panjang transek: [meter]. Spesies dominan: [daftar]. Tutupan kanopi: [persen]. [Tambahkan data plot atau pengukuran lain].",
+  },
+  {
+    icon: "📷",
+    label: "Analisis foto lapangan",
+    template:
+      "Saya punya foto lapangan dari [lokasi] pada [tanggal]. Yang terlihat: [deskripsi objek atau spesies]. [Lampirkan foto lewat tombol + dan tambahkan konteks pengamatan].",
   },
   {
     icon: "📊",
-    label: "Data kamera trap dari 3 lokasi, 14 hari",
-    fill: "Data kamera trap dari 3 lokasi selama 14 hari. ",
+    label: "Data kamera trap",
+    template:
+      "Data kamera trap dari [jumlah] lokasi selama [jumlah] hari di [area]. Total deteksi: [angka]. Spesies tercatat: [daftar]. [Tambahkan ringkasan per stasiun atau tanggal].",
+  },
+  {
+    icon: "📋",
+    label: "Laporan KKN/praktikum",
+    template:
+      "Laporan [KKN/praktikum] tentang [topik] di [lokasi] pada [tanggal]. Tim: [jumlah orang]. Metode: [deskripsi]. Temuan utama: [ringkasan data dan pengamatan].",
   },
 ] as const;
 
 export function EmptyState({ onSampleClick }: EmptyStateProps) {
   return (
-    <div className="w-full">
-      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {SAMPLES.map((s) => (
-          <button
-            key={s.label}
-            type="button"
-            onClick={() => onSampleClick(s.fill)}
-            className="group flex cursor-pointer items-start gap-3 rounded-xl border border-[#00FFB3]/10 bg-white/[0.025] p-4 text-left transition duration-200 hover:border-[#00FFB3]/25 hover:bg-white/[0.04]"
-          >
-            <span className="text-xl leading-none">{s.icon}</span>
-            <span className="text-sm leading-snug font-medium text-white/70 transition-colors group-hover:text-white/90">
-              {s.label}
-            </span>
-          </button>
-        ))}
-      </div>
+    <div className="flex w-full flex-wrap items-center justify-center gap-2">
+      {CHIPS.map((c) => (
+        <button
+          key={c.label}
+          type="button"
+          onClick={() => onSampleClick(c.template)}
+          className="group inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.05] px-4 py-2 text-[13px] text-white/75 transition duration-200 hover:border-[#00FFB3]/40 hover:text-[#00FFB3]"
+        >
+          <span className="text-sm leading-none">{c.icon}</span>
+          {c.label}
+        </button>
+      ))}
     </div>
   );
 }

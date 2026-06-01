@@ -19,6 +19,7 @@ import { FollowUpComposer, type FollowUpComposerHandle } from "./FollowUpCompose
 import { parseNaLIOutput, type ParsedNaLIOutput, type NaLIHeader } from "@/lib/parse-nali-output";
 import { calculatePalantirScore, getConfidenceColor, type PalantirScore } from "@/lib/calculate-palantir-score";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { ThinkingBlock } from "@/components/agent/ThinkingBlock";
 import { cn } from "@/lib/utils";
 
 interface ResultViewProps {
@@ -30,6 +31,8 @@ interface ResultViewProps {
   conversationMessages: ConversationMessage[];
   onConversationUpdate: Dispatch<SetStateAction<ConversationMessage[]>>;
   onSessionIdUpdate: (id: string | null) => void;
+  thinkingModelLabel?: string;
+  thinkingElapsed?: number;
 }
 
 type TabId = "laporan" | "analisis" | "tindak-lanjut";
@@ -81,6 +84,8 @@ export function ResultView({
   conversationMessages,
   onConversationUpdate,
   onSessionIdUpdate,
+  thinkingModelLabel,
+  thinkingElapsed,
 }: ResultViewProps) {
   const [copied, setCopied] = useState(false);
   const [promptExpanded, setPromptExpanded] = useState(false);
@@ -499,6 +504,19 @@ export function ResultView({
           </button>
         </div>
       </div>
+
+      {/* Collapsed agentic thinking summary (only for a fresh generation) */}
+      {thinkingModelLabel && (
+        <div className="mb-4">
+          <ThinkingBlock
+            activeStep={10}
+            isComplete
+            defaultCollapsed
+            modelName={thinkingModelLabel}
+            elapsedSeconds={thinkingElapsed}
+          />
+        </div>
+      )}
 
       {/* Palantir Score Panel — v2 only */}
       {isV2 && (

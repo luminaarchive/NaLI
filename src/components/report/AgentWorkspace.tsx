@@ -53,10 +53,18 @@ import { validateComposerInput } from "@/lib/reports/inputValidation";
 import { useDebouncedComposerValidation } from "@/lib/reports/useDebouncedValidation";
 import { generateManualChecklist } from "@/lib/reports/manualFallbackChecklist";
 import { UserProfileButton } from "@/components/UserProfileButton";
-import { LoadingView } from "@/components/report/LoadingView";
 import { ResultView } from "@/components/report/ResultView";
 import { ErrorView } from "@/components/report/ErrorView";
 import { EmptyState } from "@/components/report/EmptyState";
+import { ThinkingBlock } from "@/components/agent/ThinkingBlock";
+import { ModelSelector } from "@/components/agent/ModelSelector";
+import {
+  DEFAULT_TIER_ID,
+  PREFERRED_MODEL_STORAGE_KEY,
+  engineForTier,
+  labelForEngine,
+  tierById,
+} from "@/lib/nali-models";
 import type { ConversationMessage } from "@/components/report/ConversationThread";
 
 // Types matching backend AgentMessage schema
@@ -253,6 +261,11 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
   const [streamingText, setStreamingText] = useState<string>("");
   const [activeStreamStep, setActiveStreamStep] = useState<number>(0);
 
+  // Sprint 18: NaLI processing tier (Peregrine / Obsidian / Zephyr) + timing
+  const [selectedTierId, setSelectedTierId] = useState<string>(DEFAULT_TIER_ID);
+  const [thinkingElapsed, setThinkingElapsed] = useState<number>(0);
+  const genStartRef = useRef<number>(0);
+
   // File upload state
   const [attachedFile, setAttachedFile] = useState<ExtractedFile | null>(null);
   const [isExtractingFile, setIsExtractingFile] = useState(false);
@@ -268,6 +281,26 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       if (!welcomed) setShowWelcome(true);
     }
   }, [user, userLoading]);
+
+  // Sprint 18: load preferred NaLI tier on mount
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(PREFERRED_MODEL_STORAGE_KEY);
+      if (stored) setSelectedTierId(tierById(stored).id);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const handleSelectTier = useCallback((id: string) => {
+    const resolved = tierById(id).id;
+    setSelectedTierId(resolved);
+    try {
+      window.localStorage.setItem(PREFERRED_MODEL_STORAGE_KEY, resolved);
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   // Session history from report_sessions table
   const [sessionHistory, setSessionHistory] = useState<Array<{ id: string; title: string; created_at: string }>>([]);
@@ -816,15 +849,17 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
     window.history.pushState({}, "", "/create-report");
   }, []);
 
-  // Detect which agentic step is active based on streamed markdown content
+  // Map streamed content to the running module index (0..10). 10 = all complete.
   function detectActiveStep(text: string): number {
-    if (text.includes("## Kesimpulan")) return 7;
-    if (text.includes("## Keterbatasan")) return 6;
-    if (text.includes("## Analisis")) return 5;
-    if (text.includes("## Hasil")) return 4;
-    if (text.includes("## Metode")) return 3;
-    if (text.includes("## Pendahuluan") || text.includes("---END-HEADER---")) return 2;
-    if (text.includes("---NALI-HEADER---") || text.includes("#")) return 1;
+    if (text.includes("---END-QUESTIONS---")) return 10;
+    if (text.includes("---NALI-QUESTIONS---")) return 9;
+    if (text.includes("---NALI-MISSING-EVIDENCE---")) return 9;
+    if (text.includes("---NALI-EVIDENCE-TABLE---")) return 8;
+    if (text.includes("## Hasil") || text.includes("## Results")) return 7;
+    if (text.includes("## Pendahuluan") || text.includes("## Introduction")) return 6;
+    if (text.includes("---END-HEADER---")) return 5;
+    if (text.includes("Genetik:") || text.includes("Visual:")) return 2;
+    if (text.includes("---NALI-HEADER---")) return 1;
     return 0;
   }
 
@@ -930,13 +965,15 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
       setCurrentSessionId(null);
       setStreamingText("");
       setActiveStreamStep(0);
+      setThinkingElapsed(0);
+      genStartRef.current = Date.now();
       window.history.pushState({}, "", "/create-report");
 
       try {
         const res = await fetch("/api/generate-report", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: fullPrompt, imageBase64 }),
+          body: JSON.stringify({ prompt: fullPrompt, imageBase64, selectedModel: engineForTier(selectedTierId) }),
         });
 
         if (!res.ok || !res.body) {
@@ -974,6 +1011,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
               if (parsed.done) {
                 setCurrentResult(accumulated || null);
                 setCurrentSessionId(parsed.sessionId ?? null);
+                setActiveStreamStep(10);
+                setThinkingElapsed((Date.now() - genStartRef.current) / 1000);
                 // Seed conversation with the initial exchange
                 const now = new Date().toISOString();
                 setConversationMessages([
@@ -994,7 +1033,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
         setViewMode("error");
       }
     },
-    [router, refreshHistory, attachedFile],
+    [router, refreshHistory, attachedFile, selectedTierId],
   );
 
   const handleInitialSubmit = async (e?: FormEvent, retryQuery?: string) => {
@@ -1569,19 +1608,26 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 </button>
               </div>
 
-              {/* Right Submit arrow */}
-              <button
-                type="submit"
-                disabled={activeRunStatus === "running" || (!query.trim() && !attachedFile) || isRateLimited}
-                aria-label={selectedMode === "draft_from_materials" ? "Buat Laporan" : "Buat Panduan Awal"}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-zinc-950 transition duration-200 hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-30"
-              >
-                {activeRunStatus === "running" ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-zinc-950" />
-                ) : (
-                  <Send className="h-3.5 w-3.5 text-zinc-950" />
-                )}
-              </button>
+              {/* Right: NaLI mode selector + submit arrow */}
+              <div className="flex items-center gap-2">
+                <ModelSelector
+                  selectedId={selectedTierId}
+                  onSelect={handleSelectTier}
+                  disabled={activeRunStatus === "running"}
+                />
+                <button
+                  type="submit"
+                  disabled={activeRunStatus === "running" || (!query.trim() && !attachedFile) || isRateLimited}
+                  aria-label={selectedMode === "draft_from_materials" ? "Buat Laporan" : "Buat Panduan Awal"}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-zinc-950 transition duration-200 hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  {activeRunStatus === "running" ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-zinc-950" />
+                  ) : (
+                    <Send className="h-3.5 w-3.5 text-zinc-950" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </form>
@@ -1955,12 +2001,23 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
           >
             {messages.length === 0 ? (
               viewMode === "loading" ? (
-                <LoadingView
-                  prompt={currentPrompt || ""}
-                  model={usedModel}
-                  activeStep={activeStreamStep}
-                  streamingText={streamingText}
-                />
+                <div className="space-y-5 pt-6">
+                  {/* User's input shown as a chat bubble */}
+                  {currentPrompt && (
+                    <div className="flex justify-end">
+                      <div className="max-w-[70%] rounded-[16px_16px_4px_16px] border border-[#00FFB3]/15 bg-[#00FFB3]/[0.08] px-4 py-3 text-[14px] leading-6 text-[#f5f0e8]">
+                        {currentPrompt}
+                      </div>
+                    </div>
+                  )}
+                  {/* Agentic thinking, inline */}
+                  <ThinkingBlock
+                    activeStep={activeStreamStep}
+                    streamingText={streamingText}
+                    isComplete={false}
+                    modelName={usedModel ? labelForEngine(usedModel) : tierById(selectedTierId).label}
+                  />
+                </div>
               ) : viewMode === "result" ? (
                 <ResultView
                   prompt={currentPrompt || ""}
@@ -1971,6 +2028,8 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                   conversationMessages={conversationMessages}
                   onConversationUpdate={setConversationMessages}
                   onSessionIdUpdate={(id) => setCurrentSessionId(id)}
+                  thinkingModelLabel={usedModel ? labelForEngine(usedModel) : tierById(selectedTierId).label}
+                  thinkingElapsed={thinkingElapsed}
                 />
               ) : viewMode === "error" ? (
                 <ErrorView
@@ -2000,27 +2059,42 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                     </div>
                   )}
 
-                  <h1 className="mb-3 font-serif text-3xl leading-[1.15] font-semibold tracking-tight text-[#f5f0e8] sm:text-[40px] md:text-[48px]">
+                  <div className="mb-5">
+                    <NaLILogoMark size={48} variant="light" />
+                  </div>
+
+                  <h1
+                    className="mb-3 text-3xl leading-[1.15] tracking-tight text-[#f5f0e8] sm:text-[40px] md:text-[44px]"
+                    style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400 }}
+                  >
                     Ceritakan apa yang kamu temukan
                   </h1>
-                  <p className="mb-8 max-w-[560px] text-sm leading-relaxed text-white/45 sm:text-base">
-                    Tulis catatan lapangan, deskripsi spesimen, atau data survei. NaLI mengubahnya jadi laporan ilmiah.
+                  <p className="mb-8 max-w-[560px] text-[15px] leading-relaxed text-white/45 sm:text-base">
+                    NaLI mengubah catatan lapangan jadi laporan ilmiah.
                   </p>
 
-                  <EmptyState
-                    onSampleClick={(text) => {
-                      setQuery(text);
-                      setTimeout(() => {
-                        const el = composerRef.current;
-                        if (!el) return;
-                        el.focus();
-                        const end = el.value.length;
-                        el.setSelectionRange(end, end);
-                      }, 50);
-                    }}
-                  />
-
                   {renderComposer(true)}
+
+                  <div className="mt-6 w-full">
+                    <EmptyState
+                      onSampleClick={(text) => {
+                        setQuery(text);
+                        setTimeout(() => {
+                          const el = composerRef.current;
+                          if (!el) return;
+                          el.focus();
+                          const end = el.value.length;
+                          el.setSelectionRange(end, end);
+                        }, 50);
+                      }}
+                    />
+                  </div>
+
+                  {/* Bottom status line */}
+                  <div className="pointer-events-none fixed inset-x-0 bottom-3 z-0 hidden items-center justify-between px-6 text-[11px] text-white/25 sm:flex">
+                    <span>NaLI Intelligence OS v2.0</span>
+                    <span>{tierById(selectedTierId).label}</span>
+                  </div>
                 </div>
               )
             ) : (

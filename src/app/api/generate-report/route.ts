@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
   const incomingMessages = (body?.messages as ConversationMessage[] | undefined) ?? [];
   const sessionId = body?.sessionId as string | null | undefined;
   const imageBase64 = body?.imageBase64 as string | undefined;
+  const selectedModel = typeof body?.selectedModel === "string" ? (body.selectedModel as string) : undefined;
 
   const validImage = imageBase64 && typeof imageBase64 === "string" && imageBase64.startsWith("data:image/");
 
@@ -106,8 +107,14 @@ export async function POST(req: NextRequest) {
     "google/gemma-3-27b-it:free",
   ];
 
-  // Use capable models for structured report generation; vision models override for images
-  const modelsToTry: readonly string[] = validImage ? VISION_MODELS : CAPABLE_MODEL_WATERFALL;
+  // Use capable models for structured report generation; vision models override for images.
+  // If the user picked a NaLI tier (mapped to an engine that exists in the waterfall),
+  // try that engine first, then fall back through the rest of the waterfall on 429/error.
+  const baseWaterfall: readonly string[] = validImage ? VISION_MODELS : CAPABLE_MODEL_WATERFALL;
+  const modelsToTry: readonly string[] =
+    selectedModel && baseWaterfall.includes(selectedModel)
+      ? [selectedModel, ...baseWaterfall.filter((m) => m !== selectedModel)]
+      : baseWaterfall;
 
   const encoder = new TextEncoder();
   const now = new Date().toISOString();
