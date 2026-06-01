@@ -124,8 +124,8 @@ export function NaLIMessage({
 
       {/* Content — subtle left line */}
       <div className="space-y-4 border-l border-white/[0.08] pl-4">
-        {/* Thinking summary (primary report only) */}
-        {isPrimary && thinkingModelLabel && (
+        {/* Thinking summary — only for structured reports, never casual chat */}
+        {isPrimary && isV2 && thinkingModelLabel && (
           <ThinkingBlock
             activeStep={10}
             isComplete

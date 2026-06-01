@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { CAPABLE_MODEL_WATERFALL } from "@/lib/openrouter-models";
-import { NALI_SYSTEM_PROMPT, NALI_FOLLOWUP_SYSTEM_PROMPT } from "@/lib/nali-system-prompt";
+import { NALI_SYSTEM_PROMPT, NALI_FOLLOWUP_SYSTEM_PROMPT, NALI_CHAT_SYSTEM_PROMPT } from "@/lib/nali-system-prompt";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
@@ -18,6 +18,70 @@ interface ConversationMessage {
   role: "user" | "assistant";
   content: string;
   timestamp: string;
+}
+
+// Decide whether a turn should produce a full evidence report (journal) or a
+// conversational answer. Journal only when there are real field materials, an
+// explicit report request, an image, an existing report being edited, or an
+// affirmative "yes" to NaLI's offer. Casual/speculative questions stay chat.
+function detectReportIntent(
+  prompt: string,
+  hasImage: boolean,
+  isMultiTurn: boolean,
+  historyHasReport: boolean,
+  messages: ConversationMessage[],
+): boolean {
+  if (historyHasReport) return true; // editing/refining an existing report
+  if (hasImage) return true; // an uploaded image is field material
+
+  const p = prompt.toLowerCase();
+
+  const explicitReport =
+    /\b(buat|buatkan|susun|susunkan|jadikan|bikin|bikinkan|tolong\s+buat)\b[\s\S]{0,40}\b(laporan|jurnal|artikel|draft|imrad|paper|makalah)\b/.test(
+      p,
+    ) ||
+    /\b(laporan|jurnal)\s+(observasi|praktikum|kkn|lapangan|penelitian|ilmiah)\b/.test(p) ||
+    /\b(format\s+imrad|jadikan\s+laporan|susun\s+laporan|buatkan\s+laporan)\b/.test(p);
+  if (explicitReport) return true;
+
+  // Short affirmative reply right after NaLI offered to build a report.
+  const lastAssistant =
+    [...messages]
+      .reverse()
+      .find((m) => m.role === "assistant")
+      ?.content?.toLowerCase() ?? "";
+  const naliOfferedReport =
+    /laporan berbasis bukti|susun(?:kan)? (?:ini )?jadi laporan|mau aku (?:susun|buatkan)|jadi laporan/.test(
+      lastAssistant,
+    );
+  const affirmative =
+    /^(ya|iya|yaa|yoi|oke|ok|okay|okai|boleh|mau|gas|lanjut|silakan|silahkan|setuju|buat|buatkan|lakukan|sip|yes)\b/.test(
+      p.trim(),
+    );
+  if (isMultiTurn && naliOfferedReport && affirmative) return true;
+
+  // Field-material signals: the prompt looks like real observation/survey data.
+  const observationVerb =
+    /\b(mengamati|amati|observasi|menemukan|temukan|menjumpai|menemui|melihat|lihat|bertemu|berjumpa|jumpa|survei|survey|transek|kamera trap|camera trap|praktikum|spesimen|sampel|mencatat|merekam|memotret|memfoto)\b/.test(
+      p,
+    );
+  const measurement = /\b\d+([.,]\d+)?\s?(cm|mm|m|km|mdpl|kg|gram|gr|ekor|individu|menit|jam|ha|hektar)\b/.test(p);
+  const dateLike =
+    /\b(\d{1,2}\s+(jan|feb|mar|apr|mei|jun|jul|agu|sep|okt|nov|des)[a-z]*|\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|pukul\s+\d|jam\s+\d)\b/.test(
+      p,
+    );
+  const coordLike = /\b(-?\d{1,3}\.\d{3,}|koordinat|gps|lintang|bujur|ls|bt)\b/.test(p);
+  const speciesHint =
+    /\b(spesies|elang|macan|harimau|orangutan|owa|lutung|burung|reptil|amfibi|mamalia|primata|raptor|nisaetus|panthera|endemik|iucn|satwa)\b/.test(
+      p,
+    );
+
+  const materialSignals = [observationVerb, measurement, dateLike, coordLike, speciesHint].filter(Boolean).length;
+
+  if (observationVerb && materialSignals >= 2) return true;
+  if (materialSignals >= 3) return true;
+
+  return false; // conversational by default
 }
 
 export async function POST(req: NextRequest) {
@@ -83,7 +147,30 @@ export async function POST(req: NextRequest) {
 
   const promptStr = String(prompt).trim();
   const isMultiTurn = incomingMessages.length > 0;
-  const systemPrompt = isMultiTurn ? NALI_FOLLOWUP_SYSTEM_PROMPT : NALI_SYSTEM_PROMPT;
+
+  // Does the conversation already contain a generated journal report?
+  const historyHasReport = incomingMessages.some(
+    (m) => m.role === "assistant" && typeof m.content === "string" && m.content.includes(NALI_HEADER_MARKER),
+  );
+
+  // Conversational by default; journal only on clear report intent.
+  const reportMode = detectReportIntent(
+    promptStr,
+    Boolean(validImage),
+    isMultiTurn,
+    historyHasReport,
+    incomingMessages,
+  );
+
+  const systemPrompt = !reportMode
+    ? NALI_CHAT_SYSTEM_PROMPT
+    : historyHasReport
+      ? NALI_FOLLOWUP_SYSTEM_PROMPT
+      : NALI_SYSTEM_PROMPT;
+
+  // Only gate on the journal header when generating a fresh report from scratch.
+  // Chat mode and follow-ups stream directly (the header check would wrongly abort them).
+  const gateHeader = reportMode && !isMultiTurn;
 
   type UserContent = string | Array<{ type: string; [k: string]: unknown }>;
   const userContent: UserContent = validImage
@@ -162,9 +249,9 @@ export async function POST(req: NextRequest) {
         // Per-model state
         let modelText = "";
         let charsReceived = 0;
-        // Follow-up responses use the simple conversational prompt so skip header check.
-        // For new reports, buffer until we confirm structured output starts correctly.
-        let bufferFlushed: boolean = isMultiTurn;
+        // Only fresh report generation is gated on the journal header. Chat mode and
+        // follow-ups stream directly so a missing header never aborts them.
+        let bufferFlushed: boolean = !gateHeader;
         const tokenBuffer: string[] = [];
 
         let modelAborted = false;

@@ -246,7 +246,10 @@ export function ResultView({
   // Precompute per-message metadata (primary flag + score delta) purely,
   // without mutating render-scoped variables.
   const messageMeta = useMemo(() => {
-    const scores = messages.map((m) => (m.role === "assistant" && m.content.trim() ? scoreOf(m.content) : null));
+    // Only structured reports (those carrying the journal header) are scored.
+    const scores = messages.map((m) =>
+      m.role === "assistant" && m.content.includes("---NALI-HEADER---") ? scoreOf(m.content) : null,
+    );
     const assistantIdxs = messages.map((m, i) => (m.role === "assistant" ? i : -1)).filter((i) => i >= 0);
     const firstAssistant = assistantIdxs[0] ?? -1;
 

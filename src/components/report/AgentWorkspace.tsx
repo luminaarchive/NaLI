@@ -2080,16 +2080,14 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                         <span className="text-[11px] font-semibold text-white/40">NaLI</span>
                       </div>
                       <div className="space-y-4 border-l border-white/[0.08] pl-4">
-                        <ThinkingBlock
-                          activeStep={activeStreamStep}
-                          streamingText={streamingText}
-                          isComplete={false}
-                          modelName={usedModel ? labelForEngine(usedModel) : tierById(selectedTierId).label}
-                          signals={streamSignals}
-                        />
                         {(() => {
-                          // Show the report body live as it streams (after the header block),
-                          // so the user sees real content being written in the chatbox.
+                          const isReport = streamingText.includes("---NALI-HEADER---");
+                          // Chat mode: no journal pipeline, just stream the answer.
+                          const chatBody = streamingText
+                            .replace(/---NALI-[A-Z-]+---/g, "")
+                            .replace(/\[LAPORAN UTAMA\]/gi, "")
+                            .trim();
+                          // Report mode: live body after the header block.
                           const afterHeader = streamingText.includes("---END-HEADER---")
                             ? streamingText.split("---END-HEADER---")[1]
                             : "";
@@ -2098,20 +2096,53 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                             .replace(/---NALI-[A-Z-]+---/g, "")
                             .split("---NALI-EVIDENCE-TABLE---")[0]
                             .trim();
-                          if (!liveBody) return null;
+                          const bodyToShow = isReport ? liveBody : chatBody;
                           return (
-                            <div className="nali-live prose prose-invert prose-sm max-w-none">
-                              <style>{`
-                                .nali-live h1 { font-size: 1.3rem; font-weight: 700; color: #f5f0e8; margin-bottom: 0.6rem; font-family: Georgia, serif; }
-                                .nali-live h2 { font-weight: 700; color: rgba(245,240,232,0.85); margin-top: 1.3rem; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.7rem; }
-                                .nali-live p { color: rgba(245,240,232,0.78); line-height: 1.7; margin-bottom: 0.7rem; font-size: 0.9rem; }
-                                .nali-live ul, .nali-live ol { color: rgba(245,240,232,0.72); padding-left: 1.25rem; margin-bottom: 0.7rem; }
-                                .nali-live li { margin-bottom: 0.25rem; font-size: 0.9rem; }
-                                .nali-live strong { color: rgba(245,240,232,0.92); }
-                              `}</style>
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{liveBody}</ReactMarkdown>
-                              <span className="ml-0.5 inline-block h-4 w-2 animate-pulse bg-white/40 align-middle" />
-                            </div>
+                            <>
+                              {isReport ? (
+                                <ThinkingBlock
+                                  activeStep={activeStreamStep}
+                                  streamingText={streamingText}
+                                  isComplete={false}
+                                  modelName={usedModel ? labelForEngine(usedModel) : tierById(selectedTierId).label}
+                                  signals={streamSignals}
+                                />
+                              ) : (
+                                bodyToShow.length === 0 && (
+                                  <div className="flex items-center gap-2 py-1 text-[13px] text-white/50">
+                                    <span className="inline-flex gap-1">
+                                      <span
+                                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/40"
+                                        style={{ animationDelay: "0ms" }}
+                                      />
+                                      <span
+                                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/40"
+                                        style={{ animationDelay: "150ms" }}
+                                      />
+                                      <span
+                                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/40"
+                                        style={{ animationDelay: "300ms" }}
+                                      />
+                                    </span>
+                                    NaLI mengetik...
+                                  </div>
+                                )
+                              )}
+                              {bodyToShow.length > 0 && (
+                                <div className="nali-live prose prose-invert prose-sm max-w-none">
+                                  <style>{`
+                                    .nali-live h1 { font-size: 1.3rem; font-weight: 700; color: #f5f0e8; margin-bottom: 0.6rem; font-family: Georgia, serif; }
+                                    .nali-live h2 { font-weight: 700; color: rgba(245,240,232,0.85); margin-top: 1.3rem; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.7rem; }
+                                    .nali-live p { color: rgba(245,240,232,0.78); line-height: 1.7; margin-bottom: 0.7rem; font-size: 0.9rem; }
+                                    .nali-live ul, .nali-live ol { color: rgba(245,240,232,0.72); padding-left: 1.25rem; margin-bottom: 0.7rem; }
+                                    .nali-live li { margin-bottom: 0.25rem; font-size: 0.9rem; }
+                                    .nali-live strong { color: rgba(245,240,232,0.92); }
+                                  `}</style>
+                                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{bodyToShow}</ReactMarkdown>
+                                  <span className="ml-0.5 inline-block h-4 w-2 animate-pulse bg-white/40 align-middle" />
+                                </div>
+                              )}
+                            </>
                           );
                         })()}
                       </div>
@@ -2122,7 +2153,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                   <div className="sticky bottom-0 z-20 -mx-4 mt-6 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A] to-transparent px-4 pt-8 pb-4 md:-mx-8 md:px-8">
                     <div className="mx-auto max-w-[760px]">
                       <div className="flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-[#1a1a1a] p-3">
-                        <span className="flex-1 px-1 text-sm text-white/35">NaLI sedang menganalisis lapangan...</span>
+                        <span className="flex-1 px-1 text-sm text-white/35">NaLI sedang berpikir...</span>
                         <button
                           onClick={handleStopGeneration}
                           type="button"
