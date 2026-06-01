@@ -55,3 +55,6 @@ nali-playwright-console-*.md
 /tests/fixtures/golden-set/**/*.jpg
 /tests/fixtures/golden-set/**/*.mp3
 /scratch
+
+# Sprint 20 smoke screenshots (local evidence only)
+scripts/smoke/shots/

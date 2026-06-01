@@ -386,7 +386,7 @@ export function ResultView({
               isPrimary={isPrimary}
               isLatest={i === lastAssistantIdx}
               isStreaming={isStreaming}
-              thinkingModelLabel={isPrimary ? thinkingModelLabel : undefined}
+              thinkingModelLabel={thinkingModelLabel}
               thinkingElapsed={isPrimary ? thinkingElapsed : undefined}
               scoreDelta={delta}
               exporting={exporting}

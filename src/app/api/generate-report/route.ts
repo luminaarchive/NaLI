@@ -78,15 +78,12 @@ function detectReportIntent(
       p.trim(),
     ) || p.trim().endsWith("?");
 
-  // Stated research activities (declarative) → report. e.g. "hasil praktikum...",
-  // "survei transek...", "data kamera trap...".
-  const strongActivity =
-    /\b(praktikum|observasi|pengamatan|survei|survey|transek|kamera trap|camera trap|spesimen|eksperimen|inventarisasi|monitoring)\b/.test(
-      p,
-    );
-  if (strongActivity && !isQuestion) return true;
-
-  // Weaker field-material signals: need corroboration AND a declarative tone.
+  // CHAT-BIASED ON PURPOSE (Sprint 20): on the first turn, NaLI stays
+  // conversational no matter how much field detail is present. A casual
+  // observation like "aku lihat elang jawa di Merbabu kemarin pagi" is a chat
+  // opener, not a request for a journal. The "Susun Laporan" button (forceReport)
+  // is the reliable trigger; explicit phrases above cover the keyword path. The
+  // material heuristics below only refine an ALREADY-EXISTING report, never start one.
   const observationVerb =
     /\b(mengamati|amati|menemukan|temukan|menjumpai|menemui|melihat|lihat|bertemu|berjumpa|jumpa|mencatat|merekam|memotret|memfoto)\b/.test(
       p,
@@ -101,12 +98,10 @@ function detectReportIntent(
 
   const materialSignals = [observationVerb, measurement, dateLike, coordLike, speciesHint].filter(Boolean).length;
 
-  if (!isQuestion && observationVerb && materialSignals >= 2) return true;
-  if (!isQuestion && materialSignals >= 3) return true;
-
-  // Inside an active report conversation, any declarative detail (e.g. a short
-  // answer like "selama 10 menit, sendirian") counts as new evidence → update.
-  if (!isQuestion && historyHasReport && isMultiTurn && materialSignals >= 1) return true;
+  // Inside an active report conversation, any new declarative detail (e.g. a short
+  // answer like "selama 10 menit, sendirian") counts as new evidence → update the
+  // existing report. This NEVER fires on a fresh conversation.
+  if (historyHasReport && isMultiTurn && !isQuestion && materialSignals >= 1) return true;
 
   return false; // conversational by default
 }

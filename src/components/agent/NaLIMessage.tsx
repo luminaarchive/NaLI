@@ -124,14 +124,15 @@ export function NaLIMessage({
 
       {/* Content — subtle left line */}
       <div className="space-y-4 border-l border-white/[0.08] pl-4">
-        {/* Thinking summary — only for structured reports, never casual chat */}
-        {isPrimary && isV2 && thinkingModelLabel && (
+        {/* Thinking summary — for every structured report (incl. button/keyword
+            triggered ones), never casual chat. Collapsed summary above the report. */}
+        {isV2 && thinkingModelLabel && (
           <ThinkingBlock
             activeStep={10}
             isComplete
             defaultCollapsed
             modelName={thinkingModelLabel}
-            elapsedSeconds={thinkingElapsed}
+            elapsedSeconds={isPrimary ? thinkingElapsed : undefined}
           />
         )}
 
