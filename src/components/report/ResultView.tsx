@@ -329,6 +329,9 @@ export function ResultView({
               exporting={exporting}
               onCopy={handleCopy}
               onExport={handleExport}
+              onAnswerQuestion={(num, question) =>
+                composerHandleRef.current?.prefill(`Jawaban untuk: "${question}"\n\n`)
+              }
             />
           );
         })}

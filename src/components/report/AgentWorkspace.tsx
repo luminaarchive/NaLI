@@ -59,6 +59,8 @@ import { ErrorView } from "@/components/report/ErrorView";
 import { EmptyState } from "@/components/report/EmptyState";
 import { ThinkingBlock } from "@/components/agent/ThinkingBlock";
 import { ModelSelector } from "@/components/agent/ModelSelector";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { parseNaLIOutput } from "@/lib/parse-nali-output";
 import { calculatePalantirScore } from "@/lib/calculate-palantir-score";
 import {
@@ -2071,15 +2073,48 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                         </div>
                       </div>
                     )}
-                    {/* Agentic thinking, inline */}
-                    <div className="border-l-2 border-[#00FFB3]/30 pl-4">
-                      <ThinkingBlock
-                        activeStep={activeStreamStep}
-                        streamingText={streamingText}
-                        isComplete={false}
-                        modelName={usedModel ? labelForEngine(usedModel) : tierById(selectedTierId).label}
-                        signals={streamSignals}
-                      />
+                    {/* NaLI response: label + subtle line + thinking + live stream */}
+                    <div className="flex flex-col">
+                      <div className="mb-2 flex items-center gap-2">
+                        <NaLIChatLogo size={20} />
+                        <span className="text-[11px] font-semibold text-white/40">NaLI</span>
+                      </div>
+                      <div className="space-y-4 border-l border-white/[0.08] pl-4">
+                        <ThinkingBlock
+                          activeStep={activeStreamStep}
+                          streamingText={streamingText}
+                          isComplete={false}
+                          modelName={usedModel ? labelForEngine(usedModel) : tierById(selectedTierId).label}
+                          signals={streamSignals}
+                        />
+                        {(() => {
+                          // Show the report body live as it streams (after the header block),
+                          // so the user sees real content being written in the chatbox.
+                          const afterHeader = streamingText.includes("---END-HEADER---")
+                            ? streamingText.split("---END-HEADER---")[1]
+                            : "";
+                          const liveBody = afterHeader
+                            .replace(/\[LAPORAN UTAMA\]/gi, "")
+                            .replace(/---NALI-[A-Z-]+---/g, "")
+                            .split("---NALI-EVIDENCE-TABLE---")[0]
+                            .trim();
+                          if (!liveBody) return null;
+                          return (
+                            <div className="nali-live prose prose-invert prose-sm max-w-none">
+                              <style>{`
+                                .nali-live h1 { font-size: 1.3rem; font-weight: 700; color: #f5f0e8; margin-bottom: 0.6rem; font-family: Georgia, serif; }
+                                .nali-live h2 { font-weight: 700; color: rgba(245,240,232,0.85); margin-top: 1.3rem; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.7rem; }
+                                .nali-live p { color: rgba(245,240,232,0.78); line-height: 1.7; margin-bottom: 0.7rem; font-size: 0.9rem; }
+                                .nali-live ul, .nali-live ol { color: rgba(245,240,232,0.72); padding-left: 1.25rem; margin-bottom: 0.7rem; }
+                                .nali-live li { margin-bottom: 0.25rem; font-size: 0.9rem; }
+                                .nali-live strong { color: rgba(245,240,232,0.92); }
+                              `}</style>
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{liveBody}</ReactMarkdown>
+                              <span className="ml-0.5 inline-block h-4 w-2 animate-pulse bg-white/40 align-middle" />
+                            </div>
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
 

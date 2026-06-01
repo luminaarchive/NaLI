@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Clipboard, ClipboardCheck, Download, FileText, Loader2 } from "lucide-react";
+import { ArrowRight, Clipboard, ClipboardCheck, Download, FileText, Loader2 } from "lucide-react";
 import { parseNaLIOutput } from "@/lib/parse-nali-output";
 import { calculatePalantirScore, getConfidenceColor } from "@/lib/calculate-palantir-score";
 import { NaLIChatLogo } from "@/components/report/NaLIChatLogo";
@@ -68,6 +68,7 @@ interface NaLIMessageProps {
   exporting: "pdf" | "docx" | null;
   onCopy: (content: string) => void;
   onExport: (format: "pdf" | "docx", content: string) => void;
+  onAnswerQuestion?: (num: number, question: string) => void;
 }
 
 export function NaLIMessage({
@@ -82,6 +83,7 @@ export function NaLIMessage({
   exporting,
   onCopy,
   onExport,
+  onAnswerQuestion,
 }: NaLIMessageProps) {
   const [copied, setCopied] = useState(false);
   const parsed = useMemo(() => parseNaLIOutput(content), [content]);
@@ -120,8 +122,8 @@ export function NaLIMessage({
         {timestamp && <span className="text-[10px] text-white/20">· {formatTimestamp(timestamp)}</span>}
       </div>
 
-      {/* Content — left teal line */}
-      <div className="space-y-4 border-l-2 border-[#00FFB3]/30 pl-4">
+      {/* Content — subtle left line */}
+      <div className="space-y-4 border-l border-white/[0.08] pl-4">
         {/* Thinking summary (primary report only) */}
         {isPrimary && thinkingModelLabel && (
           <ThinkingBlock
@@ -136,16 +138,13 @@ export function NaLIMessage({
         {isStreaming && body.length === 0 ? (
           <div className="flex items-center gap-2 py-2 text-[13px] text-white/50">
             <span className="inline-flex gap-1">
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/40" style={{ animationDelay: "0ms" }} />
               <span
-                className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#00FFB3]"
-                style={{ animationDelay: "0ms" }}
-              />
-              <span
-                className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#00FFB3]"
+                className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/40"
                 style={{ animationDelay: "150ms" }}
               />
               <span
-                className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#00FFB3]"
+                className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/40"
                 style={{ animationDelay: "300ms" }}
               />
             </span>
@@ -165,12 +164,12 @@ export function NaLIMessage({
                 .nali-msg-content table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: 0.8rem; }
                 .nali-msg-content th { background: rgba(255,255,255,0.04); color: rgba(245,240,232,0.6); padding: 0.5rem 0.7rem; text-align: left; border: 1px solid rgba(255,255,255,0.08); font-size: 0.72rem; text-transform: uppercase; }
                 .nali-msg-content td { padding: 0.5rem 0.7rem; border: 1px solid rgba(255,255,255,0.06); color: rgba(245,240,232,0.65); vertical-align: top; }
-                .nali-msg-content code { background: rgba(255,255,255,0.06); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.82em; color: #00FFB3; }
-                .nali-msg-content blockquote { border-left: 2px solid rgba(0,255,179,0.3); padding-left: 1rem; color: rgba(245,240,232,0.5); font-style: italic; }
+                .nali-msg-content code { background: rgba(255,255,255,0.06); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.82em; color: rgba(245,240,232,0.85); }
+                .nali-msg-content blockquote { border-left: 2px solid rgba(255,255,255,0.12); padding-left: 1rem; color: rgba(245,240,232,0.5); font-style: italic; }
                 .nali-msg-content em { color: rgba(245,240,232,0.55); }
-                .nali-infer { background: rgba(251,191,36,0.12); color: rgb(251,191,36); border-radius: 4px; padding: 0.05em 0.3em; font-weight: 600; font-style: normal; }
-                .nali-weak { background: rgba(248,113,113,0.12); color: rgb(248,113,113); border-radius: 4px; padding: 0.05em 0.3em; font-weight: 600; font-style: normal; }
-                .nali-ok { background: rgba(0,255,179,0.1); color: #00FFB3; border-radius: 4px; padding: 0.05em 0.3em; font-weight: 600; font-style: normal; }
+                .nali-infer { color: rgba(214,178,120,0.95); font-weight: 600; font-style: normal; }
+                .nali-weak { color: rgba(212,150,150,0.95); font-weight: 600; font-style: normal; }
+                .nali-ok { color: rgba(150,200,182,0.95); font-weight: 600; font-style: normal; }
               `}</style>
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
@@ -352,25 +351,35 @@ export function NaLIMessage({
         )}
       </div>
 
-      {/* Follow-up questions as a distinct NaLI bubble (latest report only) */}
+      {/* Follow-up questions as a distinct NaLI bubble (latest report only).
+          Each question is tappable — it drops the answer scaffold into the composer. */}
       {!isStreaming && isLatest && isV2 && parsed.followUpQuestions.length > 0 && (
-        <div className="mt-4 rounded-2xl border border-[#00FFB3]/15 bg-[#00FFB3]/[0.04] p-4">
+        <div className="mt-4 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
           <div className="mb-2 flex items-center gap-2">
             <NaLIChatLogo size={18} />
             <span className="text-[11px] font-semibold text-white/45">NaLI bertanya</span>
           </div>
-          <p className="mb-2 text-[13.5px] leading-relaxed text-white/80">
-            Untuk mempertajam laporan ini, aku perlu tahu beberapa hal:
+          <p className="mb-3 text-[13.5px] leading-relaxed text-white/80">
+            Untuk mempertajam laporan ini, aku perlu tahu beberapa hal. Ketuk pertanyaan untuk menjawabnya:
           </p>
-          <ol className="mb-3 list-decimal space-y-1.5 pl-5">
+          <div className="space-y-2">
             {parsed.followUpQuestions.map((q) => (
-              <li key={q.number} className="text-[13.5px] leading-relaxed text-white/75">
-                {q.question}
-              </li>
+              <button
+                key={q.number}
+                type="button"
+                onClick={() => onAnswerQuestion?.(q.number, q.question)}
+                className="group flex w-full items-start gap-3 rounded-xl border border-white/[0.07] bg-white/[0.02] px-3.5 py-3 text-left transition hover:border-white/[0.16] hover:bg-white/[0.04]"
+              >
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-[10px] font-bold text-white/55">
+                  {q.number}
+                </span>
+                <span className="flex-1 text-[13.5px] leading-relaxed text-white/80">{q.question}</span>
+                <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white/25 transition group-hover:translate-x-0.5 group-hover:text-white/60" />
+              </button>
             ))}
-          </ol>
-          <p className="text-[12px] text-white/40 italic">
-            Jawab langsung di kotak bawah, atau lewati jika datanya belum ada.
+          </div>
+          <p className="mt-3 text-[12px] text-white/35 italic">
+            Atau tulis jawabanmu langsung di kotak bawah. Lewati jika datanya belum ada.
           </p>
         </div>
       )}
