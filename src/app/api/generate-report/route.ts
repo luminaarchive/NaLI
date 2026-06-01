@@ -60,9 +60,23 @@ function detectReportIntent(
     );
   if (isMultiTurn && naliOfferedReport && affirmative) return true;
 
-  // Field-material signals: the prompt looks like real observation/survey data.
+  // Questions / definitional asks stay conversational even if they mention species.
+  const isQuestion =
+    /^(apa|apakah|kenapa|mengapa|bagaimana|gimana|gmn|siapa|kapan|kpn|di\s?mana|dimana|berapa|bisakah|bolehkah|haruskah|adakah|tolong\s+jelaskan|jelaskan|ceritakan|sebutkan)\b/.test(
+      p.trim(),
+    ) || p.trim().endsWith("?");
+
+  // Stated research activities (declarative) → report. e.g. "hasil praktikum...",
+  // "survei transek...", "data kamera trap...".
+  const strongActivity =
+    /\b(praktikum|observasi|pengamatan|survei|survey|transek|kamera trap|camera trap|spesimen|eksperimen|inventarisasi|monitoring)\b/.test(
+      p,
+    );
+  if (strongActivity && !isQuestion) return true;
+
+  // Weaker field-material signals: need corroboration AND a declarative tone.
   const observationVerb =
-    /\b(mengamati|amati|observasi|menemukan|temukan|menjumpai|menemui|melihat|lihat|bertemu|berjumpa|jumpa|survei|survey|transek|kamera trap|camera trap|praktikum|spesimen|sampel|mencatat|merekam|memotret|memfoto)\b/.test(
+    /\b(mengamati|amati|menemukan|temukan|menjumpai|menemui|melihat|lihat|bertemu|berjumpa|jumpa|mencatat|merekam|memotret|memfoto)\b/.test(
       p,
     );
   const measurement = /\b\d+([.,]\d+)?\s?(cm|mm|m|km|mdpl|kg|gram|gr|ekor|individu|menit|jam|ha|hektar)\b/.test(p);
@@ -71,15 +85,12 @@ function detectReportIntent(
       p,
     );
   const coordLike = /\b(-?\d{1,3}\.\d{3,}|koordinat|gps|lintang|bujur|ls|bt)\b/.test(p);
-  const speciesHint =
-    /\b(spesies|elang|macan|harimau|orangutan|owa|lutung|burung|reptil|amfibi|mamalia|primata|raptor|nisaetus|panthera|endemik|iucn|satwa)\b/.test(
-      p,
-    );
+  const speciesHint = /\b(elang|macan|harimau|orangutan|owa|lutung|nisaetus|panthera|raptor|endemik|iucn)\b/.test(p);
 
   const materialSignals = [observationVerb, measurement, dateLike, coordLike, speciesHint].filter(Boolean).length;
 
-  if (observationVerb && materialSignals >= 2) return true;
-  if (materialSignals >= 3) return true;
+  if (!isQuestion && observationVerb && materialSignals >= 2) return true;
+  if (!isQuestion && materialSignals >= 3) return true;
 
   return false; // conversational by default
 }
