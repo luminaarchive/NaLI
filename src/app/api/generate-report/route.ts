@@ -369,6 +369,12 @@ export async function POST(req: NextRequest) {
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ token: t, model })}\n\n`));
             }
           }
+          // A model that produced no usable content (e.g. a reasoning model that
+          // streamed only its hidden chain-of-thought, or an empty completion) is
+          // a miss — fall through to the next model instead of returning blank.
+          if (modelText.trim().length === 0) {
+            continue;
+          }
           usedModel = model;
           break modelLoop;
         }

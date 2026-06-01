@@ -60,7 +60,7 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
         const end = el.value.length;
         el.setSelectionRange(end, end);
         el.style.height = "auto";
-        el.style.height = `${Math.min(el.scrollHeight, 100)}px`;
+        el.style.height = `${Math.min(el.scrollHeight, 240)}px`;
         el.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 60);
     },
@@ -102,6 +102,7 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
     }
 
     setInput("");
+    if (textareaRef.current) textareaRef.current.style.height = "auto";
     setAttachedFile(null);
     setLoading(true);
 
@@ -198,7 +199,12 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
           <textarea
             ref={textareaRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              setInput(e.target.value);
+              const el = e.target;
+              el.style.height = "auto";
+              el.style.height = `${Math.min(el.scrollHeight, 240)}px`;
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -208,7 +214,7 @@ export const FollowUpComposer = forwardRef<FollowUpComposerHandle, FollowUpCompo
             disabled={loading}
             placeholder={placeholder ?? "Tanya lebih lanjut atau minta revisi..."}
             rows={1}
-            className="max-h-[100px] flex-1 resize-none bg-transparent text-sm leading-6 text-white/80 placeholder-white/25 outline-none disabled:opacity-50"
+            className="max-h-[240px] flex-1 resize-none overflow-y-auto bg-transparent text-sm leading-6 text-white/80 placeholder-white/25 outline-none disabled:opacity-50"
             style={{ lineHeight: "1.5rem" }}
           />
 

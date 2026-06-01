@@ -1612,7 +1612,12 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                 ref={isCentered ? composerRef : undefined}
                 rows={isCentered ? 4 : 1}
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  const el = e.target;
+                  el.style.height = "auto";
+                  el.style.height = `${Math.min(el.scrollHeight, 260)}px`;
+                }}
                 onFocus={() => setIsComposerFocused(true)}
                 onBlur={() => setIsComposerFocused(false)}
                 disabled={isRateLimited}
@@ -1623,7 +1628,7 @@ export function AgentWorkspace({ initialReportId }: AgentWorkspaceProps) {
                       ? "Tulis tugas, catatan lapangan, atau bahan laporan..."
                       : "Ketik instruksi penyuntingan draf lanjutan (misal: 'perpendek', 'tulis kesimpulan formal')..."
                 }
-                className="max-h-40 w-full resize-none border-none bg-transparent py-1 text-[14px] leading-6 text-white placeholder-white/35 outline-none disabled:opacity-50"
+                className="max-h-[260px] w-full resize-none overflow-y-auto border-none bg-transparent py-1 text-[14px] leading-6 text-white placeholder-white/35 outline-none disabled:opacity-50"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
