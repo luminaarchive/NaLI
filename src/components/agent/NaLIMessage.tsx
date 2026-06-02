@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ArrowRight, Clipboard, ClipboardCheck, Download, FileText, Loader2 } from "lucide-react";
+import { ArrowRight, Check, Clipboard, ClipboardCheck, Download, FileText, Loader2, Share2 } from "lucide-react";
 import { parseNaLIOutput } from "@/lib/parse-nali-output";
 import { calculatePalantirScore, getConfidenceColor } from "@/lib/calculate-palantir-score";
 import { NaLIChatLogo } from "@/components/report/NaLIChatLogo";
@@ -68,6 +68,10 @@ interface NaLIMessageProps {
   exporting: "pdf" | "docx" | null;
   onCopy: (content: string) => void;
   onExport: (format: "pdf" | "docx", content: string) => void;
+  /** Whether the report is persisted and therefore shareable. */
+  canShare?: boolean;
+  /** Generates/returns the public read-only share URL. */
+  onShare?: () => Promise<string>;
   onAnswerQuestion?: (num: number, question: string) => void;
 }
 
@@ -83,9 +87,36 @@ export function NaLIMessage({
   exporting,
   onCopy,
   onExport,
+  canShare = false,
+  onShare,
   onAnswerQuestion,
 }: NaLIMessageProps) {
   const [copied, setCopied] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [shareNote, setShareNote] = useState<string | null>(null);
+  const [shareErr, setShareErr] = useState<string | null>(null);
+
+  const handleShare = async () => {
+    if (!onShare || sharing) return;
+    setSharing(true);
+    setShareErr(null);
+    setShareNote(null);
+    try {
+      const url = await onShare();
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        /* clipboard may be unavailable; the link is still generated */
+      }
+      setShareNote("Link disalin. Siapa pun dengan link ini bisa melihat laporan (hanya-baca).");
+      setTimeout(() => setShareNote(null), 6000);
+    } catch (e) {
+      setShareErr(e instanceof Error ? e.message : "Gagal membuat link berbagi.");
+      setTimeout(() => setShareErr(null), 6000);
+    } finally {
+      setSharing(false);
+    }
+  };
   const parsed = useMemo(() => parseNaLIOutput(content), [content]);
   const score = useMemo(() => calculatePalantirScore(parsed), [parsed]);
   const isV2 = parsed.hasStructuredOutput && parsed.header !== null;
@@ -352,6 +383,32 @@ export function NaLIMessage({
                   )}
                   DOCX
                 </button>
+                {/* Sprint 21: share a public read-only link (report messages only). */}
+                {isV2 && onShare && (
+                  <button
+                    onClick={handleShare}
+                    disabled={sharing || !canShare}
+                    aria-label="Bagikan"
+                    title={canShare ? "Bagikan link hanya-baca" : "Laporan sedang disimpan..."}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-[#00FFB3]/20 bg-[#00FFB3]/[0.06] px-3 py-1.5 text-[11px] font-medium text-[#00FFB3]/90 transition hover:bg-[#00FFB3]/[0.12] hover:text-[#00FFB3] disabled:opacity-40"
+                  >
+                    {sharing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Share2 className="h-3.5 w-3.5" />}
+                    Bagikan
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Inline share confirmation / error (no modal). */}
+            {!isStreaming && shareNote && (
+              <div className="flex items-start gap-2 rounded-xl border border-[#00FFB3]/20 bg-[#00FFB3]/[0.05] px-3 py-2 text-[11.5px] leading-relaxed text-[#00FFB3]/90">
+                <Check className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                <span>{shareNote}</span>
+              </div>
+            )}
+            {!isStreaming && shareErr && (
+              <div className="rounded-xl border border-rose-400/20 bg-rose-400/[0.06] px-3 py-2 text-[11.5px] leading-relaxed text-rose-300">
+                {shareErr}
               </div>
             )}
           </>

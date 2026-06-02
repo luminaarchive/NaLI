@@ -4,8 +4,9 @@ import { type Dispatch, type SetStateAction, useEffect, useMemo, useRef, useStat
 import { ArrowLeft, Clipboard, Download, FileText, MoreHorizontal, Plus, Sparkles, X } from "lucide-react";
 import { type ConversationMessage } from "./ConversationThread";
 import { FollowUpComposer, type FollowUpComposerHandle } from "./FollowUpComposer";
-import { parseNaLIOutput, type ParsedNaLIOutput } from "@/lib/parse-nali-output";
-import { calculatePalantirScore, type PalantirScore } from "@/lib/calculate-palantir-score";
+import { parseNaLIOutput } from "@/lib/parse-nali-output";
+import { calculatePalantirScore } from "@/lib/calculate-palantir-score";
+import { buildExportPayloadFromMarkdown } from "@/lib/reports/buildExportPayload";
 import { UserMessage } from "@/components/agent/UserMessage";
 import { NaLIMessage } from "@/components/agent/NaLIMessage";
 import { NaLIChatLogo } from "./NaLIChatLogo";
@@ -132,80 +133,12 @@ export function ResultView({
   }, [menuOpen]);
 
   // ── Export helpers ─────────────────────────────────────────────────────
-  function buildExportPayload(parsedOut: ParsedNaLIOutput, score: PalantirScore, rawMarkdown: string) {
-    const titleMatch = rawMarkdown.match(/^#\s+(.+)/m);
-    const reportTitle = titleMatch?.[1]?.trim() || prompt?.slice(0, 80) || "Laporan NaLI";
-
-    const sections: Array<[string, string]> = [];
-    const headingRe = /^##\s+(.+)\n([\s\S]*?)(?=^##\s|\n---NALI|$)/gm;
-    let m: RegExpExecArray | null;
-    while ((m = headingRe.exec(rawMarkdown)) !== null) {
-      const heading = m[1].trim().toUpperCase();
-      const sbody = m[2].trim();
-      const skip = ["ABSTRAK", "ABSTRACT", "KATA KUNCI", "KEYWORDS"];
-      if (sbody && !skip.some((s) => heading.includes(s))) sections.push([heading, sbody]);
-    }
-
-    const abstractId = /##\s+Abstrak\s*\n([\s\S]*?)(?=^##\s|---NALI)/im.exec(rawMarkdown)?.[1]?.trim() ?? "";
-    const abstractEn = /##\s+Abstract\s*\n([\s\S]*?)(?=^##\s|---NALI)/im.exec(rawMarkdown)?.[1]?.trim() ?? "";
-
-    const evTable: string[][] = [["Klaim", "Pilar Bukti", "Status", "Catatan"]];
-    for (const row of parsedOut.evidenceTable) {
-      evTable.push([row.klaim || "", row.sumber || "", row.status || "", row.keterangan || ""]);
-    }
-    const missing = parsedOut.missingEvidence.map((item, i) => [
-      String(item.number ?? i + 1),
-      item.item ?? "",
-      item.reason ?? "",
-    ]);
-    const questions = parsedOut.followUpQuestions.map((q) => q.question ?? "");
-    const today = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
-
-    return {
-      title: reportTitle,
-      subtitle: "Draft Laporan Berbasis Bukti — NaLI Evidence Intelligence OS v2.0",
-      date: today,
-      score: score.overall,
-      level: score.level,
-      kualitas: parsedOut.header?.kualitasBukti ?? "Sedang",
-      risiko: parsedOut.header?.risikoKlaim ?? "Sedang",
-      tipe: parsedOut.header?.tipeLaporan ?? "Laporan",
-      g: score.genetic,
-      v: score.visual,
-      h: score.habitat,
-      i: score.integrity,
-      li: score.linguisticMultiplier,
-      decay: score.temporalDecay,
-      abstract_id: abstractId,
-      abstract_en: abstractEn,
-      keywords: (parsedOut.header?.tipeLaporan ?? "") + ", NaLI, laporan berbasis bukti",
-      sections:
-        sections.length > 0
-          ? sections
-          : [
-              [
-                "LAPORAN",
-                rawMarkdown
-                  .replace(/^#+.+$/gm, "")
-                  .trim()
-                  .slice(0, 2000),
-              ],
-            ],
-      ev_table: evTable.length > 1 ? evTable : [["Klaim", "Pilar Bukti", "Status", "Catatan"]],
-      missing,
-      questions,
-      refs: [],
-    };
-  }
-
   const handleExport = async (format: "pdf" | "docx", content: string) => {
     if (!content || exporting) return;
     setMenuOpen(false);
     setExporting(format);
     try {
-      const parsedOut = parseNaLIOutput(content);
-      const score = calculatePalantirScore(parsedOut);
-      const payload = buildExportPayload(parsedOut, score, content);
+      const payload = buildExportPayloadFromMarkdown(content, prompt);
       const endpoint = format === "pdf" ? "/api/export-pdf" : "/api/export-docx";
       const res = await fetch(endpoint, {
         method: "POST",
@@ -239,6 +172,20 @@ export function ResultView({
   const handleCopy = (content: string) => {
     navigator.clipboard.writeText(content).catch(() => {});
     setMenuOpen(false);
+  };
+
+  // Generate (or fetch existing) public read-only share link for this report.
+  // Resolves to the shareable URL; throws with a user-facing message on failure.
+  const shareReport = async (): Promise<string> => {
+    if (!sessionId) throw new Error("Laporan belum tersimpan. Tunggu sebentar lalu coba lagi.");
+    const res = await fetch("/api/share-report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: sessionId }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data?.url) throw new Error(data?.error || "Gagal membuat link berbagi.");
+    return data.url as string;
   };
 
   // ── Follow-up streaming wiring (composer drives conversationMessages) ────
@@ -392,6 +339,8 @@ export function ResultView({
               exporting={exporting}
               onCopy={handleCopy}
               onExport={handleExport}
+              canShare={Boolean(sessionId)}
+              onShare={shareReport}
               onAnswerQuestion={(num, question) =>
                 composerHandleRef.current?.prefill(`Jawaban untuk: "${question}"\n\n`)
               }
