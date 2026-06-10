@@ -127,8 +127,16 @@ Tampil di tabel `/arsip-sumber`.
 
 1. Push ke GitHub.
 2. Import repo di [vercel.com](https://vercel.com) — framework Next.js terdeteksi otomatis.
-3. Tidak ada environment variable yang wajib (static-first, tanpa backend).
+3. Set environment variables (untuk form langganan newsletter):
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   Keduanya publik dan aman dikirim ke browser; tabel `subscribers` dilindungi
+   row-level security (anon hanya bisa _insert_, tidak bisa membaca daftar).
+   Tanpa env ini, situs tetap jalan — form langganan saja yang nonaktif.
 4. Deploy. Sitemap tersedia di `/sitemap.xml`.
+
+> Newsletter pakai Supabase (project `nali-field-journal`). Skema ada di
+> `supabase/migrations/`. Kelola/ekspor pelanggan dari dashboard Supabase.
 
 ---
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { GalleryHall, type GalleryAct } from "@/components/GalleryHall";
 import { ArticleCard } from "@/components/ArticleCard";
 import { ConfidenceBadge } from "@/components/ConfidenceBadge";
+import { NewsletterSignup } from "@/components/NewsletterSignup";
 import { getArticlesByCategory, getLatestArticles } from "@/lib/content";
 import type { Category, Confidence } from "@/lib/types";
 
@@ -123,18 +124,28 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* closing CTA */}
+      {/* newsletter + closing */}
       <section className="bg-ink-black text-white">
-        <div className="container-editorial flex flex-col items-start gap-6 py-16 md:flex-row md:items-center md:justify-between md:py-20">
-          <h2 className="max-w-xl font-display text-3xl leading-tight sm:text-4xl">
-            Indonesia punya terlalu banyak cerita yang belum ditelusuri.
-          </h2>
-          <Link
-            href="/articles"
-            className="shrink-0 rounded-full bg-teal px-7 py-3.5 text-sm font-semibold text-ink-black transition-transform hover:scale-[1.03] hover:bg-teal-dark hover:text-white"
-          >
-            Mulai membaca
-          </Link>
+        <div className="container-editorial grid gap-10 py-16 md:grid-cols-[1.1fr_1fr] md:items-center md:py-20">
+          <div>
+            <p className="label text-teal">Ikuti penelusuran</p>
+            <h2 className="mt-3 max-w-md font-display text-3xl leading-tight sm:text-4xl">
+              Indonesia punya terlalu banyak cerita yang belum ditelusuri.
+            </h2>
+            <p className="mt-4 max-w-md text-white/70">
+              Dapat satu email tiap ada tulisan baru — alam, sejarah, atau
+              investigasi. Pelan, tapi konsisten.
+            </p>
+          </div>
+          <div>
+            <NewsletterSignup />
+            <Link
+              href="/articles"
+              className="mt-6 inline-flex items-center gap-2 text-sm text-white/70 transition-colors hover:text-teal"
+            >
+              Atau mulai membaca sekarang <span aria-hidden>→</span>
+            </Link>
+          </div>
         </div>
       </section>
     </>
