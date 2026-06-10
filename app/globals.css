@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-paper text-ink-charcoal font-sans antialiased;
+    font-feature-settings: "kern", "liga", "calt";
+    /* faint paper grain so backgrounds never read as flat AI white */
+    background-image: radial-gradient(
+        circle at 1px 1px,
+        rgba(10, 10, 10, 0.025) 1px,
+        transparent 0
+      );
+    background-size: 22px 22px;
+  }
+
+  ::selection {
+    background: #2dd4a7;
+    color: #0a0a0a;
+  }
+
+  :focus-visible {
+    outline: 2px solid #1ba882;
+    outline-offset: 2px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+    text-wrap: balance;
+  }
+}
+
+@layer components {
+  /* monospace eyebrow / metadata label */
+  .label {
+    @apply font-mono text-[0.7rem] uppercase tracking-label text-gray;
+  }
+
+  .hairline {
+    @apply border-0 border-t border-rule;
+  }
+
+  /* editorial link styling for inline links */
+  .link-teal {
+    @apply text-ink-black underline decoration-teal decoration-2 underline-offset-[3px] transition-colors hover:text-teal-dark hover:decoration-teal-dark;
+  }
+
+  /* article body */
+  .prose-nali {
+    @apply max-w-prose text-[1.0625rem] leading-[1.75] text-ink-charcoal;
+  }
+  .prose-nali p {
+    @apply my-5;
+  }
+  .prose-nali h2 {
+    @apply mt-12 mb-4 font-display text-2xl text-ink-black;
+  }
+  .prose-nali h3 {
+    @apply mt-9 mb-3 font-display text-xl text-ink-black;
+  }
+  .prose-nali a {
+    @apply link-teal;
+  }
+  .prose-nali strong {
+    @apply font-semibold text-ink-black;
+  }
+  .prose-nali blockquote {
+    @apply my-7 border-l-2 border-teal pl-5 font-display text-lg italic text-ink-charcoal;
+  }
+  .prose-nali ul {
+    @apply my-5 list-disc space-y-2 pl-5 marker:text-teal-dark;
+  }
+  .prose-nali ol {
+    @apply my-5 list-decimal space-y-2 pl-5 marker:text-gray;
+  }
+  .prose-nali figure {
+    @apply my-8;
+  }
+  .prose-nali figcaption {
+    @apply label mt-2 text-center;
+  }
+  .prose-nali table {
+    @apply my-7 w-full border-collapse text-[0.95rem];
+  }
+  .prose-nali th {
+    @apply border-b border-ink-black/30 px-3 py-2 text-left font-mono text-xs uppercase tracking-wider text-gray;
+  }
+  .prose-nali td {
+    @apply border-b border-rule px-3 py-2 align-top;
+  }
+  .prose-nali code {
+    @apply rounded bg-teal-bg px-1.5 py-0.5 font-mono text-[0.85em] text-teal-dark;
+  }
+  .prose-nali hr {
+    @apply my-10 hairline;
+  }
+}
+
+@layer utilities {
+  .container-editorial {
+    @apply mx-auto w-full max-w-editorial px-5 sm:px-8;
+  }
+  .container-read {
+    @apply mx-auto w-full max-w-[760px] px-5 sm:px-8;
+  }
+}

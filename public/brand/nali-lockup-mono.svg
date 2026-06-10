@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 160" fill="none">
+  <!-- Monochrome lockup -->
+  <g transform="translate(8, 8) scale(0.28)">
+    <path d="M 144 400 C 144 400, 128 300, 136 240 C 144 180, 152 160, 156 128 C 160 108, 156 96, 160 88"
+          stroke="#ffffff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M 168 112 C 192 160, 228 240, 264 296 C 300 352, 332 380, 348 400"
+          stroke="#ffffff" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M 352 400 C 352 392, 356 340, 360 280 C 364 220, 368 160, 364 120 C 362 100, 358 92, 356 84"
+          stroke="#ffffff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <circle cx="356" cy="76" r="10" fill="#ffffff"/>
+  </g>
+  <g transform="translate(172, 16)">
+    <path d="M 24 128 L 24 32 L 32 32 L 88 108 L 88 32 L 96 32 L 96 128 L 88 128 L 32 52 L 32 128 Z" fill="#ffffff"/>
+    <path d="M 128 128 L 128 72 C 128 56, 140 46, 160 46 C 180 46, 192 56, 192 72 L 192 128 L 180 128 L 180 118 C 174 126, 164 130, 152 130 C 136 130, 126 120, 126 108 C 126 94, 138 86, 156 86 L 180 86 L 180 72 C 180 62, 172 56, 160 56 C 148 56, 140 62, 140 72 L 140 128 Z M 180 96 L 156 96 C 144 96, 138 102, 138 108 C 138 116, 144 122, 154 122 C 168 122, 180 112, 180 100 Z" fill="#ffffff"/>
+    <path d="M 224 128 L 224 32 L 236 32 L 236 118 L 296 118 L 296 128 Z" fill="#ffffff"/>
+    <path d="M 320 128 L 320 32 L 332 32 L 332 128 Z" fill="#ffffff"/>
+  </g>
+</svg>

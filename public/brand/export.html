@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NaLI Logo Export - Full HD PNG</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #07090e; color: #fff; font-family: Inter, system-ui, sans-serif; padding: 40px; }
+  h1 { font-size: 32px; margin-bottom: 8px; }
+  p.sub { color: rgba(255,255,255,0.5); margin-bottom: 40px; font-size: 15px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 32px; }
+  .card { background: #0f1117; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 32px; }
+  .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .card .meta { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 20px; }
+  .preview { display: flex; align-items: center; justify-content: center; min-height: 200px; margin-bottom: 20px; }
+  .preview img { max-width: 100%; max-height: 280px; }
+  .preview.dark-bg { background: #000; border-radius: 12px; padding: 24px; }
+  .preview.light-bg { background: #ffffff; border-radius: 12px; padding: 24px; }
+  button { background: linear-gradient(135deg, #10b981, #7c3aed); color: #fff; border: none; padding: 10px 24px; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; width: 100%; }
+  button:hover { filter: brightness(1.1); }
+  .note { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 16px; margin-bottom: 32px; font-size: 14px; color: rgba(255,255,255,0.7); }
+</style>
+</head>
+<body>
+  <h1>NaLI Brand Assets, Option C</h1>
+  <p class="sub">Nature Intelligence Mark. Click each button to download Full HD PNG (1920x1920 or 2880x640).</p>
+
+  <div class="note">
+    All SVG files are in <code>/public/brand/</code>. SVGs are resolution-independent (vector). The PNGs below are rasterized at full HD+ resolution for sharing.
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>1. Logo Mark (Gradient)</h3>
+      <div class="meta">nali-mark.svg &middot; 1920x1920 PNG</div>
+      <div class="preview dark-bg">
+        <img src="/brand/nali-mark.svg" alt="NaLI Mark">
+      </div>
+      <button onclick="exportSVG('/brand/nali-mark.svg', 'nali-mark-1920.png', 1920, 1920)">Download PNG 1920x1920</button>
+    </div>
+
+    <div class="card">
+      <h3>2. Wordmark (Gradient)</h3>
+      <div class="meta">nali-wordmark.svg &middot; 2560x800 PNG</div>
+      <div class="preview dark-bg">
+        <img src="/brand/nali-wordmark.svg" alt="NaLI Wordmark">
+      </div>
+      <button onclick="exportSVG('/brand/nali-wordmark.svg', 'nali-wordmark-2560.png', 2560, 800)">Download PNG 2560x800</button>
+    </div>
+
+    <div class="card">
+      <h3>3. Lockup (Mark + Wordmark)</h3>
+      <div class="meta">nali-lockup.svg &middot; 2880x640 PNG</div>
+      <div class="preview dark-bg">
+        <img src="/brand/nali-lockup.svg" alt="NaLI Lockup">
+      </div>
+      <button onclick="exportSVG('/brand/nali-lockup.svg', 'nali-lockup-2880.png', 2880, 640)">Download PNG 2880x640</button>
+    </div>
+
+    <div class="card">
+      <h3>4. Dark App Icon Tile</h3>
+      <div class="meta">nali-app-icon.svg &middot; 1024x1024 PNG</div>
+      <div class="preview dark-bg">
+        <img src="/brand/nali-app-icon.svg" alt="NaLI App Icon">
+      </div>
+      <button onclick="exportSVG('/brand/nali-app-icon.svg', 'nali-app-icon-1024.png', 1024, 1024)">Download PNG 1024x1024</button>
+    </div>
+
+    <div class="card">
+      <h3>5. Monochrome Mark (White)</h3>
+      <div class="meta">nali-mark-mono.svg &middot; 1920x1920 PNG (transparent bg)</div>
+      <div class="preview dark-bg">
+        <img src="/brand/nali-mark-mono.svg" alt="NaLI Mono Mark">
+      </div>
+      <button onclick="exportSVG('/brand/nali-mark-mono.svg', 'nali-mark-mono-1920.png', 1920, 1920)">Download PNG 1920x1920</button>
+    </div>
+
+    <div class="card">
+      <h3>6. Monochrome Lockup (White)</h3>
+      <div class="meta">nali-lockup-mono.svg &middot; 2880x640 PNG (transparent bg)</div>
+      <div class="preview dark-bg">
+        <img src="/brand/nali-lockup-mono.svg" alt="NaLI Mono Lockup">
+      </div>
+      <button onclick="exportSVG('/brand/nali-lockup-mono.svg', 'nali-lockup-mono-2880.png', 2880, 640)">Download PNG 2880x640</button>
+    </div>
+
+    <div class="card">
+      <h3>7. Mark on Light Background</h3>
+      <div class="meta">Same mark, shown on white for contrast check</div>
+      <div class="preview light-bg">
+        <img src="/brand/nali-mark.svg" alt="NaLI Mark on Light">
+      </div>
+      <button onclick="exportSVGWithBg('/brand/nali-mark.svg', 'nali-mark-light-1920.png', 1920, 1920, '#ffffff')">Download PNG (White BG)</button>
+    </div>
+
+    <div class="card">
+      <h3>8. App Icon Sizes (48, 96, 192, 512)</h3>
+      <div class="meta">Multi-size export for favicons and manifests</div>
+      <div class="preview dark-bg" style="gap:16px;">
+        <img src="/brand/nali-app-icon.svg" alt="48" style="width:48px;height:48px;">
+        <img src="/brand/nali-app-icon.svg" alt="96" style="width:96px;height:96px;">
+        <img src="/brand/nali-app-icon.svg" alt="192" style="width:192px;height:192px;">
+      </div>
+      <button onclick="exportMultiSize()">Download All Sizes</button>
+    </div>
+  </div>
+
+<script>
+async function exportSVG(svgUrl, filename, w, h) {
+  const resp = await fetch(svgUrl);
+  const svgText = await resp.text();
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  const img = new Image();
+  const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  img.onload = () => {
+    ctx.drawImage(img, 0, 0, w, h);
+    URL.revokeObjectURL(url);
+    const a = document.createElement('a');
+    a.download = filename;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  };
+  img.src = url;
+}
+
+async function exportSVGWithBg(svgUrl, filename, w, h, bg) {
+  const resp = await fetch(svgUrl);
+  const svgText = await resp.text();
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, w, h);
+  const img = new Image();
+  const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  img.onload = () => {
+    ctx.drawImage(img, 0, 0, w, h);
+    URL.revokeObjectURL(url);
+    const a = document.createElement('a');
+    a.download = filename;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  };
+  img.src = url;
+}
+
+async function exportMultiSize() {
+  const sizes = [48, 96, 192, 512];
+  for (const s of sizes) {
+    await exportSVG('/brand/nali-app-icon.svg', `nali-icon-${s}.png`, s, s);
+    await new Promise(r => setTimeout(r, 300));
+  }
+}
+</script>
+</body>
+</html>
