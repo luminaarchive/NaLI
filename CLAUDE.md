@@ -290,6 +290,14 @@ Keep a running log at the bottom of this file after each session:
 - **Placeholders to replace before live:** `SITE.url` in `lib/site.ts` (`https://nali.native.id`), contact email in `app/kontak/page.tsx` (`halo@nali.native.id`), and the seed content/sources (verify or swap).
 - **Next task:** Founder drops `public/videos/hero.mp4`, sets the real domain/email, then begins daily publishing. Feature freeze: 14 days.
 
+### 11 Juni 2026 — Gallery landing, Supabase newsletter, Vercel deploy (founder-directed, full-access)
+
+- **Landing rebuilt** as a baroque "archive hall" scrollytelling scene (original SVG, not a copy of the reference image the founder shared). `components/GalleryHall.tsx`: marble arcade, gold archivolts/keystones, scallop niches, sea horizon through arches, red perspective floor, NaLI-engraved pedestals. Scroll drives 3 acts (Alam/Sejarah/Investigasi) that crossfade light + sea + a featured article on a gold-trim placard. Replaces the old `Hero.tsx` (deleted). Verified desktop + mobile.
+- **Newsletter** (`components/NewsletterSignup.tsx` + `lib/supabaseClient.ts`): new Supabase project `nali-field-journal` (`xxwzufdezpyabqkwrcbz`), `subscribers` table, RLS insert-only (list private). Schema at `supabase/migrations/0001_create_subscribers.sql`. Verified end-to-end incl. real browser submit.
+- **Deploy:** Vercel project `nali-by-native`, linked to GitHub, env vars set, `vercel.json` pins `framework: nextjs`. Production verified rendering. **Bumped `next-mdx-remote` 5→6** (Vercel security gate). See [[live-deployment]] in memory.
+- **Open item:** Vercel Deployment Protection (Vercel Authentication) is ON → site 401s for the public. Founder is disabling it in the dashboard (Settings → Deployment Protection). Not changeable via code/CLI.
+- **Note:** Founder explicitly overrode the "no database" locked decision for the newsletter ("sambungkan ke supabase, buatlah project baru"). User instruction > CLAUDE.md.
+
 ---
 
-*Last updated: 11 Juni 2026 — v0.1 fresh build completed*
+*Last updated: 11 Juni 2026 — gallery landing + newsletter live on Vercel (pending public toggle)*
