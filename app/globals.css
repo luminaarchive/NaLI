@@ -116,3 +116,80 @@
     @apply mx-auto w-full max-w-[760px] px-5 sm:px-8;
   }
 }
+
+/* ===================================================================== */
+/* Gallery Hall — scrollytelling baroque archive (Alam/Sejarah/Investigasi) */
+/* ===================================================================== */
+
+.gh-engrave {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+/* Layers that cross-fade per act. Default hidden, the matching act shows. */
+.gallery-stage .gh-sky,
+.gallery-stage .gh-sun,
+.gallery-stage .gh-stars,
+.gallery-stage .gh-tableau {
+  opacity: 0;
+  transition: opacity 1100ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.gallery-stage[data-act="alam"] .gh-sky.alam,
+.gallery-stage[data-act="alam"] .gh-sun.alam,
+.gallery-stage[data-act="sejarah"] .gh-sky.sejarah,
+.gallery-stage[data-act="sejarah"] .gh-sun.sejarah,
+.gallery-stage[data-act="investigasi"] .gh-sky.investigasi,
+.gallery-stage[data-act="investigasi"] .gh-sun.investigasi,
+.gallery-stage[data-act="investigasi"] .gh-stars {
+  opacity: 1;
+}
+
+/* Tableau (HTML content in the central arch) */
+.gallery-stage .gh-tableau {
+  pointer-events: none;
+}
+.gallery-stage[data-act="alam"] .gh-tableau.alam,
+.gallery-stage[data-act="sejarah"] .gh-tableau.sejarah,
+.gallery-stage[data-act="investigasi"] .gh-tableau.investigasi {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Mood grade — different strengths per act */
+.gallery-stage .gh-grade {
+  opacity: 0;
+  transition: opacity 1100ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.gallery-stage[data-act="alam"] .gh-grade.alam {
+  opacity: 0.1;
+}
+.gallery-stage[data-act="sejarah"] .gh-grade.sejarah {
+  opacity: 0.36;
+}
+.gallery-stage[data-act="investigasi"] .gh-grade.investigasi {
+  opacity: 0.55;
+}
+
+/* Parallax: sky drifts slower, foreground floor a touch faster */
+.gh-parallax-sky {
+  transition: transform 250ms linear;
+}
+
+/* Act navigation dots */
+.gh-nav-dot {
+  transition:
+    background-color 400ms ease,
+    transform 400ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-stage .gh-sky,
+  .gallery-stage .gh-sun,
+  .gallery-stage .gh-stars,
+  .gallery-stage .gh-tableau,
+  .gallery-stage .gh-grade {
+    transition: none;
+  }
+  .gh-parallax-sky {
+    transform: none !important;
+  }
+}

@@ -1,19 +1,11 @@
 import Link from "next/link";
-import { Hero } from "@/components/Hero";
-import { PillarCard } from "@/components/PillarCard";
+import { GalleryHall, type GalleryAct } from "@/components/GalleryHall";
 import { ArticleCard } from "@/components/ArticleCard";
 import { ConfidenceBadge } from "@/components/ConfidenceBadge";
-import { getLatestArticles } from "@/lib/content";
-import { PILLARS } from "@/lib/site";
-import type { Confidence } from "@/lib/types";
+import { getArticlesByCategory, getLatestArticles } from "@/lib/content";
+import type { Category, Confidence } from "@/lib/types";
 
-const CONFIDENCE_ORDER: Confidence[] = [
-  "high",
-  "medium",
-  "low",
-  "needs-verification",
-];
-
+const CONFIDENCE_ORDER: Confidence[] = ["high", "medium", "low", "needs-verification"];
 const CONFIDENCE_NOTE: Record<Confidence, string> = {
   high: "Sumber kuat dan konsisten.",
   medium: "Didukung, tapi butuh konteks.",
@@ -21,15 +13,54 @@ const CONFIDENCE_NOTE: Record<Confidence, string> = {
   "needs-verification": "Belum bisa dipakai sebagai klaim.",
 };
 
+function featured(category: Category) {
+  const a = getArticlesByCategory(category)[0];
+  return a ? { title: a.title, slug: a.slug } : null;
+}
+
+const ACTS: GalleryAct[] = [
+  {
+    key: "alam",
+    index: "01",
+    kicker: "Nature",
+    title: "Alam",
+    desc: "Ekologi, satwa, dan fenomena lanskap Indonesia — diceritakan dari lapangan, dirujuk ke jurnal.",
+    href: "/alam",
+    cta: "Masuk ke Alam",
+    featured: featured("alam"),
+  },
+  {
+    key: "sejarah",
+    index: "02",
+    kicker: "Archive · Lore",
+    title: "Sejarah",
+    desc: "Jejak kota tua, arsip kolonial, dan ingatan yang nyaris hilang — dibaca ulang dengan hati-hati.",
+    href: "/sejarah",
+    cta: "Masuk ke Sejarah",
+    featured: featured("sejarah"),
+  },
+  {
+    key: "investigasi",
+    index: "03",
+    kicker: "Investigation",
+    title: "Investigasi",
+    desc: "Penelusuran berbasis sumber publik. Tanpa tuduhan tanpa bukti, tanpa kepastian palsu.",
+    href: "/investigasi",
+    cta: "Masuk ke Investigasi",
+    featured: featured("investigasi"),
+  },
+];
+
 export default function HomePage() {
   const latest = getLatestArticles(6);
 
   return (
     <>
-      <Hero />
+      {/* The gallery: scroll through Alam → Sejarah → Investigasi */}
+      <GalleryHall acts={ACTS} />
 
-      {/* editorial intro + the signature promise */}
-      <section className="border-b border-rule">
+      {/* the signature promise */}
+      <section className="border-b border-rule bg-paper">
         <div className="container-editorial grid gap-10 py-16 md:grid-cols-[0.9fr_1.1fr] md:py-24">
           <div>
             <p className="label">Cara kerja kami</p>
@@ -60,25 +91,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* pillars */}
-      <section className="container-editorial py-16 md:py-24">
-        <div className="flex items-end justify-between">
-          <div>
-            <p className="label">Tiga pilar</p>
-            <h2 className="mt-3 font-display text-3xl text-ink-black sm:text-4xl">
-              Tempat kami menggali
-            </h2>
-          </div>
-        </div>
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {PILLARS.map((pillar) => (
-            <PillarCard key={pillar.key} pillar={pillar} />
-          ))}
-        </div>
-      </section>
-
       {/* latest */}
-      <section className="border-t border-rule bg-white">
+      <section className="bg-white">
         <div className="container-editorial py-16 md:py-24">
           <div className="flex items-end justify-between gap-6">
             <div>
