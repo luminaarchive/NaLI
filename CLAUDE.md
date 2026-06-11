@@ -337,6 +337,16 @@ Keep a running log at the bottom of this file after each session:
   - Hero arcade berbingkai diganti (arcade.png kini tak terpakai di landing, file tetap di repo); terminal-log card di-reaccent teal agar match.
 - Verified: build/lint/typecheck clean, hero+overlay render benar desktop & mobile, live production (canvas + semua section PASS).
 
+### 11 Juni 2026 (lanjutan 5) — Archive-ink: design system satu warna seluruh situs (founder-directed)
+
+- Founder minta seluruh situs mengikuti bahasa visual situs riset bergaya arsip monokrom (referensi dipelajari via browser: beranda, releases, blog) → **design system "archive-ink"** versi NaLI:
+  - **Palet**: kertas putih `#FFFFFF` + satu tinta teal `ink #0E8268` / `ink-deep #085E4B` / `ink-wash #E9F6F1` (token Tailwind baru; `paper`→putih, `rule`→`#9ECDBF`, `gray`→`#33373D`). Warna ink diturunkan dari teal shader supaya hero & halaman menyatu.
+  - **Tipografi**: body global → IBM Plex Mono (gaya mesin-tik); judul/nav → Fraunces caps (gaya NaLI sendiri, bukan font pixel referensi); prosa artikel tetap sans agar nyaman dibaca.
+  - **Bahasa visual**: garis putus-putus (`.hairline` kini dashed) sebagai pemisah utama; kartu kotak ber-border dashed tanpa shadow/rounded; tabel arsip ber-border penuh + header `ink-wash` (di `/arsip-sumber`); metadata indeks arsip ("No. 001", "LEMPENG 001 — GELOMBANG"); `.duotone-ink` filter untuk foto; tombol kotak mono uppercase.
+  - **Nav** restyle: serif caps di tengah, putih, dashed rule di bawah (pill gelap dihapus). **Footer** flat putih dashed. **WaveHero shader TIDAK disentuh** — hanya dibingkai dashed sebagai "lempeng arsip" dengan caption mono.
+  - 19 file diubah (semua page + komponen); `PillarCard.tsx` dihapus (tak terpakai). Badge confidence tetap 4 warna semantik (bentuk kotak dashed).
+- **Verified halaman demi halaman** (perintah founder): home (3 bagian), articles, artikel detail, arsip-sumber, catatan-lapangan, manifesto, tentang, kontak, alam, mobile — semua blend; 13 route 200 di production.
+
 ---
 
 *Last updated: 11 Juni 2026 — gallery v3 (real arcade + sea footage) live di nalibynative.vercel.app*
