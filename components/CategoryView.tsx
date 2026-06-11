@@ -26,15 +26,15 @@ export function CategoryView({
       />
       <div className="container-editorial py-12">
         {articles.length === 0 ? (
-          <p className="text-gray">
+          <p className="font-mono text-[0.85rem] text-gray">
             Belum ada artikel di kategori ini. Konten pertama sedang disiapkan.
           </p>
         ) : (
           <>
-            <p className="font-mono text-xs text-gray-light">
+            <p className="font-mono text-xs uppercase tracking-wider text-ink/70">
               {articles.length} artikel
             </p>
-            <div className="mt-6 grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {articles.map((article, i) => (
                 <ArticleCard key={article.slug} article={article} index={i} />
               ))}

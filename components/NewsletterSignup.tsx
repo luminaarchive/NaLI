@@ -71,18 +71,18 @@ export function NewsletterSignup({
             if (status !== "idle" && status !== "loading") setStatus("idle");
           }}
           placeholder="nama@email.com"
-          className={`h-12 w-full rounded-full border px-5 text-base focus:outline-none disabled:opacity-60 sm:max-w-xs ${
+          className={`h-12 w-full border px-5 text-base focus:outline-none disabled:opacity-60 sm:max-w-xs ${
             light
-              ? "border-[#d9d5cb] bg-white text-ink-black placeholder:text-gray-light focus:border-ink-black"
+              ? "border-dashed border-ink/60 bg-paper font-mono text-ink-charcoal placeholder:text-gray-light focus:border-ink"
               : "border-white/20 bg-white/5 text-white placeholder:text-white/40 focus:border-teal"
           }`}
         />
         <button
           type="submit"
           disabled={status === "loading" || done}
-          className={`h-12 shrink-0 rounded-full px-7 text-sm font-semibold transition-transform hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-70 ${
+          className={`h-12 shrink-0 px-7 font-mono text-[0.8rem] font-semibold uppercase tracking-wider transition-transform hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-70 ${
             light
-              ? "bg-[#1c1c1a] text-white hover:bg-teal-dark"
+              ? "bg-ink text-white hover:bg-ink-deep"
               : "bg-teal text-ink-black hover:bg-teal-dark hover:text-white"
           }`}
         >
@@ -93,7 +93,7 @@ export function NewsletterSignup({
       <p
         className={`mt-3 min-h-[1.25rem] text-sm ${
           status === "ok" || status === "dupe"
-            ? "text-teal-dark"
+            ? "text-ink-deep"
             : status === "invalid" || status === "error"
               ? "text-confidence-medium"
               : light

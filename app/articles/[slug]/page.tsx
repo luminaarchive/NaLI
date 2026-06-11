@@ -48,11 +48,11 @@ export default function ArticleDetailPage({ params }: { params: Params }) {
   return (
     <article>
       {/* header */}
-      <header className="border-b border-rule">
+      <header className="border-b border-dashed border-ink/40">
         <div className="container-read py-12 sm:py-16">
           <Link
             href="/articles"
-            className="label text-gray transition-colors hover:text-teal-dark"
+            className="label text-gray transition-colors hover:text-ink-deep"
           >
             ← Semua artikel
           </Link>
@@ -91,11 +91,11 @@ export default function ArticleDetailPage({ params }: { params: Params }) {
         <SourceList sources={article.sources} />
 
         {article.tags.length > 0 && (
-          <div className="mt-12 flex flex-wrap gap-2 border-t border-rule pt-6">
+          <div className="mt-12 flex flex-wrap gap-2 border-t border-dashed border-ink/40 pt-6">
             {article.tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-teal-bg px-3 py-1 font-mono text-xs text-teal-dark"
+                className="border border-dashed border-ink/50 bg-paper px-3 py-1 font-mono text-xs text-ink"
               >
                 #{tag}
               </span>
@@ -106,13 +106,13 @@ export default function ArticleDetailPage({ params }: { params: Params }) {
 
       {/* related */}
       {related.length > 0 && (
-        <section className="border-t border-rule bg-white">
+        <section className="border-t border-dashed border-ink/40 bg-paper">
           <div className="container-editorial py-14">
             <p className="label">Baca juga</p>
-            <h2 className="mt-3 font-display text-2xl text-ink-black">
+            <h2 className="mt-3 font-display text-2xl font-bold uppercase text-ink">
               Dari kategori {CATEGORY_LABEL[article.category]}
             </h2>
-            <div className="mt-8 grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((r, i) => (
                 <ArticleCard key={r.slug} article={r} index={i} />
               ))}

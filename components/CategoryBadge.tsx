@@ -17,7 +17,9 @@ export function CategoryBadge({
   asLink?: boolean;
 }) {
   const inner = (
-    <span className="label text-teal-dark">{CATEGORY_LABEL[category]}</span>
+    <span className="label text-ink underline decoration-dashed decoration-1 underline-offset-4">
+      {CATEGORY_LABEL[category]}
+    </span>
   );
   if (!asLink) return inner;
   return (

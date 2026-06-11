@@ -32,9 +32,9 @@ export default function CatatanLapanganPage() {
         ) : (
           <div className="space-y-16">
             {notes.map((note) => (
-              <article key={note.slug} className="border-t-2 border-ink-black pt-6">
+              <article key={note.slug} className="border-t border-dashed border-ink/70 pt-6">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <span className="label text-teal-dark">{note.location_label}</span>
+                  <span className="label text-ink">{note.location_label}</span>
                   <span className="text-gray-light" aria-hidden>
                     ·
                   </span>
@@ -42,7 +42,7 @@ export default function CatatanLapanganPage() {
                     {formatDate(note.date)}
                   </time>
                 </div>
-                <h2 className="mt-3 font-display text-2xl text-ink-black">
+                <h2 className="mt-3 font-display text-2xl font-bold uppercase text-ink">
                   {note.title}
                 </h2>
                 {note.summary && (
@@ -58,7 +58,7 @@ export default function CatatanLapanganPage() {
                     {note.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-full bg-teal-bg px-3 py-1 font-mono text-xs text-teal-dark"
+                        className="border border-dashed border-ink/50 px-3 py-1 font-mono text-xs text-ink"
                       >
                         #{tag}
                       </span>

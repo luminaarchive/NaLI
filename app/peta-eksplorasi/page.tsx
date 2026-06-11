@@ -45,9 +45,9 @@ export default function PetaEksplorasiPage() {
               {locations.map((loc) => (
                 <li
                   key={loc}
-                  className="rounded-full border border-rule bg-white px-4 py-2 text-sm text-ink-charcoal"
+                  className="border border-dashed border-ink/60 bg-paper px-4 py-2 font-mono text-[0.8rem] text-ink-charcoal"
                 >
-                  <span className="text-teal-dark" aria-hidden>
+                  <span className="text-ink" aria-hidden>
                     ◇{" "}
                   </span>
                   {loc}
@@ -62,8 +62,8 @@ export default function PetaEksplorasiPage() {
           {PILLAR_ORDER.map((cat) => {
             const inCat = articles.filter((a) => a.category === cat);
             return (
-              <div key={cat} className="border-t-2 border-ink-black pt-5">
-                <p className="label text-teal-dark">{CATEGORY_LABEL[cat]}</p>
+              <div key={cat} className="border-t border-dashed border-ink/60 pt-5">
+                <p className="label text-ink">{CATEGORY_LABEL[cat]}</p>
                 {inCat.length === 0 ? (
                   <p className="mt-4 text-sm text-gray-light">
                     Belum ada topik.
@@ -74,7 +74,7 @@ export default function PetaEksplorasiPage() {
                       <li key={a.slug}>
                         <Link
                           href={`/articles/${a.slug}`}
-                          className="text-sm leading-snug text-ink-charcoal transition-colors hover:text-teal-dark"
+                          className="font-mono text-[0.8rem] leading-snug text-ink transition-colors hover:text-ink-deep"
                         >
                           {a.title}
                         </Link>

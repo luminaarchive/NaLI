@@ -1,26 +1,26 @@
 import type { Confidence } from "@/lib/types";
 import { CONFIDENCE_LABEL } from "@/lib/types";
 
-const STYLES: Record<Confidence, { dot: string; text: string; ring: string }> = {
+const STYLES: Record<Confidence, { dot: string; text: string; border: string }> = {
   high: {
     dot: "bg-confidence-high",
-    text: "text-teal-dark",
-    ring: "ring-confidence-high/40",
+    text: "text-ink-deep",
+    border: "border-ink/60",
   },
   medium: {
     dot: "bg-confidence-medium",
-    text: "text-[#B45309]",
-    ring: "ring-confidence-medium/40",
+    text: "text-[#8a5a08]",
+    border: "border-[#c98f1f]/60",
   },
   low: {
     dot: "bg-confidence-low",
-    text: "text-[#C2410C]",
-    ring: "ring-confidence-low/40",
+    text: "text-[#9c3c08]",
+    border: "border-[#d96a23]/60",
   },
   "needs-verification": {
     dot: "bg-confidence-unverified",
-    text: "text-[#DC2626]",
-    ring: "ring-confidence-unverified/40",
+    text: "text-[#a31515]",
+    border: "border-[#d33]/60",
   },
 };
 
@@ -32,13 +32,13 @@ export function ConfidenceBadge({
   size?: "sm" | "md";
 }) {
   const s = STYLES[confidence];
-  const pad = size === "sm" ? "px-2 py-0.5 text-[0.62rem]" : "px-2.5 py-1 text-[0.68rem]";
+  const pad = size === "sm" ? "px-2 py-0.5 text-[0.6rem]" : "px-2.5 py-1 text-[0.66rem]";
   return (
     <span
       title={`Tingkat keyakinan: ${CONFIDENCE_LABEL[confidence]}`}
-      className={`inline-flex items-center gap-1.5 rounded-full bg-white ${pad} font-mono uppercase tracking-label ring-1 ${s.ring} ${s.text}`}
+      className={`inline-flex items-center gap-1.5 border border-dashed bg-paper ${pad} font-mono uppercase tracking-label ${s.border} ${s.text}`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} aria-hidden />
+      <span className={`h-1.5 w-1.5 ${s.dot}`} aria-hidden />
       {CONFIDENCE_LABEL[confidence]}
     </span>
   );

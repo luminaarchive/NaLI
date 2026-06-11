@@ -12,15 +12,8 @@
   }
 
   body {
-    @apply bg-paper text-ink-charcoal font-sans antialiased;
+    @apply bg-paper font-mono text-ink-charcoal antialiased;
     font-feature-settings: "kern", "liga", "calt";
-    /* faint paper grain so backgrounds never read as flat AI white */
-    background-image: radial-gradient(
-        circle at 1px 1px,
-        rgba(10, 10, 10, 0.025) 1px,
-        transparent 0
-      );
-    background-size: 22px 22px;
   }
 
   ::selection {
@@ -29,7 +22,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid #1ba882;
+    outline: 2px solid #0e8268;
     outline-offset: 2px;
   }
 
@@ -43,23 +36,32 @@
 }
 
 @layer components {
-  /* monospace eyebrow / metadata label */
+  /* monospace eyebrow / metadata label — archive ink */
   .label {
-    @apply font-mono text-[0.7rem] uppercase tracking-label text-gray;
+    @apply font-mono text-[0.7rem] uppercase tracking-label text-ink;
   }
 
+  /* dashed archive rule (the signature separator) */
   .hairline {
-    @apply border-0 border-t border-rule;
+    @apply border-0 border-t border-dashed border-ink/60;
+  }
+  .rule-dash {
+    @apply border-dashed border-ink/60;
+  }
+
+  /* teal duotone treatment for photographs */
+  .duotone-ink {
+    filter: grayscale(1) sepia(0.35) hue-rotate(110deg) saturate(2.1) brightness(1.04) contrast(0.96);
   }
 
   /* editorial link styling for inline links */
   .link-teal {
-    @apply text-ink-black underline decoration-teal decoration-2 underline-offset-[3px] transition-colors hover:text-teal-dark hover:decoration-teal-dark;
+    @apply text-ink underline decoration-ink/70 decoration-1 underline-offset-[3px] transition-colors hover:text-ink-deep hover:decoration-ink-deep;
   }
 
-  /* article body */
+  /* article body — readable serif/sans prose on white, ink accents */
   .prose-nali {
-    @apply max-w-prose text-[1.0625rem] leading-[1.75] text-ink-charcoal;
+    @apply max-w-prose font-sans text-[1.0625rem] leading-[1.75] text-ink-charcoal;
   }
   .prose-nali p {
     @apply my-5;
@@ -77,10 +79,10 @@
     @apply font-semibold text-ink-black;
   }
   .prose-nali blockquote {
-    @apply my-7 border-l-2 border-teal pl-5 font-display text-lg italic text-ink-charcoal;
+    @apply my-7 border-l-2 border-dashed border-ink pl-5 font-display text-lg italic text-ink-charcoal;
   }
   .prose-nali ul {
-    @apply my-5 list-disc space-y-2 pl-5 marker:text-teal-dark;
+    @apply my-5 list-disc space-y-2 pl-5 marker:text-ink;
   }
   .prose-nali ol {
     @apply my-5 list-decimal space-y-2 pl-5 marker:text-gray;
@@ -92,16 +94,16 @@
     @apply label mt-2 text-center;
   }
   .prose-nali table {
-    @apply my-7 w-full border-collapse text-[0.95rem];
+    @apply my-7 w-full border-collapse font-mono text-[0.85rem];
   }
   .prose-nali th {
-    @apply border-b border-ink-black/30 px-3 py-2 text-left font-mono text-xs uppercase tracking-wider text-gray;
+    @apply border border-ink/50 bg-ink-wash px-3 py-2 text-left font-mono text-xs uppercase tracking-wider text-ink-deep;
   }
   .prose-nali td {
-    @apply border-b border-rule px-3 py-2 align-top;
+    @apply border border-ink/30 px-3 py-2 align-top;
   }
   .prose-nali code {
-    @apply rounded bg-teal-bg px-1.5 py-0.5 font-mono text-[0.85em] text-teal-dark;
+    @apply bg-ink-wash px-1.5 py-0.5 font-mono text-[0.85em] text-ink-deep;
   }
   .prose-nali hr {
     @apply my-10 hairline;
@@ -114,17 +116,6 @@
   }
   .container-read {
     @apply mx-auto w-full max-w-[760px] px-5 sm:px-8;
-  }
-
-  /* diagonal hatch texture (landing shell gutters + divider bands) */
-  .hatch {
-    background-image: repeating-linear-gradient(
-      45deg,
-      transparent 0,
-      transparent 9px,
-      rgba(28, 28, 26, 0.05) 9px,
-      rgba(28, 28, 26, 0.05) 10px
-    );
   }
 }
 
@@ -141,98 +132,4 @@
 }
 .lp-faq details[open] .lp-chevron {
   transform: rotate(180deg);
-}
-
-/* ===================================================================== */
-/* Gallery Hall — scrollytelling baroque archive (Alam/Sejarah/Investigasi) */
-/* ===================================================================== */
-
-.gh-engrave {
-  font-family: var(--font-display), Georgia, serif;
-}
-
-/* Layers that cross-fade per act. Default hidden, the matching act shows. */
-.gallery-stage .gh-sky,
-.gallery-stage .gh-sun,
-.gallery-stage .gh-stars,
-.gallery-stage .gh-tableau {
-  opacity: 0;
-  transition: opacity 1100ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-.gallery-stage[data-act="alam"] .gh-sky.alam,
-.gallery-stage[data-act="alam"] .gh-sun.alam,
-.gallery-stage[data-act="sejarah"] .gh-sky.sejarah,
-.gallery-stage[data-act="sejarah"] .gh-sun.sejarah,
-.gallery-stage[data-act="investigasi"] .gh-sky.investigasi,
-.gallery-stage[data-act="investigasi"] .gh-sun.investigasi,
-.gallery-stage[data-act="investigasi"] .gh-stars {
-  opacity: 1;
-}
-
-/* Tableau (HTML content in the central arch) */
-.gallery-stage .gh-tableau {
-  pointer-events: none;
-}
-.gallery-stage[data-act="alam"] .gh-tableau.alam,
-.gallery-stage[data-act="sejarah"] .gh-tableau.sejarah,
-.gallery-stage[data-act="investigasi"] .gh-tableau.investigasi {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* Mood grade — different strengths per act */
-.gallery-stage .gh-grade {
-  opacity: 0;
-  transition: opacity 1100ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-.gallery-stage[data-act="alam"] .gh-grade.alam {
-  opacity: 0.1;
-}
-.gallery-stage[data-act="sejarah"] .gh-grade.sejarah {
-  opacity: 0.36;
-}
-.gallery-stage[data-act="investigasi"] .gh-grade.investigasi {
-  opacity: 0.55;
-}
-
-/* Parallax: sky drifts slower, foreground floor a touch faster */
-.gh-parallax-sky {
-  transition: transform 250ms linear;
-}
-
-/* Ken-Burns breath on the arcade — museum-slow */
-@keyframes gh-kenburns {
-  0% {
-    transform: scale(1.015) translateY(0);
-  }
-  100% {
-    transform: scale(1.06) translateY(-8px);
-  }
-}
-.gh-arcade {
-  animation: gh-kenburns 28s ease-in-out infinite alternate;
-  will-change: transform;
-}
-
-/* Act navigation dots */
-.gh-nav-dot {
-  transition:
-    background-color 400ms ease,
-    transform 400ms ease;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .gallery-stage .gh-sky,
-  .gallery-stage .gh-sun,
-  .gallery-stage .gh-stars,
-  .gallery-stage .gh-tableau,
-  .gallery-stage .gh-grade {
-    transition: none;
-  }
-  .gh-parallax-sky {
-    transform: none !important;
-  }
-  .gh-arcade {
-    animation: none;
-  }
 }

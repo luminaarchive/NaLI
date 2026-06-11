@@ -15,16 +15,20 @@ const config: Config = {
           dark: "#1BA882",
           bg: "#EAF8F3",
         },
+        // archive-ink system (Nous-style monochrome ink, NaLI teal)
         ink: {
+          DEFAULT: "#0E8268",
+          deep: "#085E4B",
+          wash: "#E9F6F1",
           black: "#0A0A0A",
           charcoal: "#1C1C1C",
         },
         gray: {
-          DEFAULT: "#6B6B6B",
-          light: "#B0B0B0",
+          DEFAULT: "#33373D",
+          light: "#8E938F",
         },
-        rule: "#E0E0E0",
-        paper: "#F7F9F8",
+        rule: "#9ECDBF",
+        paper: "#FFFFFF",
         // confidence label palette
         confidence: {
           high: "#2DD4A7",

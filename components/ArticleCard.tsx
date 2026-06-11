@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ArticleMeta } from "@/lib/types";
+import { CATEGORY_LABEL } from "@/lib/types";
 import { formatDate } from "@/lib/format";
-import { CategoryBadge } from "./CategoryBadge";
 import { ConfidenceBadge } from "./ConfidenceBadge";
 
 export function ArticleCard({
@@ -12,33 +12,32 @@ export function ArticleCard({
   index?: number;
 }) {
   return (
-    <article className="group relative flex flex-col border-t border-rule pt-5">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          {typeof index === "number" && (
-            <span className="font-mono text-xs text-gray-light">
-              {String(index + 1).padStart(2, "0")}
-            </span>
-          )}
-          <CategoryBadge category={article.category} />
-        </div>
-        <ConfidenceBadge confidence={article.confidence} size="sm" />
+    <article className="group relative flex flex-col border border-dashed border-ink/70 bg-paper p-6 transition-colors hover:bg-ink-wash">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <span className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-ink/80">
+          {typeof index === "number" ? `No. ${String(index + 1).padStart(3, "0")} · ` : ""}
+          {CATEGORY_LABEL[article.category]}
+        </span>
+        <span className="shrink-0 font-mono text-[0.68rem] text-ink/60">
+          {article.readingMinutes} mnt
+        </span>
       </div>
 
-      <h3 className="font-display text-xl leading-snug text-ink-black transition-colors group-hover:text-teal-dark sm:text-2xl">
+      <h3 className="font-display text-xl font-bold uppercase leading-snug tracking-[0.01em] text-ink group-hover:underline group-hover:underline-offset-4">
         <Link href={`/articles/${article.slug}`} className="after:absolute after:inset-0">
           {article.title}
         </Link>
       </h3>
 
-      <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-gray">
+      <p className="mt-3 line-clamp-3 flex-1 font-mono text-[0.78rem] leading-relaxed text-gray">
         {article.summary || article.subtitle}
       </p>
 
-      <div className="mt-4 flex items-center gap-3 text-xs text-gray-light">
-        <time dateTime={article.date}>{formatDate(article.date)}</time>
-        <span aria-hidden>·</span>
-        <span>{article.readingMinutes} mnt baca</span>
+      <div className="mt-4 flex items-center justify-between gap-3 border-t border-dashed border-ink/40 pt-3">
+        <time dateTime={article.date} className="font-mono text-[0.68rem] uppercase tracking-wider text-ink/70">
+          {formatDate(article.date)}
+        </time>
+        <ConfidenceBadge confidence={article.confidence} size="sm" />
       </div>
     </article>
   );

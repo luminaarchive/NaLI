@@ -59,13 +59,13 @@ export default function TentangPage() {
         <div className="mt-10 flex flex-wrap gap-3">
           <Link
             href="/manifesto"
-            className="rounded-full bg-ink-black px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-teal-dark"
+            className="border border-ink bg-ink px-6 py-3 font-mono text-[0.8rem] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-ink-deep"
           >
             Baca manifesto
           </Link>
           <Link
             href="/kontak"
-            className="rounded-full border border-rule px-6 py-3 text-sm text-ink-black transition-colors hover:border-teal-dark hover:text-teal-dark"
+            className="border border-dashed border-ink/70 px-6 py-3 font-mono text-[0.8rem] uppercase tracking-wider text-ink transition-colors hover:bg-ink hover:text-white"
           >
             Hubungi
           </Link>

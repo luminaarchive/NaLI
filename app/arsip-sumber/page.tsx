@@ -28,22 +28,22 @@ export default function ArsipSumberPage() {
 
       <div className="container-editorial py-12">
         {sources.length === 0 ? (
-          <p className="text-gray">Arsip sumber masih kosong.</p>
+          <p className="font-mono text-[0.85rem] text-gray">Arsip sumber masih kosong.</p>
         ) : (
           <>
-            <p className="font-mono text-xs text-gray-light">
+            <p className="font-mono text-xs uppercase tracking-wider text-ink/70">
               {sources.length} entri sumber
             </p>
 
             {/* table (sm+) */}
-            <div className="mt-6 hidden overflow-hidden rounded-lg border border-rule sm:block">
+            <div className="mt-6 hidden overflow-hidden border border-ink/60 sm:block">
               <table className="w-full border-collapse text-sm">
                 <thead>
-                  <tr className="bg-white">
+                  <tr className="bg-ink-wash">
                     {["Sumber", "Tipe", "Penulis", "Tahun", "Keandalan"].map((h) => (
                       <th
                         key={h}
-                        className="border-b border-rule px-4 py-3 text-left font-mono text-[0.68rem] uppercase tracking-label text-gray"
+                        className="border border-ink/40 px-4 py-3 text-left font-mono text-[0.68rem] uppercase tracking-label text-ink-deep"
                       >
                         {h}
                       </th>
@@ -52,8 +52,8 @@ export default function ArsipSumberPage() {
                 </thead>
                 <tbody>
                   {sources.map((s) => (
-                    <tr key={s.slug} className="align-top odd:bg-white/60">
-                      <td className="border-b border-rule px-4 py-3">
+                    <tr key={s.slug} className="align-top font-mono text-[0.8rem] odd:bg-ink-wash/40">
+                      <td className="border border-ink/30 px-4 py-3">
                         {s.url ? (
                           <a
                             href={s.url}
@@ -67,23 +67,23 @@ export default function ArsipSumberPage() {
                           <span className="text-ink-charcoal">{s.title}</span>
                         )}
                         {s.related_topic && (
-                          <span className="mt-1 block text-xs text-gray-light">
+                          <span className="mt-1 block font-mono text-xs text-gray-light">
                             {s.related_topic}
                           </span>
                         )}
                       </td>
-                      <td className="border-b border-rule px-4 py-3">
-                        <span className="rounded-full bg-teal-bg px-2.5 py-0.5 font-mono text-[0.68rem] uppercase tracking-label text-teal-dark">
+                      <td className="border border-ink/30 px-4 py-3">
+                        <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.68rem] uppercase tracking-label text-ink">
                           {SOURCE_TYPE_LABEL[s.type]}
                         </span>
                       </td>
-                      <td className="border-b border-rule px-4 py-3 text-gray">
+                      <td className="border border-ink/30 px-4 py-3 text-gray">
                         {s.author ?? "—"}
                       </td>
-                      <td className="border-b border-rule px-4 py-3 font-mono text-gray">
+                      <td className="border border-ink/30 px-4 py-3 font-mono text-gray">
                         {s.year ?? "—"}
                       </td>
-                      <td className="border-b border-rule px-4 py-3 text-xs text-gray">
+                      <td className="border border-ink/30 px-4 py-3 text-xs text-gray">
                         {s.reliability ?? "—"}
                       </td>
                     </tr>
@@ -95,13 +95,13 @@ export default function ArsipSumberPage() {
             {/* stacked (mobile) */}
             <ul className="mt-6 space-y-4 sm:hidden">
               {sources.map((s) => (
-                <li key={s.slug} className="rounded-lg border border-rule bg-white p-4">
+                <li key={s.slug} className="border border-dashed border-ink/60 bg-paper p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-full bg-teal-bg px-2.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-label text-teal-dark">
+                    <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-label text-ink">
                       {SOURCE_TYPE_LABEL[s.type]}
                     </span>
                     {s.year && (
-                      <span className="font-mono text-xs text-gray-light">{s.year}</span>
+                      <span className="font-mono text-xs uppercase tracking-wider text-ink/70">{s.year}</span>
                     )}
                   </div>
                   <p className="mt-2 text-sm text-ink-charcoal">
@@ -120,7 +120,7 @@ export default function ArsipSumberPage() {
                   </p>
                   {s.author && <p className="mt-1 text-xs text-gray">{s.author}</p>}
                   {s.reliability && (
-                    <p className="mt-2 text-xs text-gray-light">{s.reliability}</p>
+                    <p className="mt-2 font-mono text-xs text-gray-light">{s.reliability}</p>
                   )}
                 </li>
               ))}

@@ -73,9 +73,9 @@ export default function ManifestoPage() {
 
         <ol className="mt-12 space-y-10">
           {PRINCIPLES.map((p) => (
-            <li key={p.n} className="border-t border-rule pt-6">
+            <li key={p.n} className="border-t border-dashed border-ink/50 pt-6">
               <div className="flex gap-5">
-                <span className="font-mono text-sm text-teal-dark">{p.n}</span>
+                <span className="font-mono text-sm text-ink">{p.n}</span>
                 <div>
                   <h2 className="font-display text-2xl text-ink-black">{p.title}</h2>
                   <p className="mt-2 leading-relaxed text-ink-charcoal">{p.body}</p>
@@ -85,7 +85,7 @@ export default function ManifestoPage() {
           ))}
         </ol>
 
-        <p className="mt-14 border-t-2 border-ink-black pt-6 font-display text-xl italic leading-snug text-ink-charcoal">
+        <p className="mt-14 border-t border-dashed border-ink/70 pt-6 font-display text-xl italic leading-snug text-ink-charcoal">
           “Telusuri sampai ke sumbernya. Ceritakan apa adanya. Tandai yang belum
           pasti.”
         </p>

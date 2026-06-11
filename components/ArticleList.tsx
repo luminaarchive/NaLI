@@ -20,10 +20,10 @@ function Chip({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border px-3.5 py-1.5 text-xs transition-colors ${
+      className={`border px-3.5 py-1.5 font-mono text-[0.7rem] uppercase tracking-wider transition-colors ${
         active
-          ? "border-teal-dark bg-teal-dark text-white"
-          : "border-rule bg-white text-gray hover:border-gray-light hover:text-ink-black"
+          ? "border-ink bg-ink text-white"
+          : "border-dashed border-ink/60 bg-paper text-ink hover:bg-ink-wash"
       }`}
       aria-pressed={active}
     >
@@ -77,7 +77,7 @@ export function ArticleList({
         </div>
       )}
 
-      <p className="mt-8 font-mono text-xs text-gray-light">
+      <p className="mt-8 font-mono text-xs uppercase tracking-wider text-ink/70">
         {filtered.length} dari {articles.length} artikel
       </p>
 
@@ -86,7 +86,7 @@ export function ArticleList({
           Belum ada artikel yang cocok dengan filter ini.
         </p>
       ) : (
-        <div className="mt-6 grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((article, i) => (
             <ArticleCard key={article.slug} article={article} index={i} />
           ))}

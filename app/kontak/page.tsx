@@ -29,11 +29,11 @@ export default function KontakPage() {
       />
 
       <div className="container-read py-12 sm:py-16">
-        <div className="rounded-lg border border-rule bg-white p-7">
+        <div className="border border-dashed border-ink/70 bg-paper p-7">
           <p className="label">Email</p>
           <a
             href={`mailto:${EMAIL}`}
-            className="mt-2 inline-block font-display text-2xl text-ink-black transition-colors hover:text-teal-dark sm:text-3xl"
+            className="mt-2 inline-block font-display text-2xl text-ink transition-colors hover:text-ink-deep sm:text-3xl"
           >
             {EMAIL}
           </a>
@@ -48,7 +48,7 @@ export default function KontakPage() {
             {CHANNELS.map((c) => (
               <li
                 key={c.label}
-                className="flex items-center justify-between border-b border-rule pb-3"
+                className="flex items-center justify-between border-b border-dashed border-ink/40 pb-3"
               >
                 <span className="text-ink-black">{c.label}</span>
                 <span className="text-sm text-gray">{c.note}</span>
