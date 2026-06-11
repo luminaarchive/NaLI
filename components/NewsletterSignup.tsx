@@ -14,11 +14,17 @@ const MESSAGE: Record<Exclude<Status, "idle" | "loading">, string> = {
   error: "Maaf, ada kendala. Coba lagi sebentar lagi, ya.",
 };
 
-export function NewsletterSignup() {
+export function NewsletterSignup({
+  variant = "dark",
+}: {
+  /** "dark" untuk latar gelap, "light" untuk latar terang */
+  variant?: "dark" | "light";
+}) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
 
   const done = status === "ok" || status === "dupe";
+  const light = variant === "light";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -65,12 +71,20 @@ export function NewsletterSignup() {
             if (status !== "idle" && status !== "loading") setStatus("idle");
           }}
           placeholder="nama@email.com"
-          className="h-12 w-full rounded-full border border-white/20 bg-white/5 px-5 text-base text-white placeholder:text-white/40 focus:border-teal focus:outline-none disabled:opacity-60 sm:max-w-xs"
+          className={`h-12 w-full rounded-full border px-5 text-base focus:outline-none disabled:opacity-60 sm:max-w-xs ${
+            light
+              ? "border-[#d9d5cb] bg-white text-ink-black placeholder:text-gray-light focus:border-ink-black"
+              : "border-white/20 bg-white/5 text-white placeholder:text-white/40 focus:border-teal"
+          }`}
         />
         <button
           type="submit"
           disabled={status === "loading" || done}
-          className="h-12 shrink-0 rounded-full bg-teal px-7 text-sm font-semibold text-ink-black transition-transform hover:scale-[1.03] hover:bg-teal-dark hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
+          className={`h-12 shrink-0 rounded-full px-7 text-sm font-semibold transition-transform hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-70 ${
+            light
+              ? "bg-[#1c1c1a] text-white hover:bg-teal-dark"
+              : "bg-teal text-ink-black hover:bg-teal-dark hover:text-white"
+          }`}
         >
           {status === "loading" ? "Mengirim…" : done ? "Terdaftar ✓" : "Langganan"}
         </button>
@@ -79,10 +93,12 @@ export function NewsletterSignup() {
       <p
         className={`mt-3 min-h-[1.25rem] text-sm ${
           status === "ok" || status === "dupe"
-            ? "text-teal"
+            ? "text-teal-dark"
             : status === "invalid" || status === "error"
               ? "text-confidence-medium"
-              : "text-white/45"
+              : light
+                ? "text-gray"
+                : "text-white/45"
         }`}
         role="status"
         aria-live="polite"
@@ -93,7 +109,7 @@ export function NewsletterSignup() {
       </p>
 
       {!supabaseConfigured && (
-        <p className="mt-1 text-xs text-white/30">
+        <p className={`mt-1 text-xs ${light ? "text-gray-light" : "text-white/30"}`}>
           (Langganan aktif setelah Supabase env diatur di deployment.)
         </p>
       )}

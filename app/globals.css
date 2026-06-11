@@ -115,6 +115,32 @@
   .container-read {
     @apply mx-auto w-full max-w-[760px] px-5 sm:px-8;
   }
+
+  /* diagonal hatch texture (landing shell gutters + divider bands) */
+  .hatch {
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent 0,
+      transparent 9px,
+      rgba(28, 28, 26, 0.05) 9px,
+      rgba(28, 28, 26, 0.05) 10px
+    );
+  }
+}
+
+/* landing FAQ accordion */
+.lp-faq summary {
+  list-style: none;
+  cursor: pointer;
+}
+.lp-faq summary::-webkit-details-marker {
+  display: none;
+}
+.lp-faq .lp-chevron {
+  transition: transform 250ms ease;
+}
+.lp-faq details[open] .lp-chevron {
+  transform: rotate(180deg);
 }
 
 /* ===================================================================== */
