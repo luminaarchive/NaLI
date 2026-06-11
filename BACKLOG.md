@@ -33,6 +33,13 @@ Feature freeze minimal 14 hari setelah launch.
 - Earliest review date: setelah Proof-of-Pull Sprint
 - Decision: later — pertimbangkan `next/og` jika distribusi sosial terbukti menarik traffic.
 
+### Sistem redaksi multi-pengguna ala OJS (submissions, reviewer, roles, issues, DOI/ISSN)
+- Why it appeared: founder mengeksplorasi fitur dashboard jurnal akademik (11 Jun 2026).
+- Does it help publish today? no — NaLI publikasi solo: tidak ada naskah masuk, tidak ada mitra bestari, tidak ada terbitan bervolume.
+- Scope creep risk: high (auth multi-role + database + workflow engine).
+- Earliest review date: jika suatu hari NaLI menerima kontributor eksternal.
+- Decision: park. Kebutuhan nyata v0.1 (posting/edit/upload + statistik) sudah dipenuhi Pages CMS + Vercel Analytics tanpa database.
+
 ---
 
 > Aturan: ide baru masuk sini dulu. Tidak ada SaaS baru, game, marketplace, login, payment, atau AI wrapper di v0.1.

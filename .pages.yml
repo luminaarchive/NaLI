@@ -1,0 +1,204 @@
+# Pages CMS — dashboard admin NaLI by NatIve
+# Login: https://app.pagescms.org → masuk dengan GitHub (akun pemilik repo ini)
+# Semua perubahan dari dashboard = commit ke repo → Vercel auto-deploy (~1 menit).
+
+media:
+  input: public/images/uploads
+  output: /images/uploads
+
+content:
+  - name: articles
+    label: Artikel
+    type: collection
+    path: content/articles
+    filename: "{fields.slug}.mdx"
+    view:
+      fields: [title, category, confidence, status, date]
+    fields:
+      - name: title
+        label: Judul
+        type: string
+        required: true
+      - name: subtitle
+        label: Subjudul
+        type: string
+      - name: slug
+        label: Slug (URL)
+        type: string
+        required: true
+        description: huruf kecil dan tanda hubung, mis. api-biru-kawah-ijen
+      - name: date
+        label: Tanggal
+        type: date
+        required: true
+      - name: category
+        label: Kategori
+        type: select
+        required: true
+        options:
+          values:
+            - name: alam
+              label: Alam
+            - name: sejarah
+              label: Sejarah
+            - name: investigasi
+              label: Investigasi
+            - name: catatan-lapangan
+              label: Catatan Lapangan
+      - name: tags
+        label: Tag
+        type: string
+        list: true
+      - name: summary
+        label: Ringkasan
+        type: text
+        description: Tampil di kartu artikel dan deskripsi SEO.
+      - name: confidence
+        label: Label Keyakinan
+        type: select
+        required: true
+        options:
+          values:
+            - name: high
+              label: Terverifikasi
+            - name: medium
+              label: Perlu konteks
+            - name: low
+              label: Hipotesis kerja
+            - name: needs-verification
+              label: Belum diverifikasi
+      - name: status
+        label: Status
+        type: select
+        required: true
+        default: draft
+        options:
+          values:
+            - name: published
+              label: Terbit
+            - name: draft
+              label: Draft
+      - name: sources
+        label: Sumber / Rujukan
+        type: object
+        list: true
+        fields:
+          - name: title
+            label: Judul sumber
+            type: string
+            required: true
+          - name: url
+            label: URL (opsional)
+            type: string
+          - name: type
+            label: Tipe
+            type: select
+            required: true
+            options:
+              values:
+                - name: jurnal
+                  label: Jurnal
+                - name: arsip
+                  label: Arsip
+                - name: buku
+                  label: Buku
+                - name: media
+                  label: Media
+                - name: laporan
+                  label: Laporan
+                - name: lainnya
+                  label: Lainnya
+      - name: body
+        label: Isi Artikel
+        type: rich-text
+
+  - name: field-notes
+    label: Catatan Lapangan
+    type: collection
+    path: content/field-notes
+    filename: "{title}.mdx"
+    view:
+      fields: [title, location_label, status, date]
+    fields:
+      - name: title
+        label: Judul
+        type: string
+        required: true
+      - name: location_label
+        label: Lokasi
+        type: string
+        required: true
+      - name: date
+        label: Tanggal
+        type: date
+        required: true
+      - name: tags
+        label: Tag
+        type: string
+        list: true
+      - name: summary
+        label: Ringkasan
+        type: text
+      - name: status
+        label: Status
+        type: select
+        required: true
+        default: draft
+        options:
+          values:
+            - name: published
+              label: Terbit
+            - name: draft
+              label: Draft
+      - name: body
+        label: Isi Catatan
+        type: rich-text
+
+  - name: sources
+    label: Arsip Sumber
+    type: collection
+    path: content/sources
+    filename: "{title}.mdx"
+    view:
+      fields: [title, type, author, year]
+    fields:
+      - name: title
+        label: Judul Sumber
+        type: string
+        required: true
+      - name: type
+        label: Tipe
+        type: select
+        required: true
+        options:
+          values:
+            - name: jurnal
+              label: Jurnal
+            - name: arsip
+              label: Arsip
+            - name: buku
+              label: Buku
+            - name: media
+              label: Media
+            - name: laporan
+              label: Laporan
+            - name: lainnya
+              label: Lainnya
+      - name: author
+        label: Penulis (opsional)
+        type: string
+      - name: year
+        label: Tahun (opsional)
+        type: number
+      - name: url
+        label: URL (opsional)
+        type: string
+      - name: reliability
+        label: Catatan keandalan (opsional)
+        type: string
+      - name: related_topic
+        label: Topik terkait (opsional)
+        type: string
+      - name: body
+        label: Catatan tambahan
+        type: rich-text
