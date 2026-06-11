@@ -327,6 +327,16 @@ Keep a running log at the bottom of this file after each session:
 - **Gallery v3 dihapus dari tree**: `GalleryHall.tsx` + 3 video (~32MB) — recoverable dari git history (`5e2f245`); `arcade.png` dipertahankan untuk hero.
 - Verified: build/lint/typecheck clean, semua section live di production, mobile OK.
 
+### 11 Juni 2026 (lanjutan 4) — Hero: wave dithering shader 21st.dev (founder-directed)
+
+- Founder share komponen komunitas 21st.dev `aliimam/wave-1` (kode ditempel langsung) → diintegrasikan sebagai home hero:
+  - **Struktur shadcn ditambahkan**: `components/ui/` + `lib/utils.ts` (`cn` via `clsx`+`tailwind-merge`, keduanya di-install).
+  - `components/ui/dithering-shader.tsx` — WebGL2 Bayer-dithering shader (sesuai kode yang diberikan; 1 perbaikan: render satu frame saat `speed=0` agar reduced-motion tetap menampilkan wave statis).
+  - `components/WaveHero.tsx` — tema NaLI: wave `#2DD4A7` di atas ink `#03100d`, `shape="wave" type="8x8" pxSize=3 speed=0.6`, headline putih dengan akhiran *italic teal*, kicker NATURE·ARCHIVE·LORE·INVESTIGATION, NewsletterSignup (dark) di atas wave, scrim radial untuk legibilitas, reduced-motion aware.
+  - **Gotcha komponen**: inline `style position:relative` bawaannya menang dari class Tailwind `absolute` — posisikan via `style` prop, bukan className.
+  - Hero arcade berbingkai diganti (arcade.png kini tak terpakai di landing, file tetap di repo); terminal-log card di-reaccent teal agar match.
+- Verified: build/lint/typecheck clean, hero+overlay render benar desktop & mobile, live production (canvas + semua section PASS).
+
 ---
 
 *Last updated: 11 Juni 2026 — gallery v3 (real arcade + sea footage) live di nalibynative.vercel.app*
