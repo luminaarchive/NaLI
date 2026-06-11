@@ -355,6 +355,14 @@ Keep a running log at the bottom of this file after each session:
 - **Sweep warna hardcoded**: SVG Stamp/Check/orbit → `currentColor`/`fill-ink`/`fill-paper`; tombol `bg-ink text-white` → `text-paper` (di dark: teks gelap di atas teal terang); badge confidence dapat varian `dark:text-*`; `.duotone-ink` diredupkan di dark; chip filter aktif `text-paper`.
 - **Tested per perintah founder**: SEMUA halaman dark (home top+bottom, articles, artikel detail mid, arsip tabel, catatan, manifesto bottom+footer, tentang bottom, kontak, peta) + light spot + mobile (toggle di mobile nav) + persistensi antar navigasi. Production verified: script, toggle, ikon pixel, CSS vars `.dark` semua tershipping.
 
+### 11 Juni 2026 (lanjutan 7) — Dashboard admin (Pages CMS) + Web Analytics (founder-directed)
+
+- Founder minta dashboard admin (edit/posting/upload gambar) + statistik pengunjung. **Daftar fitur OJS** (submissions/reviewer/roles/issues/DOI) ditolak dengan alasan: NaLI publikasi solo → diparkir ke `BACKLOG.md`. Solusi tanpa melanggar arsitektur (no DB, no login di situs):
+  - **Pages CMS** (git-based): `.pages.yml` memetakan ketiga koleksi persis sesuai skema frontmatter (articles incl. `sources` object-list + select confidence/category/status draft-terbit; field-notes; sources). Body `rich-text`; upload gambar → `public/images/uploads/` (output `/images/uploads`). Login: app.pagescms.org → GitHub (hanya akun dengan write access repo). Simpan = commit → auto-deploy.
+  - **`@vercel/analytics`** `<Analytics/>` di `layout.tsx`. **Web Analytics ternyata auto-enabled** di project — diverifikasi live via browser: script tersuntik, `window.va` aktif, `/_vercel/insights/script.js` 200. Data muncul di tab Analytics dashboard Vercel.
+  - Catatan verifikasi: komponen Analytics menyuntik script **client-side** — tidak terlihat di HTML SSG (grep HTML = false negative; verifikasi harus via browser).
+- Panduan founder ditambahkan di README (login dashboard + lihat statistik).
+
 ---
 
 *Last updated: 11 Juni 2026 — gallery v3 (real arcade + sea footage) live di nalibynative.vercel.app*
