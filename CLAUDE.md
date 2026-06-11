@@ -347,6 +347,14 @@ Keep a running log at the bottom of this file after each session:
   - 19 file diubah (semua page + komponen); `PillarCard.tsx` dihapus (tak terpakai). Badge confidence tetap 4 warna semantik (bentuk kotak dashed).
 - **Verified halaman demi halaman** (perintah founder): home (3 bagian), articles, artikel detail, arsip-sumber, catatan-lapangan, manifesto, tentang, kontak, alam, mobile — semua blend; 13 route 200 di production.
 
+### 11 Juni 2026 (lanjutan 6) — Light/dark mode + pixel toggle (founder-directed)
+
+- **Arsitektur tema**: semua token archive-ink di `tailwind.config.ts` kini `rgb(var(--c-*) / <alpha-value>)`; nilai light/dark di `globals.css` (`:root` / `.dark`). Dark = kertas tinta `#0A1411` (turunan warna shader) + ink teal terang `#46CFA8`; satu switch mengubah SEMUA halaman, termasuk modifier opacity (`border-ink/60` dll).
+- **`components/ThemeToggle.tsx`**: tombol pixel sesuai foto referensi founder — matahari pixel "☼ LIGHT" / bulan separuh "◑ DARK", border kotak, mono uppercase. Dipasang di Nav (desktop kanan + mobile sebelah hamburger; dua instance → selector test pakai `:visible`).
+- **Persistensi**: localStorage `nali-theme` + script pre-paint di awal `<body>` (fallback `prefers-color-scheme`), `suppressHydrationWarning` di `<html>`; toggle render label setelah mount (hindari hydration mismatch).
+- **Sweep warna hardcoded**: SVG Stamp/Check/orbit → `currentColor`/`fill-ink`/`fill-paper`; tombol `bg-ink text-white` → `text-paper` (di dark: teks gelap di atas teal terang); badge confidence dapat varian `dark:text-*`; `.duotone-ink` diredupkan di dark; chip filter aktif `text-paper`.
+- **Tested per perintah founder**: SEMUA halaman dark (home top+bottom, articles, artikel detail mid, arsip tabel, catatan, manifesto bottom+footer, tentang bottom, kontak, peta) + light spot + mobile (toggle di mobile nav) + persistensi antar navigasi. Production verified: script, toggle, ikon pixel, CSS vars `.dark` semua tershipping.
+
 ---
 
 *Last updated: 11 Juni 2026 — gallery v3 (real arcade + sea footage) live di nalibynative.vercel.app*
