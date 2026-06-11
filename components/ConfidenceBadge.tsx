@@ -9,17 +9,17 @@ const STYLES: Record<Confidence, { dot: string; text: string; border: string }> 
   },
   medium: {
     dot: "bg-confidence-medium",
-    text: "text-[#8a5a08]",
+    text: "text-[#8a5a08] dark:text-[#e8c277]",
     border: "border-[#c98f1f]/60",
   },
   low: {
     dot: "bg-confidence-low",
-    text: "text-[#9c3c08]",
+    text: "text-[#9c3c08] dark:text-[#f0a36e]",
     border: "border-[#d96a23]/60",
   },
   "needs-verification": {
     dot: "bg-confidence-unverified",
-    text: "text-[#a31515]",
+    text: "text-[#a31515] dark:text-[#f09090]",
     border: "border-[#d33]/60",
   },
 };

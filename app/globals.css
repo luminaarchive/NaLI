@@ -3,8 +3,32 @@
 @tailwind utilities;
 
 @layer base {
+  /* archive-ink palette — light (kertas putih, tinta teal) */
   :root {
     color-scheme: light;
+    --c-paper: 255 255 255;
+    --c-ink: 14 130 104;
+    --c-ink-deep: 8 94 75;
+    --c-ink-wash: 233 246 241;
+    --c-ink-black: 10 10 10;
+    --c-ink-charcoal: 28 28 28;
+    --c-gray: 51 55 61;
+    --c-gray-light: 142 147 143;
+    --c-rule: 158 205 191;
+  }
+
+  /* dark — kertas tinta gelap (turunan warna shader), tinta teal terang */
+  .dark {
+    color-scheme: dark;
+    --c-paper: 10 20 17;
+    --c-ink: 70 207 168;
+    --c-ink-deep: 154 233 208;
+    --c-ink-wash: 17 36 30;
+    --c-ink-black: 238 247 243;
+    --c-ink-charcoal: 213 228 222;
+    --c-gray: 158 176 169;
+    --c-gray-light: 108 126 119;
+    --c-rule: 42 74 64;
   }
 
   html {
@@ -22,7 +46,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid #0e8268;
+    outline: 2px solid rgb(var(--c-ink));
     outline-offset: 2px;
   }
 
@@ -52,6 +76,10 @@
   /* teal duotone treatment for photographs */
   .duotone-ink {
     filter: grayscale(1) sepia(0.35) hue-rotate(110deg) saturate(2.1) brightness(1.04) contrast(0.96);
+  }
+  /* photos dim slightly on dark paper so the plate doesn't glare */
+  :is(.dark) .duotone-ink {
+    filter: grayscale(1) sepia(0.35) hue-rotate(110deg) saturate(1.9) brightness(0.84) contrast(0.98);
   }
 
   /* editorial link styling for inline links */

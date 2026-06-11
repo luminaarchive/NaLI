@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { NAV_LINKS } from "@/lib/site";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const LINKS = [{ href: "/", label: "Beranda" }, ...NAV_LINKS];
 
@@ -28,7 +29,7 @@ export function Nav() {
 
   return (
     <header className="sticky top-0 z-50 bg-paper">
-      <nav className="mx-auto flex h-16 max-w-[1240px] items-center justify-between px-5 lg:justify-center">
+      <nav className="relative mx-auto flex h-16 max-w-[1240px] items-center justify-between px-5 lg:justify-center">
         {/* mobile brand */}
         <Link href="/" className="flex items-center gap-2 lg:hidden" aria-label="NaLI by NatIve — beranda">
           <Image src="/logo.png" alt="" width={24} height={24} className="h-6 w-6 object-contain" priority />
@@ -55,21 +56,29 @@ export function Nav() {
           ))}
         </ul>
 
-        {/* mobile toggle */}
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="relative z-50 flex h-10 w-10 items-center justify-center lg:hidden"
-          aria-label={open ? "Tutup menu" : "Buka menu"}
-          aria-expanded={open}
-        >
-          <span className="sr-only">Menu</span>
-          <div className="flex w-5 flex-col gap-[5px]">
-            <span className={`h-px bg-ink transition-transform duration-300 ${open ? "translate-y-[6px] rotate-45" : ""}`} />
-            <span className={`h-px bg-ink transition-opacity duration-200 ${open ? "opacity-0" : ""}`} />
-            <span className={`h-px bg-ink transition-transform duration-300 ${open ? "-translate-y-[6px] -rotate-45" : ""}`} />
-          </div>
-        </button>
+        {/* theme toggle — desktop, anchored right of the centered links */}
+        <div className="absolute right-5 top-1/2 hidden -translate-y-1/2 lg:block">
+          <ThemeToggle />
+        </div>
+
+        {/* mobile: theme toggle + hamburger */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <ThemeToggle />
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="relative z-50 flex h-10 w-10 items-center justify-center"
+            aria-label={open ? "Tutup menu" : "Buka menu"}
+            aria-expanded={open}
+          >
+            <span className="sr-only">Menu</span>
+            <div className="flex w-5 flex-col gap-[5px]">
+              <span className={`h-px bg-ink transition-transform duration-300 ${open ? "translate-y-[6px] rotate-45" : ""}`} />
+              <span className={`h-px bg-ink transition-opacity duration-200 ${open ? "opacity-0" : ""}`} />
+              <span className={`h-px bg-ink transition-transform duration-300 ${open ? "-translate-y-[6px] -rotate-45" : ""}`} />
+            </div>
+          </button>
+        </div>
       </nav>
       {/* the signature dashed rule */}
       <div className="mx-auto max-w-[1240px] px-5">

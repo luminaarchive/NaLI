@@ -22,7 +22,7 @@ function Chip({
       onClick={onClick}
       className={`border px-3.5 py-1.5 font-mono text-[0.7rem] uppercase tracking-wider transition-colors ${
         active
-          ? "border-ink bg-ink text-white"
+          ? "border-ink bg-ink text-paper"
           : "border-dashed border-ink/60 bg-paper text-ink hover:bg-ink-wash"
       }`}
       aria-pressed={active}

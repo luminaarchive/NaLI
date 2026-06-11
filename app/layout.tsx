@@ -61,8 +61,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className={`${display.variable} ${mono.variable}`}>
+    <html lang="id" className={`${display.variable} ${mono.variable}`} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col">
+        {/* set theme before paint: saved preference, else system */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              '(function(){try{var t=localStorage.getItem("nali-theme");if(!t){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}if(t==="dark"){document.documentElement.classList.add("dark")}}catch(e){}})();',
+          }}
+        />
         <Nav />
         <main className="flex-1">{children}</main>
         <Footer />

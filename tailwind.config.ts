@@ -2,6 +2,7 @@ import type { Config } from "tailwindcss";
 import typography from "@tailwindcss/typography";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./app/**/*.{ts,tsx,mdx}",
     "./components/**/*.{ts,tsx}",
@@ -15,20 +16,20 @@ const config: Config = {
           dark: "#1BA882",
           bg: "#EAF8F3",
         },
-        // archive-ink system (Nous-style monochrome ink, NaLI teal)
+        // archive-ink system — CSS variables so light/dark swap everywhere
         ink: {
-          DEFAULT: "#0E8268",
-          deep: "#085E4B",
-          wash: "#E9F6F1",
-          black: "#0A0A0A",
-          charcoal: "#1C1C1C",
+          DEFAULT: "rgb(var(--c-ink) / <alpha-value>)",
+          deep: "rgb(var(--c-ink-deep) / <alpha-value>)",
+          wash: "rgb(var(--c-ink-wash) / <alpha-value>)",
+          black: "rgb(var(--c-ink-black) / <alpha-value>)",
+          charcoal: "rgb(var(--c-ink-charcoal) / <alpha-value>)",
         },
         gray: {
-          DEFAULT: "#33373D",
-          light: "#8E938F",
+          DEFAULT: "rgb(var(--c-gray) / <alpha-value>)",
+          light: "rgb(var(--c-gray-light) / <alpha-value>)",
         },
-        rule: "#9ECDBF",
-        paper: "#FFFFFF",
+        rule: "rgb(var(--c-rule) / <alpha-value>)",
+        paper: "rgb(var(--c-paper) / <alpha-value>)",
         // confidence label palette
         confidence: {
           high: "#2DD4A7",

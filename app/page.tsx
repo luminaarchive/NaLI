@@ -16,24 +16,24 @@ function DashRule() {
 
 function Check() {
   return (
-    <svg viewBox="0 0 16 16" className="mt-0.5 h-4 w-4 shrink-0" aria-hidden>
-      <path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="#0E8268" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <svg viewBox="0 0 16 16" className="mt-0.5 h-4 w-4 shrink-0 text-ink" aria-hidden>
+      <path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
 function Stamp({ label }: { label: string }) {
   return (
-    <svg viewBox="0 0 96 96" className="h-20 w-20 shrink-0" aria-hidden>
-      <circle cx="48" cy="48" r="44" fill="none" stroke="#0E8268" strokeWidth="2.5" strokeDasharray="5 3" />
-      <circle cx="48" cy="48" r="35" fill="none" stroke="#0E8268" strokeWidth="1" />
-      <text x="48" y="44" textAnchor="middle" fontSize="15" fontWeight="700" fill="#0E8268" fontFamily="var(--font-display)">
+    <svg viewBox="0 0 96 96" className="h-20 w-20 shrink-0 text-ink" aria-hidden>
+      <circle cx="48" cy="48" r="44" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray="5 3" />
+      <circle cx="48" cy="48" r="35" fill="none" stroke="currentColor" strokeWidth="1" />
+      <text x="48" y="44" textAnchor="middle" fontSize="15" fontWeight="700" fill="currentColor" fontFamily="var(--font-display)">
         NaLI
       </text>
-      <text x="48" y="60" textAnchor="middle" fontSize="8.5" letterSpacing="1.5" fill="#0E8268" fontFamily="var(--font-mono)">
+      <text x="48" y="60" textAnchor="middle" fontSize="8.5" letterSpacing="1.5" fill="currentColor" fontFamily="var(--font-mono)">
         {label}
       </text>
-      <path d="M 20 70 Q 48 84 76 70" fill="none" stroke="#0E8268" strokeWidth="1.5" />
+      <path d="M 20 70 Q 48 84 76 70" fill="none" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
 }
@@ -182,16 +182,16 @@ export default function HomePage() {
             <div className={`${CARD} flex flex-col overflow-hidden`}>
               <div className="relative flex-1 p-6">
                 <svg viewBox="0 0 280 220" className="mx-auto h-full max-h-[220px] w-full" aria-hidden>
-                  <circle cx="140" cy="110" r="86" fill="none" stroke="#0E8268" strokeOpacity="0.5" strokeDasharray="3 5" />
-                  <circle cx="140" cy="110" r="46" fill="none" stroke="#0E8268" strokeOpacity="0.5" strokeDasharray="3 5" />
-                  <circle cx="140" cy="110" r="24" fill="#0E8268" />
-                  <text x="140" y="116" textAnchor="middle" fontSize="13" fontWeight="700" fill="#ffffff" fontFamily="var(--font-display)">NaLI</text>
+                  <circle cx="140" cy="110" r="86" fill="none" stroke="currentColor" strokeOpacity="0.5" strokeDasharray="3 5" />
+                  <circle cx="140" cy="110" r="46" fill="none" stroke="currentColor" strokeOpacity="0.5" strokeDasharray="3 5" />
+                  <circle cx="140" cy="110" r="24" className="fill-ink" />
+                  <text x="140" y="116" textAnchor="middle" fontSize="13" fontWeight="700" className="fill-paper" fontFamily="var(--font-display)">NaLI</text>
                   <g>
-                    <circle cx="140" cy="24" r="15" fill="#E9F6F1" stroke="#0E8268" />
+                    <circle cx="140" cy="24" r="15" className="fill-ink-wash" stroke="currentColor" />
                     <text x="140" y="29" textAnchor="middle" fontSize="12">🌿</text>
-                    <circle cx="62" cy="160" r="15" fill="#E9F6F1" stroke="#0E8268" />
+                    <circle cx="62" cy="160" r="15" className="fill-ink-wash" stroke="currentColor" />
                     <text x="62" y="165" textAnchor="middle" fontSize="12">🏛️</text>
-                    <circle cx="218" cy="160" r="15" fill="#E9F6F1" stroke="#0E8268" />
+                    <circle cx="218" cy="160" r="15" className="fill-ink-wash" stroke="currentColor" />
                     <text x="218" y="165" textAnchor="middle" fontSize="12">🔎</text>
                   </g>
                 </svg>
@@ -365,8 +365,8 @@ export default function HomePage() {
                   href={p.href}
                   className={`mt-7 py-3 text-center font-mono text-[0.8rem] font-semibold uppercase tracking-[0.12em] transition-colors ${
                     p.featured
-                      ? "bg-ink text-white hover:bg-ink-deep"
-                      : "border border-ink/70 text-ink hover:bg-ink hover:text-white"
+                      ? "bg-ink text-paper hover:bg-ink-deep"
+                      : "border border-ink/70 text-ink hover:bg-ink hover:text-paper"
                   }`}
                 >
                   {p.cta}
@@ -400,7 +400,7 @@ export default function HomePage() {
             </p>
             <Link
               href="/tentang"
-              className="mt-6 inline-block border border-ink/70 px-6 py-3 font-mono text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-ink hover:text-white"
+              className="mt-6 inline-block border border-ink/70 px-6 py-3 font-mono text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-ink hover:text-paper"
             >
               Tentang NaLI
             </Link>
