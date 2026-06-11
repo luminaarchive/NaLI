@@ -298,6 +298,13 @@ Keep a running log at the bottom of this file after each session:
 - **Open item:** Vercel Deployment Protection (Vercel Authentication) is ON → site 401s for the public. Founder is disabling it in the dashboard (Settings → Deployment Protection). Not changeable via code/CLI.
 - **Note:** Founder explicitly overrode the "no database" locked decision for the newsletter ("sambungkan ke supabase, buatlah project baru"). User instruction > CLAUDE.md.
 
+### 11 Juni 2026 (lanjutan) — Site public, gallery v2 (Bibiena-grade), free domain
+
+- **Deployment Protection OFF** (founder toggled di dashboard) → site publik, semua route 200.
+- **Gallery v2** (`components/GalleryHall.tsx` rebuild): coffered gilded vault + rosettes + transverse ribs, figured gold relief frieze, dentil cornice, gilt-framed sepia paintings di outer bays (shell pediments), multi-ring archivolts + cartouche keystones, spandrel rosettes, pier panels berukir N·A·L·I (NATURE/ARCHIVE/LORE/INVESTIGATION), pedestal bermedali laurel ("NaLI by NatIve", EST/MMXXVI), floor sheen. Acts: alam +awan/pulau/camar, sejarah +siluet pinisi. Verified desktop+mobile, 3 acts.
+- **Free domain:** claimed `nalibynative.vercel.app` + `nalijournal.vercel.app` sebagai **project domains** (auto-assign tiap prod deploy). `SITE.url` → `https://nalibynative.vercel.app` (sitemap/canonical kini valid). Bare `nali-by-native.vercel.app` & `nali.native.id` adalah placeholder mati — jangan dipakai.
+- **Custom domain (belum dibeli, founder decision):** tersedia `nali.media` $7.99/yr, `nalibynative.com` $11.25/yr, dll. **Email bisnis profesional butuh domain sendiri** — rekomendasi setelah beli: Zoho Mail Free (5 mailbox) atau Cloudflare Email Routing → Gmail. Email `halo@nali.native.id` di `/kontak` masih placeholder mati.
+
 ---
 
-*Last updated: 11 Juni 2026 — gallery landing + newsletter live on Vercel (pending public toggle)*
+*Last updated: 11 Juni 2026 — gallery v2 live & publik di nalibynative.vercel.app*
