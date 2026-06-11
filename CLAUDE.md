@@ -315,6 +315,18 @@ Keep a running log at the bottom of this file after each session:
 - SVG Scene dihapus dari `GalleryHall.tsx`. Verified: 3 acts desktop + mobile + **live production**.
 - **Optimization backlog:** alam.mp4 masih 13MB (960p) — bisa di-compress/host via CDN nanti; semua video preload="auto" (berat di mobile data).
 
+### 11 Juni 2026 (lanjutan 3) — Landing v4: gaya SaaS modern (founder-directed)
+
+- Founder share template berbayar 21st.dev "AgentFlow Pro" ($49) → **tidak boleh copy kode/copy-nya**; struktur & gaya layout-nya dibangun ulang dari nol (`app/page.tsx` rewrite penuh, semua copy original NaLI):
+  - **Nav pill gelap mengambang** (restyle `Nav.tsx` site-wide, drawer mobile gelap, CTA putih "Mulai membaca")
+  - **Hero**: arcade.png (cutout berlisensi, tetap dipakai) di frame rounded di atas gradien laut teal; headline sans raksasa berakhiran *italic* abu; `NewsletterSignup` varian `light` di hero
+  - **Proof strip**: tipe sumber (JURNAL/ARSIP/BUKU/MEDIA/LAPORAN) menggantikan logo korporat
+  - **Bento**: kartu besar + browser mockup screenshot asli `/articles` (`public/images/articles-preview.jpg`), kartu confidence badges, arsip terbuka, terminal log riset (mono hijau), diagram orbit pilar, feed artikel terbaru (data asli dari `lib/content`)
+  - **Standar editorial**: 3 baris + stempel SVG NaLI; **Tiga pilar** bergaya tier-cards (Sejarah gelap di tengah); **FAQ** accordion `<details>`
+  - Shell: kolom tengah ber-border + gutter hatch diagonal (`.hatch`), divider band hatch antar section
+- **Gallery v3 dihapus dari tree**: `GalleryHall.tsx` + 3 video (~32MB) — recoverable dari git history (`5e2f245`); `arcade.png` dipertahankan untuk hero.
+- Verified: build/lint/typecheck clean, semua section live di production, mobile OK.
+
 ---
 
 *Last updated: 11 Juni 2026 — gallery v3 (real arcade + sea footage) live di nalibynative.vercel.app*
