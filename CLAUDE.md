@@ -305,6 +305,16 @@ Keep a running log at the bottom of this file after each session:
 - **Free domain:** claimed `nalibynative.vercel.app` + `nalijournal.vercel.app` sebagai **project domains** (auto-assign tiap prod deploy). `SITE.url` → `https://nalibynative.vercel.app` (sitemap/canonical kini valid). Bare `nali-by-native.vercel.app` & `nali.native.id` adalah placeholder mati — jangan dipakai.
 - **Custom domain (belum dibeli, founder decision):** tersedia `nali.media` $7.99/yr, `nalibynative.com` $11.25/yr, dll. **Email bisnis profesional butuh domain sendiri** — rekomendasi setelah beli: Zoho Mail Free (5 mailbox) atau Cloudflare Email Routing → Gmail. Email `halo@nali.native.id` di `/kontak` masih placeholder mati.
 
+### 11 Juni 2026 (lanjutan 2) — Gallery v3: arcade asli + video laut (founder-directed)
+
+- Founder menolak look vektor/SVG → **gallery v3 composite**: arcade klasik asli (Pixabay cutout `790331`, arch transparan) di-grade hangat via CSS filter + lantai oxblood (multiply gradient), dengan **footage laut sungguhan** crossfade per act di belakang arch (semua Pixabay Content License, bebas komersial, tanpa atribusi):
+  - alam: `video 202929` laut toska + headland berkabut (small, 13.1MB)
+  - sejarah: `video 175101` god-rays emas + burung (medium, 7.9MB)
+  - investigasi: `video 343390` laut malam berbintang + bioluminescence (large 4K, 10.9MB)
+- Aset di `public/videos/{alam,sejarah,investigasi}.mp4` + `public/textures/arcade.png` (committed, ~33MB). Ken-Burns di arcade, video act aktif play / lain pause, reduced-motion safe, nav dots hidden di mobile.
+- SVG Scene dihapus dari `GalleryHall.tsx`. Verified: 3 acts desktop + mobile + **live production**.
+- **Optimization backlog:** alam.mp4 masih 13MB (960p) — bisa di-compress/host via CDN nanti; semua video preload="auto" (berat di mobile data).
+
 ---
 
-*Last updated: 11 Juni 2026 — gallery v2 live & publik di nalibynative.vercel.app*
+*Last updated: 11 Juni 2026 — gallery v3 (real arcade + sea footage) live di nalibynative.vercel.app*
