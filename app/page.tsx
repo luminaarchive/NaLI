@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ConfidenceBadge } from "@/components/ConfidenceBadge";
-import { NewsletterSignup } from "@/components/NewsletterSignup";
+import { WaveHero } from "@/components/WaveHero";
 import { getAllArticles, getAllSources } from "@/lib/content";
 import { formatDate } from "@/lib/format";
 import { CATEGORY_LABEL, SOURCE_TYPE_LABEL, type Confidence } from "@/lib/types";
@@ -50,56 +50,14 @@ export default function HomePage() {
   const confidences: Confidence[] = ["high", "medium", "low", "needs-verification"];
 
   return (
-    <div className="hatch -mt-[4.25rem] bg-[#f2f1ed] pt-[4.25rem]">
+    <div className="hatch -mt-[4.25rem] bg-[#f2f1ed]">
       <div className="mx-auto max-w-[1240px] border-x border-[#e6e2d8] bg-[#faf9f6]">
-        {/* ================= HERO ================= */}
-        <section className="px-4 pt-6 sm:px-10 sm:pt-8">
-          {/* framed scene — the NaLI archive hall */}
-          <div className="relative h-[280px] overflow-hidden rounded-2xl border border-[#e6e2d8] sm:h-[400px]">
-            {/* sea behind the transparent arch openings */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(to bottom, #bfe6ee 0%, #d8f1ef 38%, #62cdb4 55%, #1d8d7c 78%, #0f6f63 100%)",
-              }}
-              aria-hidden
-            />
-            <Image
-              src="/textures/arcade.png"
-              alt="Galeri arsip NaLI — arcade klasik menghadap laut"
-              fill
-              priority
-              sizes="(max-width: 1240px) 100vw, 1160px"
-              className="object-cover object-[50%_72%] [filter:sepia(0.35)_saturate(1.25)_brightness(1.18)]"
-            />
-            <div
-              className="absolute inset-x-0 bottom-0 h-1/4 mix-blend-multiply"
-              style={{ background: "linear-gradient(to top, rgba(122,28,14,0.75), rgba(122,28,14,0))" }}
-              aria-hidden
-            />
-          </div>
+        {/* ================= HERO — dithering wave (21st.dev), NaLI teal ================= */}
+        <WaveHero />
 
-          {/* headline + supporting copy */}
-          <div className="grid gap-8 py-12 sm:py-16 md:grid-cols-[1.5fr_1fr] md:items-end">
-            <h1 className="font-sans text-5xl font-extrabold leading-[1.02] tracking-tight text-[#1c1c1a] sm:text-6xl lg:text-7xl">
-              Bongkar yang tersembunyi, catat{" "}
-              <em className="font-light italic text-gray-light">selamanya</em>
-            </h1>
-            <div>
-              <p className="text-base leading-relaxed text-gray">
-                Field journal &amp; research publication berbasis AI untuk alam,
-                sejarah, dan investigasi Indonesia — setiap klaim diberi label
-                keyakinan dan dirujuk ke sumber.
-              </p>
-              <div className="mt-5">
-                <NewsletterSignup variant="light" />
-              </div>
-            </div>
-          </div>
-
-          {/* proof strip — rujukan, bukan logo korporat */}
-          <div className="border-t border-[#e6e2d8] pb-12 pt-6">
+        {/* proof strip — rujukan, bukan logo korporat */}
+        <section className="px-4 sm:px-10">
+          <div className="pb-12 pt-10">
             <p className="text-sm text-gray-light">Setiap tulisan dirujuk ke sumber bertipe</p>
             <ul className="mt-4 flex flex-wrap items-center gap-x-8 gap-y-3">
               {Object.values(SOURCE_TYPE_LABEL).map((t) => (
@@ -206,15 +164,15 @@ export default function HomePage() {
           <div className="mt-6 grid gap-6 md:grid-cols-3">
             {/* terminal / research log */}
             <div className={`${CARD} flex flex-col overflow-hidden`}>
-              <div className="flex-1 bg-[#fbfdfb] p-6 font-mono text-[0.78rem] leading-relaxed text-[#1c8a4e]">
+              <div className="flex-1 bg-[#f6fbf9] p-6 font-mono text-[0.78rem] leading-relaxed text-[#0f8f72]">
                 <p>✔ Mengumpulkan sumber primer (5)</p>
                 <p>✔ Memeriksa silang antar rujukan</p>
                 <p>✔ Memisahkan fakta vs klaim retoris</p>
                 <p>✔ Menetapkan label keyakinan</p>
                 <p>✔ Menyusun daftar sumber</p>
-                <p className="mt-2 text-[#2563ab]">ℹ Draft siap: api-biru-kawah-ijen</p>
-                <p className="text-[#2563ab]">— kategori: alam</p>
-                <p className="text-[#2563ab]">— label: terverifikasi</p>
+                <p className="mt-2 text-[#1BA882]">ℹ Draft siap: api-biru-kawah-ijen</p>
+                <p className="text-[#1BA882]">— kategori: alam</p>
+                <p className="text-[#1BA882]">— label: terverifikasi</p>
                 <p className="mt-2 text-[#6b6b6b]">Artikel terbit dengan 4 rujukan.</p>
               </div>
               <div className="border-t border-[#eee9df] p-6">
