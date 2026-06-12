@@ -11,7 +11,32 @@ import ts from "typescript";
 
 const CLUSTERS_DIR = path.join(process.cwd(), "content", "jurnal", "clusters");
 
-const J_SHIM = "const j = (e) => ({ ...e, id: e.id ?? e.slug });\n";
+// Mirror of content/jurnal/_helper.ts j(): builds the full mandatory cover from
+// the light per-entry cover input. Keep in sync with the real helper.
+const J_SHIM = `
+const __SITE_URL = "https://nalijournal.vercel.app";
+const __COVER_PHRASE = "Visual penjelas, bukan foto lapangan.";
+const j = (e) => {
+  const caption = e.cover.caption.includes(__COVER_PHRASE)
+    ? e.cover.caption
+    : e.cover.caption + " " + __COVER_PHRASE;
+  const cover = {
+    id: "cover-" + e.slug,
+    src: "/images/jurnal-covers/" + e.slug + ".svg",
+    type: e.cover.type,
+    title: e.cover.title,
+    creator: "NaLI by NatIve",
+    sourceUrl: __SITE_URL + "/arsip-sumber/" + e.sourceIds[0],
+    license: "Internal explanatory visual for NaLI Jurnal",
+    attribution: "Visual internal NaLI by NatIve, non-AI",
+    caption,
+    alt: e.cover.alt,
+    checkedAt: e.checkedAt,
+    relatedJurnalIds: [e.slug],
+  };
+  return { ...e, id: e.id ?? e.slug, cover };
+};
+`;
 
 export async function loadJournalEntries() {
   if (!fs.existsSync(CLUSTERS_DIR)) return [];

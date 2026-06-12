@@ -447,8 +447,19 @@ for (const { file, data, content } of read(SOURCES)) {
 }
 
 /* ---- Jurnal entries ---- */
+const BANNED_SYNOPSIS = [
+  /tulisan ini membahas topik dengan sumber terbuka/i,
+  /catatan ini menjelaskan batas bukti/i,
+  /topik ini penting untuk dipahami secara hati-hati/i,
+  /tulisan ini mengambil jalan yang lebih pelan/i,
+  /catatan ini membahas topik secara hati-hati/i,
+];
 const seenJurnalSlugs = new Map();
 const seenJurnalBodies = new Map();
+const seenJurnalSynopses = new Map();
+let jurnalWithCover = 0;
+let jurnalWithSynopsis = 0;
+const coverTypeCounts = new Map();
 for (const entry of journalEntries) {
   const tag = `[jurnal] ${entry.__file ?? entry.slug}#${entry.slug ?? "?"}`;
   if (!entry.slug) errors.push(`${tag}: missing slug.`);
@@ -461,6 +472,58 @@ for (const entry of journalEntries) {
   if (!entry.checkedAt) errors.push(`${tag}: missing checkedAt.`);
   if (entry.checkedAt && !ISO_DATE.test(String(entry.checkedAt))) {
     errors.push(`${tag}: checkedAt must be YYYY-MM-DD.`);
+  }
+
+  /* cover (mandatory, must be visibly renderable) */
+  const cover = entry.cover;
+  if (!cover || typeof cover !== "object") {
+    errors.push(`${tag}: missing cover.`);
+  } else {
+    if (!cover.src) {
+      errors.push(`${tag}: cover missing src (not visibly renderable).`);
+    } else if (String(cover.src).startsWith("/")) {
+      const p = path.join(ROOT, "public", String(cover.src).replace(/^\/+/, ""));
+      if (!fs.existsSync(p)) errors.push(`${tag}: cover src does not exist in public/: ${cover.src}.`);
+    }
+    if (!cover.alt) errors.push(`${tag}: cover missing alt.`);
+    if (!cover.caption) errors.push(`${tag}: cover missing caption.`);
+    if (!cover.attribution) errors.push(`${tag}: cover missing attribution.`);
+    if (!cover.license) errors.push(`${tag}: cover missing license.`);
+    if (!cover.sourceUrl) errors.push(`${tag}: cover missing sourceUrl.`);
+    if (!cover.creator && !cover.institution) errors.push(`${tag}: cover missing creator or institution.`);
+    if (cover.checkedAt && !ISO_DATE.test(String(cover.checkedAt))) {
+      errors.push(`${tag}: cover checkedAt must be YYYY-MM-DD.`);
+    }
+    const isInternal = /internal explanatory visual/i.test(String(cover.license ?? ""));
+    if (isInternal && !/visual penjelas, bukan foto lapangan/i.test(String(cover.caption ?? ""))) {
+      errors.push(`${tag}: internal cover caption must say "Visual penjelas, bukan foto lapangan.".`);
+    }
+    if (AI_VISUAL_TERMS.test(JSON.stringify(cover))) {
+      errors.push(`${tag}: cover appears to reference AI-generated imagery, which cannot be used.`);
+    }
+    if (cover.src) jurnalWithCover++;
+    if (cover.type) coverTypeCounts.set(cover.type, (coverTypeCounts.get(cover.type) ?? 0) + 1);
+  }
+
+  /* synopsis (mandatory, human, 35-80 words) */
+  const synopsis = String(entry.synopsis ?? "");
+  if (!synopsis.trim()) {
+    errors.push(`${tag}: missing synopsis.`);
+  } else {
+    jurnalWithSynopsis++;
+    const sw = wordCount(synopsis);
+    if (sw < 35) errors.push(`${tag}: synopsis has ${sw} words, under the 35-word minimum.`);
+    if (sw > 80) errors.push(`${tag}: synopsis has ${sw} words, over the 80-word maximum.`);
+    if (synopsis.includes(EM_DASH)) errors.push(`${tag}: synopsis contains an em dash.`);
+    for (const p of BANNED_SYNOPSIS) {
+      if (p.test(synopsis)) errors.push(`${tag}: synopsis contains a banned generic phrase: ${p.source}`);
+    }
+    const synKey = synopsis.replace(/\s+/g, " ").trim().toLowerCase();
+    if (seenJurnalSynopses.has(synKey)) {
+      errors.push(`${tag}: duplicate synopsis shared with ${seenJurnalSynopses.get(synKey)}.`);
+    } else {
+      seenJurnalSynopses.set(synKey, entry.slug);
+    }
   }
   if (!Array.isArray(entry.limitations) || entry.limitations.length === 0) {
     errors.push(`${tag}: missing limitations.`);
@@ -528,6 +591,9 @@ console.log(`  sources checked:        ${sourceCount}`);
 console.log(`  published articles:     ${publishedArticleCount}`);
 console.log(`  article image coverage: ${articlesWithVisual}/${publishedArticleCount}`);
 console.log(`  jurnal entries:         ${journalEntries.length}`);
+console.log(`  jurnal with cover:      ${jurnalWithCover}/${journalEntries.length}`);
+console.log(`  jurnal with synopsis:   ${jurnalWithSynopsis}/${journalEntries.length}`);
+console.log(`  cover types:            ${[...coverTypeCounts.entries()].map(([t, n]) => `${t}:${n}`).join(", ") || "none"}`);
 console.log(`  em dash status:         ${errors.some((e) => e.startsWith("[em-dash]")) ? "FAIL" : "clean"}`);
 if (warnings.length) {
   console.log(`\n${warnings.length} warning(s):`);

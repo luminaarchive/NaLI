@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Tsunami vulkanik tanpa gempa">
+  <rect width="1200" height="675" fill="#f7fbf8"/>
+  <rect x="34" y="34" width="1132" height="607" fill="#ffffff" stroke="#0f5e4b" stroke-opacity="0.6" stroke-dasharray="12 10"/>
+  <text x="70" y="96" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700" letter-spacing="4" fill="#0f5e4b">JURNAL NaLI, VISUAL PENJELAS</text>
+  <text x="70" y="150" font-family="Georgia, serif" font-size="34" font-weight="700" fill="#1c1c1c">Tsunami vulkanik tanpa gempa</text>
+  <g>
+  <rect x="70" y="206" width="1060" height="360" fill="#cfeee6" fill-opacity="0.5"/>
+  <polygon points="300,560 470,300 640,560" fill="#eaf8f3" stroke="#0f5e4b" stroke-opacity="0.6"/>
+  <polygon points="560,420 640,560 700,470" fill="#2dd4a7" fill-opacity="0.5" stroke="#0f5e4b" stroke-opacity="0.5"/>
+  <path d="M700 480 q40 -30 80 0 q40 30 80 0 q40 -30 80 0" fill="none" stroke="#0f5e4b" stroke-width="3"/>
+  <polygon points="940,470 980,480 942,496" fill="#0f5e4b"/>
+  <g><rect x="70" y="176" width="256" height="30" fill="#eaf8f3" stroke="#0f5e4b" stroke-opacity="0.55" stroke-dasharray="6 6"/><text x="80" y="196" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700" letter-spacing="1" fill="#0f5e4b">TSUNAMI TANPA GEMPA BESAR</text></g>
+  <text x="300" y="540" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" fill="#1c1c1c">Sisi tubuh gunung runtuh ke laut dan mendorong air.</text></g>
+  <line x1="70" y1="600" x2="1130" y2="600" stroke="#0f5e4b" stroke-opacity="0.32" stroke-dasharray="7 8"/>
+  <text x="70" y="628" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" fill="#4f5b57">VISUAL PENJELAS, BUKAN FOTO LAPANGAN. NaLI by NatIve, non-AI, berdasarkan sumber yang dicantumkan.</text>
+</svg>

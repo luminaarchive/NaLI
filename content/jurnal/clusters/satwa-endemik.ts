@@ -10,6 +10,8 @@ const CHECKED = "2026-06-12";
 export const satwaEndemik = [
   j({
     slug: "komodo-lima-pulau",
+    synopsis: `Komodo bukan satwa yang tersebar luas. Ia hanya hidup liar di Komodo, Rinca, dan sudut barat Flores. Sebaran sesempit itu membuat setiap pulau berharga: satu wabah, kebakaran, atau perubahan garis pantai bisa memukul bagian besar populasinya sekaligus. Reputasinya besar, tetapi ruang hidupnya justru sangat kecil.`,
+    cover: { type: "map", title: "Sebaran Komodo di Nusantara", alt: "Peta sederhana Nusantara dengan wilayah sebaran komodo di Nusa Tenggara Timur disorot.", caption: "Peta sebaran komodo pada skema Nusantara." },
     title: "Komodo hanya hidup liar di segelintir pulau",
     dek: "Kadal terbesar dunia bertahan di sebaran yang sangat sempit di Nusa Tenggara Timur.",
     category: "satwa",
@@ -34,6 +36,8 @@ Catatan keterdapatan dalam basis data keanekaragaman hayati membantu memetakan d
   }),
   j({
     slug: "badak-jawa-satu-benteng",
+    synopsis: `Hampir semua badak Jawa yang tersisa berkumpul di satu kawasan, Ujung Kulon, dan tidak ada cadangan di kebun binatang. Itu sebabnya bencana tunggal, dari letusan Anak Krakatau sampai wabah penyakit, terasa begitu menakutkan. Benteng terakhir tetaplah satu titik, dan satu titik selalu lebih rapuh daripada banyak titik.`,
+    cover: { type: "map", title: "Badak Jawa di Ujung Kulon", alt: "Peta sederhana Nusantara dengan kawasan Ujung Kulon di ujung barat Jawa disorot.", caption: "Peta benteng terakhir badak Jawa di ujung barat Jawa." },
     title: "Badak Jawa bergantung pada satu kawasan",
     dek: "Hampir seluruh populasi liar dunia terkonsentrasi di Ujung Kulon.",
     category: "satwa",
@@ -58,6 +62,8 @@ Status Situs Warisan Dunia pada Ujung Kulon memberi pengakuan internasional, tet
   }),
   j({
     slug: "anoa-kerbau-kerdil-sulawesi",
+    synopsis: `Anoa adalah kerbau liar bertubuh kecil yang hanya ada di Sulawesi. Nasibnya menempel pada hutan. Ketika hutan terpotong-potong oleh pembukaan lahan dan perburuan terus berjalan, populasinya menyusut menjadi kantong-kantong kecil yang lebih mudah hilang satu per satu. Endemik ini tidak punya tempat lain untuk pindah.`,
+    cover: { type: "map", title: "Anoa, endemik Sulawesi", alt: "Peta sederhana Nusantara dengan pulau Sulawesi disorot sebagai sebaran anoa.", caption: "Peta sebaran anoa yang terbatas di Sulawesi." },
     title: "Anoa, kerbau kerdil yang menyusut bersama hutannya",
     dek: "Mamalia endemik Sulawesi yang tertekan oleh fragmentasi habitat dan perburuan.",
     category: "satwa",
@@ -82,6 +88,8 @@ Catatan keterdapatan di basis data keanekaragaman hayati membantu menunjukkan di
   }),
   j({
     slug: "babirusa-taring-melengkung",
+    synopsis: `Taring pejantan babirusa menembus moncong dan melengkung ke arah wajahnya sendiri, anatomi yang tidak ada bandingnya. Di balik keanehan itu ada satwa Wallacea yang diburu dan kehilangan hutan tempat hidupnya. Bentuknya memikat banyak orang, tetapi tekanan terhadap populasinya nyata dan terus berjalan dari tahun ke tahun.`,
+    cover: { type: "map", title: "Babirusa di Wallacea", alt: "Peta sederhana Nusantara dengan Sulawesi dan Maluku disorot sebagai sebaran babirusa.", caption: "Peta sebaran babirusa di kawasan Wallacea." },
     title: "Babirusa dan taring yang melengkung ke wajahnya sendiri",
     dek: "Satwa Wallacea dengan anatomi taring yang tidak ada bandingnya.",
     category: "satwa",
@@ -106,6 +114,8 @@ Sebagai bagian dari fauna endemik Sulawesi, babirusa memperlihatkan bagaimana is
   }),
   j({
     slug: "tarsius-primata-malam-mungil",
+    synopsis: `Mata tarsius begitu besar sampai tidak bisa berputar di rongganya, jadi lehernya yang memutar kepala nyaris ke belakang. Primata mungil ini berburu serangga sepanjang malam dan hampir tidak makan tumbuhan. Tubuh sekecil itu membuatnya bergantung penuh pada hutan yang masih utuh untuk bisa bertahan hidup.`,
+    cover: { type: "map", title: "Tarsius, primata malam", alt: "Peta sederhana Nusantara dengan Sulawesi disorot sebagai pusat keanekaragaman tarsius.", caption: "Peta pusat keanekaragaman tarsius di Sulawesi." },
     title: "Tarsius, primata mungil bermata raksasa",
     dek: "Pemburu malam Sulawesi yang seluruh tubuhnya dirancang untuk menangkap serangga dalam gelap.",
     category: "satwa",
@@ -130,6 +140,8 @@ Sebagai satwa endemik kawasan Wallacea, tarsius rentan pada hilangnya hutan dan 
   }),
   j({
     slug: "maleo-burung-pengubur-telur",
+    synopsis: `Maleo tidak mengerami telurnya seperti burung kebanyakan. Ia menitipkannya pada panas pasir pantai atau tanah vulkanik, dan anak yang menetas langsung mandiri. Pola reproduksi ini hemat, tetapi membuat lokasi bertelur menjadi titik paling rentan dalam hidupnya, terutama ketika pantai dan kawasan panas bumi berubah.`,
+    cover: { type: "map", title: "Maleo, megapoda Sulawesi", alt: "Peta sederhana Nusantara dengan Sulawesi disorot sebagai sebaran maleo.", caption: "Peta sebaran maleo, burung pengubur telur dari Sulawesi." },
     title: "Maleo, burung yang menitipkan telurnya pada panas bumi",
     dek: "Megapoda endemik Sulawesi yang tidak mengerami telurnya sendiri.",
     category: "satwa",
@@ -154,6 +166,8 @@ Sebagai megapoda, maleo termasuk kelompok burung yang memanfaatkan sumber panas 
   }),
   j({
     slug: "coelacanth-sulawesi-fosil-hidup",
+    synopsis: `Coelacanth pernah dikira hanya dikenal dari fosil sampai ditemukan hidup. Indonesia punya jenisnya sendiri di laut dalam dekat Sulawesi. Hidup di kegelapan yang dingin membuatnya nyaris tak teramati, dan justru karena itu kita sadar betapa sedikit yang benar-benar dipahami tentang laut dalam Nusantara.`,
+    cover: { type: "map", title: "Coelacanth laut dalam", alt: "Peta sederhana Nusantara dengan perairan Sulawesi dan Maluku Utara disorot.", caption: "Peta perairan tempat coelacanth Indonesia tercatat." },
     title: "Coelacanth Sulawesi, fosil hidup dari laut dalam",
     dek: "Ikan purba yang dikira punah ditemukan hidup di perairan dalam Indonesia.",
     category: "satwa",
@@ -178,6 +192,8 @@ Status konservasi coelacanth Indonesia sulit dipastikan karena populasinya hidup
   }),
   j({
     slug: "orangutan-tapanuli-kera-besar-termuda",
+    synopsis: `Baru pada 2017 sains mengakui orangutan Tapanuli sebagai spesies kera besar tersendiri. Sejak awal ia sudah sangat terancam karena populasinya kecil dan hanya ada di kawasan Batang Toru. Penemuan ini menunjukkan keanekaragaman Indonesia masih menyimpan kejutan, sering datang bersamaan dengan urgensi menyelamatkannya.`,
+    cover: { type: "map", title: "Orangutan Tapanuli, Sumatra Utara", alt: "Peta sederhana Nusantara dengan Sumatra Utara disorot sebagai habitat orangutan Tapanuli.", caption: "Peta habitat sempit orangutan Tapanuli di Sumatra Utara." },
     title: "Orangutan Tapanuli, spesies kera besar yang baru dikenali",
     dek: "Populasi kecil di Sumatra Utara yang dideskripsikan sebagai spesies tersendiri pada 2017.",
     category: "satwa",
@@ -202,6 +218,8 @@ Kasus Tapanuli menunjukkan dua hal sekaligus: keanekaragaman hayati Indonesia ma
   }),
   j({
     slug: "cenderawasih-bulu-dan-perdagangan",
+    synopsis: `Keindahan bulu cenderawasih justru menjadi bebannya. Sejak lama bulunya diperdagangkan, dan perburuan masih membayangi sebagian jenis di samping hilangnya hutan. Sistem kawin yang memusat pada lokasi peragaan tertentu membuat gangguan kecil pun bisa berdampak besar pada keberhasilan reproduksinya di alam.`,
+    cover: { type: "map", title: "Cenderawasih di Papua", alt: "Peta sederhana Nusantara dengan Papua disorot sebagai pusat sebaran cenderawasih.", caption: "Peta pusat sebaran cenderawasih di Papua." },
     title: "Cenderawasih, keindahan yang menjadi beban",
     dek: "Burung surga Papua yang bulunya membuatnya diburu lintas abad.",
     category: "satwa",
@@ -226,6 +244,8 @@ Cenderawasih menjadi contoh bagaimana daya tarik visual sebuah satwa dapat berba
   }),
   j({
     slug: "harimau-jawa-status-punah",
+    synopsis: `Harimau Jawa dinyatakan punah, dan satu sampel rambut tidak cukup untuk membatalkannya. Membuktikan sebuah spesies masih hidup menuntut bukti berlapis yang bisa diperiksa ulang, dari kamera jebak sampai genetik bersih. Kasus ini bukan soal harapan, melainkan soal beban bukti yang dijaga tetap jujur.`,
+    cover: { type: "map", title: "Harimau Jawa, status punah", alt: "Peta sederhana Nusantara dengan pulau Jawa disorot sebagai bekas sebaran harimau Jawa.", caption: "Peta bekas sebaran harimau Jawa yang kini dinyatakan punah." },
     title: "Harimau Jawa dan beban membuktikan kepunahan",
     dek: "Dinyatakan punah, tetapi klaim kemunculan terus memerlukan bukti yang dapat diperiksa.",
     category: "satwa",

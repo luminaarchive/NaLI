@@ -28,6 +28,17 @@ entries were created to inflate the count, and no sources were invented.
 - Sitemap now includes `/jurnal` and every entry route.
 - Validation extended (see below).
 
+## Cover, synopsis, and download coverage
+
+- Entries with a visible cover: 26 of 26 (topic-specific non-AI internal visuals;
+  cover types: map 10, diagram 15, timeline 1). See
+  `docs/nali_jurnal_cover_synopsis_report.md`.
+- Entries with a human synopsis (35 to 80 words): 26 of 26.
+- Entries with a working public `.txt` download: 26 of 26. Route format:
+  `/jurnal/[slug]/download.txt`. See `docs/nali_jurnal_download_report.md`.
+- Mandatory bar for any NEW entry going forward: sourceIds, synopsis, visible cover,
+  limitations, checkedAt. No cover means no publish; no synopsis means no publish.
+
 ## Entries this run: 26
 
 Category breakdown:

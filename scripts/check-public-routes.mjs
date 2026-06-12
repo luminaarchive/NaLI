@@ -44,6 +44,60 @@ async function check(url, expect = 200) {
   }
 }
 
+const EM_DASH = "\u2014";
+const BANNED = /jalan yang lebih pelan|Yang dicari bukan sensasi|membahas topik dengan sumber terbuka|menjelaskan batas bukti/i;
+
+// Jurnal detail page must visibly render a cover and a synopsis.
+async function checkJurnalDetail(entry) {
+  const url = `/jurnal/${entry.slug}`;
+  try {
+    const res = await fetch(new URL(url, BASE_URL));
+    const html = await res.text();
+    const hasCover =
+      html.includes('data-jurnal-cover="true"') &&
+      (html.includes(`/images/jurnal-covers/${entry.slug}.svg`) || /<img[^>]+jurnal-covers/i.test(html));
+    const hasSynopsis = html.includes('data-jurnal-synopsis="true"');
+    const hasDownload = html.includes(`/jurnal/${entry.slug}/download.txt`);
+    const ok = res.status === 200 && hasCover && hasSynopsis && hasDownload;
+    return {
+      url,
+      status: ok ? 200 : `cover:${hasCover} synopsis:${hasSynopsis} download:${hasDownload} http:${res.status}`,
+      ok,
+    };
+  } catch (error) {
+    return { url, status: `ERR ${error.message}`, ok: false };
+  }
+}
+
+// Download route must return a real text file with the required fields.
+async function checkDownload(entry) {
+  const url = `/jurnal/${entry.slug}/download.txt`;
+  try {
+    const res = await fetch(new URL(url, BASE_URL));
+    const ct = res.headers.get("content-type") ?? "";
+    const body = await res.text();
+    const okType = /text\/(plain|markdown)/i.test(ct);
+    const hasTitle = body.includes(entry.title);
+    const hasSynopsis = body.includes("SINOPSIS");
+    const hasSources = body.includes("SUMBER");
+    const hasLimits = body.includes("BATASAN");
+    const hasChecked = body.includes("DICEK");
+    const noEm = !body.includes(EM_DASH);
+    const noBanned = !BANNED.test(body);
+    const ok =
+      res.status === 200 && okType && hasTitle && hasSynopsis && hasSources && hasLimits && hasChecked && noEm && noBanned;
+    return {
+      url,
+      status: ok
+        ? 200
+        : `http:${res.status} type:${okType} title:${hasTitle} syn:${hasSynopsis} src:${hasSources} lim:${hasLimits} chk:${hasChecked} noEm:${noEm} noBanned:${noBanned}`,
+      ok,
+    };
+  } catch (error) {
+    return { url, status: `ERR ${error.message}`, ok: false };
+  }
+}
+
 async function main() {
   const core = [
     "/",
@@ -70,11 +124,16 @@ async function main() {
   const sources = listSlugs("content/sources");
   const jurnal = await loadJournalEntries();
 
+  const jurnalSample = sample(jurnal, 12);
+
   const checks = [];
   for (const url of core) checks.push(check(url, 200));
   for (const a of sample(articles, 12)) checks.push(check(`/articles/${a.slug}`, 200));
   for (const s of sample(sources, 6)) checks.push(check(`/arsip-sumber/${s.slug}`, 200));
-  for (const e of sample(jurnal, 12)) checks.push(check(`/jurnal/${e.slug}`, 200));
+  // jurnal detail pages: cover + synopsis + download link must render
+  for (const e of jurnalSample) checks.push(checkJurnalDetail(e));
+  // jurnal public downloads: real text file with required fields
+  for (const e of jurnalSample) checks.push(checkDownload(e));
   // admin must be gated (redirect to login), never a public 200 dashboard
   checks.push(check("/admin", [302, 307, 308, 401, 403]));
   // bogus route must 404

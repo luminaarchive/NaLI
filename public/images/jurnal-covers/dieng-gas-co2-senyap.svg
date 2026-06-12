@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Dieng, gas senyap">
+  <rect width="1200" height="675" fill="#f7fbf8"/>
+  <rect x="34" y="34" width="1132" height="607" fill="#ffffff" stroke="#0f5e4b" stroke-opacity="0.6" stroke-dasharray="12 10"/>
+  <text x="70" y="96" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700" letter-spacing="4" fill="#0f5e4b">JURNAL NaLI, VISUAL PENJELAS</text>
+  <text x="70" y="150" font-family="Georgia, serif" font-size="34" font-weight="700" fill="#1c1c1c">Dieng, gas senyap</text>
+  <g>
+  <rect x="70" y="206" width="1060" height="360" fill="#cfeee6" fill-opacity="0.18"/>
+  <path d="M250 540 Q420 300 600 300 Q780 300 950 540 Z" fill="#eaf8f3" stroke="#0f5e4b" stroke-opacity="0.6"/>
+  <ellipse cx="600" cy="470" rx="150" ry="34" fill="#cfeee6" stroke="#0f5e4b" stroke-opacity="0.45"/>
+  <g opacity="0.7"><circle cx="540" cy="430" r="10" fill="#4f5b57"/><circle cx="565" cy="410" r="8" fill="#4f5b57"/><circle cx="520" cy="408" r="7" fill="#4f5b57"/></g><text x="560" y="500" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" fill="#0f5e4b">GAS CO2 BERKUMPUL DI AREA RENDAH</text>
+  <g><rect x="70" y="176" width="256" height="30" fill="#eaf8f3" stroke="#0f5e4b" stroke-opacity="0.55" stroke-dasharray="6 6"/><text x="80" y="196" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700" letter-spacing="1" fill="#0f5e4b">GAS VULKANIK TAK TERLIHAT</text></g></g>
+  <line x1="70" y1="600" x2="1130" y2="600" stroke="#0f5e4b" stroke-opacity="0.32" stroke-dasharray="7 8"/>
+  <text x="70" y="628" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" fill="#4f5b57">VISUAL PENJELAS, BUKAN FOTO LAPANGAN. NaLI by NatIve, non-AI, berdasarkan sumber yang dicantumkan.</text>
+</svg>

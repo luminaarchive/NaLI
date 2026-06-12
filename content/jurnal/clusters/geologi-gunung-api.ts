@@ -10,6 +10,8 @@ const CHECKED = "2026-06-12";
 export const geologiGunungApi = [
   j({
     slug: "tsunami-vulkanik-tanpa-gempa",
+    synopsis: `Banyak orang menunggu gempa sebagai tanda tsunami. Selat Sunda 2018 menunjukkan laut bisa bergerak tanpa itu: sebagian tubuh Anak Krakatau runtuh ke laut dan mendorong gelombang. Bagi pesisir wisata pada malam hari, celah pemahaman ini bisa berarti hilangnya waktu berharga untuk menyelamatkan diri.`,
+    cover: { type: "diagram", title: "Tsunami vulkanik tanpa gempa", alt: "Diagram profil gunung api laut dengan sisi tubuh runtuh dan gelombang menyebar ke pantai.", caption: "Diagram mekanisme tsunami akibat runtuhnya sisi gunung api." },
     title: "Tsunami bisa datang tanpa gempa besar",
     dek: "Runtuhnya tubuh gunung api ke laut dapat menggerakkan gelombang, seperti di Selat Sunda 2018.",
     category: "geologi",
@@ -34,6 +36,8 @@ Pelajaran utamanya bukan menakut-nakuti, melainkan memperluas cara membaca bahay
   }),
   j({
     slug: "toba-letusan-super",
+    synopsis: `Danau Toba yang tenang adalah bekas letusan super sekitar 74.000 tahun lalu. Bahwa letusannya raksasa cukup pasti. Tetapi klaim bahwa ia nyaris memunahkan manusia jauh lebih lemah dan masih diperdebatkan. Toba mengajarkan kita memisahkan skala fisik yang nyata dari kepastian dampak yang belum tentu ada.`,
+    cover: { type: "diagram", title: "Kaldera Toba", alt: "Diagram potongan kaldera lebar berisi danau, sisa letusan super.", caption: "Diagram penampang kaldera Toba yang kini menjadi danau." },
     title: "Toba, danau yang dulunya letusan super",
     dek: "Kaldera raksasa Sumatra adalah jejak salah satu letusan terbesar dalam sejarah Bumi modern.",
     category: "geologi",
@@ -58,6 +62,8 @@ Hari ini, Toba adalah danau vulkanik yang indah sekaligus laboratorium ilmiah. K
   }),
   j({
     slug: "tambora-1815-tahun-tanpa-musim-panas",
+    synopsis: `Letusan Tambora 1815 menurunkan suhu dunia, dan tahun berikutnya dikenang sebagai tahun tanpa musim panas dengan gagal panen di benua lain. Di sini Indonesia bukan sekadar korban iklim global, melainkan sumbernya. Satu letusan tropis yang cukup besar ternyata bisa menggeser cuaca seluruh planet.`,
+    cover: { type: "diagram", title: "Tambora 1815 dan iklim dunia", alt: "Diagram gunung melepas aerosol sulfat ke atmosfer dan matahari yang meredup.", caption: "Diagram bagaimana letusan tropis mendinginkan iklim sementara." },
     title: "Tambora 1815 dan tahun tanpa musim panas",
     dek: "Letusan di Sumbawa mendinginkan iklim dunia dan memicu kelaparan di benua lain.",
     category: "geologi",
@@ -82,6 +88,8 @@ Tambora 1815 mengingatkan bahwa Indonesia bukan hanya menerima dampak iklim glob
   }),
   j({
     slug: "merapi-awan-panas",
+    synopsis: `Bahaya paling khas Merapi bukan lava yang mengalir pelan, melainkan awan panas yang meluncur cepat menuruni lereng dan sulit dihindari. Karena lerengnya padat penduduk, gunung ini dipantau sangat ketat. Hidup berdampingan dengannya menuntut kedisiplinan evakuasi setiap kali aktivitasnya meningkat.`,
+    cover: { type: "diagram", title: "Profil bahaya Merapi", alt: "Diagram profil gunung dengan kubah lava dan jalur awan panas menuruni lereng.", caption: "Diagram jalur awan panas Merapi menuruni lereng." },
     title: "Merapi dan bahaya awan panas",
     dek: "Salah satu gunung api paling aktif di dunia, dipantau ketat karena dekat permukiman padat.",
     category: "geologi",
@@ -106,6 +114,8 @@ Merapi memperlihatkan bahwa hidup berdampingan dengan gunung api aktif menuntut 
   }),
   j({
     slug: "kawah-ijen-api-biru",
+    synopsis: `Api biru Ijen sering dikira lava. Sebenarnya itu gas belerang yang terbakar saat bertemu udara panas. Kawahnya juga menyimpan danau yang sangat asam. Keindahannya nyata, tetapi begitu pula bahayanya bagi penambang yang bekerja dekat gas beracun di tepi kawah hampir setiap hari.`,
+    cover: { type: "diagram", title: "Kawah Ijen, api biru", alt: "Diagram kawah dengan danau asam dan nyala biru dari gas belerang yang terbakar.", caption: "Diagram asal api biru dan danau asam Kawah Ijen." },
     title: "Api biru Ijen bukan lava",
     dek: "Cahaya biru di kawah Ijen berasal dari gas belerang yang terbakar, bukan batuan pijar.",
     category: "geologi",
@@ -130,6 +140,8 @@ Memahami Ijen secara benar berarti memisahkan keindahan visual dari mekanismenya
   }),
   j({
     slug: "dieng-gas-co2-senyap",
+    synopsis: `Dieng tampak sejuk dan damai, tetapi menyimpan bahaya yang tidak terlihat: gas vulkanik seperti karbon dioksida yang bisa berkumpul di area rendah dan mematikan tanpa letusan besar. Ancaman gunung api tidak selalu dramatis. Kadang ia senyap, justru di tempat yang tampak paling tenang.`,
+    cover: { type: "diagram", title: "Dieng, gas yang senyap", alt: "Diagram cekungan kawah dengan gas vulkanik berat berkumpul di area rendah.", caption: "Diagram bahaya gas vulkanik tak terlihat di Dieng." },
     title: "Dieng dan bahaya gas yang tidak terlihat",
     dek: "Dataran tinggi yang indah menyimpan risiko keluarnya gas vulkanik mematikan.",
     category: "geologi",
@@ -154,6 +166,8 @@ Dieng mengajarkan bahwa bahaya gunung api tidak selalu berupa lava atau awan pan
   }),
   j({
     slug: "kelud-danau-kawah-direkayasa",
+    synopsis: `Danau di kawah Kelud membuat letusannya mematikan, karena air bisa tumpah bersama material panas sebagai lahar yang menyapu lembah. Untuk menekan risiko, airnya pernah dialirkan keluar lewat terowongan. Rekayasa ini menangani satu bagian bahaya, tetapi gunung tetap memegang kendali atas bentuk letusannya.`,
+    cover: { type: "diagram", title: "Kelud, danau kawah direkayasa", alt: "Diagram kawah berisi danau dengan terowongan yang mengurangi volume air.", caption: "Diagram rekayasa danau kawah Kelud untuk menahan lahar." },
     title: "Kelud, gunung yang danau kawahnya direkayasa",
     dek: "Untuk menahan lahar, danau kawah Kelud pernah dikelola dengan terowongan.",
     category: "geologi",
@@ -178,6 +192,8 @@ Kelud menggambarkan hubungan dua arah antara manusia dan gunung api: bahaya dike
   }),
   j({
     slug: "samalas-1257-letusan-terlupakan",
+    synopsis: `Selama berabad-abad ilmuwan tahu ada letusan besar sekitar tahun 1257 dari jejak es kutub, tetapi tidak tahu sumbernya. Jawabannya ternyata Samalas di Lombok. Geologi lapangan, inti es, dan naskah babad bertemu untuk menyusun ulang peristiwa yang nyaris hilang dari ingatan dunia.`,
+    cover: { type: "diagram", title: "Samalas 1257", alt: "Diagram potongan kaldera Samalas di kompleks Rinjani dengan danau kawah.", caption: "Diagram kaldera Samalas, sumber letusan besar 1257." },
     title: "Samalas 1257, letusan besar yang lama terlupakan",
     dek: "Jejak es dan babad bertemu untuk mengidentifikasi sumber letusan global abad ke-13.",
     category: "geologi",

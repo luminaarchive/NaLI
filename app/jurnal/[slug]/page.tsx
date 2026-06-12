@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MdxBody } from "@/components/MdxBody";
@@ -80,6 +81,48 @@ export default function JurnalEntryPage({ params }: { params: Params }) {
           {entry.title}
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-gray">{entry.dek}</p>
+
+        {/* mandatory visible cover near the top, with caption and credit */}
+        <figure className="mt-7" data-jurnal-cover="true">
+          <div className="overflow-hidden border border-dashed border-ink/55 bg-ink-wash/30">
+            <Image
+              src={entry.cover.src}
+              alt={entry.cover.alt}
+              width={1200}
+              height={675}
+              className="h-auto w-full object-contain"
+              priority
+            />
+          </div>
+          <figcaption className="mt-3" data-jurnal-cover-credit="true">
+            <p className="font-mono text-[0.76rem] leading-relaxed text-ink-charcoal">{entry.cover.caption}</p>
+            <p className="mt-1 font-mono text-[0.68rem] leading-relaxed text-ink/60">
+              {entry.cover.attribution}.{" "}
+              <a href={entry.cover.sourceUrl} className="link-teal">
+                Sumber visual
+              </a>
+              , {entry.cover.license}
+              {entry.cover.checkedAt ? <span className="text-ink/40">, dicek {entry.cover.checkedAt}</span> : null}
+            </p>
+          </figcaption>
+        </figure>
+
+        {/* human synopsis */}
+        <section className="mt-7 border-l-2 border-dashed border-ink/50 pl-4" data-jurnal-synopsis="true">
+          <h2 className="label text-ink/70">Sinopsis</h2>
+          <p className="mt-2 text-[0.97rem] leading-relaxed text-ink-charcoal">{entry.synopsis}</p>
+        </section>
+
+        {/* download */}
+        <div className="mt-6">
+          <a
+            href={`/jurnal/${entry.slug}/download.txt`}
+            className="inline-flex items-center gap-2 border border-ink bg-ink px-4 py-2.5 font-mono text-[0.74rem] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-ink-deep"
+            download={`nali-jurnal-${entry.slug}.txt`}
+          >
+            Unduh catatan (TXT) <span aria-hidden>↓</span>
+          </a>
+        </div>
 
         <div className="mt-8">
           <MdxBody source={entry.body} />

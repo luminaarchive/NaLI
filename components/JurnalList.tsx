@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   JOURNAL_CATEGORY_LABEL,
@@ -11,12 +12,16 @@ import { ConfidenceBadge } from "@/components/ConfidenceBadge";
 
 const ALL = "__all__";
 
-type Card = Pick<
+export type JurnalCard = Pick<
   JournalEntry,
-  "slug" | "title" | "dek" | "category" | "topics" | "geography" | "confidence" | "readingMinutes"
->;
+  "slug" | "title" | "synopsis" | "category" | "topics" | "geography" | "confidence" | "readingMinutes"
+> & {
+  coverSrc: string;
+  coverAlt: string;
+  sourceCount: number;
+};
 
-export function JurnalList({ entries }: { entries: Card[] }) {
+export function JurnalList({ entries }: { entries: JurnalCard[] }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>(ALL);
   const [topic, setTopic] = useState<string>(ALL);
@@ -49,7 +54,7 @@ export function JurnalList({ entries }: { entries: Card[] }) {
         (geo === ALL || e.geography.includes(geo)) &&
         (q === "" ||
           e.title.toLowerCase().includes(q) ||
-          e.dek.toLowerCase().includes(q) ||
+          e.synopsis.toLowerCase().includes(q) ||
           e.topics.some((t) => t.toLowerCase().includes(q))),
     );
   }, [entries, query, category, topic, geo]);
@@ -127,22 +132,39 @@ export function JurnalList({ entries }: { entries: Card[] }) {
           <li key={e.slug}>
             <Link
               href={`/jurnal/${e.slug}`}
-              className="flex h-full flex-col border border-dashed border-ink/60 bg-paper p-5 transition-colors hover:bg-ink-wash"
+              className="flex h-full flex-col border border-dashed border-ink/60 bg-paper transition-colors hover:bg-ink-wash"
             >
-              <div className="flex items-center justify-between gap-3">
-                <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-label text-ink">
-                  {JOURNAL_CATEGORY_LABEL[e.category]}
-                </span>
-                <ConfidenceBadge confidence={e.confidence} size="sm" />
+              {/* mandatory visible cover */}
+              <div className="border-b border-dashed border-ink/45 bg-ink-wash/30">
+                <Image
+                  src={e.coverSrc}
+                  alt={e.coverAlt}
+                  width={1200}
+                  height={675}
+                  className="h-auto w-full object-cover"
+                />
               </div>
-              <h2 className="mt-3 font-display text-lg font-semibold leading-snug text-ink-black">
-                {e.title}
-              </h2>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-gray">{e.dek}</p>
-              <p className="mt-3 font-mono text-[0.64rem] uppercase tracking-wider text-ink/50">
-                {e.topics.slice(0, 3).join(" · ")}
-                {e.readingMinutes ? ` · ${e.readingMinutes} mnt` : ""}
-              </p>
+              <div className="flex flex-1 flex-col p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-label text-ink">
+                    {JOURNAL_CATEGORY_LABEL[e.category]}
+                  </span>
+                  <ConfidenceBadge confidence={e.confidence} size="sm" />
+                </div>
+                <h2 className="mt-3 font-display text-lg font-semibold leading-snug text-ink-black">
+                  {e.title}
+                </h2>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-gray">{e.synopsis}</p>
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <span className="font-mono text-[0.64rem] uppercase tracking-wider text-ink/50">
+                    {e.topics.slice(0, 2).join(" · ")}
+                    {e.readingMinutes ? ` · ${e.readingMinutes} mnt` : ""}
+                  </span>
+                  <span className="font-mono text-[0.62rem] uppercase tracking-wider text-ink-deep">
+                    {e.sourceCount} sumber
+                  </span>
+                </div>
+              </div>
             </Link>
           </li>
         ))}

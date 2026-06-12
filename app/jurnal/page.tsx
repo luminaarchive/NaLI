@@ -20,12 +20,15 @@ export default function JurnalPage() {
   const entries = getAllJournalEntries().map((e) => ({
     slug: e.slug,
     title: e.title,
-    dek: e.dek,
+    synopsis: e.synopsis,
     category: e.category,
     topics: e.topics,
     geography: e.geography,
     confidence: e.confidence,
     readingMinutes: e.readingMinutes,
+    coverSrc: e.cover.src,
+    coverAlt: e.cover.alt,
+    sourceCount: e.sourceIds.length,
   }));
 
   return (

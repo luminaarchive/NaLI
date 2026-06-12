@@ -208,6 +208,32 @@ export type JournalCategory =
   | "arsip-alam"
   | "ekologi";
 
+/**
+ * Mandatory visible cover for a Jurnal entry. Displayed on the listing card and
+ * the detail page. May be a licensed photo / archive image / map, or a
+ * last-resort internal non-AI explanatory visual (in which case creator is
+ * "NaLI by NatIve", license is "Internal explanatory visual for NaLI Jurnal",
+ * and the caption states it is an explanatory visual, not a field photo).
+ */
+export interface JurnalCover {
+  id: string;
+  /** Renderable local path or remote URL actually shown. */
+  src: string;
+  type: "photo" | "archive_image" | "map" | "diagram" | "timeline" | "chart";
+  title: string;
+  creator?: string;
+  institution?: string;
+  /** Source page or source record used to build / license the visual. */
+  sourceUrl: string;
+  license: string;
+  licenseUrl?: string;
+  attribution: string;
+  caption: string;
+  alt: string;
+  checkedAt: string;
+  relatedJurnalIds?: string[];
+}
+
 export interface JournalEntry {
   /** Stable id, equal to the slug. */
   id: string;
@@ -215,6 +241,8 @@ export interface JournalEntry {
   title: string;
   /** One-line standfirst. */
   dek: string;
+  /** Human-written synopsis, 35 to 80 words, shown on listing + detail. */
+  synopsis: string;
   category: JournalCategory;
   topics: string[];
   geography: string[];
@@ -225,6 +253,8 @@ export interface JournalEntry {
   body: string;
   keyTakeaway: string;
   limitations: string[];
+  /** Mandatory visible cover. */
+  cover: JurnalCover;
   /** Optional reference to an article image id, kept for future visuals. */
   imageId?: string;
   /** ISO date the entry was last checked. */
