@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getAnalyticsSummary } from "@/lib/analytics";
+import { getAllSources, getAllFieldNotes } from "@/lib/content";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { DeletePostButton } from "@/components/admin/DeletePostButton";
 import { formatDate } from "@/lib/format";
@@ -17,6 +19,27 @@ interface Row {
   date: string;
 }
 
+function StatCard({
+  label,
+  value,
+  hint,
+  href,
+}: {
+  label: string;
+  value: number | string;
+  hint?: string;
+  href?: string;
+}) {
+  const inner = (
+    <div className="h-full border border-dashed border-ink/60 bg-paper p-5 transition-colors hover:bg-ink-wash">
+      <p className="label text-ink/70">{label}</p>
+      <p className="mt-2 font-display text-4xl font-black text-ink">{value}</p>
+      {hint && <p className="mt-1 font-mono text-[0.66rem] text-gray-light">{hint}</p>}
+    </div>
+  );
+  return href ? <Link href={href}>{inner}</Link> : inner;
+}
+
 export default async function AdminDashboard() {
   const supabase = createSupabaseServerClient();
   const { data } = await supabase
@@ -27,35 +50,121 @@ export default async function AdminDashboard() {
   const published = posts.filter((p) => p.status === "published").length;
   const drafts = posts.length - published;
 
+  const analytics = await getAnalyticsSummary(14);
+  const sourceCount = getAllSources().length;
+  const fieldNoteCount = getAllFieldNotes().length;
+  const topPaths = analytics.topPaths.slice(0, 6);
+
   return (
     <div className="min-h-screen bg-paper">
-      <AdminHeader active="posts" />
+      <AdminHeader active="dashboard" />
       <div className="container-editorial py-10">
+        {/* heading + quick actions */}
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-display text-3xl font-black uppercase text-ink">Tulisan</h1>
+            <h1 className="font-display text-3xl font-black uppercase text-ink">Dashboard</h1>
             <p className="mt-2 font-mono text-[0.8rem] text-gray">
+              Ringkasan tulisan dan kunjungan situs NaLI by NatIve.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/admin/posts/new"
+              className="border border-ink bg-ink px-5 py-2.5 font-mono text-[0.78rem] font-semibold uppercase tracking-wider text-paper transition-colors hover:bg-ink-deep"
+            >
+              + Tulisan baru
+            </Link>
+            <Link
+              href="/admin/analytics"
+              className="border border-ink/70 px-5 py-2.5 font-mono text-[0.78rem] font-semibold uppercase tracking-wider text-ink transition-colors hover:bg-ink hover:text-paper"
+            >
+              Statistik lengkap
+            </Link>
+          </div>
+        </div>
+
+        {/* stat cards */}
+        <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-3">
+          <StatCard label="Total tulisan" value={posts.length} hint="di database" />
+          <StatCard label="Terbit" value={published} hint="tampil publik" />
+          <StatCard label="Draft" value={drafts} hint="belum tampil" />
+          <StatCard label="Total kunjungan" value={analytics.total} hint="sepanjang waktu" href="/admin/analytics" />
+          <StatCard label="7 hari terakhir" value={analytics.last7} hint="kunjungan" href="/admin/analytics" />
+          <StatCard label="Arsip sumber" value={sourceCount} hint={`${fieldNoteCount} catatan lapangan`} href="/arsip-sumber" />
+        </div>
+
+        {/* chart + top paths */}
+        <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+          {/* 14-day bar chart */}
+          <div className="border border-dashed border-ink/60 p-6">
+            <div className="flex items-center justify-between">
+              <p className="label text-ink/70">Kunjungan 14 hari</p>
+              <Link href="/admin/analytics" className="font-mono text-[0.66rem] uppercase tracking-wider text-ink hover:underline">
+                Detail →
+              </Link>
+            </div>
+            {analytics.days.length === 0 ? (
+              <p className="mt-6 font-mono text-[0.8rem] text-gray">Belum ada data kunjungan.</p>
+            ) : (
+              <div className="mt-6 flex items-end gap-1.5" style={{ height: "150px" }}>
+                {analytics.days.map((d) => (
+                  <div key={d.key} className="flex flex-1 flex-col items-center justify-end gap-2">
+                    <div
+                      className="w-full bg-ink"
+                      style={{ height: `${(d.count / analytics.maxDay) * 120}px`, minHeight: d.count > 0 ? "3px" : "0" }}
+                      title={`${d.label}: ${d.count} kunjungan`}
+                    />
+                    <span className="font-mono text-[0.5rem] uppercase text-gray-light">{d.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* top paths */}
+          <div className="border border-dashed border-ink/60 p-6">
+            <p className="label text-ink/70">Halaman terpopuler</p>
+            {topPaths.length === 0 ? (
+              <p className="mt-6 font-mono text-[0.8rem] text-gray">Belum ada data.</p>
+            ) : (
+              <ul className="mt-5 space-y-2.5">
+                {topPaths.map(([path, count]) => (
+                  <li key={path} className="flex items-center justify-between gap-3 border-b border-dashed border-ink/25 pb-2 last:border-0">
+                    <span className="truncate font-mono text-[0.74rem] text-ink-deep">{path}</span>
+                    <span className="shrink-0 font-mono text-[0.74rem] text-gray">{count}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        {/* posts management */}
+        <div className="mt-12 flex items-end justify-between gap-4">
+          <div>
+            <h2 className="font-display text-2xl font-black uppercase text-ink">Tulisan</h2>
+            <p className="mt-1 font-mono text-[0.78rem] text-gray">
               {posts.length} total · {published} terbit · {drafts} draft
             </p>
           </div>
           <Link
             href="/admin/posts/new"
-            className="border border-ink bg-ink px-5 py-2.5 font-mono text-[0.8rem] font-semibold uppercase tracking-wider text-paper transition-colors hover:bg-ink-deep"
+            className="font-mono text-[0.72rem] uppercase tracking-wider text-ink hover:underline"
           >
             + Tulisan baru
           </Link>
         </div>
 
         {posts.length === 0 ? (
-          <p className="mt-12 border border-dashed border-ink/50 bg-ink-wash p-8 text-center font-mono text-[0.85rem] text-gray">
+          <p className="mt-6 border border-dashed border-ink/50 bg-ink-wash p-8 text-center font-mono text-[0.85rem] text-gray">
             Belum ada tulisan di database. Klik “Tulisan baru” untuk mulai.
             <br />
             <span className="text-ink/70">
-              (5 artikel contoh masih tampil di situs dari file MDX bawaan.)
+              (Artikel contoh masih tampil di situs dari file MDX bawaan.)
             </span>
           </p>
         ) : (
-          <div className="mt-8 overflow-hidden border border-ink/50">
+          <div className="mt-6 overflow-x-auto border border-ink/50">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-ink-wash">

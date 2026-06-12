@@ -115,6 +115,16 @@
   .prose-nali ol {
     @apply my-5 list-decimal space-y-2 pl-5 marker:text-gray;
   }
+  .prose-nali img {
+    @apply mb-2 mt-8 w-full border border-dashed border-ink/60 bg-ink-wash;
+  }
+  /* caption = the italic paragraph immediately after an image paragraph */
+  .prose-nali p:has(> img) {
+    @apply mb-0;
+  }
+  .prose-nali p:has(> img) + p > em {
+    @apply -mt-1 block text-center font-mono text-[0.72rem] not-italic leading-relaxed text-gray;
+  }
   .prose-nali figure {
     @apply my-8;
   }

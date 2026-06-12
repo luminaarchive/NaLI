@@ -30,7 +30,7 @@ export default async function EditPostPage({ params }: { params: { id: string } 
 
   return (
     <div className="min-h-screen bg-paper">
-      <AdminHeader active="posts" />
+      <AdminHeader active="dashboard" />
       <div className="container-editorial py-10">
         <div className="mb-8 flex items-center justify-between">
           <h1 className="font-display text-3xl font-black uppercase text-ink">Edit Tulisan</h1>

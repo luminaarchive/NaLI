@@ -1,10 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
+import { ArticleCard } from "@/components/ArticleCard";
 import { ConfidenceBadge } from "@/components/ConfidenceBadge";
 import { WaveHero } from "@/components/WaveHero";
 import { getAllArticles, getAllSources } from "@/lib/content";
-import { formatDate } from "@/lib/format";
-import { CATEGORY_LABEL, SOURCE_TYPE_LABEL, type Confidence } from "@/lib/types";
+import { CONFIDENCE_LABEL, SOURCE_TYPE_LABEL, type Confidence } from "@/lib/types";
 
 /* ============================== shared bits ============================== */
 
@@ -49,7 +48,7 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const articles = await getAllArticles();
-  const latest = articles.slice(0, 4);
+  const latest = articles.slice(0, 6);
   const sourceCount = getAllSources().length;
   const confidences: Confidence[] = ["high", "medium", "low", "needs-verification"];
 
@@ -68,7 +67,7 @@ export default async function HomePage() {
         </section>
 
         {/* proof strip */}
-        <section className="py-10">
+        <section className="py-8">
           <p className="font-mono text-[0.8rem] text-gray">Setiap tulisan dirujuk ke sumber bertipe</p>
           <ul className="mt-4 flex flex-wrap items-center gap-x-8 gap-y-3">
             {Object.values(SOURCE_TYPE_LABEL).map((t) => (
@@ -81,221 +80,69 @@ export default async function HomePage() {
 
         <DashRule />
 
-        {/* ================= FEATURES ================= */}
-        <section className="py-14 sm:py-16">
-          <p className="mx-auto max-w-xl text-center font-mono text-[0.9rem] leading-relaxed text-gray">
-            Bukan feed konten viral — sebuah sistem riset terbuka yang jujur
-            soal apa yang sudah ia tahu, dan apa yang belum.
-          </p>
-
-          {/* big card: journal + browser mockup */}
-          <div className={`${CARD} mt-12 grid items-center gap-8 overflow-hidden md:grid-cols-[1fr_1.2fr]`}>
-            <div className="p-8 sm:p-10">
-              <Meta>Indeks 01</Meta>
-              <h2 className="mt-3 font-display text-2xl font-bold uppercase tracking-[0.02em] text-ink">
-                Jurnal lapangan, bukan linimasa
+        {/* ================= TULISAN TERBARU — content first, right under the hero ================= */}
+        <section className="py-12 sm:py-16">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <Meta>Indeks — Terbaru</Meta>
+              <h2 className="mt-3 font-display text-3xl font-bold uppercase tracking-[0.01em] text-ink sm:text-4xl">
+                Tulisan terbaru
               </h2>
-              <p className="mt-3 font-mono text-[0.85rem] leading-relaxed text-gray">
-                Artikel tersusun rapi dengan filter kategori dan tag, waktu baca,
-                serta daftar sumber di bagian bawah setiap tulisan.
-              </p>
-              <p className="mt-3 font-mono text-[0.78rem] text-gray-light">
-                Tanpa login. Tanpa paywall. Tanpa iklan mengejar.
+              <p className="mt-3 max-w-lg font-mono text-[0.85rem] leading-relaxed text-gray">
+                Artikel dan catatan lapangan terbaru — setiap tulisan baru otomatis
+                muncul di sini begitu terbit.
               </p>
             </div>
-            <div className="px-6 pb-0 sm:px-0">
-              <div className="translate-y-3 overflow-hidden border border-dashed border-ink/60 border-b-0 bg-paper sm:translate-y-6">
-                <div className="flex items-center gap-2 border-b border-dashed border-ink/40 bg-ink-wash px-4 py-2.5">
-                  <span className="h-2.5 w-2.5 rounded-full border border-ink/50" />
-                  <span className="h-2.5 w-2.5 rounded-full border border-ink/50" />
-                  <span className="h-2.5 w-2.5 rounded-full border border-ink/50" />
-                  <span className="ml-3 bg-paper px-3 py-1 font-mono text-[0.65rem] text-ink/70">
-                    nalibynative.vercel.app/articles
-                  </span>
-                </div>
-                <Image
-                  src="/images/articles-preview.jpg"
-                  alt="Tampilan halaman artikel NaLI"
-                  width={760}
-                  height={480}
-                  className="duotone-ink w-full object-cover object-top"
-                />
-              </div>
-            </div>
+            <Link
+              href="/articles"
+              className="border border-ink/70 px-5 py-3 font-mono text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-ink hover:text-paper"
+            >
+              Semua artikel →
+            </Link>
           </div>
 
-          {/* two-up */}
-          <div className="mt-6 grid gap-6 md:grid-cols-2">
-            <div className={`${CARD} p-8 sm:p-10`}>
-              <Meta>Indeks 02</Meta>
-              <h3 className="mt-3 font-display text-xl font-bold uppercase text-ink">
-                Label tingkat keyakinan
-              </h3>
-              <p className="mt-3 font-mono text-[0.85rem] leading-relaxed text-gray">
-                Tidak semua temuan setara. Empat label jujur menandai seberapa
-                kuat dasar sebuah klaim — terlihat sebelum kamu membaca.
-              </p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {confidences.map((c) => (
-                  <ConfidenceBadge key={c} confidence={c} size="sm" />
-                ))}
-              </div>
-            </div>
-            <div className={`${CARD} p-8 sm:p-10`}>
-              <Meta>Indeks 03</Meta>
-              <h3 className="mt-3 font-display text-xl font-bold uppercase text-ink">
-                Arsip sumber terbuka
-              </h3>
-              <p className="mt-3 font-mono text-[0.85rem] leading-relaxed text-gray">
-                {sourceCount} entri sumber — jurnal, arsip, buku, media, laporan —
-                terbuka untuk diperiksa siapa pun, kapan pun.
-              </p>
-              <Link href="/arsip-sumber" className="link-teal mt-5 inline-flex items-center gap-2 font-mono text-[0.85rem] font-semibold">
-                Buka arsip sumber <span aria-hidden>→</span>
-              </Link>
-            </div>
-          </div>
-
-          {/* three-up */}
-          <div className="mt-6 grid gap-6 md:grid-cols-3">
-            {/* research log */}
-            <div className={`${CARD} flex flex-col overflow-hidden`}>
-              <div className="flex-1 bg-ink-wash p-6 font-mono text-[0.78rem] leading-relaxed text-ink-deep">
-                <p>✔ Mengumpulkan sumber primer (5)</p>
-                <p>✔ Memeriksa silang antar rujukan</p>
-                <p>✔ Memisahkan fakta vs klaim retoris</p>
-                <p>✔ Menetapkan label keyakinan</p>
-                <p>✔ Menyusun daftar sumber</p>
-                <p className="mt-2 text-ink">ℹ Draft siap: api-biru-kawah-ijen</p>
-                <p className="text-ink">— kategori: alam</p>
-                <p className="text-ink">— label: terverifikasi</p>
-                <p className="mt-2 text-gray">Artikel terbit dengan 4 rujukan.</p>
-              </div>
-              <div className="border-t border-dashed border-ink/50 p-6">
-                <h3 className="font-display text-lg font-bold uppercase text-ink">Alur riset transparan</h3>
-                <p className="mt-2 font-mono text-[0.78rem] leading-relaxed text-gray">
-                  AI menelusuri, manusia memutuskan. Prosesnya bisa kamu lihat,
-                  bukan kotak hitam.
-                </p>
-              </div>
-            </div>
-
-            {/* orbit */}
-            <div className={`${CARD} flex flex-col overflow-hidden`}>
-              <div className="relative flex-1 p-6">
-                <svg viewBox="0 0 280 220" className="mx-auto h-full max-h-[220px] w-full" aria-hidden>
-                  <circle cx="140" cy="110" r="86" fill="none" stroke="currentColor" strokeOpacity="0.5" strokeDasharray="3 5" />
-                  <circle cx="140" cy="110" r="46" fill="none" stroke="currentColor" strokeOpacity="0.5" strokeDasharray="3 5" />
-                  <circle cx="140" cy="110" r="24" className="fill-ink" />
-                  <text x="140" y="116" textAnchor="middle" fontSize="13" fontWeight="700" className="fill-paper" fontFamily="var(--font-display)">NaLI</text>
-                  <g>
-                    <circle cx="140" cy="24" r="15" className="fill-ink-wash" stroke="currentColor" />
-                    <text x="140" y="29" textAnchor="middle" fontSize="12">🌿</text>
-                    <circle cx="62" cy="160" r="15" className="fill-ink-wash" stroke="currentColor" />
-                    <text x="62" y="165" textAnchor="middle" fontSize="12">🏛️</text>
-                    <circle cx="218" cy="160" r="15" className="fill-ink-wash" stroke="currentColor" />
-                    <text x="218" y="165" textAnchor="middle" fontSize="12">🔎</text>
-                  </g>
-                </svg>
-              </div>
-              <div className="border-t border-dashed border-ink/50 p-6">
-                <h3 className="font-display text-lg font-bold uppercase text-ink">Tiga pilar, satu metode</h3>
-                <p className="mt-2 font-mono text-[0.78rem] leading-relaxed text-gray">
-                  Alam, Sejarah, dan Investigasi digarap dengan disiplin sumber
-                  yang sama.
-                </p>
-              </div>
-            </div>
-
-            {/* latest feed */}
-            <div className={`${CARD} flex flex-col overflow-hidden`}>
-              <div className="flex-1 space-y-2.5 p-6">
-                {latest.map((a, i) => (
-                  <Link
-                    key={a.slug}
-                    href={`/articles/${a.slug}`}
-                    className="block border border-dashed border-ink/50 bg-paper px-4 py-3 transition-colors hover:bg-ink-wash"
-                  >
-                    <p className="flex items-center justify-between gap-3">
-                      <span className="truncate font-mono text-[0.78rem] font-semibold text-ink-deep">{a.title}</span>
-                      <span className="shrink-0 font-mono text-[0.62rem] text-ink/60">{a.readingMinutes} mnt</span>
-                    </p>
-                    <p className="mt-0.5 font-mono text-[0.68rem] uppercase tracking-wider text-ink/60">
-                      No. {String(i + 1).padStart(3, "0")} · {CATEGORY_LABEL[a.category]} · {formatDate(a.date)}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-              <div className="border-t border-dashed border-ink/50 p-6">
-                <h3 className="font-display text-lg font-bold uppercase text-ink">Terbit terus</h3>
-                <p className="mt-2 font-mono text-[0.78rem] leading-relaxed text-gray">
-                  Publikasi harian, pelan tapi konsisten — langsung dari lapangan
-                  dan arsip.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <DashRule />
-
-        {/* ================= EDITORIAL STANDARDS ================= */}
-        <section className="grid gap-10 py-14 sm:py-16 md:grid-cols-[1fr_1.3fr]">
-          <div>
-            <Meta>Standar editorial</Meta>
-            <h2 className="mt-3 font-display text-3xl font-bold uppercase leading-tight text-ink sm:text-4xl">
-              Aturan main yang tidak bisa ditawar
-            </h2>
-            <p className="mt-4 max-w-sm font-mono text-[0.85rem] leading-relaxed text-gray">
-              Kepercayaan adalah satu-satunya modal sebuah publikasi riset.
-              Tiga aturan ini menjaga setiap tulisan NaLI tetap bisa
-              dipertanggungjawabkan.
+          {latest.length === 0 ? (
+            <p className={`${CARD} mt-8 p-8 text-center font-mono text-[0.85rem] text-gray`}>
+              Belum ada tulisan terbit. Tulisan pertama akan muncul di sini.
             </p>
-            <div className="mt-6 flex gap-4">
-              <Stamp label="EDITORIAL" />
-              <Stamp label="MMXXVI" />
+          ) : (
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {latest.map((a, i) => (
+                <ArticleCard key={a.slug} article={a} index={i} />
+              ))}
             </div>
-          </div>
-          <div className="space-y-4">
-            {[
-              {
-                t: "Tanpa kepastian palsu",
-                d: "Kami tidak menyimpulkan lebih dari yang bukti izinkan. Lebih baik menulis “belum jelas” daripada terdengar yakin tapi salah.",
-                s: "JUJUR",
-              },
-              {
-                t: "Tanpa tuduhan tanpa bukti",
-                d: "Investigasi berbasis sumber publik. Klaim yang belum kuat diberi label belum diverifikasi — bukan dilempar sebagai fakta.",
-                s: "ADIL",
-              },
-              {
-                t: "Sumber selalu ditampilkan",
-                d: "Daftar rujukan menempel di tiap artikel dan terkumpul di arsip terbuka. Kamu boleh tidak setuju — dan selalu bisa memeriksa.",
-                s: "TERBUKA",
-              },
-            ].map((row) => (
-              <div key={row.t} className={`${CARD} flex items-center justify-between gap-6 p-6 sm:p-7`}>
-                <div>
-                  <h3 className="font-display text-xl font-bold uppercase text-ink">{row.t}</h3>
-                  <p className="mt-2 max-w-md font-mono text-[0.8rem] leading-relaxed text-gray">{row.d}</p>
+          )}
+
+          {/* confidence legend — explains the badge on each card */}
+          <div className="mt-10 border border-dashed border-ink/60 bg-ink-wash/40 p-6">
+            <Meta>Cara membaca label</Meta>
+            <p className="mt-2 font-mono text-[0.8rem] leading-relaxed text-gray">
+              Tiap kartu menandai seberapa kuat dasar sebuah klaim. Empat label, dari
+              yang paling kuat ke paling hati-hati:
+            </p>
+            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3">
+              {confidences.map((c) => (
+                <div key={c} className="flex items-center gap-2">
+                  <ConfidenceBadge confidence={c} size="sm" />
+                  <span className="font-mono text-[0.72rem] text-gray">{CONFIDENCE_LABEL[c]}</span>
                 </div>
-                <div className="hidden sm:block">
-                  <Stamp label={row.s} />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 
         <DashRule />
 
-        {/* ================= THREE PILLARS ================= */}
+        {/* ================= THREE PILLARS — clear entry points ================= */}
         <section className="py-14 sm:py-16">
           <div className="mx-auto max-w-xl text-center">
             <Meta>Tiga pilar</Meta>
             <h2 className="mt-3 font-display text-3xl font-bold uppercase text-ink sm:text-4xl">
               Pilih pintu masukmu
             </h2>
+            <p className="mt-3 font-mono text-[0.85rem] leading-relaxed text-gray">
+              Satu metode riset, tiga jenis cerita. Mulai dari yang paling membuatmu penasaran.
+            </p>
           </div>
 
           <div className="mt-12 grid gap-6 md:grid-cols-3">
@@ -376,8 +223,82 @@ export default async function HomePage() {
               </div>
             ))}
           </div>
+        </section>
 
-          <div className="mt-10 text-center font-mono text-[0.8rem] text-gray">
+        <DashRule />
+
+        {/* ================= EDITORIAL STANDARDS ================= */}
+        <section className="grid gap-10 py-14 sm:py-16 md:grid-cols-[1fr_1.3fr]">
+          <div>
+            <Meta>Standar editorial</Meta>
+            <h2 className="mt-3 font-display text-3xl font-bold uppercase leading-tight text-ink sm:text-4xl">
+              Aturan main yang tidak bisa ditawar
+            </h2>
+            <p className="mt-4 max-w-sm font-mono text-[0.85rem] leading-relaxed text-gray">
+              Kepercayaan adalah satu-satunya modal sebuah publikasi riset.
+              Tiga aturan ini menjaga setiap tulisan NaLI tetap bisa
+              dipertanggungjawabkan.
+            </p>
+            <div className="mt-6 flex gap-4">
+              <Stamp label="EDITORIAL" />
+              <Stamp label="MMXXVI" />
+            </div>
+          </div>
+          <div className="space-y-4">
+            {[
+              {
+                t: "Tanpa kepastian palsu",
+                d: "Kami tidak menyimpulkan lebih dari yang bukti izinkan. Lebih baik menulis “belum jelas” daripada terdengar yakin tapi salah.",
+                s: "JUJUR",
+              },
+              {
+                t: "Tanpa tuduhan tanpa bukti",
+                d: "Investigasi berbasis sumber publik. Klaim yang belum kuat diberi label belum diverifikasi — bukan dilempar sebagai fakta.",
+                s: "ADIL",
+              },
+              {
+                t: "Sumber selalu ditampilkan",
+                d: "Daftar rujukan menempel di tiap artikel dan terkumpul di arsip terbuka. Kamu boleh tidak setuju — dan selalu bisa memeriksa.",
+                s: "TERBUKA",
+              },
+            ].map((row) => (
+              <div key={row.t} className={`${CARD} flex items-center justify-between gap-6 p-6 sm:p-7`}>
+                <div>
+                  <h3 className="font-display text-xl font-bold uppercase text-ink">{row.t}</h3>
+                  <p className="mt-2 max-w-md font-mono text-[0.8rem] leading-relaxed text-gray">{row.d}</p>
+                </div>
+                <div className="hidden sm:block">
+                  <Stamp label={row.s} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <DashRule />
+
+        {/* ================= ARSIP SUMBER CALLOUT ================= */}
+        <section className="py-14 sm:py-16">
+          <div className={`${CARD} flex flex-col items-start gap-6 p-8 sm:flex-row sm:items-center sm:justify-between sm:p-10`}>
+            <div>
+              <Meta>Arsip sumber terbuka</Meta>
+              <h2 className="mt-3 font-display text-2xl font-bold uppercase text-ink sm:text-3xl">
+                {sourceCount} entri sumber, bisa diperiksa siapa pun
+              </h2>
+              <p className="mt-3 max-w-xl font-mono text-[0.85rem] leading-relaxed text-gray">
+                Jurnal, arsip, buku, media, dan laporan — masing-masing punya halaman
+                keterangannya sendiri. Klaim kami bisa kamu lacak sampai ke sumbernya.
+              </p>
+            </div>
+            <Link
+              href="/arsip-sumber"
+              className="shrink-0 bg-ink px-6 py-3 font-mono text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-ink-deep"
+            >
+              Buka arsip sumber →
+            </Link>
+          </div>
+
+          <div className="mt-8 text-center font-mono text-[0.8rem] text-gray">
             Semua tulisan gratis dibaca • Tanpa login • Tanpa paywall
           </div>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 font-mono text-[0.8rem] text-gray">
@@ -423,7 +344,7 @@ export default async function HomePage() {
               },
               {
                 q: "Seberapa sering tulisan baru terbit?",
-                a: "Target kami terbit harian — satu tulisan atau catatan lapangan per hari. Daftar email di halaman ini kalau mau dikabari tanpa harus mengecek.",
+                a: "Target kami terbit harian — satu tulisan atau catatan lapangan per hari. Daftar email di hero halaman ini kalau mau dikabari tanpa harus mengecek.",
               },
             ].map((item) => (
               <details key={item.q} className={`${CARD} group px-6 py-4`}>

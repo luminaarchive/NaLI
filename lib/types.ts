@@ -61,6 +61,8 @@ export interface SourceEntry {
   url?: string;
   reliability?: string;
   related_topic?: string;
+  /** Markdown description body (rendered on the source detail page). */
+  content?: string;
 }
 
 export const CATEGORY_LABEL: Record<Category, string> = {

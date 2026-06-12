@@ -47,6 +47,7 @@ function parseArticle(slug: string, raw: string): Article {
     confidence: fm.confidence ?? "needs-verification",
     status: fm.status ?? "draft",
     sources: fm.sources ?? [],
+    coverImage: fm.coverImage,
     content,
     readingMinutes: Math.max(1, Math.round(readingTime(content).minutes)),
   };
@@ -143,21 +144,32 @@ export function getAllFieldNotes(): FieldNote[] {
 
 /* ---------------------------------- Sources ---------------------------------- */
 
+function parseSource(slug: string, raw: string): SourceEntry {
+  const { data, content } = matter(raw);
+  const fm = data as Partial<SourceEntry>;
+  return {
+    title: fm.title ?? "Sumber tanpa judul",
+    slug: fm.slug ?? slug,
+    type: fm.type ?? "lainnya",
+    author: fm.author,
+    year: fm.year,
+    url: fm.url,
+    reliability: fm.reliability,
+    related_topic: fm.related_topic,
+    content: content.trim(),
+  } satisfies SourceEntry;
+}
+
 export function getAllSources(): SourceEntry[] {
   return readMdxFiles(SOURCES_DIR)
-    .map(({ slug, raw }) => {
-      const { data } = matter(raw);
-      const fm = data as Partial<SourceEntry>;
-      return {
-        title: fm.title ?? "Sumber tanpa judul",
-        slug: fm.slug ?? slug,
-        type: fm.type ?? "lainnya",
-        author: fm.author,
-        year: fm.year,
-        url: fm.url,
-        reliability: fm.reliability,
-        related_topic: fm.related_topic,
-      } satisfies SourceEntry;
-    })
+    .map(({ slug, raw }) => parseSource(slug, raw))
     .sort((a, b) => (b.year ?? 0) - (a.year ?? 0) || a.title.localeCompare(b.title));
+}
+
+export function getSourceSlugs(): string[] {
+  return getAllSources().map((s) => s.slug);
+}
+
+export function getSourceBySlug(slug: string): SourceEntry | undefined {
+  return getAllSources().find((s) => s.slug === slug);
 }
