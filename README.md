@@ -24,34 +24,42 @@ npm run typecheck  # TypeScript (tsc --noEmit)
 
 ---
 
-## Dashboard Admin (edit · posting · upload gambar)
+## Dashboard Admin — `/admin` (custom, milik sendiri)
 
-Konten dikelola lewat **Pages CMS** — dashboard admin berbasis Git, tanpa
-database: setiap simpan = commit ke repo ini → Vercel deploy otomatis (~1 mnt).
+Dashboard admin terpasang langsung di situs: **https://nalibynative.vercel.app/admin**.
+Tulis artikel, upload foto, dan lihat statistik — semua di satu tempat. Konten
+tersimpan di **Supabase** (Postgres + Storage); artikel terbit **seketika**
+(tanpa nunggu deploy).
 
-**Cara masuk (sekali setup, ±2 menit):**
-1. Buka **https://app.pagescms.org**
-2. **Sign in with GitHub** (akun pemilik repo: `luminaarchive`)
-3. Izinkan akses ke repo `luminaarchive/NaLI` → pilih repo-nya
-4. Dashboard terbuka: **Artikel · Catatan Lapangan · Arsip Sumber · Media**
+**Buat akun admin (sekali, ±1 menit):**
+1. Buka **supabase.com** → project `nali-field-journal` → **Authentication → Users**
+2. **Add user** → **Create new user** → isi email + password (centang
+   *Auto Confirm User*)
+3. Buka **/admin** di situs → login dengan email + password itu
 
-**Yang bisa dilakukan dari dashboard:**
-- ✍️ Tulis/edit artikel dengan editor rich-text (form frontmatter lengkap:
-  kategori, label keyakinan, status draft/terbit, daftar sumber)
-- 🖼️ Upload gambar ke Media, lalu sisipkan ke dalam isi artikel
-  (tersimpan di `public/images/uploads/`)
-- 📝 Simpan sebagai **Draft** (tidak tampil publik) atau **Terbit**
-- 🗂️ Kelola entri arsip sumber & catatan lapangan
+**Yang bisa dilakukan:**
+- ✍️ Tulis/edit artikel — form lengkap (kategori, label keyakinan, tag,
+  ringkasan, daftar sumber), badan tulisan Markdown
+- 🖼️ **Upload foto** — gambar sampul + sisipkan foto di dalam artikel
+  (tersimpan di Supabase Storage, tampil otomatis di situs)
+- 📝 **Draft** (tak tampil publik) atau **Terbitkan**
+- 📊 **Statistik pengunjung** di `/admin/analytics` — total kunjungan,
+  grafik 14 hari, halaman terpopuler (dihitung sendiri, tanpa cookie)
+- 🗑️ Hapus tulisan
 
-Keamanan: hanya akun GitHub yang punya akses tulis ke repo ini yang bisa
-membuka dashboard. Konfigurasi form ada di `.pages.yml`.
+Artikel contoh bawaan (file MDX di `content/articles/`) tetap tampil; tulisan
+baru dari dashboard digabung otomatis. Slug yang sama → versi dashboard menang.
 
-## Statistik Pengunjung
+Keamanan: `/admin` dijaga middleware (wajib login Supabase Auth); database
+dilindungi row-level security (publik hanya baca artikel terbit; tulis/upload
+hanya admin login).
 
-Vercel **Web Analytics** sudah terpasang di kode (`@vercel/analytics`).
-Aktifkan sekali di dashboard: **vercel.com → project `nali-by-native` →
-tab Analytics → Enable**. Setelah itu data pengunjung (views, halaman
-terpopuler, negara, perangkat) muncul di tab tersebut — gratis, tanpa cookie.
+### Variabel lingkungan
+```
+NEXT_PUBLIC_SUPABASE_URL=...        # project nali-field-journal
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...   # publishable key
+```
+Keduanya sudah diset di Vercel. Keterangan di `.env.example`.
 
 ## Struktur konten
 

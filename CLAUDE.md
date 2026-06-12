@@ -363,6 +363,15 @@ Keep a running log at the bottom of this file after each session:
   - Catatan verifikasi: komponen Analytics menyuntik script **client-side** — tidak terlihat di HTML SSG (grep HTML = false negative; verifikasi harus via browser).
 - Panduan founder ditambahkan di README (login dashboard + lihat statistik).
 
+### 12 Juni 2026 — Artikel pertama + admin custom Supabase (founder-directed)
+
+- **Artikel asli pertama**: `content/articles/harimau-jawa-lazarus-species.mdx` (status **draft**). Topik Lazarus species; riset terverifikasi web (studi Oryx 2024 kemiripan DNA 97,8% + studi tandingan numt/QC) → klaim "masih hidup" label **needs-verification**, 5 sumber nyata. Founder ubah ke `published` untuk terbit.
+- **Pages CMS gagal dipakai founder** (upload foto + analitik) → diminta build **admin custom**. Pilihan arsitektur (AskUserQuestion) = **Supabase-backed**. Menimpa 3 locked decision (no login, no dashboard, MDX-only) — diotorisasi eksplisit.
+  - **Supabase** (`nali-field-journal` / `xxwzufdezpyabqkwrcbz`): tabel `posts` (cermin skema artikel, RLS: publik baca published, authenticated tulis) + `page_views` (RLS: anon insert, admin baca) + bucket Storage `post-images` (publik). Advisor di-hardening (search_path, listing). **Akun admin = TUGAS FOUNDER** (Supabase dashboard → Auth → Add user; classifier blokir pembuatan kredensial oleh agent — benar).
+  - **Lapisan konten** (`lib/content.ts` + `lib/posts.ts`): artikel = MDX seed **+** DB posts digabung (slug sama → DB menang). Fungsi artikel jadi async; route artikel/home/kategori/peta/sitemap `force-dynamic` → terbit seketika. Field-notes/sources tetap MDX/SSG. `next.config` `outputFileTracingIncludes: content/**` agar MDX kebaca saat runtime; `images.remotePatterns` untuk Supabase Storage. `MdxBody` `format:"md"` (aman untuk konten user).
+  - **`/admin`**: middleware (`middleware.ts`) jaga semua `/admin/*` (Supabase Auth session via `@supabase/ssr`). Login (`/admin/login`), dashboard list, editor (`PostEditor` — semua field + sumber + upload sampul & inline ke Storage + draft/terbit), hapus, analitik (`/admin/analytics` dari `page_views`: total, grafik 14 hari, top paths). `SiteChrome` sembunyikan Nav/Footer publik di `/admin`. `PageViewTracker` + `/api/track` rekam kunjungan (skip /admin). `.pages.yml` dihapus.
+  - **Verified** (tanpa kredensial, sesuai batas): insert post DB → tampil di /articles + detail (markdown+sumber render) + merge MDX OK; /admin → 307 /admin/login; /api/track rekam 1 row; build/lint/types clean; live production semua PASS. **Belum** dites E2E authed (butuh akun yang dibuat founder).
+
 ---
 
-*Last updated: 11 Juni 2026 — gallery v3 (real arcade + sea footage) live di nalibynative.vercel.app*
+*Last updated: 12 Juni 2026 — admin custom Supabase (posting+foto+analitik) live; artikel Harimau Jawa draft*
