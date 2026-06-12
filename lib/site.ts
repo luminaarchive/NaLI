@@ -1,8 +1,8 @@
 export const SITE = {
   name: "NaLI by NatIve",
   shortName: "NaLI",
-  // Free production domain (Vercel). Swap for a custom domain when one is bought.
-  url: "https://nalibynative.vercel.app",
+  // Production domain on Vercel. Swap for a custom domain when one is bought.
+  url: "https://nalijournal.vercel.app",
   tagline:
     "Jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia — disusun dari jurnal, arsip, laporan lembaga, dataset, dan dokumentasi pihak ketiga.",
   description:

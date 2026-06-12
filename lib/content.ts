@@ -46,6 +46,7 @@ function parseArticle(slug: string, raw: string): Article {
     summary: fm.summary ?? "",
     confidence: fm.confidence ?? "needs-verification",
     status: fm.status ?? "draft",
+    sourceIds: fm.sourceIds,
     sources: fm.sources ?? [],
     coverImage: fm.coverImage,
     content,
@@ -59,6 +60,7 @@ function parseArticle(slug: string, raw: string): Article {
     claimLedger: fm.claimLedger,
     images: fm.images,
     externalVisuals: fm.externalVisuals,
+    visualEvidenceNote: fm.visualEvidenceNote,
   };
 }
 
@@ -160,11 +162,14 @@ function parseSource(slug: string, raw: string): SourceEntry {
   const { data, content } = matter(raw);
   const fm = data as Partial<SourceEntry>;
   return {
+    id: fm.id ?? slug,
     title: fm.title ?? "Sumber tanpa judul",
     slug: fm.slug ?? slug,
-    type: fm.type ?? "lainnya",
+    type: fm.type ?? fm.sourceType ?? "lainnya",
+    sourceType: fm.sourceType ?? fm.type ?? "lainnya",
     author: fm.author,
     year: fm.year,
+    publishedAt: fm.publishedAt,
     url: fm.url,
     reliability: fm.reliability,
     related_topic: fm.related_topic,
@@ -177,9 +182,11 @@ function parseSource(slug: string, raw: string): SourceEntry {
     language: fm.language,
     topics: fm.topics,
     geography: fm.geography,
-    keyClaims: fm.keyClaims,
+    keyClaims: fm.keyClaims ?? fm.keyClaimsSupported,
+    keyClaimsSupported: fm.keyClaimsSupported ?? fm.keyClaims,
     limitations: fm.limitations,
     usedInArticles: fm.usedInArticles,
+    usedInArticleIds: fm.usedInArticleIds ?? fm.usedInArticles,
     checkedAt: fm.checkedAt,
   } satisfies SourceEntry;
 }

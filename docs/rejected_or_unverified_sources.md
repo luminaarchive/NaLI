@@ -1,35 +1,16 @@
-# Rejected or Unverified Sources (Phase 6)
+# Rejected or Unverified Sources
 
-_Sources considered but **not** added to the public Arsip Sumber this session, with
-the reason. Keeping this list is part of the no-hallucinated-sources discipline._
+Tanggal pembaruan: 2026-06-12
 
-## Rejected — would weaken trust if published as-is
+Sumber berikut tidak dimasukkan sebagai bukti utama sprint karena belum memenuhi standar verifikasi, stabilitas, atau lisensi visual.
 
-| Candidate | Reason rejected |
-|---|---|
-| Generic "Reportase lapangan / media" with no outlet, author, or URL | Not traceable. Such titles existed in the seed articles' source lists; they were kept as title-only references inside articles but **not** promoted into Arsip Sumber, which requires a verifiable link or a documented access limitation. |
-| "Sungai paling tercemar di dunia" ranking source for Citarum | No single authoritative global river-pollution ranking exists; the superlative traces to media characterization. Treated as a **claim to debunk**, not a source. |
-| Random Google Images / stock photos for article visuals | No license metadata. Excluded per the image rules; article image slots left empty rather than filled with unlicensed photos. |
-| Social-media / forum posts asserting wildlife sightings | Not verifiable; sighting claims require primary documentation (camera trap, replicated DNA) before they can support a claim. |
+- Foto media sosial satwa liar tanpa metadata lokasi/waktu yang dapat diverifikasi.
+- Foto stok komodo, cenderawasih, orangutan, dan terumbu karang dengan lisensi komersial atau all rights reserved.
+- Repost blog wisata Kawah Ijen yang menyebut "lava biru" tanpa sumber ilmiah.
+- Artikel opini tanpa rujukan primer untuk klaim angka korban Banda atau kronologi kolonial.
+- Screenshot dashboard peta yang tidak disertai parameter, tanggal akses, dan lisensi.
+- Gambar AI/ilustrasi generatif untuk satwa, bencana, peta, atau arsip sejarah.
+- Sumber ResearchGate/Academia.edu yang hanya berupa unggahan ulang tanpa DOI, penerbit, atau halaman institusional stabil.
+- Video/foto YouTube/Instagram/TikTok yang mungkin nyata tetapi tidak memiliki izin redisplay dan tidak cukup metadata untuk klaim artikel.
 
-## Held back — likely real but URL/DOI not verified this session
-
-_These were **not** invented; they are well-known but were not confirmed to a stable
-URL this session, so they stay out of the public archive until checked. Listed so a
-future session can verify rather than re-discover._
-
-- MAGMA Indonesia / PVMBG portal (`magma.esdm.go.id`) — official, almost certainly live,
-  but exact stable deep-links not confirmed here.
-- BRGM (`brgm.go.id`) and Jalur Rempah (`jalurrempah.kemdikbud.go.id`) portals — high
-  confidence they exist, URL not verified this session.
-- Delmelle & Bernard Kawah Ijen crater-lake geochemistry paper — cited title-only in the
-  Ijen article; exact journal/DOI not re-confirmed, so not added to Arsip Sumber.
-- IUCN assessments for Anoa, Babirusa, Tarsius, Cenderawasih, Sumatran/Bornean orangutan,
-  Bali tiger — real assessments, but taxon/assessment IDs not verified this session
-  (only Javan rhino, Komodo, Tapanuli orangutan, coelacanth, maleo were confirmed).
-
-## Principle
-
-Better a smaller archive of fully-traceable sources than a larger one padded with
-links that 404 or can't be checked. Everything above moves into the public archive
-**only after** verification (see `research_backlog_sources_to_verify.md`).
+Sumber dengan nilai potensial tetapi belum cukup diverifikasi dipindahkan ke research_backlog_sources_to_verify.md.

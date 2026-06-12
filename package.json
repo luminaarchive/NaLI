@@ -2,7 +2,7 @@
   "name": "nali-by-native",
   "version": "0.1.0",
   "private": true,
-  "description": "NaLI by NatIve — field journal dan research publication berbasis AI untuk alam, sejarah, dan investigasi Indonesia.",
+  "description": "NaLI by NatIve — Jurnal Riset Terbuka Indonesia untuk alam, sejarah, dan investigasi berbasis sumber.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

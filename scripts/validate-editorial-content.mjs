@@ -6,12 +6,14 @@
  *  1. No public article/field-note contains demo terms (seed / contoh (seed) /
  *     dummy / placeholder / ilustratif).
  *  2. No first-person fieldwork claims unless `firstPartyFieldwork: true`.
- *  3. Every published article has sources, claimLedger, limitations,
- *     confidence, evidenceBasis, firstPartyFieldwork.
- *  4. Every source has type, summary(body), a reliability note, checkedAt,
- *     and at least one traceable link (url/doi/archiveUrl) — or a limitation
- *     explaining the access constraint.
- *  5. Every article image credit has sourceUrl, license, attribution, alt, caption.
+ *  3. Every published article has sourceIds, sources, claimLedger, limitations,
+ *     confidence, evidenceBasis, firstPartyFieldwork: false, and visual evidence
+ *     coverage.
+ *  4. Every source has the full archive metadata required by the deep archive
+ *     sprint, including reliability, limitations, usage, checkedAt, and at least
+ *     one traceable link (url/doi/archiveUrl).
+ *  5. Every article image credit has sourceUrl, license, attribution, alt,
+ *     caption, checkedAt; external visual evidence is linked only.
  *
  * Usage: node scripts/validate-editorial-content.mjs   (npm run check:editorial)
  */
@@ -36,6 +38,23 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 const errors = [];
 const warnings = [];
+
+const sourceFiles = new Set(
+  fs.existsSync(SOURCES)
+    ? fs
+        .readdirSync(SOURCES)
+        .filter((f) => /\.mdx?$/.test(f))
+        .map((f) => f.replace(/\.mdx?$/, ""))
+    : [],
+);
+const articleFiles = new Set(
+  fs.existsSync(ARTICLES)
+    ? fs
+        .readdirSync(ARTICLES)
+        .filter((f) => /\.mdx?$/.test(f))
+        .map((f) => f.replace(/\.mdx?$/, ""))
+    : [],
+);
 
 function read(dir) {
   if (!fs.existsSync(dir)) return [];
@@ -83,6 +102,13 @@ for (const { file, data, content } of read(ARTICLES)) {
 
   if (!Array.isArray(data.sources) || data.sources.length === 0)
     errors.push(`${tag}: missing sources.`);
+  if (!Array.isArray(data.sourceIds) || data.sourceIds.length === 0) {
+    errors.push(`${tag}: missing sourceIds.`);
+  } else {
+    data.sourceIds.forEach((id, i) => {
+      if (!sourceFiles.has(String(id))) errors.push(`${tag}: sourceIds[${i}] does not match a source file: ${id}.`);
+    });
+  }
   if (!Array.isArray(data.claimLedger) || data.claimLedger.length === 0)
     errors.push(`${tag}: missing claimLedger.`);
   if (!Array.isArray(data.limitations) || data.limitations.length === 0)
@@ -91,6 +117,15 @@ for (const { file, data, content } of read(ARTICLES)) {
   if (!data.evidenceBasis) errors.push(`${tag}: missing evidenceBasis.`);
   if (data.firstPartyFieldwork === undefined)
     errors.push(`${tag}: missing firstPartyFieldwork (must be explicit, usually false).`);
+  if (data.firstPartyFieldwork !== false)
+    errors.push(`${tag}: firstPartyFieldwork must be false unless separately documented and reviewed.`);
+
+  const hasDisplayedImages = Array.isArray(data.images) && data.images.length > 0;
+  const hasExternalVisuals = Array.isArray(data.externalVisuals) && data.externalVisuals.length > 0;
+  const hasVisualNote = typeof data.visualEvidenceNote === "string" && data.visualEvidenceNote.trim().length > 0;
+  if (!hasDisplayedImages && !hasExternalVisuals && !hasVisualNote) {
+    errors.push(`${tag}: missing visual evidence coverage (image, externalVisuals, or visualEvidenceNote).`);
+  }
 
   // images (if present) must be fully credited
   if (Array.isArray(data.images)) {
@@ -160,20 +195,51 @@ for (const { file, data, content } of read(SOURCES)) {
   sourceCount++;
   const tag = `[source] ${file}`;
   if (!data.title) errors.push(`${tag}: missing title.`);
-  if (!data.type) errors.push(`${tag}: missing sourceType (type).`);
+  const sourceId = data.id ?? file.replace(/^content\/sources\//, "").replace(/\.mdx?$/, "");
+  if (!data.id) errors.push(`${tag}: missing id.`);
+  if (String(sourceId) !== file.replace(/^content\/sources\//, "").replace(/\.mdx?$/, ""))
+    errors.push(`${tag}: id should match the source filename for stable linking.`);
+  if (!data.type && !data.sourceType) errors.push(`${tag}: missing sourceType (type).`);
+  if (!data.author && !data.institution) errors.push(`${tag}: missing author or institution.`);
+  if (
+    !data.year &&
+    !data.publishedAt &&
+    !JSON.stringify(data.limitations ?? "").match(/tanggal publikasi|publication date|tahun terbit/i)
+  ) {
+    errors.push(`${tag}: missing year/publication date or a limitation explaining why it is unavailable.`);
+  }
+  if (data.publishedAt && !ISO_DATE.test(String(data.publishedAt)))
+    errors.push(`${tag}: publishedAt must be YYYY-MM-DD when present.`);
   if (!content.trim()) errors.push(`${tag}: missing summary (body).`);
 
   const hasReliabilityNote = Boolean(data.reliability || data.reliabilityNote);
   if (!hasReliabilityNote) errors.push(`${tag}: missing reliability note.`);
   if (!data.reliabilityLevel) warnings.push(`${tag}: no structured reliabilityLevel.`);
   if (!data.checkedAt) errors.push(`${tag}: missing checkedAt.`);
+  if (data.checkedAt && !ISO_DATE.test(String(data.checkedAt))) {
+    errors.push(`${tag}: checkedAt must be YYYY-MM-DD.`);
+  }
+  if (!data.language) errors.push(`${tag}: missing language.`);
+  if (!Array.isArray(data.geography) || data.geography.length === 0)
+    errors.push(`${tag}: missing geography.`);
   if (!Array.isArray(data.topics) || data.topics.length === 0)
     errors.push(`${tag}: missing topics.`);
+  const claims = data.keyClaimsSupported ?? data.keyClaims;
+  if (!Array.isArray(claims) || claims.length === 0)
+    errors.push(`${tag}: missing keyClaimsSupported.`);
+  const used = data.usedInArticleIds ?? data.usedInArticles;
+  if (!Array.isArray(used) || used.length === 0) {
+    errors.push(`${tag}: missing usedInArticleIds.`);
+  } else {
+    used.forEach((id, i) => {
+      if (!articleFiles.has(String(id))) errors.push(`${tag}: usedInArticleIds[${i}] does not match an article file: ${id}.`);
+    });
+  }
 
   const hasLink = Boolean(data.url || data.doi || data.archiveUrl);
   const hasLimitation = Array.isArray(data.limitations) && data.limitations.length > 0;
-  if (!hasLink && !hasLimitation)
-    errors.push(`${tag}: no url/doi/archiveUrl and no limitations explaining the access constraint.`);
+  if (!hasLink)
+    errors.push(`${tag}: missing traceable url, doi, or archiveUrl.`);
   if (!hasLimitation) errors.push(`${tag}: missing limitations.`);
 }
 

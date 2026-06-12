@@ -304,6 +304,19 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
           </section>
         )}
 
+        {(!article.images || article.images.length === 0) &&
+          (!article.externalVisuals || article.externalVisuals.length === 0) &&
+          article.visualEvidenceNote && (
+            <section className="mt-10 border-t border-dashed border-ink/40 pt-6" aria-labelledby="catatan-visual">
+              <h2 id="catatan-visual" className="label text-ink/70">
+                Catatan bukti visual
+              </h2>
+              <p className="mt-3 border border-dashed border-ink/40 p-4 font-mono text-[0.74rem] leading-relaxed text-gray">
+                {article.visualEvidenceNote}
+              </p>
+            </section>
+          )}
+
         {article.tags.length > 0 && (
           <div className="mt-12 flex flex-wrap gap-2 border-t border-dashed border-ink/40 pt-6">
             {article.tags.map((tag) => (

@@ -109,6 +109,8 @@ export interface Article {
   summary: string;
   confidence: Confidence;
   status: Status;
+  /** Source archive IDs cited by this article (file slugs in content/sources). */
+  sourceIds?: string[];
   sources: ArticleSource[];
   /** Raw MDX/Markdown body. */
   content: string;
@@ -138,6 +140,8 @@ export interface Article {
   images?: ArticleImage[];
   /** External visual evidence references — linked only, never displayed (Category 2). */
   externalVisuals?: ExternalVisualEvidence[];
+  /** Explicit note when no safe visual can be displayed or linked yet. */
+  visualEvidenceNote?: string;
 }
 
 export type ArticleMeta = Omit<Article, "content">;
@@ -160,11 +164,16 @@ export interface FieldNote {
 }
 
 export interface SourceEntry {
+  /** Stable source ID, normally equal to the file slug. */
+  id?: string;
   title: string;
   slug: string;
   type: SourceType;
+  /** Alias kept for editorial reports and validation vocabulary. */
+  sourceType?: SourceType;
   author?: string;
   year?: number;
+  publishedAt?: string;
   url?: string;
   reliability?: string;
   related_topic?: string;
@@ -184,10 +193,12 @@ export interface SourceEntry {
   geography?: string[];
   /** Claims this source can support. */
   keyClaims?: string[];
+  keyClaimsSupported?: string[];
   /** Access / scope limitations. */
   limitations?: string[];
   /** Article slugs that cite this source. */
   usedInArticles?: string[];
+  usedInArticleIds?: string[];
   /** When the entry was last verified (ISO date). */
   checkedAt?: string;
 }
