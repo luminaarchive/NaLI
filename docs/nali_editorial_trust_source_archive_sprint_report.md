@@ -83,10 +83,13 @@ prior seed articles **rebuilt** to the new standard. Series coverage: spesies-hi
 
 ## 7. Image count and license breakdown
 
-**3 images**, all **public domain** (Wikimedia Commons), all on the Harimau Jawa
-article, each with full creator/source/license/alt/caption. 8 other published articles
-ship **text-only** by design — no licensed image was sourced yet, and the rules forbid
-filler photos. Register: `nali_image_license_register.md`.
+**3 displayed images**, all **public domain** (Wikimedia Commons), all on the Harimau
+Jawa article, each with full creator/source/license/alt/caption/checkedAt metadata.
+There is also **1 external visual evidence reference** (Mongabay 2024) rendered as a
+link only, with source URL, description, limitation note, and checkedAt date; it is
+not downloaded, hosted, hotlinked, cropped, edited, or displayed by NaLI. 8 other
+published articles ship **text-only** by design — no licensed image was sourced yet,
+and the rules forbid filler photos. Register: `nali_image_license_register.md`.
 
 ## 8. Known limitations
 
@@ -128,9 +131,9 @@ unlicensed images, social-media sightings; plus high-confidence-but-unverified p
   framing scaffolding exists (`/koreksi`) but the pieces themselves are unwritten.
 - Text-only articles look sparser than image-rich ones — acceptable but worth filling
   with properly-licensed visuals over time.
-- Supabase-backed DB posts bypass MDX frontmatter; the admin editor does **not** yet
-  capture claimLedger/evidenceBasis, so DB-authored posts won't show those blocks.
-  (Out of sprint scope; flagged for a follow-up.)
+- Supabase-backed DB posts bypass MDX frontmatter; the admin editor now captures and
+  validates trust fields before publish, but `npm run check:editorial` still validates
+  the repository content files rather than live Supabase rows.
 
 ## 13. Next recommended sprint
 
@@ -138,7 +141,8 @@ unlicensed images, social-media sightings; plus high-confidence-but-unverified p
 2. Draft the **READY** articles (Coelacanth, Krakatau+Anak Krakatau, Toba, Merapi,
    Samalas, Gambut, Banda, Borobudur) — sources already verified.
 3. Source 1–2 PD/CC images per article from Wikimedia/museums.
-4. Extend the `/admin` editor to capture evidence basis + claim ledger for DB posts.
+4. Add an automated DB-post audit if Supabase content becomes part of regular
+   publishing.
 5. Wire a real contact mailbox; then enable `/koreksi` workflow end-to-end.
 
 ## Acceptance criteria check

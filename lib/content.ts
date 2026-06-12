@@ -58,6 +58,7 @@ function parseArticle(slug: string, raw: string): Article {
     limitations: fm.limitations,
     claimLedger: fm.claimLedger,
     images: fm.images,
+    externalVisuals: fm.externalVisuals,
   };
 }
 

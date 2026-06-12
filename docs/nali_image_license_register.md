@@ -1,8 +1,8 @@
 # NaLI — Image License Register (Phase 7)
 
 _Every image used in public articles, with license and attribution. Article image
-credits also render publicly in the "Kredit & lisensi gambar" block on each article
-and follow the rules in `/lisensi-foto`._
+credits also render publicly in the "Foto berlisensi yang ditampilkan" block on each
+article and follow the rules in `/lisensi-foto`._
 
 ## Images currently in use
 
@@ -28,10 +28,29 @@ images:
     attribution: "Creator — license via source"
     alt: "..."                        # accessibility
     caption: "..."                    # shown under the image
+    checkedAt: "YYYY-MM-DD"           # date license/source page was checked
 ```
 
 Validation (`npm run check:editorial`) fails if any image credit is missing
-`sourceUrl`, `license`, `attribution`, `alt`, or `caption`.
+`sourceUrl`, `license`, `attribution`, `alt`, `caption`, or `checkedAt`.
+
+## External visual evidence links
+
+If a real non-AI photo/video is useful evidence but the license is unclear, it must
+not be hosted, downloaded, hotlinked, cropped, edited, or displayed as a NaLI asset.
+Use `externalVisuals:` instead:
+
+```yaml
+externalVisuals:
+  - title: "..."
+    creator: "..."                    # if known
+    sourceUrl: "https://..."          # source page, not direct media file
+    platform: "..."
+    shows: "What the visual appears to show"
+    supportsClaim: "Which claim it helps contextualize"
+    limitation: "Lisensi belum jelas; NaLI tidak menampilkan ulang gambar ini."
+    checkedAt: "YYYY-MM-DD"
+```
 
 ## Articles intentionally without images
 

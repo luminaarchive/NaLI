@@ -234,11 +234,11 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
 
         <SourceList sources={article.sources} />
 
-        {/* Image credits */}
+        {/* CATEGORY 1 — licensed images actually displayed */}
         {article.images && article.images.length > 0 && (
           <section className="mt-12 border-t border-dashed border-ink/40 pt-6" aria-labelledby="kredit-gambar">
             <h2 id="kredit-gambar" className="label text-ink/70">
-              Kredit & lisensi gambar
+              Foto berlisensi yang ditampilkan
             </h2>
             <ul className="mt-4 space-y-3">
               {article.images.map((img, i) => (
@@ -258,6 +258,46 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
                   ) : (
                     <> · {img.license}</>
                   )}
+                  {img.checkedAt && <span className="text-ink/40"> · dicek {img.checkedAt}</span>}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* CATEGORY 2 — external visual evidence, linked only (never displayed) */}
+        {article.externalVisuals && article.externalVisuals.length > 0 && (
+          <section className="mt-10 border-t border-dashed border-ink/40 pt-6" aria-labelledby="bukti-visual">
+            <h2 id="bukti-visual" className="label text-ink/70">
+              Bukti visual eksternal yang hanya ditautkan
+            </h2>
+            <p className="mt-2 font-mono text-[0.74rem] leading-relaxed text-gray">
+              Foto/video nyata yang relevan tetapi lisensinya belum jelas. NaLI{" "}
+              <strong>tidak menampilkan ulang</strong> gambar ini — hanya menautkan ke
+              sumber aslinya.
+            </p>
+            <ul className="mt-4 space-y-4">
+              {article.externalVisuals.map((ev, i) => (
+                <li key={i} className="border border-dashed border-ink/40 p-4">
+                  <a
+                    href={ev.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="link-teal font-mono text-[0.82rem] font-semibold"
+                  >
+                    {ev.title} ↗
+                  </a>
+                  <p className="mt-1.5 font-mono text-[0.74rem] leading-relaxed text-gray">
+                    {ev.shows}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[0.66rem] uppercase tracking-wider text-ink/55">
+                    {ev.platform && <span>Sumber: {ev.platform}</span>}
+                    {ev.creator && <span>{ev.creator}</span>}
+                    <span>dicek {ev.checkedAt}</span>
+                  </div>
+                  <p className="mt-2 font-mono text-[0.7rem] italic leading-relaxed text-ink/60">
+                    {ev.limitation}
+                  </p>
                 </li>
               ))}
             </ul>

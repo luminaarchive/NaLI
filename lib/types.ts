@@ -52,7 +52,12 @@ export interface ClaimLedgerItem {
   limitation?: string;
 }
 
-/** Licensed image credit attached to an article (Phase 7). */
+/**
+ * CATEGORY 1 — Displayable image asset. Rendered inside the article ONLY when
+ * reuse is clearly permitted (public domain / CC0 / CC BY / CC BY-SA /
+ * institutional or government open license / Wikimedia with verified metadata).
+ * AI-generated images are never evidence and are not used here.
+ */
 export interface ArticleImage {
   /** Local path or remote URL actually rendered (optional — some are credit-only). */
   src?: string;
@@ -65,6 +70,33 @@ export interface ArticleImage {
   attribution: string;
   alt: string;
   caption: string;
+  /** When the license was last verified (ISO date). Required for display. */
+  checkedAt?: string;
+}
+
+/**
+ * CATEGORY 2 — External visual evidence reference. A real photo/video whose
+ * license is unclear. It is LINKED, never downloaded, hosted, hotlinked,
+ * cropped, edited, or displayed as an image. Rendered as a "Bukti visual
+ * eksternal" link with a description and an explicit limitation note.
+ */
+export interface ExternalVisualEvidence {
+  /** Title or short description of the visual. */
+  title: string;
+  /** Creator / institution if known. */
+  creator?: string;
+  /** Original page URL (the source page, not a media file). */
+  sourceUrl: string;
+  /** Platform / source (e.g. "Mongabay", "AntaraFoto", "YouTube"). */
+  platform?: string;
+  /** What the visual evidence appears to show. */
+  shows: string;
+  /** Which claim it supports (free-text pointer). */
+  supportsClaim?: string;
+  /** Why NaLI does not re-display it (license uncertainty). */
+  limitation: string;
+  /** When the reference was last checked (ISO date). */
+  checkedAt: string;
 }
 
 export interface Article {
@@ -102,8 +134,10 @@ export interface Article {
   limitations?: string[];
   /** Per-claim verification ledger. */
   claimLedger?: ClaimLedgerItem[];
-  /** Licensed image credits. */
+  /** Licensed, displayable image credits (Category 1). */
   images?: ArticleImage[];
+  /** External visual evidence references — linked only, never displayed (Category 2). */
+  externalVisuals?: ExternalVisualEvidence[];
 }
 
 export type ArticleMeta = Omit<Article, "content">;

@@ -1,7 +1,17 @@
 import "server-only";
 import readingTime from "reading-time";
 import { createSupabaseServerClient } from "./supabase/server";
-import type { Article, ArticleSource, Category, Confidence, Status } from "./types";
+import type {
+  Article,
+  ArticleImage,
+  ArticleSource,
+  Category,
+  ClaimLedgerItem,
+  Confidence,
+  EvidenceBasis,
+  ExternalVisualEvidence,
+  Status,
+} from "./types";
 
 /** Shape of a row in the `posts` table. */
 export interface PostRow {
@@ -20,6 +30,15 @@ export interface PostRow {
   body: string;
   created_at: string;
   updated_at: string;
+  /* editorial-trust fields (migration 0002) */
+  evidence_basis: EvidenceBasis | null;
+  first_party_fieldwork: boolean | null;
+  claim_ledger: ClaimLedgerItem[] | null;
+  limitations: string[] | null;
+  images: ArticleImage[] | null;
+  external_visuals: ExternalVisualEvidence[] | null;
+  series: string[] | null;
+  updated: string | null;
 }
 
 export function rowToArticle(r: PostRow): Article {
@@ -39,6 +58,14 @@ export function rowToArticle(r: PostRow): Article {
     readingMinutes: Math.max(1, Math.round(readingTime(content).minutes || 1)),
     coverImage: r.cover_image ?? undefined,
     origin: "db",
+    evidenceBasis: r.evidence_basis ?? undefined,
+    firstPartyFieldwork: r.first_party_fieldwork ?? false,
+    claimLedger: r.claim_ledger ?? undefined,
+    limitations: r.limitations ?? undefined,
+    images: r.images ?? undefined,
+    externalVisuals: r.external_visuals ?? undefined,
+    series: r.series ?? undefined,
+    updated: r.updated ?? undefined,
   };
 }
 
