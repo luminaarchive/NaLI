@@ -45,8 +45,10 @@ function Meta({ children }: { children: React.ReactNode }) {
 
 /* ============================== the page ============================== */
 
-export default function HomePage() {
-  const articles = getAllArticles();
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const articles = await getAllArticles();
   const latest = articles.slice(0, 4);
   const sourceCount = getAllSources().length;
   const confidences: Confidence[] = ["high", "medium", "low", "needs-verification"];

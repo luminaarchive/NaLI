@@ -3,7 +3,7 @@ import { ArticleCard } from "@/components/ArticleCard";
 import { getArticlesByCategory } from "@/lib/content";
 import type { Category } from "@/lib/types";
 
-export function CategoryView({
+export async function CategoryView({
   category,
   index,
   title,
@@ -14,7 +14,7 @@ export function CategoryView({
   title: string;
   description: string;
 }) {
-  const articles = getArticlesByCategory(category);
+  const articles = await getArticlesByCategory(category);
 
   return (
     <>

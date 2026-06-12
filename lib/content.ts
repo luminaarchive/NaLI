@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import readingTime from "reading-time";
+import { getDbPublishedArticles } from "./posts";
 import type {
   Article,
   ArticleMeta,
@@ -64,38 +65,51 @@ function loadArticles(): Article[] {
 
 const stripBody = ({ content: _body, ...meta }: Article): ArticleMeta => meta;
 
-export function getAllArticles(): ArticleMeta[] {
-  return loadArticles().map(stripBody);
+/**
+ * All published articles = MDX seed files + Supabase posts, merged.
+ * Same slug → the Supabase post wins (lets the admin override/edit a seed).
+ */
+async function allPublishedArticles(): Promise<Article[]> {
+  const mdx = loadArticles().map((a) => ({ ...a, origin: "mdx" as const }));
+  const db = await getDbPublishedArticles();
+  const bySlug = new Map<string, Article>();
+  for (const a of mdx) bySlug.set(a.slug, a);
+  for (const a of db) bySlug.set(a.slug, a); // DB precedence
+  return [...bySlug.values()].sort(byDateDesc);
 }
 
-export function getArticleSlugs(): string[] {
-  return loadArticles().map((a) => a.slug);
+export async function getAllArticles(): Promise<ArticleMeta[]> {
+  return (await allPublishedArticles()).map(stripBody);
 }
 
-export function getArticleBySlug(slug: string): Article | undefined {
-  return loadArticles().find((a) => a.slug === slug);
+export async function getArticleSlugs(): Promise<string[]> {
+  return (await allPublishedArticles()).map((a) => a.slug);
 }
 
-export function getArticlesByCategory(category: Category): ArticleMeta[] {
-  return getAllArticles().filter((a) => a.category === category);
+export async function getArticleBySlug(slug: string): Promise<Article | undefined> {
+  return (await allPublishedArticles()).find((a) => a.slug === slug);
 }
 
-export function getLatestArticles(limit: number): ArticleMeta[] {
-  return getAllArticles().slice(0, limit);
+export async function getArticlesByCategory(category: Category): Promise<ArticleMeta[]> {
+  return (await getAllArticles()).filter((a) => a.category === category);
 }
 
-export function getRelatedArticles(
+export async function getLatestArticles(limit: number): Promise<ArticleMeta[]> {
+  return (await getAllArticles()).slice(0, limit);
+}
+
+export async function getRelatedArticles(
   article: { slug: string; category: Category },
   limit = 3,
-): ArticleMeta[] {
-  return getAllArticles()
+): Promise<ArticleMeta[]> {
+  return (await getAllArticles())
     .filter((a) => a.slug !== article.slug && a.category === article.category)
     .slice(0, limit);
 }
 
-export function getAllTags(): { tag: string; count: number }[] {
+export async function getAllTags(): Promise<{ tag: string; count: number }[]> {
   const counts = new Map<string, number>();
-  for (const article of getAllArticles()) {
+  for (const article of await getAllArticles()) {
     for (const tag of article.tags) {
       counts.set(tag, (counts.get(tag) ?? 0) + 1);
     }
@@ -103,17 +117,6 @@ export function getAllTags(): { tag: string; count: number }[] {
   return [...counts.entries()]
     .map(([tag, count]) => ({ tag, count }))
     .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
-}
-
-export function countArticlesByCategory(): Record<Category, number> {
-  const result: Record<Category, number> = {
-    alam: 0,
-    sejarah: 0,
-    investigasi: 0,
-    "catatan-lapangan": 0,
-  };
-  for (const article of getAllArticles()) result[article.category] += 1;
-  return result;
 }
 
 /* -------------------------------- Field notes -------------------------------- */

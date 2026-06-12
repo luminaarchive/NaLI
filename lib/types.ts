@@ -29,10 +29,14 @@ export interface Article {
   confidence: Confidence;
   status: Status;
   sources: ArticleSource[];
-  /** Raw MDX body (only populated by getArticleBySlug). */
+  /** Raw MDX/Markdown body. */
   content: string;
   /** Estimated reading time in minutes. */
   readingMinutes: number;
+  /** Optional cover image URL (DB-backed posts; uploaded via admin). */
+  coverImage?: string;
+  /** Where the article comes from. */
+  origin?: "mdx" | "db";
 }
 
 export type ArticleMeta = Omit<Article, "content">;

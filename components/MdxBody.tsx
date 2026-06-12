@@ -23,6 +23,9 @@ export function MdxBody({ source }: { source: string }) {
         components={components}
         options={{
           mdxOptions: {
+            // treat content as plain Markdown (not MDX) so user-authored
+            // posts with stray "<" or "{" never crash the render
+            format: "md",
             remarkPlugins: [remarkGfm],
             rehypePlugins: [rehypeSlug],
           },

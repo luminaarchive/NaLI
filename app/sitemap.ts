@@ -2,7 +2,9 @@ import type { MetadataRoute } from "next";
 import { getAllArticles } from "@/lib/content";
 import { SITE } from "@/lib/site";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const dynamic = "force-dynamic";
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes = [
     "",
     "/articles",
@@ -22,7 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: path === "" ? 1 : 0.7,
   }));
 
-  const articles = getAllArticles().map((article) => ({
+  const articles = (await getAllArticles()).map((article) => ({
     url: `${SITE.url}/articles/${article.slug}`,
     lastModified: new Date(article.date),
     changeFrequency: "monthly" as const,

@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  getArticleBySlug,
-  getArticleSlugs,
-  getRelatedArticles,
-} from "@/lib/content";
+import { getArticleBySlug, getRelatedArticles } from "@/lib/content";
 import { formatDate } from "@/lib/format";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { ConfidenceBadge } from "@/components/ConfidenceBadge";
@@ -16,12 +13,14 @@ import { CATEGORY_LABEL } from "@/lib/types";
 
 type Params = { slug: string };
 
-export function generateStaticParams(): Params[] {
-  return getArticleSlugs().map((slug) => ({ slug }));
-}
+export const dynamic = "force-dynamic";
 
-export function generateMetadata({ params }: { params: Params }): Metadata {
-  const article = getArticleBySlug(params.slug);
+export async function generateMetadata({
+  params,
+}: {
+  params: Params;
+}): Promise<Metadata> {
+  const article = await getArticleBySlug(params.slug);
   if (!article) return { title: "Artikel tidak ditemukan" };
   const description = article.summary || article.subtitle;
   return {
@@ -35,15 +34,16 @@ export function generateMetadata({ params }: { params: Params }): Metadata {
       publishedTime: article.date,
       authors: ["Ansyahri Darma Tri Jati"],
       tags: article.tags,
+      images: article.coverImage ? [article.coverImage] : undefined,
     },
   };
 }
 
-export default function ArticleDetailPage({ params }: { params: Params }) {
-  const article = getArticleBySlug(params.slug);
+export default async function ArticleDetailPage({ params }: { params: Params }) {
+  const article = await getArticleBySlug(params.slug);
   if (!article) notFound();
 
-  const related = getRelatedArticles(article);
+  const related = await getRelatedArticles(article);
 
   return (
     <article>
@@ -83,6 +83,22 @@ export default function ArticleDetailPage({ params }: { params: Params }) {
           </div>
         </div>
       </header>
+
+      {/* cover image (DB-backed posts) */}
+      {article.coverImage && (
+        <div className="container-read pt-10">
+          <div className="overflow-hidden border border-dashed border-ink/60">
+            <Image
+              src={article.coverImage}
+              alt={article.title}
+              width={1200}
+              height={675}
+              className="h-auto w-full object-cover"
+              priority
+            />
+          </div>
+        </div>
+      )}
 
       {/* body */}
       <div className="container-read py-12 sm:py-16">

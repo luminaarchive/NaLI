@@ -15,9 +15,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ArticlesPage() {
-  const articles = getAllArticles();
-  const tags = getAllTags().map((t) => t.tag);
+export const dynamic = "force-dynamic";
+
+export default async function ArticlesPage() {
+  const articles = await getAllArticles();
+  const tags = (await getAllTags()).map((t) => t.tag);
 
   return (
     <>

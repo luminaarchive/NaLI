@@ -21,8 +21,10 @@ export const metadata: Metadata = {
 
 const PILLAR_ORDER: Category[] = ["alam", "sejarah", "investigasi"];
 
-export default function PetaEksplorasiPage() {
-  const articles = getAllArticles();
+export const dynamic = "force-dynamic";
+
+export default async function PetaEksplorasiPage() {
+  const articles = await getAllArticles();
   const notes = getAllFieldNotes();
   const locations = [...new Set(notes.map((n) => n.location_label))];
 

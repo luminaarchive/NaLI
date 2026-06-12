@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { Fraunces, IBM_Plex_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
-import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
+import { SiteChrome } from "@/components/SiteChrome";
+import { PageViewTracker } from "@/components/PageViewTracker";
 import { SITE } from "@/lib/site";
 
 const display = Fraunces({
@@ -71,9 +72,8 @@ export default function RootLayout({
               '(function(){try{var t=localStorage.getItem("nali-theme");if(!t){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}if(t==="dark"){document.documentElement.classList.add("dark")}}catch(e){}})();',
           }}
         />
-        <Nav />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <SiteChrome footer={<Footer />}>{children}</SiteChrome>
+        <PageViewTracker />
         <Analytics />
       </body>
     </html>
