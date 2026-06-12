@@ -3,7 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MdxBody } from "@/components/MdxBody";
 import { getSourceBySlug, getSourceSlugs } from "@/lib/content";
-import { SOURCE_TYPE_LABEL } from "@/lib/types";
+import { RELIABILITY_LABEL, SOURCE_TYPE_LABEL } from "@/lib/types";
+
+const LANGUAGE_LABEL: Record<string, string> = {
+  id: "Indonesia",
+  en: "Inggris",
+  nl: "Belanda",
+  other: "Lainnya",
+};
 
 type Params = { slug: string };
 
@@ -74,32 +81,90 @@ export default function SourceDetailPage({ params }: { params: Params }) {
           </div>
         )}
 
+        {/* key claims supported */}
+        {source.keyClaims && source.keyClaims.length > 0 && (
+          <section className="mt-10">
+            <h2 className="label text-ink/70">Klaim yang dapat ditopang</h2>
+            <ul className="mt-3 space-y-2">
+              {source.keyClaims.map((c) => (
+                <li key={c} className="flex gap-2 font-mono text-[0.82rem] leading-relaxed text-ink-charcoal">
+                  <span className="text-ink" aria-hidden>·</span>
+                  {c}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* limitations */}
+        {source.limitations && source.limitations.length > 0 && (
+          <section className="mt-8 border-l-2 border-dashed border-ink/50 pl-4">
+            <h2 className="label text-ink/70">Keterbatasan sumber</h2>
+            <ul className="mt-2 space-y-1.5">
+              {source.limitations.map((l) => (
+                <li key={l} className="font-mono text-[0.8rem] leading-relaxed text-gray">
+                  {l}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         {/* metadata card */}
         <dl className="mt-10 border border-dashed border-ink/60 bg-ink-wash/40 px-6 py-3">
           <Field label="Tipe" value={SOURCE_TYPE_LABEL[source.type]} />
+          {source.reliabilityLevel && (
+            <Field label="Keandalan" value={RELIABILITY_LABEL[source.reliabilityLevel]} />
+          )}
           {source.author && <Field label="Penulis" value={source.author} />}
+          {source.institution && <Field label="Lembaga" value={source.institution} />}
           {source.year && <Field label="Tahun" value={String(source.year)} />}
-          {source.related_topic && (
+          {source.language && (
+            <Field label="Bahasa" value={LANGUAGE_LABEL[source.language] ?? source.language} />
+          )}
+          {source.topics && source.topics.length > 0 && (
+            <Field label="Topik" value={source.topics.join(" · ")} />
+          )}
+          {source.geography && source.geography.length > 0 && (
+            <Field label="Geografi" value={source.geography.join(" · ")} />
+          )}
+          {source.related_topic && !source.topics && (
             <Field label="Topik terkait" value={source.related_topic} />
           )}
           {source.reliability && (
             <Field label="Catatan keandalan" value={source.reliability} />
           )}
+          {source.doi && (
+            <Field
+              label="DOI"
+              value={
+                <a href={`https://doi.org/${source.doi}`} target="_blank" rel="noopener noreferrer" className="link-teal break-all">
+                  {source.doi}
+                </a>
+              }
+            />
+          )}
           {source.url && (
             <Field
               label="Tautan asli"
               value={
-                <a
-                  href={source.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="link-teal break-all"
-                >
+                <a href={source.url} target="_blank" rel="noopener noreferrer" className="link-teal break-all">
                   {source.url}
                 </a>
               }
             />
           )}
+          {source.archiveUrl && (
+            <Field
+              label="Arsip / cermin"
+              value={
+                <a href={source.archiveUrl} target="_blank" rel="noopener noreferrer" className="link-teal break-all">
+                  {source.archiveUrl}
+                </a>
+              }
+            />
+          )}
+          {source.checkedAt && <Field label="Tanggal dicek" value={source.checkedAt} />}
         </dl>
 
         {source.url && (
