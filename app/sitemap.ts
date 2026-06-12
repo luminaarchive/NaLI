@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getAllArticles, getAllSources } from "@/lib/content";
+import { getAllJournalEntries } from "@/lib/jurnal";
 import { SITE } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -8,6 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes = [
     "",
     "/articles",
+    "/jurnal",
     "/seri",
     "/alam",
     "/sejarah",
@@ -43,5 +45,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.4,
   }));
 
-  return [...routes, ...articles, ...sources];
+  const jurnal = getAllJournalEntries().map((entry) => ({
+    url: `${SITE.url}/jurnal/${entry.slug}`,
+    lastModified: new Date(entry.checkedAt),
+    changeFrequency: "monthly" as const,
+    priority: 0.5,
+  }));
+
+  return [...routes, ...articles, ...sources, ...jurnal];
 }

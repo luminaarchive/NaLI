@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "check:editorial": "node scripts/validate-editorial-content.mjs"
+    "check:editorial": "node scripts/validate-editorial-content.mjs",
+    "check:article-images": "node scripts/check-article-images.mjs",
+    "check:routes": "node scripts/check-public-routes.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",

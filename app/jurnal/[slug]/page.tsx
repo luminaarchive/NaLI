@@ -1,0 +1,154 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { MdxBody } from "@/components/MdxBody";
+import { ConfidenceBadge } from "@/components/ConfidenceBadge";
+import {
+  getJournalEntryBySlug,
+  getJournalSlugs,
+  getRelatedJournalEntries,
+} from "@/lib/jurnal";
+import { getSourceBySlug } from "@/lib/content";
+import { JOURNAL_CATEGORY_LABEL } from "@/lib/types";
+import { SITE } from "@/lib/site";
+
+type Params = { slug: string };
+
+export function generateStaticParams() {
+  return getJournalSlugs().map((slug) => ({ slug }));
+}
+
+export function generateMetadata({ params }: { params: Params }): Metadata {
+  const entry = getJournalEntryBySlug(params.slug);
+  if (!entry) return { title: "Entri jurnal tidak ditemukan" };
+  return {
+    title: entry.title,
+    description: entry.dek,
+    alternates: { canonical: `/jurnal/${entry.slug}` },
+    openGraph: {
+      title: `${entry.title} | Jurnal, NaLI by NatIve`,
+      description: entry.dek,
+      type: "article",
+    },
+  };
+}
+
+export default function JurnalEntryPage({ params }: { params: Params }) {
+  const entry = getJournalEntryBySlug(params.slug);
+  if (!entry) notFound();
+
+  const sources = entry.sourceIds
+    .map((id) => getSourceBySlug(id))
+    .filter((s): s is NonNullable<typeof s> => Boolean(s));
+  const related = getRelatedJournalEntries(entry);
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: entry.title,
+    description: entry.dek,
+    dateModified: entry.checkedAt,
+    author: { "@type": "Organization", name: SITE.name },
+    publisher: { "@type": "Organization", name: SITE.name },
+    isPartOf: { "@type": "CreativeWorkSeries", name: "Jurnal NaLI", url: `${SITE.url}/jurnal` },
+  };
+
+  return (
+    <article className="bg-paper">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className="container-read py-12 sm:py-16">
+        <Link href="/jurnal" className="label text-gray transition-colors hover:text-ink-deep">
+          ← Jurnal
+        </Link>
+
+        <div className="mt-7 flex flex-wrap items-center gap-3">
+          <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.68rem] uppercase tracking-label text-ink">
+            {JOURNAL_CATEGORY_LABEL[entry.category]}
+          </span>
+          <ConfidenceBadge confidence={entry.confidence} size="sm" />
+          {entry.readingMinutes && (
+            <span className="font-mono text-[0.7rem] uppercase tracking-wider text-ink/60">
+              {entry.readingMinutes} menit baca
+            </span>
+          )}
+        </div>
+
+        <h1 className="mt-5 font-display text-3xl font-semibold leading-[1.12] tracking-tight text-ink-black sm:text-4xl">
+          {entry.title}
+        </h1>
+        <p className="mt-4 text-lg leading-relaxed text-gray">{entry.dek}</p>
+
+        <div className="mt-8">
+          <MdxBody source={entry.body} />
+        </div>
+
+        {/* key takeaway */}
+        <section className="mt-10 border border-dashed border-ink/60 bg-ink-wash/40 p-5">
+          <h2 className="label text-ink/70">Intinya</h2>
+          <p className="mt-2 text-[0.95rem] leading-relaxed text-ink-charcoal">{entry.keyTakeaway}</p>
+        </section>
+
+        {/* sources */}
+        {sources.length > 0 && (
+          <section className="mt-8">
+            <h2 className="label text-ink/70">Sumber</h2>
+            <ul className="mt-3 space-y-2">
+              {sources.map((s) => (
+                <li key={s.slug} className="font-mono text-[0.82rem] leading-relaxed">
+                  <Link
+                    href={`/arsip-sumber/${s.slug}`}
+                    className="text-ink-deep underline decoration-ink/40 decoration-1 underline-offset-2 hover:decoration-ink-deep"
+                  >
+                    {s.title}
+                  </Link>
+                  {s.year ? <span className="text-ink/50"> · {s.year}</span> : null}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* limitations */}
+        {entry.limitations.length > 0 && (
+          <section className="mt-8 border-l-2 border-dashed border-ink/50 pl-4">
+            <h2 className="label text-ink/70">Batasan</h2>
+            <ul className="mt-2 space-y-1.5">
+              {entry.limitations.map((l) => (
+                <li key={l} className="font-mono text-[0.8rem] leading-relaxed text-gray">
+                  {l}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <p className="mt-8 font-mono text-[0.72rem] text-ink/50">Dicek {entry.checkedAt}.</p>
+
+        {/* related */}
+        {related.length > 0 && (
+          <section className="mt-12 border-t border-dashed border-ink/40 pt-8">
+            <h2 className="label text-ink/70">Entri lain di kategori ini</h2>
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+              {related.map((r) => (
+                <li key={r.slug}>
+                  <Link
+                    href={`/jurnal/${r.slug}`}
+                    className="flex h-full flex-col border border-dashed border-ink/50 bg-paper p-4 transition-colors hover:bg-ink-wash"
+                  >
+                    <span className="font-display text-base font-semibold leading-snug text-ink-black">
+                      {r.title}
+                    </span>
+                    <span className="mt-1 text-[0.82rem] leading-relaxed text-gray">{r.dek}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </div>
+    </article>
+  );
+}

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Linimasa penjelas tsunami vulkanik Anak Krakatau 2018">
+  <rect width="1200" height="675" fill="#f7fbf8"/>
+  <rect x="36" y="36" width="1128" height="603" fill="#ffffff" stroke="#0f5e4b" stroke-opacity="0.62" stroke-dasharray="12 10"/>
+  <rect x="68" y="68" width="1064" height="539" fill="#eaf8f3" fill-opacity="0.42"/>
+  <text x="92" y="116" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" font-weight="700" letter-spacing="4" fill="#0f5e4b">DIAGRAM PENJELAS TIMELINE</text>
+  <text x="92" y="174" font-family="Georgia, serif" font-size="36" font-weight="700" fill="#0a0a0a"><tspan x="92" dy="0">Linimasa penjelas tsunami vulkanik Anak</tspan><tspan x="92" dy="42">Krakatau 2018</tspan></text>
+  <text x="92" y="254" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" font-weight="400" fill="#4f5b57"><tspan x="92" dy="0">Linimasa penjelas NaLI, bukan foto lapangan, yang merangkum mekanisme tsunami</tspan><tspan x="92" dy="24">vulkanik Anak Krakatau 2018 dari studi ilmiah, katalog gunung api, dan citra satelit</tspan></text>
+  
+      <g>
+        <rect x="92" y="288" width="1016" height="64" fill="#ffffff" fill-opacity="0.66" stroke="#0f5e4b" stroke-opacity="0.45" stroke-dasharray="8 8"/>
+        <circle cx="128" cy="318" r="16" fill="#eaf8f3" stroke="#0f5e4b" stroke-opacity="0.65"/>
+        <text x="128" y="323" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700" fill="#0f5e4b">01</text>
+        <text x="164" y="310" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" font-weight="400" fill="#1c1c1c"><tspan x="164" dy="0">Anak Krakatau tumbuh di dalam kompleks Krakatau, di tengah Selat Sunda yang padat</tspan><tspan x="164" dy="24">pelayaran, wisata, dan permukiman pesisir.</tspan></text>
+      </g>
+      <g>
+        <rect x="92" y="364" width="1016" height="64" fill="#ffffff" fill-opacity="0.66" stroke="#0f5e4b" stroke-opacity="0.45" stroke-dasharray="8 8"/>
+        <circle cx="128" cy="394" r="16" fill="#eaf8f3" stroke="#0f5e4b" stroke-opacity="0.65"/>
+        <text x="128" y="399" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700" fill="#0f5e4b">02</text>
+        <text x="164" y="386" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" font-weight="400" fill="#1c1c1c"><tspan x="164" dy="0">Pada 22 Desember 2018, sebagian tubuh gunung runtuh ke laut dan mendorong massa air</tspan><tspan x="164" dy="24">tanpa perlu gempa tektonik besar.</tspan></text>
+      </g>
+      <g>
+        <rect x="92" y="440" width="1016" height="64" fill="#ffffff" fill-opacity="0.66" stroke="#0f5e4b" stroke-opacity="0.45" stroke-dasharray="8 8"/>
+        <circle cx="128" cy="470" r="16" fill="#eaf8f3" stroke="#0f5e4b" stroke-opacity="0.65"/>
+        <text x="128" y="475" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700" fill="#0f5e4b">03</text>
+        <text x="164" y="462" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" font-weight="400" fill="#1c1c1c"><tspan x="164" dy="0">Model ilmiah, katalog GVP, dan citra satelit menunjukkan perubahan bentuk pulau setelah</tspan><tspan x="164" dy="24">peristiwa itu.</tspan></text>
+      </g>
+      <g>
+        <rect x="92" y="516" width="1016" height="64" fill="#ffffff" fill-opacity="0.66" stroke="#0f5e4b" stroke-opacity="0.45" stroke-dasharray="8 8"/>
+        <circle cx="128" cy="546" r="16" fill="#eaf8f3" stroke="#0f5e4b" stroke-opacity="0.65"/>
+        <text x="128" y="551" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" font-weight="700" fill="#0f5e4b">04</text>
+        <text x="164" y="538" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" font-weight="400" fill="#1c1c1c"><tspan x="164" dy="0">Pelajaran utamanya adalah komunikasi risiko tsunami non-gempa, terutama untuk kawasan</tspan><tspan x="164" dy="24">wisata pesisir pada malam hari.</tspan></text>
+      </g>
+  <line x1="92" y1="600" x2="1108" y2="600" stroke="#0f5e4b" stroke-opacity="0.35" stroke-dasharray="7 8"/>
+  <text x="92" y="626" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" fill="#4f5b57">NaLI by NatIve, visual internal non-AI berdasarkan sumber yang dicantumkan</text>
+</svg>

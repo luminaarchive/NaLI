@@ -8,7 +8,7 @@
  *  3. No first-person fieldwork claims unless firstPartyFieldwork is true.
  *  4. Every published article has sourceIds, sources, claimLedger, limitations,
  *     confidence, evidenceBasis, firstPartyFieldwork: false, and a displayed
- *     licensed image or internal explanatory diagram/map/timeline.
+ *     licensed image or rendered internal explanatory diagram/map/timeline image.
  *  5. Every source has the archive metadata required by the deep archive sprint.
  *  6. Displayed images and internal diagrams have license metadata.
  *  7. External visual evidence is linked only and has source, limitation, and
@@ -19,6 +19,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { loadJournalEntries } from "./load-jurnal.mjs";
 
 const ROOT = process.cwd();
 const ARTICLES = path.join(ROOT, "content", "articles");
@@ -64,6 +65,10 @@ const articleFiles = new Set(
         .map((f) => f.replace(/\.mdx?$/, ""))
     : [],
 );
+
+// Jurnal entries loaded from the TypeScript cluster files (single source of truth).
+const journalEntries = await loadJournalEntries();
+const jurnalSlugs = new Set(journalEntries.map((e) => e.slug));
 
 function read(dir) {
   if (!fs.existsSync(dir)) return [];
@@ -207,6 +212,20 @@ function validateRelatedArticleIds(tag, item, fieldName, articleSlug) {
   }
 }
 
+function validateRenderableSrc(tag, item, fieldName) {
+  if (!item?.src) {
+    errors.push(`${tag}: ${fieldName} missing src for a visible rendered image.`);
+    return;
+  }
+  const src = String(item.src);
+  if (src.startsWith("/")) {
+    const localPath = path.join(ROOT, "public", src.replace(/^\/+/, ""));
+    if (!fs.existsSync(localPath)) {
+      errors.push(`${tag}: ${fieldName} src does not exist in public/: ${src}.`);
+    }
+  }
+}
+
 scanEmDashes();
 
 /* ---- Articles ---- */
@@ -259,10 +278,10 @@ for (const { file, data, content } of read(ARTICLES)) {
   if (data.firstPartyFieldwork !== false)
     errors.push(`${tag}: firstPartyFieldwork must be false unless separately documented and reviewed.`);
 
-  const hasDisplayedImages = Array.isArray(data.images) && data.images.length > 0;
-  const hasInternalDiagrams = Array.isArray(data.diagrams) && data.diagrams.length > 0;
+  const hasDisplayedImages = Array.isArray(data.images) && data.images.some((img) => Boolean(img?.src));
+  const hasInternalDiagrams = Array.isArray(data.diagrams) && data.diagrams.some((diagram) => Boolean(diagram?.src));
   if (!hasDisplayedImages && !hasInternalDiagrams) {
-    errors.push(`${tag}: published article needs a displayed licensed image or internal explanatory diagram/map/timeline.`);
+    errors.push(`${tag}: published article needs a visible displayed image or a rendered internal explanatory diagram/map/timeline image.`);
   }
 
   if (Array.isArray(data.images)) {
@@ -270,6 +289,10 @@ for (const { file, data, content } of read(ARTICLES)) {
       for (const k of ["src", "sourceUrl", "license", "attribution", "alt", "caption", "checkedAt"]) {
         if (!img?.[k]) errors.push(`${tag}: image[${i}] missing ${k}.`);
       }
+      if (!img?.creator && !img?.institution) {
+        errors.push(`${tag}: image[${i}] missing creator or institution.`);
+      }
+      validateRenderableSrc(tag, img, `image[${i}]`);
       validateRelatedArticleIds(tag, img, `image[${i}]`, articleSlug);
       if (img?.checkedAt && !ISO_DATE.test(String(img.checkedAt))) {
         errors.push(`${tag}: image[${i}] checkedAt must be YYYY-MM-DD.`);
@@ -288,9 +311,13 @@ for (const { file, data, content } of read(ARTICLES)) {
 
   if (Array.isArray(data.diagrams)) {
     data.diagrams.forEach((diagram, i) => {
-      for (const k of ["title", "sourceUrl", "license", "attribution", "alt", "caption", "checkedAt"]) {
+      for (const k of ["src", "title", "sourceUrl", "license", "attribution", "alt", "caption", "checkedAt"]) {
         if (!diagram?.[k]) errors.push(`${tag}: diagrams[${i}] missing ${k}.`);
       }
+      if (!diagram?.creator && !diagram?.institution) {
+        errors.push(`${tag}: diagrams[${i}] missing creator or institution.`);
+      }
+      validateRenderableSrc(tag, diagram, `diagrams[${i}]`);
       if (!Array.isArray(diagram?.items) || diagram.items.length < 2) {
         errors.push(`${tag}: diagrams[${i}] must list at least two explanatory items.`);
       }
@@ -396,11 +423,20 @@ for (const { file, data, content } of read(SOURCES)) {
   if (!Array.isArray(claims) || claims.length === 0)
     errors.push(`${tag}: missing keyClaimsSupported.`);
   const used = data.usedInArticleIds ?? data.usedInArticles;
-  if (!Array.isArray(used) || used.length === 0) {
-    errors.push(`${tag}: missing usedInArticleIds.`);
-  } else {
+  const usedJurnal = data.usedInJurnalIds;
+  const hasArticleUse = Array.isArray(used) && used.length > 0;
+  const hasJurnalUse = Array.isArray(usedJurnal) && usedJurnal.length > 0;
+  if (!hasArticleUse && !hasJurnalUse) {
+    errors.push(`${tag}: missing usedInArticleIds or usedInJurnalIds.`);
+  }
+  if (hasArticleUse) {
     used.forEach((id, i) => {
       if (!articleFiles.has(String(id))) errors.push(`${tag}: usedInArticleIds[${i}] does not match an article file: ${id}.`);
+    });
+  }
+  if (hasJurnalUse) {
+    usedJurnal.forEach((id, i) => {
+      if (!jurnalSlugs.has(String(id))) errors.push(`${tag}: usedInJurnalIds[${i}] does not match a jurnal entry: ${id}.`);
     });
   }
 
@@ -410,8 +446,89 @@ for (const { file, data, content } of read(SOURCES)) {
   if (!hasLimitation) errors.push(`${tag}: missing limitations.`);
 }
 
+/* ---- Jurnal entries ---- */
+const seenJurnalSlugs = new Map();
+const seenJurnalBodies = new Map();
+for (const entry of journalEntries) {
+  const tag = `[jurnal] ${entry.__file ?? entry.slug}#${entry.slug ?? "?"}`;
+  if (!entry.slug) errors.push(`${tag}: missing slug.`);
+  if (!entry.title) errors.push(`${tag}: missing title.`);
+  if (!entry.dek) errors.push(`${tag}: missing dek.`);
+  if (!entry.body || !String(entry.body).trim()) errors.push(`${tag}: missing body.`);
+  if (!entry.keyTakeaway) errors.push(`${tag}: missing keyTakeaway.`);
+  if (!entry.category) errors.push(`${tag}: missing category.`);
+  if (!entry.confidence) errors.push(`${tag}: missing confidence label.`);
+  if (!entry.checkedAt) errors.push(`${tag}: missing checkedAt.`);
+  if (entry.checkedAt && !ISO_DATE.test(String(entry.checkedAt))) {
+    errors.push(`${tag}: checkedAt must be YYYY-MM-DD.`);
+  }
+  if (!Array.isArray(entry.limitations) || entry.limitations.length === 0) {
+    errors.push(`${tag}: missing limitations.`);
+  }
+  if (!Array.isArray(entry.topics) || entry.topics.length === 0) {
+    errors.push(`${tag}: missing topics.`);
+  }
+  if (!Array.isArray(entry.geography) || entry.geography.length === 0) {
+    errors.push(`${tag}: missing geography.`);
+  }
+  if (!Array.isArray(entry.sourceIds) || entry.sourceIds.length === 0) {
+    errors.push(`${tag}: missing sourceIds.`);
+  } else {
+    entry.sourceIds.forEach((id, i) => {
+      if (!sourceFiles.has(String(id))) {
+        errors.push(`${tag}: sourceIds[${i}] does not resolve to a source entry: ${id}.`);
+      }
+    });
+  }
+
+  const body = String(entry.body ?? "");
+  if (FIRST_PERSON_FIELD.test(body)) {
+    errors.push(`${tag}: first-person field claim in a journal entry (no first-party fieldwork).`);
+  }
+  for (const pattern of BANNED_TEMPLATE_PHRASES) {
+    if (pattern.test(body)) errors.push(`${tag}: contains banned template phrase: ${pattern.source}`);
+  }
+  if (DEMO_TERMS.test(body)) errors.push(`${tag}: contains demo/placeholder language.`);
+
+  const wc = wordCount(body);
+  if (wc < 250 || wc > 600) {
+    warnings.push(`${tag}: body has ${wc} words, outside the 250 to 600 recommended range.`);
+  }
+
+  if (entry.slug) {
+    seenJurnalSlugs.set(entry.slug, (seenJurnalSlugs.get(entry.slug) ?? 0) + 1);
+  }
+  const bodyKey = body.replace(/\s+/g, " ").trim().toLowerCase();
+  if (bodyKey) {
+    if (seenJurnalBodies.has(bodyKey)) {
+      errors.push(`${tag}: duplicate body text shared with ${seenJurnalBodies.get(bodyKey)}.`);
+    } else {
+      seenJurnalBodies.set(bodyKey, entry.slug);
+    }
+  }
+}
+for (const [slug, count] of seenJurnalSlugs.entries()) {
+  if (count > 1) errors.push(`[jurnal] duplicate slug "${slug}" appears ${count} times.`);
+}
+
+/* ---- Coverage stats ---- */
+let publishedArticleCount = 0;
+let articlesWithVisual = 0;
+for (const { data } of read(ARTICLES)) {
+  if ((data.status ?? "draft") !== "published") continue;
+  publishedArticleCount++;
+  const hasImg = Array.isArray(data.images) && data.images.some((i) => Boolean(i?.src));
+  const hasDiag = Array.isArray(data.diagrams) && data.diagrams.some((d) => Boolean(d?.src));
+  if (hasImg || hasDiag) articlesWithVisual++;
+}
+
 /* ---- Report ---- */
-console.log(`\nEditorial validation: ${sourceCount} sources checked.`);
+console.log(`\nEditorial validation summary:`);
+console.log(`  sources checked:        ${sourceCount}`);
+console.log(`  published articles:     ${publishedArticleCount}`);
+console.log(`  article image coverage: ${articlesWithVisual}/${publishedArticleCount}`);
+console.log(`  jurnal entries:         ${journalEntries.length}`);
+console.log(`  em dash status:         ${errors.some((e) => e.startsWith("[em-dash]")) ? "FAIL" : "clean"}`);
 if (warnings.length) {
   console.log(`\n${warnings.length} warning(s):`);
   for (const w of warnings) console.log(`  WARN ${w}`);

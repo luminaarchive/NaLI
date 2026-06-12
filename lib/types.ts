@@ -106,6 +106,8 @@ export interface ExternalVisualEvidence {
  * photo and must say so plainly in its caption.
  */
 export interface ArticleDiagram {
+  /** Local image path for the rendered non-AI explanatory visual. */
+  src?: string;
   type?: "diagram" | "timeline" | "map";
   title: string;
   creator?: string;
@@ -186,6 +188,65 @@ export interface FieldNote {
   /** Traceable sources behind the note. */
   sources?: ArticleSource[];
 }
+
+/**
+ * Jurnal = the natural-knowledge library. Shorter than a longform Artikel
+ * (target 250 to 600 words) but still source-backed: every entry cites at least
+ * one entry in Arsip Sumber, carries a confidence label, and states its limits.
+ */
+export type JournalCategory =
+  | "satwa"
+  | "tumbuhan"
+  | "geologi"
+  | "laut"
+  | "hutan"
+  | "pesisir"
+  | "iklim"
+  | "perairan"
+  | "konservasi"
+  | "wallacea"
+  | "arsip-alam"
+  | "ekologi";
+
+export interface JournalEntry {
+  /** Stable id, equal to the slug. */
+  id: string;
+  slug: string;
+  title: string;
+  /** One-line standfirst. */
+  dek: string;
+  category: JournalCategory;
+  topics: string[];
+  geography: string[];
+  /** Must resolve to real entries in Arsip Sumber (content/sources). */
+  sourceIds: string[];
+  confidence: Confidence;
+  /** Markdown body, 250 to 600 words. */
+  body: string;
+  keyTakeaway: string;
+  limitations: string[];
+  /** Optional reference to an article image id, kept for future visuals. */
+  imageId?: string;
+  /** ISO date the entry was last checked. */
+  checkedAt: string;
+  /** Filled by the loader. */
+  readingMinutes?: number;
+}
+
+export const JOURNAL_CATEGORY_LABEL: Record<JournalCategory, string> = {
+  satwa: "Satwa",
+  tumbuhan: "Tumbuhan",
+  geologi: "Geologi",
+  laut: "Laut",
+  hutan: "Hutan",
+  pesisir: "Pesisir",
+  iklim: "Iklim",
+  perairan: "Perairan",
+  konservasi: "Konservasi",
+  wallacea: "Wallacea",
+  "arsip-alam": "Arsip Alam",
+  ekologi: "Ekologi",
+};
 
 export interface SourceEntry {
   /** Stable source ID, normally equal to the file slug. */

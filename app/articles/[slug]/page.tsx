@@ -24,6 +24,10 @@ export async function generateMetadata({
   const article = await getArticleBySlug(params.slug);
   if (!article) return { title: "Artikel tidak ditemukan" };
   const description = article.summary || article.subtitle;
+  const metadataImage =
+    article.images?.find((image) => image.src)?.src ??
+    article.diagrams?.find((diagram) => diagram.src)?.src ??
+    article.coverImage;
   return {
     title: article.title,
     description,
@@ -36,7 +40,7 @@ export async function generateMetadata({
       modifiedTime: article.updated ?? article.date,
       authors: ["Ansyahri Darma Tri Jati"],
       tags: article.tags,
-      images: article.coverImage ? [article.coverImage] : undefined,
+      images: metadataImage ? [metadataImage] : undefined,
     },
   };
 }
@@ -57,6 +61,10 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
   const series = (article.series ?? [])
     .map((slug) => getSeries(slug))
     .filter((s): s is NonNullable<typeof s> => Boolean(s));
+  const displayedImages = (article.images ?? []).filter((image) => Boolean(image.src));
+  const displayedDiagrams = (article.diagrams ?? []).filter((diagram) => Boolean(diagram.src));
+  const metadataImage =
+    displayedImages[0]?.src ?? displayedDiagrams[0]?.src ?? article.coverImage;
 
   // Build the JSON-LD for the article.
   const jsonLd = {
@@ -68,7 +76,7 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
     dateModified: article.updated ?? article.date,
     author: { "@type": "Person", name: "Ansyahri Darma Tri Jati" },
     publisher: { "@type": "Organization", name: "NaLI by NatIve" },
-    ...(article.coverImage ? { image: article.coverImage } : {}),
+    ...(metadataImage ? { image: metadataImage } : {}),
   };
 
   return (
@@ -150,8 +158,57 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
         </div>
       </div>
 
-      {/* cover image (DB-backed posts) */}
-      {article.coverImage && (
+      {/* CATEGORY 1: licensed images actually displayed */}
+      {displayedImages.length > 0 && (
+        <div className="container-read pt-10">
+          <section className="border border-dashed border-ink/60 bg-paper p-5" aria-labelledby="gambar-artikel">
+            <h2 id="gambar-artikel" className="label text-ink/70">
+              Gambar artikel
+            </h2>
+            <div className="mt-5 space-y-7">
+              {displayedImages.map((img, i) => (
+                <figure key={`${img.src}-${i}`} data-article-visual="displayed-image">
+                  <div className="overflow-hidden border border-dashed border-ink/45 bg-ink-wash/30">
+                    <Image
+                      src={img.src ?? ""}
+                      alt={img.alt}
+                      width={1200}
+                      height={675}
+                      className="h-auto w-full object-contain"
+                      priority={i === 0}
+                    />
+                  </div>
+                  <figcaption data-visual-credit="true" className="mt-3">
+                    <p className="font-mono text-[0.76rem] leading-relaxed text-gray">
+                      <span className="text-ink-charcoal">{img.caption}</span>
+                    </p>
+                    <p className="mt-2 font-mono text-[0.68rem] leading-relaxed text-ink/60">
+                      {img.attribution}.{" "}
+                      <a href={img.sourceUrl} target="_blank" rel="noopener noreferrer" className="link-teal">
+                        Sumber
+                      </a>
+                      {img.licenseUrl ? (
+                        <>
+                          {", "}
+                          <a href={img.licenseUrl} target="_blank" rel="noopener noreferrer" className="link-teal">
+                            {img.license}
+                          </a>
+                        </>
+                      ) : (
+                        <>{`, ${img.license}`}</>
+                      )}
+                      {img.checkedAt && <span className="text-ink/40">, dicek {img.checkedAt}</span>}
+                    </p>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* cover image fallback for DB-backed posts without structured image records */}
+      {displayedImages.length === 0 && displayedDiagrams.length === 0 && article.coverImage && (
         <div className="container-read pt-10">
           <div className="overflow-hidden border border-dashed border-ink/60">
             <Image
@@ -167,16 +224,30 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
       )}
 
       {/* internal explanatory diagrams, maps, or timelines */}
-      {article.diagrams && article.diagrams.length > 0 && (
+      {displayedDiagrams.length > 0 && (
         <div className="container-read pt-10">
           <section className="border border-dashed border-ink/60 bg-paper p-5" aria-labelledby="diagram-penjelas">
             <h2 id="diagram-penjelas" className="label text-ink/70">
               Diagram penjelas
             </h2>
             <div className="mt-5 space-y-6">
-              {article.diagrams.map((diagram, i) => (
-                <figure key={`${diagram.title}-${i}`} className="border-t border-dashed border-ink/35 pt-5 first:border-t-0 first:pt-0">
-                  <figcaption>
+              {displayedDiagrams.map((diagram, i) => (
+                <figure
+                  key={`${diagram.title}-${i}`}
+                  data-article-visual="displayed-diagram"
+                  className="border-t border-dashed border-ink/35 pt-5 first:border-t-0 first:pt-0"
+                >
+                  <div className="overflow-hidden border border-dashed border-ink/45 bg-ink-wash/30">
+                    <Image
+                      src={diagram.src ?? ""}
+                      alt={diagram.alt}
+                      width={1200}
+                      height={675}
+                      className="h-auto w-full object-contain"
+                      priority={displayedImages.length === 0 && i === 0}
+                    />
+                  </div>
+                  <figcaption data-visual-credit="true" className="mt-3">
                     <p className="font-display text-lg font-semibold uppercase leading-tight text-ink">
                       {diagram.title}
                     </p>
