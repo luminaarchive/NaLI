@@ -75,8 +75,8 @@ function loadArticles(): Article[] {
 const stripBody = ({ content: _body, ...meta }: Article): ArticleMeta => meta;
 
 /**
- * All published articles = MDX seed files + Supabase posts, merged.
- * Same slug → the Supabase post wins (lets the admin override/edit a seed).
+ * All published articles = bundled MDX files + Supabase posts, merged.
+ * Same slug → the Supabase post wins (lets the admin override/edit an MDX entry).
  */
 async function allPublishedArticles(): Promise<Article[]> {
   const mdx = loadArticles().map((a) => ({ ...a, origin: "mdx" as const }));

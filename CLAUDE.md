@@ -381,6 +381,44 @@ Keep a running log at the bottom of this file after each session:
 - **Verified live (production):** semua route 200, `/admin*` 307→login, artikel tampil dengan sampul+gambar+tabel, "Tulisan terbaru" di home, baris arsip me-link ke detail. build/lint/typecheck clean. Push `main` → auto-deploy.
 - **Masih berlaku:** akun admin = tugas founder (Supabase → Auth → Add user); alur authed (login→editor→upload→terbit) belum dites E2E.
 
+### 12 Juni 2026 (lanjutan 2) — Editorial trust + arsip sumber + sprint 30 artikel (founder-directed)
+
+Mengeksekusi prompt `nali_editorial_trust_source_archive_30_articles_prompt.md` penuh.
+Reposisi NaLI dari "field journal" (mengesankan observasi lapangan pribadi) menjadi
+**jurnal riset terbuka (open-source evidence journal)** — founder belum bisa kerja
+lapangan langsung (gear/budget belum lengkap), jadi semua bukti dari sumber pihak ketiga.
+
+- **Trust/positioning (prioritas 1):** semua disclaimer "contoh (seed)" dihapus dari 5
+  artikel; 2 catatan lapangan first-person ditulis ulang jadi **catatan riset** pihak
+  ketiga; mangrove (yang bergaya on-site) di-reframe + recategorize ke `alam`. Hero,
+  FAQ, nav, footer, tentang, manifesto, peta→"Indeks Eksplorasi", layout meta semuanya
+  di-reframe. Label keyakinan → kosakata sprint (Terverifikasi kuat / Didukung sumber /
+  Terbatas / Belum cukup bukti; "Diperdebatkan" per-klaim).
+- **Skema (lib/types.ts):** Article + evidenceBasis, firstPartyFieldwork(false), series,
+  claimLedger, limitations, images. SourceEntry + reliabilityLevel, topics, doi,
+  archiveUrl, institution, keyClaims, limitations, checkedAt. FieldNote + evidenceType.
+  Artikel detail render banner "Basis tulisan", **Claim Ledger**, batasan, kredit gambar,
+  chip seri, JSON-LD.
+- **Trust pages baru:** `/metodologi`, `/koreksi`, `/seri`, `/pedoman-sumber`,
+  `/lisensi-foto`. Nav diramping. `lib/series.ts` (7 seri).
+- **Arsip Sumber:** 25→**38 sumber** (13 baru terverifikasi web: IUCN badak Jawa/Komodo/
+  orangutan Tapanuli/coelacanth, GVP Toba/Merapi, PNAS Samalas 1257, Anak Krakatau 2018,
+  Jakarta subsidence, peat-fire ACP/PNAS, UNESCO Sumatra, Banda 1621). 25 lama di-backfill
+  metadata terstruktur via `scripts/backfill-sources.mjs`. Listing jadi **filter
+  client** (tipe/topik/keandalan); detail render keyClaims+limitations+DOI+checkedAt.
+- **Artikel:** 6 lama di-rebuild ke standar baru + **3 baru** (Badak Jawa, Tambora 1815,
+  Jakarta Tenggelam) → **9 terbit** dari 30. Sisanya direncanakan di
+  `docs/nali_30_article_editorial_plan.md` (TIDAK dipaksa 30 demi angka).
+- **Validator:** `npm run check:editorial` (`scripts/validate-editorial-content.mjs`) —
+  larang demo-terms + first-person fieldwork; wajib claimLedger/limitations/evidenceBasis
+  per artikel, metadata+limitations per sumber, kredit lengkap per gambar.
+- **Docs:** orientation, baseline, public-copy audit, research backlog, rejected sources,
+  30-article plan, image register, **final report** (`docs/nali_editorial_trust_source_archive_sprint_report.md`).
+- **QA:** lint/typecheck/check:editorial/build clean; 63 route; runtime curl 23 route 200,
+  bogus 404, /admin 307. **Belum push** (menunggu keputusan founder).
+- **Masih placeholder:** email `halo@nali.native.id` (di `SITE.email`) — mailbox nyata =
+  tugas founder. Editor `/admin` belum tangkap claimLedger/evidenceBasis untuk post DB.
+
 ---
 
-*Last updated: 12 Juni 2026 — landing lead-with-articles + dashboard overview + arsip sumber bisa diklik (25 entri) live; artikel Harimau Jawa TERBIT*
+*Last updated: 12 Juni 2026 — editorial-trust sprint: reposisi open-source evidence journal, +trust pages, arsip 38 sumber terverifikasi + filter, 9/30 artikel ke standar Claim Ledger, validator + final report. Belum push.*

@@ -32,11 +32,12 @@ export const metadata: Metadata = {
   keywords: [
     "NaLI",
     "NatIve",
-    "field journal Indonesia",
+    "jurnal riset terbuka Indonesia",
+    "open-source evidence journal",
     "riset alam Indonesia",
     "sejarah Indonesia",
-    "investigasi",
-    "AI research publication",
+    "investigasi sumber terbuka",
+    "arsip sumber",
   ],
   icons: {
     icon: "/brand/png-exports/nali-app-icon-192x192.png",
