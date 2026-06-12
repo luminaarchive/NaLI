@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getAllArticles } from "@/lib/content";
+import { getAllArticles, getAllSources } from "@/lib/content";
 import { SITE } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -8,12 +8,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes = [
     "",
     "/articles",
+    "/seri",
     "/alam",
     "/sejarah",
     "/investigasi",
     "/catatan-lapangan",
     "/arsip-sumber",
     "/peta-eksplorasi",
+    "/metodologi",
+    "/pedoman-sumber",
+    "/lisensi-foto",
+    "/koreksi",
     "/manifesto",
     "/tentang",
     "/kontak",
@@ -26,10 +31,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const articles = (await getAllArticles()).map((article) => ({
     url: `${SITE.url}/articles/${article.slug}`,
-    lastModified: new Date(article.date),
+    lastModified: new Date(article.updated ?? article.date),
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));
 
-  return [...routes, ...articles];
+  const sources = getAllSources().map((source) => ({
+    url: `${SITE.url}/arsip-sumber/${source.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "yearly" as const,
+    priority: 0.4,
+  }));
+
+  return [...routes, ...articles, ...sources];
 }

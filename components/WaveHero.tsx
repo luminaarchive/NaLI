@@ -51,9 +51,10 @@ export function WaveHero() {
           <em className="font-light italic text-teal">selamanya</em>
         </h1>
         <p className="mt-6 max-w-xl text-base leading-relaxed text-white/75">
-          Field journal &amp; research publication berbasis AI untuk alam,
-          sejarah, dan investigasi Indonesia — setiap klaim diberi label
-          keyakinan dan dirujuk ke sumber.
+          Jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia.
+          Kami membaca jurnal, arsip, laporan lembaga, dataset, dan dokumentasi
+          lapangan pihak ketiga — setiap klaim membawa sumber, label keyakinan,
+          dan batasan.
         </p>
         <div className="mt-8 w-full max-w-md">
           <NewsletterSignup />

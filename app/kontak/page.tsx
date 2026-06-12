@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
+import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Kontak",
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
   },
 };
 
-const EMAIL = "halo@nali.native.id";
+const EMAIL = SITE.email;
 
 const CHANNELS = [
   { label: "X (Twitter)", note: "Thread dan tulisan pendek" },

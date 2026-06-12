@@ -3,13 +3,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getArticleBySlug, getRelatedArticles } from "@/lib/content";
+import { getSeries } from "@/lib/series";
 import { formatDate } from "@/lib/format";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { ConfidenceBadge } from "@/components/ConfidenceBadge";
 import { MdxBody } from "@/components/MdxBody";
 import { SourceList } from "@/components/SourceList";
 import { ArticleCard } from "@/components/ArticleCard";
-import { CATEGORY_LABEL } from "@/lib/types";
+import { CATEGORY_LABEL, CLAIM_STATUS_LABEL, type ClaimStatus } from "@/lib/types";
 
 type Params = { slug: string };
 
@@ -32,6 +33,7 @@ export async function generateMetadata({
       description,
       type: "article",
       publishedTime: article.date,
+      modifiedTime: article.updated ?? article.date,
       authors: ["Ansyahri Darma Tri Jati"],
       tags: article.tags,
       images: article.coverImage ? [article.coverImage] : undefined,
@@ -39,14 +41,42 @@ export async function generateMetadata({
   };
 }
 
+const CLAIM_STATUS_COLOR: Record<ClaimStatus, string> = {
+  "terverifikasi kuat": "text-ink-deep",
+  "didukung sumber": "text-ink",
+  terbatas: "text-[#9c6a08] dark:text-[#e8c277]",
+  diperdebatkan: "text-[#9c3c08] dark:text-[#f0a36e]",
+  "belum cukup bukti": "text-[#a31515] dark:text-[#f09090]",
+};
+
 export default async function ArticleDetailPage({ params }: { params: Params }) {
   const article = await getArticleBySlug(params.slug);
   if (!article) notFound();
 
   const related = await getRelatedArticles(article);
+  const series = (article.series ?? [])
+    .map((slug) => getSeries(slug))
+    .filter((s): s is NonNullable<typeof s> => Boolean(s));
+
+  // Build the JSON-LD for the article.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.summary || article.subtitle,
+    datePublished: article.date,
+    dateModified: article.updated ?? article.date,
+    author: { "@type": "Person", name: "Ansyahri Darma Tri Jati" },
+    publisher: { "@type": "Organization", name: "NaLI by NatIve" },
+    ...(article.coverImage ? { image: article.coverImage } : {}),
+  };
 
   return (
     <article>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* header */}
       <header className="border-b border-dashed border-ink/40">
         <div className="container-read py-12 sm:py-16">
@@ -76,13 +106,49 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
 
           <div className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray">
             <time dateTime={article.date}>{formatDate(article.date)}</time>
+            {article.updated && article.updated !== article.date && (
+              <>
+                <span aria-hidden>·</span>
+                <span>diperbarui {formatDate(article.updated)}</span>
+              </>
+            )}
             <span aria-hidden>·</span>
             <span>{article.readingMinutes} menit baca</span>
             <span aria-hidden>·</span>
             <span>{CATEGORY_LABEL[article.category]}</span>
           </div>
+
+          {series.length > 0 && (
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              <span className="label text-ink/70">Seri</span>
+              {series.map((s) => (
+                <Link
+                  key={s.slug}
+                  href="/seri"
+                  className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.68rem] text-ink transition-colors hover:bg-ink-wash"
+                >
+                  {s.title}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </header>
+
+      {/* evidence-basis banner — honesty about how the piece is sourced */}
+      <div className="container-read pt-8">
+        <div className="border border-dashed border-ink/60 bg-ink-wash/40 p-5">
+          <p className="font-mono text-[0.78rem] leading-relaxed text-ink-charcoal">
+            <span className="font-semibold text-ink-deep">Basis tulisan:</span>{" "}
+            {article.evidenceBasis
+              ? `${article.evidenceBasis}, arsip, dan observasi pihak ketiga. `
+              : "sumber terbuka, arsip, dan observasi pihak ketiga. "}
+            {article.firstPartyFieldwork
+              ? "Artikel ini memuat bukti lapangan pertama yang ditampilkan di bawah."
+              : "NaLI tidak mengklaim observasi lapangan pribadi untuk artikel ini."}
+          </p>
+        </div>
+      </div>
 
       {/* cover image (DB-backed posts) */}
       {article.coverImage && (
@@ -104,7 +170,99 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
       <div className="container-read py-12 sm:py-16">
         <MdxBody source={article.content} />
 
+        {/* Claim Ledger */}
+        {article.claimLedger && article.claimLedger.length > 0 && (
+          <section className="mt-14 border-t border-dashed border-ink/70 pt-6" aria-labelledby="claim-ledger">
+            <h2 id="claim-ledger" className="font-display text-xl font-bold uppercase text-ink">
+              Claim Ledger
+            </h2>
+            <p className="mt-2 font-mono text-[0.78rem] leading-relaxed text-gray">
+              Tiap klaim utama dipisahkan dan diberi status bukti sendiri.
+            </p>
+            <div className="mt-5 overflow-hidden border border-ink/50">
+              <table className="w-full border-collapse text-left">
+                <thead>
+                  <tr className="bg-ink-wash">
+                    {["Klaim", "Status", "Sumber", "Catatan"].map((h) => (
+                      <th
+                        key={h}
+                        className="border border-ink/40 px-3 py-2.5 font-mono text-[0.64rem] uppercase tracking-label text-ink-deep"
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {article.claimLedger.map((c, i) => (
+                    <tr key={i} className="align-top odd:bg-ink-wash/30">
+                      <td className="border border-ink/30 px-3 py-2.5 text-[0.82rem] leading-snug text-ink-charcoal">
+                        {c.claim}
+                      </td>
+                      <td className={`border border-ink/30 px-3 py-2.5 font-mono text-[0.7rem] font-semibold uppercase ${CLAIM_STATUS_COLOR[c.status]}`}>
+                        {CLAIM_STATUS_LABEL[c.status]}
+                      </td>
+                      <td className="border border-ink/30 px-3 py-2.5 font-mono text-[0.72rem] text-gray">
+                        {c.sources ?? "—"}
+                      </td>
+                      <td className="border border-ink/30 px-3 py-2.5 font-mono text-[0.72rem] leading-snug text-gray">
+                        {c.limitation ?? c.explanation ?? "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {/* Limitations */}
+        {article.limitations && article.limitations.length > 0 && (
+          <section className="mt-12 border-l-2 border-dashed border-ink/50 pl-5" aria-labelledby="batasan">
+            <h2 id="batasan" className="font-display text-lg font-bold uppercase text-ink">
+              Batasan & hal yang belum pasti
+            </h2>
+            <ul className="mt-3 space-y-2">
+              {article.limitations.map((l) => (
+                <li key={l} className="font-mono text-[0.82rem] leading-relaxed text-gray">
+                  {l}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <SourceList sources={article.sources} />
+
+        {/* Image credits */}
+        {article.images && article.images.length > 0 && (
+          <section className="mt-12 border-t border-dashed border-ink/40 pt-6" aria-labelledby="kredit-gambar">
+            <h2 id="kredit-gambar" className="label text-ink/70">
+              Kredit & lisensi gambar
+            </h2>
+            <ul className="mt-4 space-y-3">
+              {article.images.map((img, i) => (
+                <li key={i} className="font-mono text-[0.76rem] leading-relaxed text-gray">
+                  <span className="text-ink-charcoal">{img.title ?? img.caption}</span> —{" "}
+                  {img.attribution}.{" "}
+                  <a href={img.sourceUrl} target="_blank" rel="noopener noreferrer" className="link-teal">
+                    Sumber
+                  </a>
+                  {img.licenseUrl ? (
+                    <>
+                      {" · "}
+                      <a href={img.licenseUrl} target="_blank" rel="noopener noreferrer" className="link-teal">
+                        {img.license}
+                      </a>
+                    </>
+                  ) : (
+                    <> · {img.license}</>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {article.tags.length > 0 && (
           <div className="mt-12 flex flex-wrap gap-2 border-t border-dashed border-ink/40 pt-6">

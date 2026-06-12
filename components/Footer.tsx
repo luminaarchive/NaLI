@@ -1,12 +1,5 @@
 import Link from "next/link";
-import { NAV_LINKS, SITE } from "@/lib/site";
-
-const SECONDARY = [
-  { href: "/manifesto", label: "Manifesto" },
-  { href: "/peta-eksplorasi", label: "Peta Eksplorasi" },
-  { href: "/tentang", label: "Tentang" },
-  { href: "/kontak", label: "Kontak" },
-];
+import { NAV_LINKS, SECONDARY_LINKS, SITE } from "@/lib/site";
 
 export function Footer() {
   return (
@@ -19,8 +12,8 @@ export function Footer() {
               NaLI <span className="text-ink">by NatIve</span>
             </p>
             <p className="mt-3 max-w-sm font-mono text-[0.8rem] leading-relaxed text-gray">
-              Nature · Archive · Lore · Investigation. Jurnal lapangan dan
-              publikasi riset berbasis AI tentang Indonesia.
+              Nature · Archive · Lore · Investigation. Jurnal riset terbuka
+              berbasis AI tentang Indonesia — setiap klaim bersumber.
             </p>
             <p className="label mt-5">Setiap klaim diberi label keyakinan</p>
           </div>
@@ -41,7 +34,7 @@ export function Footer() {
           <nav aria-label="Publikasi">
             <p className="label mb-4 text-ink-deep">Publikasi</p>
             <ul className="space-y-2.5">
-              {SECONDARY.map((link) => (
+              {SECONDARY_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="font-mono text-[0.8rem] text-ink transition-colors hover:text-ink-deep hover:underline">
                     {link.label}
@@ -58,7 +51,7 @@ export function Footer() {
             © {new Date().getFullYear()} {SITE.name}. Disusun oleh {SITE.author}.
           </p>
           <p className="uppercase tracking-label text-ink/70">
-            Field journal · research publication · AI-assisted
+            Open-source evidence journal · AI-assisted · bersumber
           </p>
         </div>
       </div>

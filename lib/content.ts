@@ -50,6 +50,14 @@ function parseArticle(slug: string, raw: string): Article {
     coverImage: fm.coverImage,
     content,
     readingMinutes: Math.max(1, Math.round(readingTime(content).minutes)),
+    series: fm.series,
+    evidenceBasis: fm.evidenceBasis,
+    firstPartyFieldwork: fm.firstPartyFieldwork ?? false,
+    updated: fm.updated,
+    locationLabels: fm.locationLabels,
+    limitations: fm.limitations,
+    claimLedger: fm.claimLedger,
+    images: fm.images,
   };
 }
 
@@ -136,6 +144,9 @@ export function getAllFieldNotes(): FieldNote[] {
         summary: fm.summary ?? "",
         status: fm.status ?? "draft",
         content,
+        evidenceType: fm.evidenceType,
+        limitations: fm.limitations,
+        sources: fm.sources,
       } satisfies FieldNote;
     })
     .filter((n) => n.status === "published")
@@ -157,6 +168,18 @@ function parseSource(slug: string, raw: string): SourceEntry {
     reliability: fm.reliability,
     related_topic: fm.related_topic,
     content: content.trim(),
+    reliabilityLevel: fm.reliabilityLevel,
+    institution: fm.institution,
+    doi: fm.doi,
+    archiveUrl: fm.archiveUrl,
+    license: fm.license,
+    language: fm.language,
+    topics: fm.topics,
+    geography: fm.geography,
+    keyClaims: fm.keyClaims,
+    limitations: fm.limitations,
+    usedInArticles: fm.usedInArticles,
+    checkedAt: fm.checkedAt,
   } satisfies SourceEntry;
 }
 
@@ -164,6 +187,13 @@ export function getAllSources(): SourceEntry[] {
   return readMdxFiles(SOURCES_DIR)
     .map(({ slug, raw }) => parseSource(slug, raw))
     .sort((a, b) => (b.year ?? 0) - (a.year ?? 0) || a.title.localeCompare(b.title));
+}
+
+/** Distinct topic tags across all sources (for the archive filter). */
+export function getAllSourceTopics(): string[] {
+  const set = new Set<string>();
+  for (const s of getAllSources()) for (const t of s.topics ?? []) set.add(t);
+  return [...set].sort((a, b) => a.localeCompare(b));
 }
 
 export function getSourceSlugs(): string[] {

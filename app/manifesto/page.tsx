@@ -17,7 +17,7 @@ const PRINCIPLES = [
   {
     n: "01",
     title: "Jujur soal tingkat keyakinan",
-    body: "Tidak semua yang kami tulis sudah pasti. Maka setiap tulisan diberi label: terverifikasi, perlu konteks, hipotesis kerja, atau belum diverifikasi. Pembaca berhak tahu seberapa kuat dasar sebuah klaim.",
+    body: "Tidak semua yang kami tulis sudah pasti. Maka setiap tulisan diberi label: terverifikasi kuat, didukung sumber, terbatas, atau belum cukup bukti — dan klaim yang masih diperdebatkan ditandai per-klaim. Pembaca berhak tahu seberapa kuat dasar sebuah klaim.",
   },
   {
     n: "02",
@@ -41,8 +41,13 @@ const PRINCIPLES = [
   },
   {
     n: "06",
-    title: "Bangun sekali, terbitkan setiap hari",
-    body: "Energi kami untuk menelusuri dan menulis, bukan membangun ulang tanpa henti. Publikasi yang konsisten mengalahkan kesempurnaan yang tak pernah selesai.",
+    title: "Bangun sekali, terbitkan rutin",
+    body: "Energi kami untuk menelusuri dan menulis, bukan membangun ulang tanpa henti. Publikasi yang konsisten mengalahkan kesempurnaan yang tak pernah selesai — tapi kualitas dan ketertelusuran sumber selalu didahulukan ketimbang mengejar jumlah.",
+  },
+  {
+    n: "07",
+    title: "Tidak mengklaim yang tak kami lakukan",
+    body: "NaLI bekerja dari sumber terbuka: jurnal, arsip, laporan lembaga, dataset, observasi peneliti, dan foto berlisensi. Kami tidak berpura-pura turun ke lapangan. Tidak ada klaim observasi, pengukuran, atau foto lapangan pribadi kecuali bukti pertama benar-benar ada dan ditampilkan jelas.",
   },
 ];
 
@@ -66,8 +71,8 @@ export default function ManifestoPage() {
           </p>
           <p>
             <strong>NaLI</strong> — Nature, Archive, Lore, Investigation.{" "}
-            <strong>by NatIve</strong> — local intelligence, catatan lapangan,
-            dan publikasi riset dari sudut pandang Indonesia sendiri.
+            <strong>by NatIve</strong> — local intelligence dan riset berbasis
+            sumber terbuka dari sudut pandang Indonesia sendiri.
           </p>
         </div>
 

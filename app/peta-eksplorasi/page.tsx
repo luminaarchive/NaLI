@@ -32,14 +32,14 @@ export default async function PetaEksplorasiPage() {
     <>
       <PageHeader
         eyebrow="Indeks"
-        title="Peta Eksplorasi"
-        description="Bukan peta interaktif — sebuah indeks. Lokasi yang sudah dijejaki dan topik yang sedang ditelusuri."
+        title="Indeks Eksplorasi"
+        description="Bukan peta interaktif, juga bukan jejak ekspedisi pribadi — sebuah indeks lokasi dan topik dalam liputan NaLI, disusun dari sumber terbuka."
       />
 
       <div className="container-editorial py-12">
         {/* locations */}
         <section>
-          <h2 className="font-display text-2xl text-ink-black">Lokasi lapangan</h2>
+          <h2 className="font-display text-2xl text-ink-black">Lokasi dalam liputan</h2>
           {locations.length === 0 ? (
             <p className="mt-3 text-gray">Belum ada lokasi tercatat.</p>
           ) : (

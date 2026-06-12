@@ -160,7 +160,7 @@ export default async function AdminDashboard() {
             Belum ada tulisan di database. Klik “Tulisan baru” untuk mulai.
             <br />
             <span className="text-ink/70">
-              (Artikel contoh masih tampil di situs dari file MDX bawaan.)
+              (Artikel dari file MDX bawaan tetap tampil di situs.)
             </span>
           </p>
         ) : (

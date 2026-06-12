@@ -154,7 +154,7 @@ export default async function HomePage() {
                 items: [
                   "Fenomena alam yang jarang dijelaskan tuntas",
                   "Satwa endemik dan status konservasinya",
-                  "Catatan lapangan dari lokasi sebenarnya",
+                  "Catatan riset dari laporan & observasi pihak ketiga",
                   "Rujukan jurnal di tiap klaim",
                 ],
                 href: "/alam",
@@ -302,7 +302,7 @@ export default async function HomePage() {
             Semua tulisan gratis dibaca • Tanpa login • Tanpa paywall
           </div>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 font-mono text-[0.8rem] text-gray">
-            <span className="flex items-center gap-2"><Check />Terbit harian</span>
+            <span className="flex items-center gap-2"><Check />Setiap klaim bersumber</span>
             <span className="flex items-center gap-2"><Check />Sumber terbuka</span>
             <span className="flex items-center gap-2"><Check />Label keyakinan</span>
           </div>
@@ -332,19 +332,23 @@ export default async function HomePage() {
             {[
               {
                 q: "Apa itu NaLI by NatIve?",
-                a: "Jurnal lapangan dan publikasi riset berbasis AI tentang alam, sejarah, dan investigasi Indonesia. NaLI singkatan dari Nature, Archive, Lore, Investigation; “by NatIve” menegaskan sudut pandang lokal.",
+                a: "Jurnal riset terbuka (open-source evidence journal) tentang alam, sejarah, dan investigasi Indonesia. NaLI singkatan dari Nature, Archive, Lore, Investigation; “by NatIve” menegaskan sudut pandang lokal. Kami membaca jurnal, arsip, laporan lembaga, dataset, dan dokumentasi pihak ketiga — bukan klaim ekspedisi pribadi.",
+              },
+              {
+                q: "Apakah NaLI turun langsung ke lapangan?",
+                a: "Belum. Untuk saat ini NaLI bekerja dari sumber terbuka: jurnal, arsip, laporan lembaga, observasi peneliti, dan foto berlisensi. Kami tidak mengklaim observasi lapangan pribadi kecuali bukti lapangan pertama tersedia dan ditampilkan jelas.",
               },
               {
                 q: "Apakah artikelnya ditulis AI?",
-                a: "AI membantu menelusuri, merangkum, dan menyusun. Tapi keputusan editorial — apa yang layak terbit, dengan label keyakinan apa — tetap di tangan manusia. Prosesnya dijelaskan terbuka di tiap tulisan.",
+                a: "AI membantu menelusuri, merangkum, dan menyusun. Tapi keputusan editorial — apa yang layak terbit, dengan label keyakinan apa — tetap di tangan manusia. Prosesnya dijelaskan terbuka di halaman Metodologi.",
               },
               {
                 q: "Apa maksud label keyakinan?",
-                a: "Setiap tulisan diberi satu dari empat label: terverifikasi (sumber kuat dan konsisten), perlu konteks, hipotesis kerja, atau belum diverifikasi. Tujuannya supaya kamu tahu seberapa kuat dasar sebuah klaim sebelum mempercayainya.",
+                a: "Setiap tulisan diberi satu label: terverifikasi kuat, didukung sumber, terbatas, atau belum cukup bukti. Klaim yang masih diperdebatkan ditandai per-klaim di Claim Ledger. Tujuannya supaya kamu tahu seberapa kuat dasar sebuah klaim sebelum mempercayainya.",
               },
               {
                 q: "Seberapa sering tulisan baru terbit?",
-                a: "Target kami terbit harian — satu tulisan atau catatan lapangan per hari. Daftar email di hero halaman ini kalau mau dikabari tanpa harus mengecek.",
+                a: "Menuju publikasi rutin. Target editorial kami satu catatan riset per hari, tapi kualitas dan ketertelusuran sumber selalu didahulukan ketimbang mengejar jumlah. Daftar email di hero halaman ini kalau mau dikabari.",
               },
             ].map((item) => (
               <details key={item.q} className={`${CARD} group px-6 py-4`}>
