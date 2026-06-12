@@ -90,7 +90,7 @@ export default async function AdminDashboard() {
           <StatCard label="Draft" value={drafts} hint="belum tampil" />
           <StatCard label="Total kunjungan" value={analytics.total} hint="sepanjang waktu" href="/admin/analytics" />
           <StatCard label="7 hari terakhir" value={analytics.last7} hint="kunjungan" href="/admin/analytics" />
-          <StatCard label="Arsip sumber" value={sourceCount} hint={`${fieldNoteCount} catatan lapangan`} href="/arsip-sumber" />
+          <StatCard label="Arsip sumber" value={sourceCount} hint={`${fieldNoteCount} catatan riset`} href="/arsip-sumber" />
         </div>
 
         {/* chart + top paths */}

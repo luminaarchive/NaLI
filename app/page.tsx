@@ -55,10 +55,10 @@ export default async function HomePage() {
   return (
     <div className="bg-paper">
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
-        {/* ================= HERO — the wave shader as archival plate ================= */}
+        {/* ================= HERO, the wave shader as archival plate ================= */}
         <section className="pt-6">
           <div className="flex items-center justify-between pb-2">
-            <Meta>Lempeng 001 — Gelombang</Meta>
+            <Meta>Lempeng 001, Gelombang</Meta>
             <Meta>Arsip: NaLI · MMXXVI</Meta>
           </div>
           <div className="overflow-hidden border border-dashed border-ink/70">
@@ -80,16 +80,16 @@ export default async function HomePage() {
 
         <DashRule />
 
-        {/* ================= TULISAN TERBARU — content first, right under the hero ================= */}
+        {/* ================= TULISAN TERBARU, content first, right under the hero ================= */}
         <section className="py-12 sm:py-16">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <Meta>Indeks — Terbaru</Meta>
+              <Meta>Indeks, Terbaru</Meta>
               <h2 className="mt-3 font-display text-3xl font-bold uppercase tracking-[0.01em] text-ink sm:text-4xl">
                 Tulisan terbaru
               </h2>
               <p className="mt-3 max-w-lg font-mono text-[0.85rem] leading-relaxed text-gray">
-                Artikel dan catatan lapangan terbaru — setiap tulisan baru otomatis
+                Artikel dan catatan riset terbaru, setiap tulisan baru otomatis
                 muncul di sini begitu terbit.
               </p>
             </div>
@@ -113,7 +113,7 @@ export default async function HomePage() {
             </div>
           )}
 
-          {/* confidence legend — explains the badge on each card */}
+          {/* confidence legend, explains the badge on each card */}
           <div className="mt-10 border border-dashed border-ink/60 bg-ink-wash/40 p-6">
             <Meta>Cara membaca label</Meta>
             <p className="mt-2 font-mono text-[0.8rem] leading-relaxed text-gray">
@@ -133,7 +133,7 @@ export default async function HomePage() {
 
         <DashRule />
 
-        {/* ================= THREE PILLARS — clear entry points ================= */}
+        {/* ================= THREE PILLARS, clear entry points ================= */}
         <section className="py-14 sm:py-16">
           <div className="mx-auto max-w-xl text-center">
             <Meta>Tiga pilar</Meta>
@@ -148,13 +148,13 @@ export default async function HomePage() {
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {[
               {
-                idx: "01 — Nature",
+                idx: "01, Nature",
                 title: "Alam",
                 desc: "Ekologi, satwa, dan fenomena lanskap Indonesia.",
                 items: [
                   "Fenomena alam yang jarang dijelaskan tuntas",
                   "Satwa endemik dan status konservasinya",
-                  "Catatan riset dari laporan & observasi pihak ketiga",
+                  "Catatan riset dari laporan dan observasi pihak ketiga",
                   "Rujukan jurnal di tiap klaim",
                 ],
                 href: "/alam",
@@ -162,7 +162,7 @@ export default async function HomePage() {
                 featured: false,
               },
               {
-                idx: "02 — Archive · Lore",
+                idx: "02, Archive · Lore",
                 title: "Sejarah",
                 desc: "Jejak kota tua, arsip kolonial, dan ingatan yang nyaris hilang.",
                 items: [
@@ -176,7 +176,7 @@ export default async function HomePage() {
                 featured: true,
               },
               {
-                idx: "03 — Investigation",
+                idx: "03, Investigation",
                 title: "Investigasi",
                 desc: "Penelusuran berbasis sumber publik, tanpa kepastian palsu.",
                 items: [
@@ -253,12 +253,12 @@ export default async function HomePage() {
               },
               {
                 t: "Tanpa tuduhan tanpa bukti",
-                d: "Investigasi berbasis sumber publik. Klaim yang belum kuat diberi label belum diverifikasi — bukan dilempar sebagai fakta.",
+                d: "Investigasi berbasis sumber publik. Klaim yang belum kuat diberi label belum diverifikasi, bukan dilempar sebagai fakta.",
                 s: "ADIL",
               },
               {
                 t: "Sumber selalu ditampilkan",
-                d: "Daftar rujukan menempel di tiap artikel dan terkumpul di arsip terbuka. Kamu boleh tidak setuju — dan selalu bisa memeriksa.",
+                d: "Daftar rujukan menempel di tiap artikel dan terkumpul di arsip terbuka. Kamu boleh tidak setuju, dan selalu bisa memeriksa.",
                 s: "TERBUKA",
               },
             ].map((row) => (
@@ -286,7 +286,7 @@ export default async function HomePage() {
                 {sourceCount} entri sumber, bisa diperiksa siapa pun
               </h2>
               <p className="mt-3 max-w-xl font-mono text-[0.85rem] leading-relaxed text-gray">
-                Jurnal, arsip, buku, media, dan laporan — masing-masing punya halaman
+                Jurnal, arsip, buku, media, dan laporan, masing-masing punya halaman
                 keterangannya sendiri. Klaim kami bisa kamu lacak sampai ke sumbernya.
               </p>
             </div>
@@ -332,7 +332,7 @@ export default async function HomePage() {
             {[
               {
                 q: "Apa itu NaLI by NatIve?",
-                a: "Jurnal riset terbuka (open-source evidence journal) tentang alam, sejarah, dan investigasi Indonesia. NaLI singkatan dari Nature, Archive, Lore, Investigation; “by NatIve” menegaskan sudut pandang lokal. Kami membaca jurnal, arsip, laporan lembaga, dataset, dan dokumentasi pihak ketiga — bukan klaim ekspedisi pribadi.",
+                a: "Jurnal riset terbuka (open-source evidence journal) tentang alam, sejarah, dan investigasi Indonesia. NaLI singkatan dari Nature, Archive, Lore, Investigation; “by NatIve” menegaskan sudut pandang lokal. Kami membaca jurnal, arsip, laporan lembaga, dataset, dan dokumentasi pihak ketiga, bukan klaim ekspedisi pribadi.",
               },
               {
                 q: "Apakah NaLI turun langsung ke lapangan?",
@@ -340,7 +340,7 @@ export default async function HomePage() {
               },
               {
                 q: "Apakah artikelnya ditulis AI?",
-                a: "AI membantu menelusuri, merangkum, dan menyusun. Tapi keputusan editorial — apa yang layak terbit, dengan label keyakinan apa — tetap di tangan manusia. Prosesnya dijelaskan terbuka di halaman Metodologi.",
+                a: "AI membantu menelusuri, merangkum, dan menyusun. Tapi keputusan editorial, apa yang layak terbit, dengan label keyakinan apa, tetap di tangan manusia. Prosesnya dijelaskan terbuka di halaman Metodologi.",
               },
               {
                 q: "Apa maksud label keyakinan?",

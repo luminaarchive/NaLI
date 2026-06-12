@@ -4,7 +4,7 @@ import { CategoryView } from "@/components/CategoryView";
 export const metadata: Metadata = {
   title: "Sejarah",
   description:
-    "Jejak kota tua, arsip kolonial, dan ingatan yang nyaris hilang — dibaca ulang dengan hati-hati.",
+    "Jejak kota tua, arsip kolonial, dan ingatan yang nyaris hilang, dibaca ulang dengan hati-hati.",
   openGraph: {
     title: "Sejarah | NaLI by NatIve",
     description:
@@ -21,7 +21,7 @@ export default function SejarahPage() {
       category="sejarah"
       index="02"
       title="Sejarah"
-      description="Jejak kota tua, arsip kolonial, dan ingatan yang nyaris hilang — dibaca ulang dengan hati-hati terhadap sumber."
+      description="Jejak kota tua, arsip kolonial, dan ingatan yang nyaris hilang, dibaca ulang dengan hati-hati terhadap sumber."
     />
   );
 }

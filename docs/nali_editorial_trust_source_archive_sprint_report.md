@@ -1,11 +1,11 @@
-# NaLI — Editorial Trust + Source Archive Sprint: Final Report
+# NaLI, Editorial Trust + Source Archive Sprint: Final Report
 
 _Branch: `editorial-trust-source-archive-30-articles` · 2026-06-12._
 _Written to be honest, not flattering. Where a target was not fully met, it says so._
 
 ## 1. Summary
 
-The sprint's top priority — **public trust and honest positioning** — is fully done.
+The sprint's top priority, **public trust and honest positioning**, is fully done.
 NaLI no longer presents itself as first-party fieldwork, no longer carries any
 seed/demo/placeholder language in public content, and is reframed throughout as an
 **open-source evidence journal**. The trust infrastructure (methodology, corrections,
@@ -16,9 +16,9 @@ ship and pass QA.
 
 The two **quantity** targets were deliberately **not** force-hit: the archive holds
 **38 verified sources** (target floor 80) and **9 articles are published to the new
-standard** (target 30). Per the sprint's own rule — _"Do not publish thin filler
+standard** (target 30). Per the sprint's own rule, _"Do not publish thin filler
 articles just to hit 30"_ and _"complete the source system, templates, and the first
-batch with full quality, then leave continuation instructions"_ — the remaining work
+batch with full quality, then leave continuation instructions"_, the remaining work
 is fully planned and gated, not faked.
 
 ## 2. What changed
@@ -88,12 +88,12 @@ Jawa article, each with full creator/source/license/alt/caption/checkedAt metada
 There is also **1 external visual evidence reference** (Mongabay 2024) rendered as a
 link only, with source URL, description, limitation note, and checkedAt date; it is
 not downloaded, hosted, hotlinked, cropped, edited, or displayed by NaLI. 8 other
-published articles ship **text-only** by design — no licensed image was sourced yet,
+published articles ship **text-only** by design, no licensed image was sourced yet,
 and the rules forbid filler photos. Register: `nali_image_license_register.md`.
 
 ## 8. Known limitations
 
-- Source archive is **38, not 80+**. Honest verification was the bottleneck — only
+- Source archive is **38, not 80+**. Honest verification was the bottleneck, only
   web-confirmed, traceable sources were added.
 - Only **9 of 30** articles are live; the other 21 are planned (sources verified for
   several, more needed for others).
@@ -104,13 +104,13 @@ and the rules forbid filler photos. Register: `nali_image_license_register.md`.
 
 ## 9. Unverified source backlog
 
-`research_backlog_sources_to_verify.md` — ~50 named candidates across biodiversity,
+`research_backlog_sources_to_verify.md`, ~50 named candidates across biodiversity,
 volcanoes, history, and environment, each needing URL/DOI confirmation before publish.
 
 ## 10. Rejected sources and why
 
-`rejected_or_unverified_sources.md` — generic "media reportase" without links, the
-"most-polluted-river" ranking (no authoritative source — treated as a claim to debunk),
+`rejected_or_unverified_sources.md`, generic "media reportase" without links, the
+"most-polluted-river" ranking (no authoritative source, treated as a claim to debunk),
 unlicensed images, social-media sightings; plus high-confidence-but-unverified portals
 (MAGMA Indonesia, BRGM, Jalur Rempah) held back until checked.
 
@@ -129,7 +129,7 @@ unlicensed images, social-media sightings; plus high-confidence-but-unverified p
 
 - Publishing investigative articles (28–30) needs careful sourcing + right-of-reply;
   framing scaffolding exists (`/koreksi`) but the pieces themselves are unwritten.
-- Text-only articles look sparser than image-rich ones — acceptable but worth filling
+- Text-only articles look sparser than image-rich ones, acceptable but worth filling
   with properly-licensed visuals over time.
 - Supabase-backed DB posts bypass MDX frontmatter; the admin editor now captures and
   validates trust fields before publish, but `npm run check:editorial` still validates
@@ -139,7 +139,7 @@ unlicensed images, social-media sightings; plus high-confidence-but-unverified p
 
 1. Clear 15–20 backlog sources (→ archive ~55–60).
 2. Draft the **READY** articles (Coelacanth, Krakatau+Anak Krakatau, Toba, Merapi,
-   Samalas, Gambut, Banda, Borobudur) — sources already verified.
+   Samalas, Gambut, Banda, Borobudur), sources already verified.
 3. Source 1–2 PD/CC images per article from Wikimedia/museums.
 4. Add an automated DB-post audit if Supabase content becomes part of regular
    publishing.
@@ -147,18 +147,18 @@ unlicensed images, social-media sightings; plus high-confidence-but-unverified p
 
 ## Acceptance criteria check
 
-1. No misleading first-party fieldwork — **met**.
-2. No public seed/dummy/placeholder article — **met**.
-3. Substantially more verified sources — **met** (25 → 38, +52%).
-4. Every source has metadata + limitations — **met** (validator-enforced).
-5. Every article has a Claim Ledger — **met** (9/9 published).
-6. Every article has source links — **met**.
-7. Photos licensed + attributed — **met** (3/3 PD, credited); most articles image-free by design.
-8. `/metodologi`, `/koreksi`, `/seri` exist — **met** (+`/pedoman-sumber`, `/lisensi-foto`).
-9. Homepage honestly explains open-source evidence journal — **met**.
-10. Build passes — **met**.
-11. Editorial validation passes — **met**.
-12. Final report exists — **this document**.
+1. No misleading first-party fieldwork, **met**.
+2. No public seed/dummy/placeholder article, **met**.
+3. Substantially more verified sources, **met** (25 → 38, +52%).
+4. Every source has metadata + limitations, **met** (validator-enforced).
+5. Every article has a Claim Ledger, **met** (9/9 published).
+6. Every article has source links, **met**.
+7. Photos licensed + attributed, **met** (3/3 PD, credited); most articles image-free by design.
+8. `/metodologi`, `/koreksi`, `/seri` exist, **met** (+`/pedoman-sumber`, `/lisensi-foto`).
+9. Homepage honestly explains open-source evidence journal, **met**.
+10. Build passes, **met**.
+11. Editorial validation passes, **met**.
+12. Final report exists, **this document**.
 
 **30 articles are NOT complete.** 9 are published to full standard; 21 are planned and
 gated. Stated plainly, as instructed.

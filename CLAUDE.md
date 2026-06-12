@@ -1,4 +1,4 @@
-# CLAUDE.md — NaLI by NatIve
+# CLAUDE.md, NaLI by NatIve
 # Auto-loaded by Claude Code every session. Read this fully before doing anything.
 
 ## WHO YOU ARE IN THIS PROJECT
@@ -9,7 +9,7 @@ You are the senior engineer building NaLI by NatIve v0.1. You have full context 
 
 ## PROJECT IDENTITY
 
-- **Product:** NaLI by NatIve — field journal dan research publication berbasis AI, alam/sejarah/investigasi Indonesia
+- **Product:** NaLI by NatIve, jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia
 - **Founder:** Ansyahri Darma Tri Jati
 - **Stage:** v0.1 fresh build
 - **Mode:** Solo founder, vibe coding, static-first, no backend complexity
@@ -17,16 +17,16 @@ You are the senior engineer building NaLI by NatIve v0.1. You have full context 
 
 ---
 
-## LOCKED DECISIONS — DO NOT OVERRIDE
+## LOCKED DECISIONS, DO NOT OVERRIDE
 
 These are final. Do not suggest alternatives. Do not ask to revisit.
 
 1. **Framework:** Next.js 14 App Router + TypeScript + Tailwind CSS
 2. **Content:** MDX files only. No database. No CMS.
 3. **Deploy target:** Vercel
-4. **No login, no payment, no AI wrapper, no community, no dashboard** at v0.1 — ever
+4. **No login, no payment, no AI wrapper, no community, no dashboard** at v0.1, ever
 5. **Old NaLI codebase (wildlife app) is dead.** Zero carry-over.
-6. **Distribution channels:** X, Instagram, TikTok — locked, not to be built into the site
+6. **Distribution channels:** X, Instagram, TikTok, locked, not to be built into the site
 7. **Feature freeze after build:** 14 days minimum after launch
 8. **Monetization:** Only after threshold (see master doc). Not in v0.1.
 
@@ -161,7 +161,7 @@ related_topic: string     # optional
 ## HERO SECTION SPEC
 
 ```tsx
-// public/videos/hero.mp4 — founder provides this file
+// public/videos/hero.mp4, founder provides this file
 // Fallback bg: #0A0A0A if video fails
 
 <section className="relative h-screen">
@@ -174,7 +174,7 @@ related_topic: string     # optional
 ```
 
 One-liner text:
-> *"Field journal dan research publication berbasis AI untuk membongkar dan menceritakan alam, sejarah, dan fenomena tersembunyi Indonesia."*
+> *"Jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia. Setiap klaim membawa sumber, label keyakinan, dan batasan."*
 
 ---
 
@@ -197,7 +197,7 @@ One-liner text:
 
 ---
 
-## SEO — EVERY PAGE
+## SEO, EVERY PAGE
 
 ```tsx
 export const metadata: Metadata = {
@@ -217,13 +217,13 @@ Use Next.js Metadata API only. Never use `next/head`.
 
 ## NAVIGATION
 
-Links in order: **Artikel · Alam · Sejarah · Investigasi · Catatan Lapangan · Arsip Sumber · Tentang**
+Links in order: **Artikel · Seri · Arsip Sumber · Metodologi · Tentang · Kontak**
 
 Mobile: hamburger menu. Desktop: horizontal nav.
 
 ---
 
-## QUALITY GATES — ALL MUST PASS BEFORE BUILD IS DONE
+## QUALITY GATES, ALL MUST PASS BEFORE BUILD IS DONE
 
 - [ ] `npm run build` passes with zero errors
 - [ ] `npm run lint` passes clean
@@ -271,26 +271,26 @@ Every new Claude Code session starts by reading this file. No need to re-explain
 Keep a running log at the bottom of this file after each session:
 
 ```
-### [Date] — [What was done]
+### [Date], [What was done]
 - Completed: ...
 - Decisions made: ...
 - Next task: ...
 ```
 
-### 11 Juni 2026 — v0.1 fresh build from scratch
+### 11 Juni 2026, v0.1 fresh build from scratch
 
 - **Completed:** Wiped the previous codebase entirely (hard reset, incl. git history, on founder's explicit double-confirmed instruction) and built NaLI by NatIve v0.1 from scratch per the master doc.
   - Next.js 14 (App Router) + TypeScript + Tailwind CSS + MDX (`next-mdx-remote/rsc` + `gray-matter`), no database/CMS.
   - All 12 routes built: `/`, `/articles`, `/articles/[slug]`, `/alam`, `/sejarah`, `/investigasi`, `/catatan-lapangan`, `/arsip-sumber`, `/peta-eksplorasi`, `/manifesto`, `/tentang`, `/kontak`. Plus `sitemap.xml`, `robots.txt`, 404.
   - Components: Nav (mobile hamburger), Footer, Hero (video + designed fallback), ConfidenceBadge, CategoryBadge, ArticleCard, ArticleList (client filter by category+tag), CategoryView, PillarCard, PageHeader, MdxBody, SourceList.
   - Seed content: 5 articles (marked sample, honest confidence labels, ≥3 sources each), 2 field notes, 10 source entries.
-  - Design: editorial/forensic field-journal — Fraunces (display) + IBM Plex Mono (labels) + system sans (body); teal accent; confidence badge as signature element.
-- **Quality gates — ALL PASS:** `npm run build` clean, `npm run lint` clean, `tsc --noEmit` clean, all routes 200 / bogus 404, MDX body + confidence badge + sources render, mobile responsive @375px, zero lorem ipsum, sitemap generates.
+  - Design: editorial/forensic field-journal, Fraunces (display) + IBM Plex Mono (labels) + system sans (body); teal accent; confidence badge as signature element.
+- **Quality gates, ALL PASS:** `npm run build` clean, `npm run lint` clean, `tsc --noEmit` clean, all routes 200 / bogus 404, MDX body + confidence badge + sources render, mobile responsive @375px, zero lorem ipsum, sitemap generates.
 - **Decisions made:** Added a distinctive display serif (Fraunces) for editorial gravitas while keeping system stack for body (honors the brand token + performance-first rule). Hero has a designed dark-teal/topographic fallback so it looks finished before the founder drops `public/videos/hero.mp4`.
 - **Placeholders to replace before live:** `SITE.url` in `lib/site.ts` (`https://nali.native.id`), contact email in `app/kontak/page.tsx` (`halo@nali.native.id`), and the seed content/sources (verify or swap).
 - **Next task:** Founder drops `public/videos/hero.mp4`, sets the real domain/email, then begins daily publishing. Feature freeze: 14 days.
 
-### 11 Juni 2026 — Gallery landing, Supabase newsletter, Vercel deploy (founder-directed, full-access)
+### 11 Juni 2026, Gallery landing, Supabase newsletter, Vercel deploy (founder-directed, full-access)
 
 - **Landing rebuilt** as a baroque "archive hall" scrollytelling scene (original SVG, not a copy of the reference image the founder shared). `components/GalleryHall.tsx`: marble arcade, gold archivolts/keystones, scallop niches, sea horizon through arches, red perspective floor, NaLI-engraved pedestals. Scroll drives 3 acts (Alam/Sejarah/Investigasi) that crossfade light + sea + a featured article on a gold-trim placard. Replaces the old `Hero.tsx` (deleted). Verified desktop + mobile.
 - **Newsletter** (`components/NewsletterSignup.tsx` + `lib/supabaseClient.ts`): new Supabase project `nali-field-journal` (`xxwzufdezpyabqkwrcbz`), `subscribers` table, RLS insert-only (list private). Schema at `supabase/migrations/0001_create_subscribers.sql`. Verified end-to-end incl. real browser submit.
@@ -298,14 +298,14 @@ Keep a running log at the bottom of this file after each session:
 - **Open item:** Vercel Deployment Protection (Vercel Authentication) is ON → site 401s for the public. Founder is disabling it in the dashboard (Settings → Deployment Protection). Not changeable via code/CLI.
 - **Note:** Founder explicitly overrode the "no database" locked decision for the newsletter ("sambungkan ke supabase, buatlah project baru"). User instruction > CLAUDE.md.
 
-### 11 Juni 2026 (lanjutan) — Site public, gallery v2 (Bibiena-grade), free domain
+### 11 Juni 2026 (lanjutan), Site public, gallery v2 (Bibiena-grade), free domain
 
 - **Deployment Protection OFF** (founder toggled di dashboard) → site publik, semua route 200.
 - **Gallery v2** (`components/GalleryHall.tsx` rebuild): coffered gilded vault + rosettes + transverse ribs, figured gold relief frieze, dentil cornice, gilt-framed sepia paintings di outer bays (shell pediments), multi-ring archivolts + cartouche keystones, spandrel rosettes, pier panels berukir N·A·L·I (NATURE/ARCHIVE/LORE/INVESTIGATION), pedestal bermedali laurel ("NaLI by NatIve", EST/MMXXVI), floor sheen. Acts: alam +awan/pulau/camar, sejarah +siluet pinisi. Verified desktop+mobile, 3 acts.
-- **Free domain:** claimed `nalibynative.vercel.app` + `nalijournal.vercel.app` sebagai **project domains** (auto-assign tiap prod deploy). `SITE.url` → `https://nalibynative.vercel.app` (sitemap/canonical kini valid). Bare `nali-by-native.vercel.app` & `nali.native.id` adalah placeholder mati — jangan dipakai.
-- **Custom domain (belum dibeli, founder decision):** tersedia `nali.media` $7.99/yr, `nalibynative.com` $11.25/yr, dll. **Email bisnis profesional butuh domain sendiri** — rekomendasi setelah beli: Zoho Mail Free (5 mailbox) atau Cloudflare Email Routing → Gmail. Email `halo@nali.native.id` di `/kontak` masih placeholder mati.
+- **Free domain:** claimed `nalibynative.vercel.app` + `nalijournal.vercel.app` sebagai **project domains** (auto-assign tiap prod deploy). `SITE.url` → `https://nalibynative.vercel.app` (sitemap/canonical kini valid). Bare `nali-by-native.vercel.app` & `nali.native.id` adalah placeholder mati, jangan dipakai.
+- **Custom domain (belum dibeli, founder decision):** tersedia `nali.media` $7.99/yr, `nalibynative.com` $11.25/yr, dll. **Email bisnis profesional butuh domain sendiri**, rekomendasi setelah beli: Zoho Mail Free (5 mailbox) atau Cloudflare Email Routing → Gmail. Email `halo@nali.native.id` di `/kontak` masih placeholder mati.
 
-### 11 Juni 2026 (lanjutan 2) — Gallery v3: arcade asli + video laut (founder-directed)
+### 11 Juni 2026 (lanjutan 2), Gallery v3: arcade asli + video laut (founder-directed)
 
 - Founder menolak look vektor/SVG → **gallery v3 composite**: arcade klasik asli (Pixabay cutout `790331`, arch transparan) di-grade hangat via CSS filter + lantai oxblood (multiply gradient), dengan **footage laut sungguhan** crossfade per act di belakang arch (semua Pixabay Content License, bebas komersial, tanpa atribusi):
   - alam: `video 202929` laut toska + headland berkabut (small, 13.1MB)
@@ -313,9 +313,9 @@ Keep a running log at the bottom of this file after each session:
   - investigasi: `video 343390` laut malam berbintang + bioluminescence (large 4K, 10.9MB)
 - Aset di `public/videos/{alam,sejarah,investigasi}.mp4` + `public/textures/arcade.png` (committed, ~33MB). Ken-Burns di arcade, video act aktif play / lain pause, reduced-motion safe, nav dots hidden di mobile.
 - SVG Scene dihapus dari `GalleryHall.tsx`. Verified: 3 acts desktop + mobile + **live production**.
-- **Optimization backlog:** alam.mp4 masih 13MB (960p) — bisa di-compress/host via CDN nanti; semua video preload="auto" (berat di mobile data).
+- **Optimization backlog:** alam.mp4 masih 13MB (960p), bisa di-compress/host via CDN nanti; semua video preload="auto" (berat di mobile data).
 
-### 11 Juni 2026 (lanjutan 3) — Landing v4: gaya SaaS modern (founder-directed)
+### 11 Juni 2026 (lanjutan 3), Landing v4: gaya SaaS modern (founder-directed)
 
 - Founder share template berbayar 21st.dev "AgentFlow Pro" ($49) → **tidak boleh copy kode/copy-nya**; struktur & gaya layout-nya dibangun ulang dari nol (`app/page.tsx` rewrite penuh, semua copy original NaLI):
   - **Nav pill gelap mengambang** (restyle `Nav.tsx` site-wide, drawer mobile gelap, CTA putih "Mulai membaca")
@@ -324,72 +324,72 @@ Keep a running log at the bottom of this file after each session:
   - **Bento**: kartu besar + browser mockup screenshot asli `/articles` (`public/images/articles-preview.jpg`), kartu confidence badges, arsip terbuka, terminal log riset (mono hijau), diagram orbit pilar, feed artikel terbaru (data asli dari `lib/content`)
   - **Standar editorial**: 3 baris + stempel SVG NaLI; **Tiga pilar** bergaya tier-cards (Sejarah gelap di tengah); **FAQ** accordion `<details>`
   - Shell: kolom tengah ber-border + gutter hatch diagonal (`.hatch`), divider band hatch antar section
-- **Gallery v3 dihapus dari tree**: `GalleryHall.tsx` + 3 video (~32MB) — recoverable dari git history (`5e2f245`); `arcade.png` dipertahankan untuk hero.
+- **Gallery v3 dihapus dari tree**: `GalleryHall.tsx` + 3 video (~32MB), recoverable dari git history (`5e2f245`); `arcade.png` dipertahankan untuk hero.
 - Verified: build/lint/typecheck clean, semua section live di production, mobile OK.
 
-### 11 Juni 2026 (lanjutan 4) — Hero: wave dithering shader 21st.dev (founder-directed)
+### 11 Juni 2026 (lanjutan 4), Hero: wave dithering shader 21st.dev (founder-directed)
 
 - Founder share komponen komunitas 21st.dev `aliimam/wave-1` (kode ditempel langsung) → diintegrasikan sebagai home hero:
   - **Struktur shadcn ditambahkan**: `components/ui/` + `lib/utils.ts` (`cn` via `clsx`+`tailwind-merge`, keduanya di-install).
-  - `components/ui/dithering-shader.tsx` — WebGL2 Bayer-dithering shader (sesuai kode yang diberikan; 1 perbaikan: render satu frame saat `speed=0` agar reduced-motion tetap menampilkan wave statis).
-  - `components/WaveHero.tsx` — tema NaLI: wave `#2DD4A7` di atas ink `#03100d`, `shape="wave" type="8x8" pxSize=3 speed=0.6`, headline putih dengan akhiran *italic teal*, kicker NATURE·ARCHIVE·LORE·INVESTIGATION, NewsletterSignup (dark) di atas wave, scrim radial untuk legibilitas, reduced-motion aware.
-  - **Gotcha komponen**: inline `style position:relative` bawaannya menang dari class Tailwind `absolute` — posisikan via `style` prop, bukan className.
+  - `components/ui/dithering-shader.tsx`, WebGL2 Bayer-dithering shader (sesuai kode yang diberikan; 1 perbaikan: render satu frame saat `speed=0` agar reduced-motion tetap menampilkan wave statis).
+  - `components/WaveHero.tsx`, tema NaLI: wave `#2DD4A7` di atas ink `#03100d`, `shape="wave" type="8x8" pxSize=3 speed=0.6`, headline putih dengan akhiran *italic teal*, kicker NATURE·ARCHIVE·LORE·INVESTIGATION, NewsletterSignup (dark) di atas wave, scrim radial untuk legibilitas, reduced-motion aware.
+  - **Gotcha komponen**: inline `style position:relative` bawaannya menang dari class Tailwind `absolute`, posisikan via `style` prop, bukan className.
   - Hero arcade berbingkai diganti (arcade.png kini tak terpakai di landing, file tetap di repo); terminal-log card di-reaccent teal agar match.
 - Verified: build/lint/typecheck clean, hero+overlay render benar desktop & mobile, live production (canvas + semua section PASS).
 
-### 11 Juni 2026 (lanjutan 5) — Archive-ink: design system satu warna seluruh situs (founder-directed)
+### 11 Juni 2026 (lanjutan 5), Archive-ink: design system satu warna seluruh situs (founder-directed)
 
 - Founder minta seluruh situs mengikuti bahasa visual situs riset bergaya arsip monokrom (referensi dipelajari via browser: beranda, releases, blog) → **design system "archive-ink"** versi NaLI:
   - **Palet**: kertas putih `#FFFFFF` + satu tinta teal `ink #0E8268` / `ink-deep #085E4B` / `ink-wash #E9F6F1` (token Tailwind baru; `paper`→putih, `rule`→`#9ECDBF`, `gray`→`#33373D`). Warna ink diturunkan dari teal shader supaya hero & halaman menyatu.
   - **Tipografi**: body global → IBM Plex Mono (gaya mesin-tik); judul/nav → Fraunces caps (gaya NaLI sendiri, bukan font pixel referensi); prosa artikel tetap sans agar nyaman dibaca.
-  - **Bahasa visual**: garis putus-putus (`.hairline` kini dashed) sebagai pemisah utama; kartu kotak ber-border dashed tanpa shadow/rounded; tabel arsip ber-border penuh + header `ink-wash` (di `/arsip-sumber`); metadata indeks arsip ("No. 001", "LEMPENG 001 — GELOMBANG"); `.duotone-ink` filter untuk foto; tombol kotak mono uppercase.
-  - **Nav** restyle: serif caps di tengah, putih, dashed rule di bawah (pill gelap dihapus). **Footer** flat putih dashed. **WaveHero shader TIDAK disentuh** — hanya dibingkai dashed sebagai "lempeng arsip" dengan caption mono.
+  - **Bahasa visual**: garis putus-putus (`.hairline` kini dashed) sebagai pemisah utama; kartu kotak ber-border dashed tanpa shadow/rounded; tabel arsip ber-border penuh + header `ink-wash` (di `/arsip-sumber`); metadata indeks arsip ("No. 001", "LEMPENG 001, GELOMBANG"); `.duotone-ink` filter untuk foto; tombol kotak mono uppercase.
+  - **Nav** restyle: serif caps di tengah, putih, dashed rule di bawah (pill gelap dihapus). **Footer** flat putih dashed. **WaveHero shader TIDAK disentuh**, hanya dibingkai dashed sebagai "lempeng arsip" dengan caption mono.
   - 19 file diubah (semua page + komponen); `PillarCard.tsx` dihapus (tak terpakai). Badge confidence tetap 4 warna semantik (bentuk kotak dashed).
-- **Verified halaman demi halaman** (perintah founder): home (3 bagian), articles, artikel detail, arsip-sumber, catatan-lapangan, manifesto, tentang, kontak, alam, mobile — semua blend; 13 route 200 di production.
+- **Verified halaman demi halaman** (perintah founder): home (3 bagian), articles, artikel detail, arsip-sumber, catatan-lapangan, manifesto, tentang, kontak, alam, mobile, semua blend; 13 route 200 di production.
 
-### 11 Juni 2026 (lanjutan 6) — Light/dark mode + pixel toggle (founder-directed)
+### 11 Juni 2026 (lanjutan 6), Light/dark mode + pixel toggle (founder-directed)
 
 - **Arsitektur tema**: semua token archive-ink di `tailwind.config.ts` kini `rgb(var(--c-*) / <alpha-value>)`; nilai light/dark di `globals.css` (`:root` / `.dark`). Dark = kertas tinta `#0A1411` (turunan warna shader) + ink teal terang `#46CFA8`; satu switch mengubah SEMUA halaman, termasuk modifier opacity (`border-ink/60` dll).
-- **`components/ThemeToggle.tsx`**: tombol pixel sesuai foto referensi founder — matahari pixel "☼ LIGHT" / bulan separuh "◑ DARK", border kotak, mono uppercase. Dipasang di Nav (desktop kanan + mobile sebelah hamburger; dua instance → selector test pakai `:visible`).
+- **`components/ThemeToggle.tsx`**: tombol pixel sesuai foto referensi founder, matahari pixel "☼ LIGHT" / bulan separuh "◑ DARK", border kotak, mono uppercase. Dipasang di Nav (desktop kanan + mobile sebelah hamburger; dua instance → selector test pakai `:visible`).
 - **Persistensi**: localStorage `nali-theme` + script pre-paint di awal `<body>` (fallback `prefers-color-scheme`), `suppressHydrationWarning` di `<html>`; toggle render label setelah mount (hindari hydration mismatch).
 - **Sweep warna hardcoded**: SVG Stamp/Check/orbit → `currentColor`/`fill-ink`/`fill-paper`; tombol `bg-ink text-white` → `text-paper` (di dark: teks gelap di atas teal terang); badge confidence dapat varian `dark:text-*`; `.duotone-ink` diredupkan di dark; chip filter aktif `text-paper`.
 - **Tested per perintah founder**: SEMUA halaman dark (home top+bottom, articles, artikel detail mid, arsip tabel, catatan, manifesto bottom+footer, tentang bottom, kontak, peta) + light spot + mobile (toggle di mobile nav) + persistensi antar navigasi. Production verified: script, toggle, ikon pixel, CSS vars `.dark` semua tershipping.
 
-### 11 Juni 2026 (lanjutan 7) — Dashboard admin (Pages CMS) + Web Analytics (founder-directed)
+### 11 Juni 2026 (lanjutan 7), Dashboard admin (Pages CMS) + Web Analytics (founder-directed)
 
 - Founder minta dashboard admin (edit/posting/upload gambar) + statistik pengunjung. **Daftar fitur OJS** (submissions/reviewer/roles/issues/DOI) ditolak dengan alasan: NaLI publikasi solo → diparkir ke `BACKLOG.md`. Solusi tanpa melanggar arsitektur (no DB, no login di situs):
   - **Pages CMS** (git-based): `.pages.yml` memetakan ketiga koleksi persis sesuai skema frontmatter (articles incl. `sources` object-list + select confidence/category/status draft-terbit; field-notes; sources). Body `rich-text`; upload gambar → `public/images/uploads/` (output `/images/uploads`). Login: app.pagescms.org → GitHub (hanya akun dengan write access repo). Simpan = commit → auto-deploy.
-  - **`@vercel/analytics`** `<Analytics/>` di `layout.tsx`. **Web Analytics ternyata auto-enabled** di project — diverifikasi live via browser: script tersuntik, `window.va` aktif, `/_vercel/insights/script.js` 200. Data muncul di tab Analytics dashboard Vercel.
-  - Catatan verifikasi: komponen Analytics menyuntik script **client-side** — tidak terlihat di HTML SSG (grep HTML = false negative; verifikasi harus via browser).
+  - **`@vercel/analytics`** `<Analytics/>` di `layout.tsx`. **Web Analytics ternyata auto-enabled** di project, diverifikasi live via browser: script tersuntik, `window.va` aktif, `/_vercel/insights/script.js` 200. Data muncul di tab Analytics dashboard Vercel.
+  - Catatan verifikasi: komponen Analytics menyuntik script **client-side**, tidak terlihat di HTML SSG (grep HTML = false negative; verifikasi harus via browser).
 - Panduan founder ditambahkan di README (login dashboard + lihat statistik).
 
-### 12 Juni 2026 — Artikel pertama + admin custom Supabase (founder-directed)
+### 12 Juni 2026, Artikel pertama + admin custom Supabase (founder-directed)
 
 - **Artikel asli pertama**: `content/articles/harimau-jawa-lazarus-species.mdx` (status **draft**). Topik Lazarus species; riset terverifikasi web (studi Oryx 2024 kemiripan DNA 97,8% + studi tandingan numt/QC) → klaim "masih hidup" label **needs-verification**, 5 sumber nyata. Founder ubah ke `published` untuk terbit.
-- **Pages CMS gagal dipakai founder** (upload foto + analitik) → diminta build **admin custom**. Pilihan arsitektur (AskUserQuestion) = **Supabase-backed**. Menimpa 3 locked decision (no login, no dashboard, MDX-only) — diotorisasi eksplisit.
-  - **Supabase** (`nali-field-journal` / `xxwzufdezpyabqkwrcbz`): tabel `posts` (cermin skema artikel, RLS: publik baca published, authenticated tulis) + `page_views` (RLS: anon insert, admin baca) + bucket Storage `post-images` (publik). Advisor di-hardening (search_path, listing). **Akun admin = TUGAS FOUNDER** (Supabase dashboard → Auth → Add user; classifier blokir pembuatan kredensial oleh agent — benar).
+- **Pages CMS gagal dipakai founder** (upload foto + analitik) → diminta build **admin custom**. Pilihan arsitektur (AskUserQuestion) = **Supabase-backed**. Menimpa 3 locked decision (no login, no dashboard, MDX-only), diotorisasi eksplisit.
+  - **Supabase** (`nali-field-journal` / `xxwzufdezpyabqkwrcbz`): tabel `posts` (cermin skema artikel, RLS: publik baca published, authenticated tulis) + `page_views` (RLS: anon insert, admin baca) + bucket Storage `post-images` (publik). Advisor di-hardening (search_path, listing). **Akun admin = TUGAS FOUNDER** (Supabase dashboard → Auth → Add user; classifier blokir pembuatan kredensial oleh agent, benar).
   - **Lapisan konten** (`lib/content.ts` + `lib/posts.ts`): artikel = MDX seed **+** DB posts digabung (slug sama → DB menang). Fungsi artikel jadi async; route artikel/home/kategori/peta/sitemap `force-dynamic` → terbit seketika. Field-notes/sources tetap MDX/SSG. `next.config` `outputFileTracingIncludes: content/**` agar MDX kebaca saat runtime; `images.remotePatterns` untuk Supabase Storage. `MdxBody` `format:"md"` (aman untuk konten user).
-  - **`/admin`**: middleware (`middleware.ts`) jaga semua `/admin/*` (Supabase Auth session via `@supabase/ssr`). Login (`/admin/login`), dashboard list, editor (`PostEditor` — semua field + sumber + upload sampul & inline ke Storage + draft/terbit), hapus, analitik (`/admin/analytics` dari `page_views`: total, grafik 14 hari, top paths). `SiteChrome` sembunyikan Nav/Footer publik di `/admin`. `PageViewTracker` + `/api/track` rekam kunjungan (skip /admin). `.pages.yml` dihapus.
+  - **`/admin`**: middleware (`middleware.ts`) jaga semua `/admin/*` (Supabase Auth session via `@supabase/ssr`). Login (`/admin/login`), dashboard list, editor (`PostEditor`, semua field + sumber + upload sampul & inline ke Storage + draft/terbit), hapus, analitik (`/admin/analytics` dari `page_views`: total, grafik 14 hari, top paths). `SiteChrome` sembunyikan Nav/Footer publik di `/admin`. `PageViewTracker` + `/api/track` rekam kunjungan (skip /admin). `.pages.yml` dihapus.
   - **Verified** (tanpa kredensial, sesuai batas): insert post DB → tampil di /articles + detail (markdown+sumber render) + merge MDX OK; /admin → 307 /admin/login; /api/track rekam 1 row; build/lint/types clean; live production semua PASS. **Belum** dites E2E authed (butuh akun yang dibuat founder).
 
-### 12 Juni 2026 (lanjutan) — Rapikan: landing, dashboard, arsip; Harimau Jawa terbit (founder-directed)
+### 12 Juni 2026 (lanjutan), Rapikan: landing, dashboard, arsip; Harimau Jawa terbit (founder-directed)
 
-- **Landing (`app/page.tsx`) lead-with-content:** persis di bawah hero kini ada bagian **"Tulisan terbaru"** — grid `ArticleCard` (6 terbaru) yang **otomatis update** tiap ada posting baru (route tetap `force-dynamic`), plus **legenda label keyakinan**. Bento marketing yang membingungkan (browser mockup `articles-preview.jpg`, orbit SVG, terminal log, mini-feed) **dihapus**. Urutan baru: hero → proof strip → Tulisan terbaru → Tiga pilar → Standar editorial → callout Arsip sumber → FAQ.
-- **Dashboard admin (`/admin`) jadi overview nyata** (bukan cuma daftar posting): kartu statistik (total/terbit/draft tulisan, total & 7-hari kunjungan, jumlah arsip sumber + catatan lapangan), **grafik 14 hari**, **halaman terpopuler**, tombol aksi cepat — di atas tabel kelola tulisan. `lib/analytics.ts` (server-only) baru jadi sumber agregasi bersama untuk `/admin` **dan** `/admin/analytics`. `AdminHeader` label "Tulisan" → **"Dashboard"** (`active: "dashboard"`).
+- **Landing (`app/page.tsx`) lead-with-content:** persis di bawah hero kini ada bagian **"Tulisan terbaru"**, grid `ArticleCard` (6 terbaru) yang **otomatis update** tiap ada posting baru (route tetap `force-dynamic`), plus **legenda label keyakinan**. Bento marketing yang membingungkan (browser mockup `articles-preview.jpg`, orbit SVG, terminal log, mini-feed) **dihapus**. Urutan baru: hero → proof strip → Tulisan terbaru → Tiga pilar → Standar editorial → callout Arsip sumber → FAQ.
+- **Dashboard admin (`/admin`) jadi overview nyata** (bukan cuma daftar posting): kartu statistik (total/terbit/draft tulisan, total & 7-hari kunjungan, jumlah arsip sumber + catatan riset), **grafik 14 hari**, **halaman terpopuler**, tombol aksi cepat, di atas tabel kelola tulisan. `lib/analytics.ts` (server-only) baru jadi sumber agregasi bersama untuk `/admin` **dan** `/admin/analytics`. `AdminHeader` label "Tulisan" → **"Dashboard"** (`active: "dashboard"`).
 - **Arsip sumber kini bisa diklik:** tiap entri punya halaman sendiri `app/arsip-sumber/[slug]/page.tsx` (deskripsi penuh via `MdxBody` + metadata + tombol "Buka sumber asli"). `SourceEntry` membawa `content`; `getSourceBySlug`/`getSourceSlugs` ditambah (SSG, 25 halaman). Baris tabel listing me-link ke detail (bukan lagi langsung ke URL eksternal). **10 sumber placeholder ditulis ulang jadi nyata** + **15 sumber baru terverifikasi** (Oryx harimau Jawa studi+bantahan, IUCN, Hoogerwerf, coelacanth, Nagarakretagama, Babad Diponegoro, Arsip VOC/ANRI, UNESCO Borobudur/Ujung Kulon/Komodo, GVP Krakatau/Tambora, Global Forest Watch, BPS).
 - **Artikel Harimau Jawa diperdalam + TERBIT:** body diperluas (apa itu Lazarus taxon, kronologi kepunahan, sampel rambut 2019, studi *Oryx* 2024 + bantahan *numt*, tabel pemisahan klaim, syarat verifikasi), **3 foto domain publik** (sampul foto Hoogerwerf 1938 + peta sebaran + foto penangkaran F.W. Bond) di `public/images/harimau-jawa/`. Parser MDX kini baca `coverImage` di frontmatter; `prose-nali` dapat styling `img` + caption. `status: published`, label tetap **needs-verification** (jujur).
 - **Verified live (production):** semua route 200, `/admin*` 307→login, artikel tampil dengan sampul+gambar+tabel, "Tulisan terbaru" di home, baris arsip me-link ke detail. build/lint/typecheck clean. Push `main` → auto-deploy.
 - **Masih berlaku:** akun admin = tugas founder (Supabase → Auth → Add user); alur authed (login→editor→upload→terbit) belum dites E2E.
 
-### 12 Juni 2026 (lanjutan 2) — Editorial trust + arsip sumber + sprint 30 artikel (founder-directed)
+### 12 Juni 2026 (lanjutan 2), Editorial trust + arsip sumber + sprint 30 artikel (founder-directed)
 
 Mengeksekusi prompt `nali_editorial_trust_source_archive_30_articles_prompt.md` penuh.
-Reposisi NaLI dari "field journal" (mengesankan observasi lapangan pribadi) menjadi
-**jurnal riset terbuka (open-source evidence journal)** — founder belum bisa kerja
+Reposisi NaLI dari framing lama yang mengesankan observasi lapangan pribadi menjadi
+**jurnal riset terbuka (open-source evidence journal)**, founder belum bisa kerja
 lapangan langsung (gear/budget belum lengkap), jadi semua bukti dari sumber pihak ketiga.
 
 - **Trust/positioning (prioritas 1):** semua disclaimer "contoh (seed)" dihapus dari 5
-  artikel; 2 catatan lapangan first-person ditulis ulang jadi **catatan riset** pihak
+  artikel; 2 catatan riset lama ditulis ulang jadi **catatan riset** pihak
   ketiga; mangrove (yang bergaya on-site) di-reframe + recategorize ke `alam`. Hero,
   FAQ, nav, footer, tentang, manifesto, peta→"Indeks Eksplorasi", layout meta semuanya
   di-reframe. Label keyakinan → kosakata sprint (Terverifikasi kuat / Didukung sumber /
@@ -409,16 +409,15 @@ lapangan langsung (gear/budget belum lengkap), jadi semua bukti dari sumber piha
 - **Artikel:** 6 lama di-rebuild ke standar baru + **3 baru** (Badak Jawa, Tambora 1815,
   Jakarta Tenggelam) → **9 terbit** dari 30. Sisanya direncanakan di
   `docs/nali_30_article_editorial_plan.md` (TIDAK dipaksa 30 demi angka).
-- **Validator:** `npm run check:editorial` (`scripts/validate-editorial-content.mjs`) —
-  larang demo-terms + first-person fieldwork; wajib claimLedger/limitations/evidenceBasis
+- **Validator:** `npm run check:editorial` (`scripts/validate-editorial-content.mjs`), larang demo-terms + first-person fieldwork; wajib claimLedger/limitations/evidenceBasis
   per artikel, metadata+limitations per sumber, kredit lengkap per gambar.
 - **Docs:** orientation, baseline, public-copy audit, research backlog, rejected sources,
   30-article plan, image register, **final report** (`docs/nali_editorial_trust_source_archive_sprint_report.md`).
 - **QA:** lint/typecheck/check:editorial/build clean; 63 route; runtime curl 23 route 200,
   bogus 404, /admin 307. **Belum push** (menunggu keputusan founder).
-- **Masih placeholder:** email `halo@nali.native.id` (di `SITE.email`) — mailbox nyata =
+- **Masih placeholder:** email `halo@nali.native.id` (di `SITE.email`), mailbox nyata =
   tugas founder. Editor `/admin` belum tangkap claimLedger/evidenceBasis untuk post DB.
 
 ---
 
-*Last updated: 12 Juni 2026 — editorial-trust sprint: reposisi open-source evidence journal, +trust pages, arsip 38 sumber terverifikasi + filter, 9/30 artikel ke standar Claim Ledger, validator + final report. Belum push.*
+*Last updated: 12 Juni 2026, editorial-trust sprint: reposisi open-source evidence journal, +trust pages, arsip 38 sumber terverifikasi + filter, 9/30 artikel ke standar Claim Ledger, validator + final report. Belum push.*

@@ -1,21 +1,20 @@
 #!/usr/bin/env node
 /**
- * Editorial-content validator (NaLI editorial-trust sprint, Phase 13).
+ * Editorial-content validator for NaLI.
  *
  * Fails the build if public content violates the trust rules:
- *  1. No public article/field-note contains demo terms (seed / contoh (seed) /
- *     dummy / placeholder / ilustratif).
- *  2. No first-person fieldwork claims unless `firstPartyFieldwork: true`.
- *  3. Every published article has sourceIds, sources, claimLedger, limitations,
- *     confidence, evidenceBasis, firstPartyFieldwork: false, and visual evidence
- *     coverage.
- *  4. Every source has the full archive metadata required by the deep archive
- *     sprint, including reliability, limitations, usage, checkedAt, and at least
- *     one traceable link (url/doi/archiveUrl).
- *  5. Every article image credit has sourceUrl, license, attribution, alt,
- *     caption, checkedAt; external visual evidence is linked only.
+ *  1. No em dash characters in public repository text.
+ *  2. No public article or field note contains demo or placeholder language.
+ *  3. No first-person fieldwork claims unless firstPartyFieldwork is true.
+ *  4. Every published article has sourceIds, sources, claimLedger, limitations,
+ *     confidence, evidenceBasis, firstPartyFieldwork: false, and a displayed
+ *     licensed image or internal explanatory diagram/map/timeline.
+ *  5. Every source has the archive metadata required by the deep archive sprint.
+ *  6. Displayed images and internal diagrams have license metadata.
+ *  7. External visual evidence is linked only and has source, limitation, and
+ *     checkedAt metadata.
  *
- * Usage: node scripts/validate-editorial-content.mjs   (npm run check:editorial)
+ * Usage: node scripts/validate-editorial-content.mjs
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -35,6 +34,16 @@ const UNCLEAR_DISPLAY_LICENSE =
   /unknown|unclear|unverified|belum jelas|tidak jelas|tidak diketahui|all rights reserved|hak cipta tidak jelas/i;
 const DIRECT_MEDIA_URL = /\.(avif|gif|jpe?g|png|svg|webp|mp4|mov|webm)(\?.*)?$/i;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const EM_DASH = "\u2014";
+const BANNED_TEMPLATE_PHRASES = [
+  /Tulisan ini mengambil jalan yang lebih pelan/i,
+  /Yang dicari bukan sensasi/i,
+  /Sumber yang dipakai pada bagian ini sengaja tidak disamakan bobotnya/i,
+  /bukan dari pengalaman lapangan pribadi NaLI/i,
+  /batas bukti/i,
+];
+const METHOD_META_PROSE =
+  /NaLI|Basis tulisan|Claim Ledger|sourceIds|arsip sumber|bukti visual eksternal|lisensi|validasi|metodologi|metode NaLI|firstPartyFieldwork|sumber yang dipakai|status bukti/i;
 
 const errors = [];
 const warnings = [];
@@ -62,8 +71,9 @@ function read(dir) {
     .readdirSync(dir)
     .filter((f) => /\.mdx?$/.test(f))
     .map((f) => {
-      const { data, content } = matter(fs.readFileSync(path.join(dir, f), "utf8"));
-      return { file: path.relative(ROOT, path.join(dir, f)), data, content };
+      const fullPath = path.join(dir, f);
+      const { data, content } = matter(fs.readFileSync(fullPath, "utf8"));
+      return { file: path.relative(ROOT, fullPath), data, content };
     });
 }
 
@@ -80,25 +90,154 @@ function looksLikeDirectMediaUrl(value) {
   }
 }
 
+function slugFromFile(file) {
+  return file.replace(/^content\/articles\//, "").replace(/^content\/sources\//, "").replace(/\.mdx?$/, "");
+}
+
+function wordCount(content) {
+  const text = String(content)
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/!\[[^\]]*]\([^)]*\)/g, " ")
+    .replace(/\[[^\]]*]\([^)]*\)/g, " ")
+    .replace(/[>#*_`|]/g, " ")
+    .trim();
+  if (!text) return 0;
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+function bodyParagraphs(content) {
+  return String(content)
+    .split(/\n{2,}/)
+    .map((p) =>
+      p
+        .replace(/```[\s\S]*?```/g, " ")
+        .replace(/!\[[^\]]*]\([^)]*\)/g, " ")
+        .replace(/\[[^\]]*]\([^)]*\)/g, " ")
+        .replace(/^#+\s*/gm, "")
+        .replace(/[>#*_`|]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim(),
+    )
+    .filter((p) => p.length > 40);
+}
+
+function scanDuplicateParagraphs(tag, content) {
+  const seen = new Map();
+  for (const paragraph of bodyParagraphs(content)) {
+    const key = paragraph.toLowerCase();
+    seen.set(key, (seen.get(key) ?? 0) + 1);
+  }
+  for (const [paragraph, count] of seen.entries()) {
+    if (count > 1) {
+      warnings.push(`${tag}: paragraph appears ${count} times: "${paragraph.slice(0, 90)}..."`);
+    }
+  }
+}
+
+function scanMethodProseRatio(tag, content) {
+  const paragraphs = bodyParagraphs(content);
+  if (!paragraphs.length) return;
+  const methodParagraphs = paragraphs.filter((p) => METHOD_META_PROSE.test(p));
+  const ratio = methodParagraphs.length / paragraphs.length;
+  if (ratio > 0.25) {
+    warnings.push(`${tag}: method/meta prose is ${Math.round(ratio * 100)} percent of body paragraphs.`);
+  }
+}
+
+function scanEmDashes() {
+  const skipDirs = new Set([".git", ".next", ".vercel", "node_modules", "public"]);
+  const textExts = new Set([
+    ".css",
+    ".example",
+    ".html",
+    ".js",
+    ".json",
+    ".jsx",
+    ".md",
+    ".mdx",
+    ".mjs",
+    ".sql",
+    ".ts",
+    ".tsx",
+    ".txt",
+    ".yaml",
+    ".yml",
+  ]);
+  const textFiles = new Set([
+    ".env.example",
+    "BACKLOG.md",
+    "CLAUDE.md",
+    "NALI_MASTER_DOCUMENT_v1_2.md",
+    "README.md",
+    "package.json",
+    "tailwind.config.ts",
+  ]);
+
+  function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (skipDirs.has(entry.name)) continue;
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(fullPath);
+        continue;
+      }
+      const rel = path.relative(ROOT, fullPath);
+      const ext = path.extname(entry.name);
+      if (!textExts.has(ext) && !textFiles.has(entry.name) && !textFiles.has(rel)) continue;
+      const raw = fs.readFileSync(fullPath, "utf8");
+      if (raw.includes(EM_DASH)) {
+        const lines = raw.split(/\r?\n/);
+        lines.forEach((line, index) => {
+          if (line.includes(EM_DASH)) errors.push(`[em-dash] ${rel}:${index + 1}: remove em dash character.`);
+        });
+      }
+    }
+  }
+
+  walk(ROOT);
+}
+
+function validateRelatedArticleIds(tag, item, fieldName, articleSlug) {
+  if (!Array.isArray(item?.relatedArticleIds) || item.relatedArticleIds.length === 0) {
+    errors.push(`${tag}: ${fieldName} missing relatedArticleIds.`);
+    return;
+  }
+  if (!item.relatedArticleIds.includes(articleSlug)) {
+    errors.push(`${tag}: ${fieldName} relatedArticleIds must include ${articleSlug}.`);
+  }
+}
+
+scanEmDashes();
+
 /* ---- Articles ---- */
 for (const { file, data, content } of read(ARTICLES)) {
   const published = (data.status ?? "draft") === "published";
   const tag = `[article] ${file}`;
+  const articleSlug = String(data.slug ?? slugFromFile(file));
 
-  // demo terms (published only — drafts may be works-in-progress)
   if (published && DEMO_TERMS.test(content)) {
-    errors.push(`${tag}: contains demo/placeholder language (seed/contoh (seed)/dummy/placeholder/ilustratif).`);
+    errors.push(`${tag}: contains demo/placeholder language.`);
   }
   if (published && DEMO_TERMS.test(JSON.stringify(data))) {
     errors.push(`${tag}: frontmatter contains demo/placeholder language.`);
   }
 
-  // first-person fieldwork
+  for (const pattern of BANNED_TEMPLATE_PHRASES) {
+    if (published && (pattern.test(content) || pattern.test(JSON.stringify(data)))) {
+      errors.push(`${tag}: contains banned template phrase: ${pattern.source}`);
+    }
+  }
+
   if (data.firstPartyFieldwork !== true && FIRST_PERSON_FIELD.test(content)) {
     errors.push(`${tag}: first-person field claim but firstPartyFieldwork is not true.`);
   }
 
   if (!published) continue;
+
+  const wc = wordCount(content);
+  if (wc < 900) warnings.push(`${tag}: body has ${wc} words, below the 900-word quality floor.`);
+  scanDuplicateParagraphs(tag, content);
+  scanMethodProseRatio(tag, content);
 
   if (!Array.isArray(data.sources) || data.sources.length === 0)
     errors.push(`${tag}: missing sources.`);
@@ -121,18 +260,17 @@ for (const { file, data, content } of read(ARTICLES)) {
     errors.push(`${tag}: firstPartyFieldwork must be false unless separately documented and reviewed.`);
 
   const hasDisplayedImages = Array.isArray(data.images) && data.images.length > 0;
-  const hasExternalVisuals = Array.isArray(data.externalVisuals) && data.externalVisuals.length > 0;
-  const hasVisualNote = typeof data.visualEvidenceNote === "string" && data.visualEvidenceNote.trim().length > 0;
-  if (!hasDisplayedImages && !hasExternalVisuals && !hasVisualNote) {
-    errors.push(`${tag}: missing visual evidence coverage (image, externalVisuals, or visualEvidenceNote).`);
+  const hasInternalDiagrams = Array.isArray(data.diagrams) && data.diagrams.length > 0;
+  if (!hasDisplayedImages && !hasInternalDiagrams) {
+    errors.push(`${tag}: published article needs a displayed licensed image or internal explanatory diagram/map/timeline.`);
   }
 
-  // images (if present) must be fully credited
   if (Array.isArray(data.images)) {
     data.images.forEach((img, i) => {
-      for (const k of ["sourceUrl", "license", "attribution", "alt", "caption", "checkedAt"]) {
+      for (const k of ["src", "sourceUrl", "license", "attribution", "alt", "caption", "checkedAt"]) {
         if (!img?.[k]) errors.push(`${tag}: image[${i}] missing ${k}.`);
       }
+      validateRelatedArticleIds(tag, img, `image[${i}]`, articleSlug);
       if (img?.checkedAt && !ISO_DATE.test(String(img.checkedAt))) {
         errors.push(`${tag}: image[${i}] checkedAt must be YYYY-MM-DD.`);
       }
@@ -148,7 +286,33 @@ for (const { file, data, content } of read(ARTICLES)) {
     });
   }
 
-  // external visual evidence: linked only, never rendered as an image asset
+  if (Array.isArray(data.diagrams)) {
+    data.diagrams.forEach((diagram, i) => {
+      for (const k of ["title", "sourceUrl", "license", "attribution", "alt", "caption", "checkedAt"]) {
+        if (!diagram?.[k]) errors.push(`${tag}: diagrams[${i}] missing ${k}.`);
+      }
+      if (!Array.isArray(diagram?.items) || diagram.items.length < 2) {
+        errors.push(`${tag}: diagrams[${i}] must list at least two explanatory items.`);
+      }
+      validateRelatedArticleIds(tag, diagram, `diagrams[${i}]`, articleSlug);
+      if (diagram?.checkedAt && !ISO_DATE.test(String(diagram.checkedAt))) {
+        errors.push(`${tag}: diagrams[${i}] checkedAt must be YYYY-MM-DD.`);
+      }
+      if (UNCLEAR_DISPLAY_LICENSE.test(String(diagram?.license ?? ""))) {
+        errors.push(`${tag}: diagrams[${i}] has unclear license.`);
+      }
+      if (looksLikeDirectMediaUrl(diagram?.sourceUrl)) {
+        errors.push(`${tag}: diagrams[${i}] sourceUrl should be a cited source page, not a direct media file.`);
+      }
+      if (!/diagram|peta|linimasa|penjelas/i.test(String(diagram?.caption ?? ""))) {
+        warnings.push(`${tag}: diagrams[${i}] caption should clearly label it as an explanatory diagram/map/timeline.`);
+      }
+      if (AI_VISUAL_TERMS.test(JSON.stringify(diagram ?? {}))) {
+        errors.push(`${tag}: diagrams[${i}] appears to reference AI-generated imagery, which cannot be evidence.`);
+      }
+    });
+  }
+
   if (Array.isArray(data.externalVisuals)) {
     data.externalVisuals.forEach((ev, i) => {
       for (const k of ["title", "sourceUrl", "shows", "limitation", "checkedAt"]) {
@@ -169,7 +333,6 @@ for (const { file, data, content } of read(ARTICLES)) {
     });
   }
 
-  // claim ledger entries well-formed
   if (Array.isArray(data.claimLedger)) {
     data.claimLedger.forEach((c, i) => {
       if (!c?.claim) errors.push(`${tag}: claimLedger[${i}] missing claim.`);
@@ -185,8 +348,13 @@ for (const { file, data, content } of read(FIELD_NOTES)) {
   const tag = `[field-note] ${file}`;
   if (DEMO_TERMS.test(content) || DEMO_TERMS.test(JSON.stringify(data)))
     errors.push(`${tag}: contains demo/placeholder language.`);
+  for (const pattern of BANNED_TEMPLATE_PHRASES) {
+    if (pattern.test(content) || pattern.test(JSON.stringify(data))) {
+      errors.push(`${tag}: contains banned template phrase: ${pattern.source}`);
+    }
+  }
   if (data.firstPartyFieldwork !== true && FIRST_PERSON_FIELD.test(content))
-    errors.push(`${tag}: first-person field claim (field notes must be framed as third-party/open-source).`);
+    errors.push(`${tag}: first-person field claim. Field notes must be framed as third-party/open-source unless separately documented.`);
 }
 
 /* ---- Sources ---- */
@@ -210,7 +378,7 @@ for (const { file, data, content } of read(SOURCES)) {
   }
   if (data.publishedAt && !ISO_DATE.test(String(data.publishedAt)))
     errors.push(`${tag}: publishedAt must be YYYY-MM-DD when present.`);
-  if (!content.trim()) errors.push(`${tag}: missing summary (body).`);
+  if (!content.trim()) errors.push(`${tag}: missing summary body.`);
 
   const hasReliabilityNote = Boolean(data.reliability || data.reliabilityNote);
   if (!hasReliabilityNote) errors.push(`${tag}: missing reliability note.`);
@@ -238,21 +406,20 @@ for (const { file, data, content } of read(SOURCES)) {
 
   const hasLink = Boolean(data.url || data.doi || data.archiveUrl);
   const hasLimitation = Array.isArray(data.limitations) && data.limitations.length > 0;
-  if (!hasLink)
-    errors.push(`${tag}: missing traceable url, doi, or archiveUrl.`);
+  if (!hasLink) errors.push(`${tag}: missing traceable url, doi, or archiveUrl.`);
   if (!hasLimitation) errors.push(`${tag}: missing limitations.`);
 }
 
 /* ---- Report ---- */
-console.log(`\nEditorial validation — ${sourceCount} sources checked.`);
+console.log(`\nEditorial validation: ${sourceCount} sources checked.`);
 if (warnings.length) {
   console.log(`\n${warnings.length} warning(s):`);
-  for (const w of warnings) console.log(`  ⚠ ${w}`);
+  for (const w of warnings) console.log(`  WARN ${w}`);
 }
 if (errors.length) {
   console.log(`\n${errors.length} error(s):`);
-  for (const e of errors) console.log(`  ✗ ${e}`);
+  for (const e of errors) console.log(`  FAIL ${e}`);
   console.log("");
   process.exit(1);
 }
-console.log("✓ All editorial-content checks passed.\n");
+console.log("All editorial-content checks passed.\n");

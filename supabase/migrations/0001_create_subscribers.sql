@@ -1,4 +1,4 @@
--- NaLI by NatIve — newsletter subscribers
+-- NaLI by NatIve, newsletter subscribers
 -- Supabase project: nali-field-journal (xxwzufdezpyabqkwrcbz)
 --
 -- Privacy model:

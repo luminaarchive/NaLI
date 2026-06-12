@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-  /* archive-ink palette — light (kertas putih, tinta teal) */
+  /* archive-ink palette, light (kertas putih, tinta teal) */
   :root {
     color-scheme: light;
     --c-paper: 255 255 255;
@@ -17,7 +17,7 @@
     --c-rule: 158 205 191;
   }
 
-  /* dark — kertas tinta gelap (turunan warna shader), tinta teal terang */
+  /* dark, kertas tinta gelap (turunan warna shader), tinta teal terang */
   .dark {
     color-scheme: dark;
     --c-paper: 10 20 17;
@@ -60,7 +60,7 @@
 }
 
 @layer components {
-  /* monospace eyebrow / metadata label — archive ink */
+  /* monospace eyebrow / metadata label, archive ink */
   .label {
     @apply font-mono text-[0.7rem] uppercase tracking-label text-ink;
   }
@@ -87,7 +87,7 @@
     @apply text-ink underline decoration-ink/70 decoration-1 underline-offset-[3px] transition-colors hover:text-ink-deep hover:decoration-ink-deep;
   }
 
-  /* article body — readable serif/sans prose on white, ink accents */
+  /* article body, readable serif/sans prose on white, ink accents */
   .prose-nali {
     @apply max-w-prose font-sans text-[1.0625rem] leading-[1.75] text-ink-charcoal;
   }

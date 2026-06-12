@@ -31,7 +31,7 @@ export default function KoreksiPage() {
           <p>
             Jika menemukan kesalahan fakta, sumber yang keliru, atau klaim yang
             terlalu jauh dari buktinya, beri tahu kami. Koreksi yang berdasar sangat
-            kami hargai — itu memperkuat, bukan mempermalukan. Kirim ke{" "}
+            kami hargai, itu memperkuat, bukan mempermalukan. Kirim ke{" "}
             <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
           </p>
 
@@ -60,7 +60,7 @@ export default function KoreksiPage() {
             Tanggapan yang relevan dan berdasar akan kami pertimbangkan untuk
             ditampilkan bersama artikel, atau menjadi dasar pembaruan. NaLI menulis
             investigasi secara sistemik dan berbasis dokumen publik, serta menandai
-            jelas hal yang belum terbukti — justru agar hak jawab punya pijakan yang
+            jelas hal yang belum terbukti, justru agar hak jawab punya pijakan yang
             adil.
           </p>
 

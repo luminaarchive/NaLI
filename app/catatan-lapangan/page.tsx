@@ -8,7 +8,7 @@ import { SOURCE_TYPE_LABEL } from "@/lib/types";
 export const metadata: Metadata = {
   title: "Catatan Riset",
   description:
-    "Catatan awal dari sumber terbuka — laporan peneliti, arsip, dokumentasi pihak ketiga, dan data publik — sebelum disusun jadi artikel. Bukan klaim observasi pribadi NaLI.",
+    "Catatan awal dari sumber terbuka, laporan peneliti, arsip, dokumentasi pihak ketiga, dan data publik, sebelum disusun jadi artikel. Bukan klaim observasi pribadi NaLI.",
   openGraph: {
     title: "Catatan Riset | NaLI by NatIve",
     description:
@@ -37,11 +37,11 @@ export default function CatatanRisetPage() {
       <PageHeader
         eyebrow="Riset terbuka"
         title="Catatan Riset"
-        description="Catatan awal dari sumber terbuka: laporan peneliti, observasi lembaga, arsip, dokumentasi lapangan pihak ketiga, dan data publik — sebelum disusun menjadi artikel panjang."
+        description="Catatan awal dari sumber terbuka: laporan peneliti, observasi lembaga, arsip, dokumentasi lapangan pihak ketiga, dan data publik, sebelum disusun menjadi artikel panjang."
       />
 
       <div className="container-read py-12 sm:py-16">
-        {/* explicit scope — no fake first-party fieldwork */}
+        {/* explicit scope, no fake first-party fieldwork */}
         <div className="mb-12 border border-dashed border-ink/60 bg-ink-wash/40 p-5">
           <p className="font-mono text-[0.78rem] leading-relaxed text-ink-charcoal">
             <span className="font-semibold text-ink-deep">Bukan klaim observasi pribadi NaLI.</span>{" "}

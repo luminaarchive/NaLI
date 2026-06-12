@@ -174,10 +174,10 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
                   )}
                 </td>
                 <td className="border border-ink/30 px-4 py-3 text-gray">
-                  {s.institution ?? s.author ?? "—"}
+                  {s.institution ?? s.author ?? "Tidak dicatat"}
                 </td>
                 <td className="border border-ink/30 px-4 py-3 font-mono text-gray">
-                  {s.year ?? "—"}
+                  {s.year ?? "Tidak dicatat"}
                 </td>
                 <td className="border border-ink/30 px-4 py-3 whitespace-nowrap">
                   <Link

@@ -52,7 +52,7 @@ export default function LisensiFotoPage() {
           </ul>
           <p>
             Kredit ditampilkan di bawah gambar atau di blok “Kredit &amp; lisensi
-            gambar” pada artikel — tidak disembunyikan.
+            gambar” pada artikel, tidak disembunyikan.
           </p>
 
           <h2>Yang tidak akan kami pakai</h2>
@@ -67,7 +67,7 @@ export default function LisensiFotoPage() {
           <p>
             Bila tidak ada gambar yang aman untuk sebuah artikel, kami memilih peta
             atau diagram yang dibuat sendiri dari data, atau membiarkan slot gambar
-            kosong — daripada memakai foto yang tidak jelas haknya.
+            kosong, daripada memakai foto yang tidak jelas haknya.
           </p>
 
           <h2>Takedown &amp; kontak</h2>

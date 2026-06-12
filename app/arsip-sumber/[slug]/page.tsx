@@ -29,7 +29,7 @@ export function generateMetadata({ params }: { params: Params }): Metadata {
     description,
     alternates: { canonical: `/arsip-sumber/${source.slug}` },
     openGraph: {
-      title: `${source.title} | Arsip Sumber — NaLI by NatIve`,
+      title: `${source.title} | Arsip Sumber, NaLI by NatIve`,
       description,
       type: "article",
     },

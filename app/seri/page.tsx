@@ -8,11 +8,11 @@ import { SERIES } from "@/lib/series";
 export const metadata: Metadata = {
   title: "Seri",
   description:
-    "Seri editorial NaLI — mengelompokkan tulisan menjadi alur yang punya janji dan arah, bukan posting blog yang berserakan.",
+    "Seri editorial NaLI, mengelompokkan tulisan menjadi alur yang punya janji dan arah, bukan posting blog yang berserakan.",
   alternates: { canonical: "/seri" },
   openGraph: {
     title: "Seri | NaLI by NatIve",
-    description: "Seri editorial NaLI — alur tulisan dengan janji dan arah.",
+    description: "Seri editorial NaLI, alur tulisan dengan janji dan arah.",
     type: "website",
   },
 };
@@ -27,7 +27,7 @@ export default async function SeriPage() {
       <PageHeader
         eyebrow="Editorial"
         title="Seri"
-        description="Kami menyusun tulisan ke dalam seri agar terasa seperti publikasi yang punya arah — bukan kumpulan posting acak."
+        description="Kami menyusun tulisan ke dalam seri agar terasa seperti publikasi yang punya arah, bukan kumpulan posting acak."
       />
 
       <div className="container-editorial py-12 sm:py-16">

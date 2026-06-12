@@ -6,7 +6,7 @@ const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 /**
  * Supabase client for Server Components / Server Actions / Route Handlers.
- * Reads & refreshes the auth session from cookies. RLS still applies — an
+ * Reads & refreshes the auth session from cookies. RLS still applies, an
  * admin is simply an authenticated session.
  */
 export function createSupabaseServerClient() {
@@ -22,7 +22,7 @@ export function createSupabaseServerClient() {
             cookieStore.set(name, value, options),
           );
         } catch {
-          // called from a Server Component render — safe to ignore;
+          // called from a Server Component render, safe to ignore;
           // middleware refreshes the session cookie instead.
         }
       },

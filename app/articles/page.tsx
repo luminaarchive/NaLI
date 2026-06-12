@@ -6,11 +6,11 @@ import { getAllArticles, getAllTags } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Artikel",
   description:
-    "Semua tulisan NaLI by NatIve — alam, sejarah, dan investigasi Indonesia. Saring berdasarkan kategori dan tag.",
+    "Semua tulisan NaLI by NatIve, alam, sejarah, dan investigasi Indonesia. Saring berdasarkan kategori dan tag.",
   openGraph: {
     title: "Artikel | NaLI by NatIve",
     description:
-      "Semua tulisan NaLI by NatIve — alam, sejarah, dan investigasi Indonesia.",
+      "Semua tulisan NaLI by NatIve, alam, sejarah, dan investigasi Indonesia.",
     type: "website",
   },
 };

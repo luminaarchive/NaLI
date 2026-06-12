@@ -135,7 +135,7 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
         </div>
       </header>
 
-      {/* evidence-basis banner — honesty about how the piece is sourced */}
+      {/* evidence-basis banner: honesty about how the piece is sourced */}
       <div className="container-read pt-8">
         <div className="border border-dashed border-ink/60 bg-ink-wash/40 p-5">
           <p className="font-mono text-[0.78rem] leading-relaxed text-ink-charcoal">
@@ -163,6 +163,59 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
               priority
             />
           </div>
+        </div>
+      )}
+
+      {/* internal explanatory diagrams, maps, or timelines */}
+      {article.diagrams && article.diagrams.length > 0 && (
+        <div className="container-read pt-10">
+          <section className="border border-dashed border-ink/60 bg-paper p-5" aria-labelledby="diagram-penjelas">
+            <h2 id="diagram-penjelas" className="label text-ink/70">
+              Diagram penjelas
+            </h2>
+            <div className="mt-5 space-y-6">
+              {article.diagrams.map((diagram, i) => (
+                <figure key={`${diagram.title}-${i}`} className="border-t border-dashed border-ink/35 pt-5 first:border-t-0 first:pt-0">
+                  <figcaption>
+                    <p className="font-display text-lg font-semibold uppercase leading-tight text-ink">
+                      {diagram.title}
+                    </p>
+                    <p className="mt-2 font-mono text-[0.76rem] leading-relaxed text-gray">
+                      {diagram.caption}
+                    </p>
+                  </figcaption>
+                  <ol className="mt-4 grid gap-2 sm:grid-cols-2">
+                    {diagram.items.map((item, itemIndex) => (
+                      <li
+                        key={`${item}-${itemIndex}`}
+                        className="border border-dashed border-ink/35 bg-ink-wash/35 p-3 font-mono text-[0.74rem] leading-relaxed text-ink-charcoal"
+                      >
+                        <span className="mr-2 text-ink/45">{String(itemIndex + 1).padStart(2, "0")}</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ol>
+                  <p className="mt-4 font-mono text-[0.68rem] leading-relaxed text-ink/60">
+                    {diagram.attribution}.{" "}
+                    <a href={diagram.sourceUrl} target="_blank" rel="noopener noreferrer" className="link-teal">
+                      Sumber data
+                    </a>
+                    {diagram.licenseUrl ? (
+                      <>
+                        {", "}
+                        <a href={diagram.licenseUrl} target="_blank" rel="noopener noreferrer" className="link-teal">
+                          {diagram.license}
+                        </a>
+                      </>
+                    ) : (
+                      <>{`, ${diagram.license}`}</>
+                    )}
+                    {diagram.checkedAt && <span className="text-ink/40">, dicek {diagram.checkedAt}</span>}
+                  </p>
+                </figure>
+              ))}
+            </div>
+          </section>
         </div>
       )}
 
@@ -203,10 +256,10 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
                         {CLAIM_STATUS_LABEL[c.status]}
                       </td>
                       <td className="border border-ink/30 px-3 py-2.5 font-mono text-[0.72rem] text-gray">
-                        {c.sources ?? "—"}
+                        {c.sources ?? "Tidak dicatat"}
                       </td>
                       <td className="border border-ink/30 px-3 py-2.5 font-mono text-[0.72rem] leading-snug text-gray">
-                        {c.limitation ?? c.explanation ?? "—"}
+                        {c.limitation ?? c.explanation ?? "Catatan belum tersedia"}
                       </td>
                     </tr>
                   ))}
@@ -234,7 +287,7 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
 
         <SourceList sources={article.sources} />
 
-        {/* CATEGORY 1 — licensed images actually displayed */}
+        {/* CATEGORY 1: licensed images actually displayed */}
         {article.images && article.images.length > 0 && (
           <section className="mt-12 border-t border-dashed border-ink/40 pt-6" aria-labelledby="kredit-gambar">
             <h2 id="kredit-gambar" className="label text-ink/70">
@@ -243,29 +296,29 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
             <ul className="mt-4 space-y-3">
               {article.images.map((img, i) => (
                 <li key={i} className="font-mono text-[0.76rem] leading-relaxed text-gray">
-                  <span className="text-ink-charcoal">{img.title ?? img.caption}</span> —{" "}
+                  <span className="text-ink-charcoal">{img.title ?? img.caption}</span>,{" "}
                   {img.attribution}.{" "}
                   <a href={img.sourceUrl} target="_blank" rel="noopener noreferrer" className="link-teal">
                     Sumber
                   </a>
                   {img.licenseUrl ? (
                     <>
-                      {" · "}
+                      {", "}
                       <a href={img.licenseUrl} target="_blank" rel="noopener noreferrer" className="link-teal">
                         {img.license}
                       </a>
                     </>
                   ) : (
-                    <> · {img.license}</>
+                    <>, {img.license}</>
                   )}
-                  {img.checkedAt && <span className="text-ink/40"> · dicek {img.checkedAt}</span>}
+                  {img.checkedAt && <span className="text-ink/40">, dicek {img.checkedAt}</span>}
                 </li>
               ))}
             </ul>
           </section>
         )}
 
-        {/* CATEGORY 2 — external visual evidence, linked only (never displayed) */}
+        {/* CATEGORY 2: external visual evidence, linked only and never displayed */}
         {article.externalVisuals && article.externalVisuals.length > 0 && (
           <section className="mt-10 border-t border-dashed border-ink/40 pt-6" aria-labelledby="bukti-visual">
             <h2 id="bukti-visual" className="label text-ink/70">
@@ -273,7 +326,7 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
             </h2>
             <p className="mt-2 font-mono text-[0.74rem] leading-relaxed text-gray">
               Foto/video nyata yang relevan tetapi lisensinya belum jelas. NaLI{" "}
-              <strong>tidak menampilkan ulang</strong> gambar ini — hanya menautkan ke
+              <strong>tidak menampilkan ulang</strong> gambar ini. Tautan diarahkan ke
               sumber aslinya.
             </p>
             <ul className="mt-4 space-y-4">
@@ -305,6 +358,7 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
         )}
 
         {(!article.images || article.images.length === 0) &&
+          (!article.diagrams || article.diagrams.length === 0) &&
           (!article.externalVisuals || article.externalVisuals.length === 0) &&
           article.visualEvidenceNote && (
             <section className="mt-10 border-t border-dashed border-ink/40 pt-6" aria-labelledby="catatan-visual">

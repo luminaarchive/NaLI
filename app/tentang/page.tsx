@@ -6,11 +6,11 @@ import { SITE } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Tentang",
   description:
-    "Tentang NaLI by NatIve dan pendirinya — jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia.",
+    "Tentang NaLI by NatIve dan pendirinya, jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia.",
   openGraph: {
     title: "Tentang | NaLI by NatIve",
     description:
-      "Tentang NaLI by NatIve — jurnal riset terbuka tentang Indonesia.",
+      "Tentang NaLI by NatIve, jurnal riset terbuka tentang Indonesia.",
     type: "website",
   },
 };
@@ -21,7 +21,7 @@ export default function TentangPage() {
       <PageHeader
         eyebrow="Tentang"
         title="Satu orang, banyak yang belum diceritakan."
-        description="NaLI by NatIve adalah jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia — disusun dari sumber publik yang dapat ditelusuri."
+        description="NaLI by NatIve adalah jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia, disusun dari sumber publik yang dapat ditelusuri."
       />
 
       <div className="container-read py-12 sm:py-16">
@@ -30,7 +30,7 @@ export default function TentangPage() {
           <p>
             NaLI by NatIve menggabungkan tiga hal: penelusuran berbantuan AI,
             disiplin riset berbasis sumber, dan cara bercerita yang enak dibaca.
-            Hasilnya bukan dump data, juga bukan opini tanpa dasar — melainkan
+            Hasilnya bukan dump data, juga bukan opini tanpa dasar, melainkan
             tulisan yang transparan soal seberapa kuat dasarnya.
           </p>
           <p>
@@ -43,7 +43,7 @@ export default function TentangPage() {
           <p>
             NaLI adalah <strong>jurnal bukti sumber terbuka</strong>. Untuk saat
             ini kami bekerja dari jurnal, arsip, laporan lembaga, dataset, peta,
-            observasi peneliti, dan foto berlisensi — <strong>bukan</strong> dari
+            observasi peneliti, dan foto berlisensi, <strong>bukan</strong> dari
             ekspedisi atau observasi lapangan pribadi. Selama perlengkapan dan
             anggaran lapangan belum lengkap, kami tidak akan mengklaim telah
             mengunjungi, mengukur, atau memotret sesuatu di lapangan kecuali bukti
@@ -55,7 +55,7 @@ export default function TentangPage() {
           <p>
             Banyak konten di internet terdengar yakin padahal tidak. Kami memilih
             jalan sebaliknya: setiap tulisan membawa label tingkat keyakinan dan
-            daftar sumber. Kamu boleh tidak setuju — tapi kamu selalu bisa
+            daftar sumber. Kamu boleh tidak setuju, tapi kamu selalu bisa
             memeriksa dasarnya.
           </p>
 
@@ -63,7 +63,7 @@ export default function TentangPage() {
           <p>
             NaLI by NatIve disusun oleh <strong>{SITE.author}</strong> sebagai
             proyek solo: menelusuri, menulis, dan menerbitkan secara konsisten.
-            Prinsip kerjanya sederhana — bangun sekali, terbitkan rutin, ukur
+            Prinsip kerjanya sederhana, bangun sekali, terbitkan rutin, ukur
             respons nyata.
           </p>
         </div>

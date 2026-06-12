@@ -8,7 +8,7 @@ type Status = "idle" | "loading" | "ok" | "dupe" | "invalid" | "error";
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 const MESSAGE: Record<Exclude<Status, "idle" | "loading">, string> = {
-  ok: "Terima kasih — kamu akan dapat kabar tiap ada tulisan baru.",
+  ok: "Terima kasih, kamu akan dapat kabar tiap ada tulisan baru.",
   dupe: "Email ini sudah terdaftar. Sampai jumpa di kiriman berikutnya.",
   invalid: "Sepertinya format emailnya belum tepat.",
   error: "Maaf, ada kendala. Coba lagi sebentar lagi, ya.",

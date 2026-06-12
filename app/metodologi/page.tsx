@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/PageHeader";
 export const metadata: Metadata = {
   title: "Metodologi",
   description:
-    "Bagaimana NaLI bekerja: jurnal riset terbuka yang menyusun cerita dari jurnal, arsip, laporan lembaga, dataset, dan dokumentasi pihak ketiga — bukan observasi lapangan pribadi.",
+    "Bagaimana NaLI bekerja: jurnal riset terbuka yang menyusun cerita dari jurnal, arsip, laporan lembaga, dataset, dan dokumentasi pihak ketiga, bukan observasi lapangan pribadi.",
   alternates: { canonical: "/metodologi" },
   openGraph: {
     title: "Metodologi | NaLI by NatIve",
@@ -51,7 +51,7 @@ const SECTIONS: { n: string; title: string; body: React.ReactNode }[] = [
         lengkap, jadi kami tidak berpura-pura telah mengunjungi, mengukur,
         mewawancarai, atau memotret sesuatu di lapangan. Ketika kami menyebut
         “bukti lapangan”, yang dimaksud adalah <em>laporan lapangan pihak
-        ketiga</em> — peneliti, lembaga, atau arsip — bukan ekspedisi NaLI.
+        ketiga</em>, peneliti, lembaga, atau arsip, bukan ekspedisi NaLI.
       </p>
     ),
   },
@@ -76,7 +76,7 @@ const SECTIONS: { n: string; title: string; body: React.ReactNode }[] = [
         Setiap sumber yang dipakai harus dapat ditelusuri: idealnya punya DOI, URL
         resmi, URL arsip stabil, halaman penerbit, catatan museum, halaman IUCN
         atau GBIF, halaman regulasi pemerintah, atau katalog perpustakaan. Sumber
-        yang tidak bisa diverifikasi tidak dipublikasikan sebagai sumber — ia
+        yang tidak bisa diverifikasi tidak dipublikasikan sebagai sumber, ia
         masuk ke backlog. Semua sumber yang dipakai dikumpulkan di{" "}
         <Link href="/arsip-sumber">Arsip Sumber</Link>, lengkap dengan catatan
         keandalan dan batasannya. Standar kualitas sumber dijelaskan di{" "}
@@ -116,18 +116,18 @@ const SECTIONS: { n: string; title: string; body: React.ReactNode }[] = [
         <p>Setiap tulisan membawa satu label tingkat keyakinan:</p>
         <ul>
           <li>
-            <strong>Terverifikasi kuat</strong> — didukung sumber yang kuat dan
+            <strong>Terverifikasi kuat</strong>, didukung sumber yang kuat dan
             konsisten.
           </li>
           <li>
-            <strong>Didukung sumber</strong> — punya dasar, tapi perlu konteks atau
+            <strong>Didukung sumber</strong>, punya dasar, tapi perlu konteks atau
             masih bisa berubah angka detailnya.
           </li>
           <li>
-            <strong>Terbatas</strong> — hipotesis kerja atas bukti yang masih tipis.
+            <strong>Terbatas</strong>, hipotesis kerja atas bukti yang masih tipis.
           </li>
           <li>
-            <strong>Belum cukup bukti</strong> — belum bisa dinyatakan sebagai
+            <strong>Belum cukup bukti</strong>, belum bisa dinyatakan sebagai
             fakta.
           </li>
         </ul>
@@ -159,7 +159,7 @@ const SECTIONS: { n: string; title: string; body: React.ReactNode }[] = [
       <p>
         Karena bekerja dari sumber terbuka, NaLI dibatasi oleh apa yang sudah
         terdokumentasi publik. Kami tidak menghasilkan data primer baru. Ada topik
-        yang tidak bisa dituntaskan sampai ada riset lapangan independen — dan kami
+        yang tidak bisa dituntaskan sampai ada riset lapangan independen, dan kami
         akan mengatakannya, bukan menutupinya dengan kepastian palsu.
       </p>
     ),
@@ -170,8 +170,8 @@ const SECTIONS: { n: string; title: string; body: React.ReactNode }[] = [
     body: (
       <p>
         Kami bisa salah. Ketika ada koreksi yang berdasar, artikel diperbarui dan
-        perubahannya dicatat. Prosedur lengkap — termasuk hak jawab untuk artikel
-        investigasi — ada di halaman <Link href="/koreksi">Koreksi</Link>.
+        perubahannya dicatat. Prosedur lengkap, termasuk hak jawab untuk artikel
+        investigasi, ada di halaman <Link href="/koreksi">Koreksi</Link>.
       </p>
     ),
   },

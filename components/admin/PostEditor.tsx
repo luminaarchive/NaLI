@@ -214,7 +214,7 @@ export function PostEditor({ initial }: { initial?: EditablePost }) {
     if (status === "published") {
       const errs = publishErrors();
       if (errs.length) {
-        setMsg(`Tidak bisa terbit — perbaiki dulu:\n• ${errs.join("\n• ")}`);
+        setMsg(`Tidak bisa terbit, perbaiki dulu:\n• ${errs.join("\n• ")}`);
         return;
       }
     }
@@ -323,7 +323,7 @@ export function PostEditor({ initial }: { initial?: EditablePost }) {
             value={p.evidenceBasis ?? ""}
             onChange={(e) => set("evidenceBasis", (e.target.value || null) as EvidenceBasis | null)}
           >
-            <option value="">— pilih —</option>
+            <option value="">Pilih basis bukti</option>
             {EVIDENCE_BASES.map((b) => (
               <option key={b} value={b}>{b}</option>
             ))}

@@ -13,7 +13,7 @@ export function Footer() {
             </p>
             <p className="mt-3 max-w-sm font-mono text-[0.8rem] leading-relaxed text-gray">
               Nature · Archive · Lore · Investigation. Jurnal riset terbuka
-              berbasis AI tentang Indonesia — setiap klaim bersumber.
+              tentang Indonesia. Setiap klaim membawa sumber dan batasan.
             </p>
             <p className="label mt-5">Setiap klaim diberi label keyakinan</p>
           </div>

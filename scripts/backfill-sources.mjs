@@ -1,5 +1,5 @@
 // One-time backfill: add structured trust metadata to legacy source entries.
-// Idempotent — only fills missing fields. Safe to re-run.
+// Idempotent, only fills missing fields. Safe to re-run.
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
@@ -13,10 +13,10 @@ const REL_BY_TYPE = {
 };
 const LIMIT_BY_TYPE = {
   jurnal: "Akses teks penuh sebagian artikel mungkin berbayar; gunakan abstrak/laporan terbuka bila perlu.",
-  laporan: "Angka dan status dapat berubah pada penilaian berikutnya — selalu rujuk versi terbaru.",
+  laporan: "Angka dan status dapat berubah pada penilaian berikutnya, selalu rujuk versi terbaru.",
   arsip: "Arsip membawa bias zaman dan pembuatnya; dibaca kritis, bukan sebagai kebenaran netral.",
   buku: "Berisi interpretasi penulis; klaim kunci sebaiknya dibandingkan dengan sumber primer.",
-  media: "Reportase, bukan sumber primer — untuk konteks; telusuri ke dokumen aslinya.",
+  media: "Reportase, bukan sumber primer, untuk konteks; telusuri ke dokumen aslinya.",
   lainnya: "Periksa keandalan dan tanggal sumber sebelum dikutip sebagai bukti.",
 };
 

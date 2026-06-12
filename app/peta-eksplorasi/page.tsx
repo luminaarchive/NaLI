@@ -33,7 +33,7 @@ export default async function PetaEksplorasiPage() {
       <PageHeader
         eyebrow="Indeks"
         title="Indeks Eksplorasi"
-        description="Bukan peta interaktif, juga bukan jejak ekspedisi pribadi — sebuah indeks lokasi dan topik dalam liputan NaLI, disusun dari sumber terbuka."
+        description="Bukan peta interaktif dan bukan jejak ekspedisi pribadi. Ini indeks lokasi dan topik dalam liputan NaLI, disusun dari sumber terbuka."
       />
 
       <div className="container-editorial py-12">

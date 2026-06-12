@@ -6,12 +6,12 @@ import { getAllSources } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Arsip Sumber",
   description:
-    "Sumber terverifikasi yang dipakai NaLI — jurnal, laporan lembaga, arsip, dataset, buku, dan media. Setiap entri punya metadata, catatan keandalan, dan batasannya sendiri.",
+    "Sumber terverifikasi yang dipakai NaLI, jurnal, laporan lembaga, arsip, dataset, buku, dan media. Setiap entri punya metadata, catatan keandalan, dan batasannya sendiri.",
   alternates: { canonical: "/arsip-sumber" },
   openGraph: {
     title: "Arsip Sumber | NaLI by NatIve",
     description:
-      "Sumber terverifikasi yang dipakai NaLI — jurnal, laporan lembaga, arsip, dataset, buku, dan media.",
+      "Sumber terverifikasi yang dipakai NaLI, jurnal, laporan lembaga, arsip, dataset, buku, dan media.",
     type: "website",
   },
 };
@@ -24,7 +24,7 @@ export default function ArsipSumberPage() {
       <PageHeader
         eyebrow="Transparansi"
         title="Arsip Sumber"
-        description="Rujukan yang menopang tulisan kami — terbuka untuk diperiksa, dengan catatan keandalan dan batasan tiap sumber. Saring berdasarkan tipe, topik, atau tingkat keandalan."
+        description="Rujukan yang menopang tulisan kami, terbuka untuk diperiksa, dengan catatan keandalan dan batasan tiap sumber. Saring berdasarkan tipe, topik, atau tingkat keandalan."
       />
 
       <div className="container-editorial py-12">

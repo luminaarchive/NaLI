@@ -16,7 +16,7 @@ const config: Config = {
           dark: "#1BA882",
           bg: "#EAF8F3",
         },
-        // archive-ink system — CSS variables so light/dark swap everywhere
+        // archive-ink system, CSS variables so light/dark swap everywhere
         ink: {
           DEFAULT: "rgb(var(--c-ink) / <alpha-value>)",
           deep: "rgb(var(--c-ink-deep) / <alpha-value>)",

@@ -1,4 +1,4 @@
-# NaLI — Repository Orientation (Phase 0)
+# NaLI, Repository Orientation (Phase 0)
 
 _Internal engineering note. Not rendered publicly._
 _Updated: 2026-06-12 · branch `deep-archive-article-expansion`_
@@ -29,16 +29,16 @@ _Updated: 2026-06-12 · branch `deep-archive-article-expansion`_
 
 ## Content file map
 
-- `content/articles/*.mdx` — 32 published articles after the deep archive sprint. Every article has `sourceIds`, rendered sources, `evidenceBasis`, `firstPartyFieldwork: false`, limitations, and Claim Ledger.
-- `content/field-notes/*.mdx` — research-note style content only; no first-person fieldwork claim is allowed without proof.
-- `content/sources/*.mdx` — 146 source entries with IDs, source type, URL/DOI/archive reference, language, geography, topics, reliability level/note, key claims, limitations, usage, and checked date.
-- `content/drafts/.gitkeep` — empty.
+- `content/articles/*.mdx`, 32 published articles after the deep archive sprint. Every article has `sourceIds`, rendered sources, `evidenceBasis`, `firstPartyFieldwork: false`, limitations, and Claim Ledger.
+- `content/field-notes/*.mdx`, research-note style content only; no first-person fieldwork claim is allowed without proof.
+- `content/sources/*.mdx`, 146 source entries with IDs, source type, URL/DOI/archive reference, language, geography, topics, reliability level/note, key claims, limitations, usage, and checked date.
+- `content/drafts/.gitkeep`, empty.
 
 ## Data models (`lib/types.ts`)
 
-- `Article` — title, subtitle, slug, date, category (`alam|sejarah|investigasi|catatan-lapangan`), tags, summary, confidence (`high|medium|low|needs-verification`), status, `sourceIds`, sources (`{title,url?,type}`), content, readingMinutes, coverImage?, origin?, series?, evidenceBasis?, firstPartyFieldwork?, limitations?, claimLedger?, images?, externalVisuals?, visualEvidenceNote?.
-- `SourceEntry` — id, title, slug, type/sourceType (`jurnal|arsip|buku|media|laporan|lainnya`), author/institution?, year/publishedAt?, url/doi/archiveUrl?, reliability/reliabilityLevel, language, geography, topics, keyClaims/keyClaimsSupported, limitations, usedInArticles/usedInArticleIds, checkedAt, content.
-- `FieldNote` — title, slug, location_label, date, tags, summary, status, content.
+- `Article`, title, subtitle, slug, date, category (`alam|sejarah|investigasi|catatan-lapangan`), tags, summary, confidence (`high|medium|low|needs-verification`), status, `sourceIds`, sources (`{title,url?,type}`), content, readingMinutes, coverImage?, origin?, series?, evidenceBasis?, firstPartyFieldwork?, limitations?, claimLedger?, images?, externalVisuals?, visualEvidenceNote?.
+- `SourceEntry`, id, title, slug, type/sourceType (`jurnal|arsip|buku|media|laporan|lainnya`), author/institution?, year/publishedAt?, url/doi/archiveUrl?, reliability/reliabilityLevel, language, geography, topics, keyClaims/keyClaimsSupported, limitations, usedInArticles/usedInArticleIds, checkedAt, content.
+- `FieldNote`, title, slug, location_label, date, tags, summary, status, content.
 - Confidence labels map the sprint vocabulary onto the existing badge enum: `high -> Terverifikasi kuat`, `medium -> Didukung sumber`, `low -> Terbatas`, `needs-verification -> Belum cukup bukti`.
 
 ## Components
@@ -53,10 +53,10 @@ Nav (centered serif caps, mobile drawer, theme toggle), Footer, WaveHero (WebGL 
 
 1. **Trust guardrail:** keep `scripts/validate-editorial-content.mjs` active. It is the gate for source IDs, Claim Ledger, limitations, first-party fieldwork, source metadata, image licensing, and external visual evidence.
 2. **No fake fieldwork:** article/page copy must stay framed as source-backed research unless first-party evidence is actually documented.
-3. `MdxBody` renders as Markdown (`format:"md"`) — safe for user content; tables via `remark-gfm` work.
-4. `getAllSources()` sorts by year desc — entries without year sink. Source detail is SSG via `generateStaticParams`.
+3. `MdxBody` renders as Markdown (`format:"md"`), safe for user content; tables via `remark-gfm` work.
+4. `getAllSources()` sorts by year desc, entries without year sink. Source detail is SSG via `generateStaticParams`.
 5. Contact email `halo@nali.native.id` is centralized in `lib/site.ts`; verify mailbox ownership before treating it as operational.
-6. Adding source files automatically grows the SSG `/arsip-sumber/[slug]` set — build cost scales with count.
+6. Adding source files automatically grows the SSG `/arsip-sumber/[slug]` set, build cost scales with count.
 7. Visual evidence rules are strict: unclear-license photos/maps are external links only, never displayed assets.
 
 ## Commands available

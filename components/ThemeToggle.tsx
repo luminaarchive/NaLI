@@ -65,7 +65,7 @@ export function ThemeToggle() {
     try {
       localStorage.setItem(STORAGE_KEY, next);
     } catch {
-      /* private mode etc. — non-fatal */
+      /* private mode etc., non-fatal */
     }
     setTheme(next);
   };

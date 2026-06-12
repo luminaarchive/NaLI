@@ -17,7 +17,7 @@ const PRINCIPLES = [
   {
     n: "01",
     title: "Jujur soal tingkat keyakinan",
-    body: "Tidak semua yang kami tulis sudah pasti. Maka setiap tulisan diberi label: terverifikasi kuat, didukung sumber, terbatas, atau belum cukup bukti — dan klaim yang masih diperdebatkan ditandai per-klaim. Pembaca berhak tahu seberapa kuat dasar sebuah klaim.",
+    body: "Tidak semua yang kami tulis sudah pasti. Maka setiap tulisan diberi label: terverifikasi kuat, didukung sumber, terbatas, atau belum cukup bukti, dan klaim yang masih diperdebatkan ditandai per-klaim. Pembaca berhak tahu seberapa kuat dasar sebuah klaim.",
   },
   {
     n: "02",
@@ -27,7 +27,7 @@ const PRINCIPLES = [
   {
     n: "03",
     title: "Tidak ada tuduhan tanpa bukti",
-    body: "Investigasi berbasis sumber publik. Jika bukti belum cukup untuk menuduh, kami tidak menuduh — kami menelusuri dan menandainya.",
+    body: "Investigasi berbasis sumber publik. Jika bukti belum cukup untuk menuduh, kami tidak menuduh, kami menelusuri dan menandainya.",
   },
   {
     n: "04",
@@ -37,12 +37,12 @@ const PRINCIPLES = [
   {
     n: "05",
     title: "AI menelusuri, manusia memutuskan",
-    body: "AI membantu menggali, merangkum, dan menyusun. Tapi keputusan editorial — apa yang layak terbit dan dengan label apa — tetap di tangan manusia.",
+    body: "AI membantu menggali, merangkum, dan menyusun. Tapi keputusan editorial, apa yang layak terbit dan dengan label apa, tetap di tangan manusia.",
   },
   {
     n: "06",
     title: "Bangun sekali, terbitkan rutin",
-    body: "Energi kami untuk menelusuri dan menulis, bukan membangun ulang tanpa henti. Publikasi yang konsisten mengalahkan kesempurnaan yang tak pernah selesai — tapi kualitas dan ketertelusuran sumber selalu didahulukan ketimbang mengejar jumlah.",
+    body: "Energi kami untuk menelusuri dan menulis, bukan membangun ulang tanpa henti. Publikasi yang konsisten mengalahkan kesempurnaan yang tak pernah selesai, tapi kualitas dan ketertelusuran sumber selalu didahulukan ketimbang mengejar jumlah.",
   },
   {
     n: "07",
@@ -63,15 +63,14 @@ export default function ManifestoPage() {
       <div className="container-read py-12 sm:py-16">
         <div className="prose-nali">
           <p>
-            Indonesia menyimpan terlalu banyak cerita yang belum ditelusuri —
-            ekologi yang luput dicatat, sejarah yang nyaris terlupa, dan fenomena
+            Indonesia menyimpan terlalu banyak cerita yang belum ditelusuri, ekologi yang luput dicatat, sejarah yang nyaris terlupa, dan fenomena
             yang berdesas-desus tanpa pernah diperiksa. NaLI by NatIve hadir untuk
             menelusuri hal-hal itu secara serius, dengan bantuan AI, lalu
             menceritakannya dengan jujur.
           </p>
           <p>
-            <strong>NaLI</strong> — Nature, Archive, Lore, Investigation.{" "}
-            <strong>by NatIve</strong> — local intelligence dan riset berbasis
+            <strong>NaLI</strong>, Nature, Archive, Lore, Investigation.{" "}
+            <strong>by NatIve</strong>, local intelligence dan riset berbasis
             sumber terbuka dari sudut pandang Indonesia sendiri.
           </p>
         </div>

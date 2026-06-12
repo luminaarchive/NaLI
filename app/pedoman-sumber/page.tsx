@@ -43,7 +43,7 @@ export default function PedomanSumberPage() {
           <p>
             Data terstruktur dari lembaga (mis. statistik resmi, data tutupan hutan,
             katalog erupsi). Kuat untuk angka, tetapi harus dibaca dengan metodologi
-            dan periodenya — angka tanpa tahun dan definisi mudah menyesatkan.
+            dan periodenya, angka tanpa tahun dan definisi mudah menyesatkan.
           </p>
 
           <h2>Arsip historis</h2>
@@ -56,7 +56,7 @@ export default function PedomanSumberPage() {
 
           <h2>Foto berlisensi</h2>
           <p>
-            Hanya gambar dengan lisensi jelas — domain publik, CC0, CC BY, CC BY-SA,
+            Hanya gambar dengan lisensi jelas, domain publik, CC0, CC BY, CC BY-SA,
             atau lisensi terbuka lembaga. Aturan dan format atribusinya ada di{" "}
             <Link href="/lisensi-foto">Lisensi Foto</Link>.
           </p>
@@ -65,11 +65,10 @@ export default function PedomanSumberPage() {
           <ul>
             <li>Media sosial dan forum tanpa verifikasi.</li>
             <li>
-              Reportase media sebagai <em>satu-satunya</em> bukti untuk klaim besar —
-              berguna untuk konteks, tapi bukan pengganti sumber primer.
+              Reportase media sebagai <em>satu-satunya</em> bukti untuk klaim besar, berguna untuk konteks, tapi bukan pengganti sumber primer.
             </li>
             <li>
-              ResearchGate/iNaturalist sebagai <em>satu-satunya</em> bukti — boleh
+              ResearchGate/iNaturalist sebagai <em>satu-satunya</em> bukti, boleh
               untuk penemuan awal, tetapi harus dikonfirmasi ke sumber resmi dengan
               lisensi yang jelas.
             </li>
@@ -80,20 +79,20 @@ export default function PedomanSumberPage() {
           <p>Tiap entri di Arsip Sumber diberi salah satu tingkat keandalan:</p>
           <ul>
             <li>
-              <strong>Sumber primer</strong> — bukti tangan pertama.
+              <strong>Sumber primer</strong>, bukti tangan pertama.
             </li>
             <li>
-              <strong>Keandalan tinggi</strong> — lembaga/jurnal kredibel, sekunder
+              <strong>Keandalan tinggi</strong>, lembaga/jurnal kredibel, sekunder
               tapi kuat.
             </li>
             <li>
-              <strong>Keandalan sedang</strong> — berguna dengan catatan.
+              <strong>Keandalan sedang</strong>, berguna dengan catatan.
             </li>
             <li>
-              <strong>Kontekstual</strong> — untuk latar, bukan pembuktian.
+              <strong>Kontekstual</strong>, untuk latar, bukan pembuktian.
             </li>
             <li>
-              <strong>Perlu kehati-hatian</strong> — ada keterbatasan akses, bias,
+              <strong>Perlu kehati-hatian</strong>, ada keterbatasan akses, bias,
               atau status yang masih diperdebatkan.
             </li>
           </ul>

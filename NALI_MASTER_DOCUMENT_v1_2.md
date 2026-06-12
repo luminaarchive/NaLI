@@ -1,4 +1,4 @@
-# NaLI by NatIve — Master Document v1.2
+# NaLI by NatIve, Master Document v1.2
 **Build-First Publishing Machine Specification**
 
 > **Cara pakai:** Ini adalah konteks strategis untuk Claude Code. Baca seluruh dokumen ini sebelum menulis satu baris kode. Semua keputusan di sini sudah dikunci. Jangan override tanpa instruksi eksplisit dari founder.
@@ -12,7 +12,7 @@
 | Founder | Ansyahri Darma Tri Jati |
 | Tanggal | 11 Juni 2026 |
 | Versi | v1.2 |
-| Arah | AI-assisted research, field journalism, editorial publishing — alam, sejarah, investigasi Indonesia |
+| Arah | AI-assisted research, field journalism, editorial publishing, alam, sejarah, investigasi Indonesia |
 | Mode | Solo founder, full vibe coding, no payment, no login, no AI wrapper di v0.1 |
 | Hard Rule | **Build once. Publish daily. Jangan terus rebuild.** |
 
@@ -108,7 +108,7 @@ Website editorial lengkap, static-first, content-driven. Bukan SaaS. Bukan dashb
 
 ### Hero Section
 - Full-viewport landing page hero menggunakan **video loop MP4** sebagai background
-- Source footage: Pexels, Mixkit, atau Coverr — classical/baroque architectural, arches, marble, ocean view
+- Source footage: Pexels, Mixkit, atau Coverr, classical/baroque architectural, arches, marble, ocean view
 - Simpan di `public/videos/hero.mp4`
 - Overlay teal `#2DD4A7` di `opacity-20`
 - Text di atas video: putih, bold, high-contrast
@@ -159,7 +159,7 @@ sources:
 
 ---
 
-## 6. Scope v0.1 — Fitur Wajib
+## 6. Scope v0.1, Fitur Wajib
 
 | Fitur | Status | Acceptance Criteria |
 |---|---|---|
@@ -217,11 +217,11 @@ sources:
 
 Buat 5 seed articles di `/content/articles/`. Tandai jelas sebagai sample content. Topik:
 
-1. `alam` — fenomena alam lokal Indonesia
-2. `sejarah` — sejarah kota tua Indonesia
-3. `investigasi` — investigative brief ringan berbasis sumber publik
-4. `catatan-lapangan` — field note dari eksplorasi lokal
-5. `alam` — satwa atau ekologi lokal
+1. `alam`, fenomena alam lokal Indonesia
+2. `sejarah`, sejarah kota tua Indonesia
+3. `investigasi`, investigative brief ringan berbasis sumber publik
+4. `catatan-lapangan`, field note dari eksplorasi lokal
+5. `alam`, satwa atau ekologi lokal
 
 Setiap artikel: frontmatter lengkap, minimal 400 kata body, minimal 2 source entries.
 
@@ -233,7 +233,7 @@ Buat juga minimal **10 seed source entries** di `/content/sources/`.
 
 - Artikel pendek: minimal 3 sumber
 - Investigasi/sejarah: minimal 5 sumber
-- Tidak ada fake certainty — jangan simpulkan lebih dari bukti
+- Tidak ada fake certainty, jangan simpulkan lebih dari bukti
 - Tidak ada tuduhan tanpa bukti kuat
 - Setiap klaim yang belum pasti: beri label `needs-verification`
 
@@ -331,7 +331,7 @@ Setelah website selesai, pekerjaan harian:
 
 ---
 
-## 18. Monetisasi (Konteks — Bukan untuk Dibangun Sekarang)
+## 18. Monetisasi (Konteks, Bukan untuk Dibangun Sekarang)
 
 Tidak ada monetisasi di v0.1. Threshold minimum sebelum diuji:
 

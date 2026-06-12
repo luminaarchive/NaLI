@@ -20,7 +20,7 @@ export type Reliability =
   | "contextual"
   | "needs_caution";
 
-/** Where an article's evidence comes from (shown on the article + used by validation). */
+/** Where an article's evidence comes from (shown on the article and used by validation). */
 export type EvidenceBasis =
   | "sumber terbuka"
   | "arsip historis"
@@ -53,13 +53,13 @@ export interface ClaimLedgerItem {
 }
 
 /**
- * CATEGORY 1 — Displayable image asset. Rendered inside the article ONLY when
+ * CATEGORY 1: Displayable image asset. Rendered inside the article only when
  * reuse is clearly permitted (public domain / CC0 / CC BY / CC BY-SA /
  * institutional or government open license / Wikimedia with verified metadata).
  * AI-generated images are never evidence and are not used here.
  */
 export interface ArticleImage {
-  /** Local path or remote URL actually rendered (optional — some are credit-only). */
+  /** Local path or remote URL actually rendered. */
   src?: string;
   title?: string;
   creator?: string;
@@ -72,10 +72,11 @@ export interface ArticleImage {
   caption: string;
   /** When the license was last verified (ISO date). Required for display. */
   checkedAt?: string;
+  relatedArticleIds?: string[];
 }
 
 /**
- * CATEGORY 2 — External visual evidence reference. A real photo/video whose
+ * CATEGORY 2: External visual evidence reference. A real photo/video whose
  * license is unclear. It is LINKED, never downloaded, hosted, hotlinked,
  * cropped, edited, or displayed as an image. Rendered as a "Bukti visual
  * eksternal" link with a description and an explicit limitation note.
@@ -97,6 +98,27 @@ export interface ExternalVisualEvidence {
   limitation: string;
   /** When the reference was last checked (ISO date). */
   checkedAt: string;
+}
+
+/**
+ * CATEGORY 3: Internal explanatory diagram, timeline, or map. This is displayed
+ * as a NaLI-made explanatory visual based on cited sources. It is not a field
+ * photo and must say so plainly in its caption.
+ */
+export interface ArticleDiagram {
+  type?: "diagram" | "timeline" | "map";
+  title: string;
+  creator?: string;
+  institution?: string;
+  sourceUrl: string;
+  license: string;
+  licenseUrl?: string;
+  attribution: string;
+  alt: string;
+  caption: string;
+  checkedAt: string;
+  relatedArticleIds?: string[];
+  items: string[];
 }
 
 export interface Article {
@@ -138,7 +160,9 @@ export interface Article {
   claimLedger?: ClaimLedgerItem[];
   /** Licensed, displayable image credits (Category 1). */
   images?: ArticleImage[];
-  /** External visual evidence references — linked only, never displayed (Category 2). */
+  /** Internal explanatory diagram/map/timeline credits (Category 3). */
+  diagrams?: ArticleDiagram[];
+  /** External visual evidence references, linked only and never displayed (Category 2). */
   externalVisuals?: ExternalVisualEvidence[];
   /** Explicit note when no safe visual can be displayed or linked yet. */
   visualEvidenceNote?: string;
@@ -211,7 +235,7 @@ export const CATEGORY_LABEL: Record<Category, string> = {
 };
 
 /**
- * Confidence display labels — sprint vocabulary mapped onto the existing
+ * Confidence display labels, sprint vocabulary mapped onto the existing
  * 4-value badge enum. "Diperdebatkan" is expressed per-claim in the Claim
  * Ledger, not as a top-level badge.
  */

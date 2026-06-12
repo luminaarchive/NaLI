@@ -21,7 +21,7 @@ export default function InvestigasiPage() {
       category="investigasi"
       index="03"
       title="Investigasi"
-      description="Penelusuran berbasis sumber publik. Tanpa tuduhan tanpa bukti, tanpa kepastian palsu — klaim yang belum kuat diberi label jelas."
+      description="Penelusuran berbasis sumber publik. Tanpa tuduhan tanpa bukti, tanpa kepastian palsu, klaim yang belum kuat diberi label jelas."
     />
   );
 }

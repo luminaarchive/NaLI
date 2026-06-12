@@ -4,11 +4,11 @@ import { CategoryView } from "@/components/CategoryView";
 export const metadata: Metadata = {
   title: "Alam",
   description:
-    "Ekologi, satwa, dan fenomena lanskap Indonesia — diceritakan dari lapangan, dirujuk ke jurnal.",
+    "Ekologi, satwa, dan fenomena lanskap Indonesia, dibaca dari jurnal, laporan lembaga, dan observasi peneliti.",
   openGraph: {
     title: "Alam | NaLI by NatIve",
     description:
-      "Ekologi, satwa, dan fenomena lanskap Indonesia — diceritakan dari lapangan.",
+      "Ekologi, satwa, dan fenomena lanskap Indonesia, dibaca dari rujukan terbuka.",
     type: "website",
   },
 };
@@ -21,7 +21,7 @@ export default function AlamPage() {
       category="alam"
       index="01"
       title="Alam"
-      description="Ekologi, satwa, dan fenomena lanskap Indonesia — diceritakan dari lapangan, dirujuk ke jurnal."
+      description="Ekologi, satwa, dan fenomena lanskap Indonesia, dibaca dari jurnal, laporan lembaga, dan observasi peneliti."
     />
   );
 }

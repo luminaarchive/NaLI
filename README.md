@@ -1,8 +1,8 @@
 # NaLI by NatIve
 
-Field journal dan research publication berbasis AI untuk membongkar dan menceritakan **alam, sejarah, dan fenomena tersembunyi Indonesia**.
+Jurnal riset terbuka tentang **alam, sejarah, dan investigasi Indonesia**. NaLI menyusun artikel dari jurnal, arsip, laporan lembaga, dataset, dokumentasi pihak ketiga, dan visual berlisensi.
 
-Built static-first dengan Next.js 14 (App Router) + TypeScript + Tailwind CSS. Konten ditulis sebagai file MDX — **tanpa database, tanpa CMS**.
+Built static-first dengan Next.js 14 (App Router) + TypeScript + Tailwind CSS. Konten ditulis sebagai file MDX, **tanpa database, tanpa CMS**.
 
 ---
 
@@ -24,10 +24,10 @@ npm run typecheck  # TypeScript (tsc --noEmit)
 
 ---
 
-## Dashboard Admin — `/admin` (custom, milik sendiri)
+## Dashboard Admin, `/admin` (custom, milik sendiri)
 
 Dashboard admin terpasang langsung di situs: **https://nalibynative.vercel.app/admin**.
-Tulis artikel, upload foto, dan lihat statistik — semua di satu tempat. Konten
+Tulis artikel, upload foto, dan lihat statistik, semua di satu tempat. Konten
 tersimpan di **Supabase** (Postgres + Storage); artikel terbit **seketika**
 (tanpa nunggu deploy).
 
@@ -38,12 +38,12 @@ tersimpan di **Supabase** (Postgres + Storage); artikel terbit **seketika**
 3. Buka **/admin** di situs → login dengan email + password itu
 
 **Yang bisa dilakukan:**
-- ✍️ Tulis/edit artikel — form lengkap (kategori, label keyakinan, tag,
+- ✍️ Tulis/edit artikel, form lengkap (kategori, label keyakinan, tag,
   ringkasan, daftar sumber), badan tulisan Markdown
-- 🖼️ **Upload foto** — gambar sampul + sisipkan foto di dalam artikel
+- 🖼️ **Upload foto**, gambar sampul + sisipkan foto di dalam artikel
   (tersimpan di Supabase Storage, tampil otomatis di situs)
 - 📝 **Draft** (tak tampil publik) atau **Terbitkan**
-- 📊 **Statistik pengunjung** di `/admin/analytics` — total kunjungan,
+- 📊 **Statistik pengunjung** di `/admin/analytics`, total kunjungan,
   grafik 14 hari, halaman terpopuler (dihitung sendiri, tanpa cookie)
 - 🗑️ Hapus tulisan
 
@@ -66,7 +66,7 @@ Keduanya sudah diset di Vercel. Keterangan di `.env.example`.
 ```
 content/
   articles/      ← artikel utama (.mdx)
-  field-notes/   ← catatan lapangan (.mdx)
+  field-notes/   ← catatan riset (.mdx)
   sources/       ← entri arsip sumber (.mdx)
   drafts/        ← draft (TIDAK dirender publik)
 ```
@@ -99,7 +99,7 @@ Isi artikel dalam **MDX**. Reading time dihitung otomatis.
 
 Standar editorial: artikel pendek minimal 3 sumber; investigasi/sejarah minimal 5. Beri label `needs-verification` untuk klaim yang belum kuat. Jangan menyimpulkan lebih dari bukti.
 
-### Tambah catatan lapangan
+### Tambah catatan riset
 
 `content/field-notes/<slug>.mdx`:
 
@@ -149,13 +149,13 @@ Tampil di tabel `/arsip-sumber`.
 
 ## Aset yang perlu kamu isi
 
-- **`public/videos/hero.mp4`** — video loop hero homepage. Belum ada; tanpa file ini hero memakai fallback gelap-teal yang sudah didesain (tidak terlihat rusak). Sumber footage bebas-lisensi: Pexels, Mixkit, Coverr.
-- **`public/logo.png`** — logo NaLI (sudah terisi dari aset brand).
+- **`public/videos/hero.mp4`**, video loop hero homepage. Belum ada; tanpa file ini hero memakai fallback gelap-teal yang sudah didesain (tidak terlihat rusak). Sumber footage bebas-lisensi: Pexels, Mixkit, Coverr.
+- **`public/logo.png`**, logo NaLI (sudah terisi dari aset brand).
 
 ## Placeholder yang perlu diganti sebelum live
 
-- Domain di `lib/site.ts` (`SITE.url`) — saat ini `https://nali.native.id`.
-- Email kontak di `app/kontak/page.tsx` — saat ini `halo@nali.native.id`.
+- Domain di `lib/site.ts` (`SITE.url`), saat ini `https://nali.native.id`.
+- Email kontak di `app/kontak/page.tsx`, saat ini `halo@nali.native.id`.
 - 5 artikel + 10 sumber di `content/` adalah **seed/sample** (ditandai jelas di tiap tulisan). Verifikasi atau ganti sebelum mengandalkannya.
 
 ---
@@ -163,13 +163,13 @@ Tampil di tabel `/arsip-sumber`.
 ## Deploy ke Vercel
 
 1. Push ke GitHub.
-2. Import repo di [vercel.com](https://vercel.com) — framework Next.js terdeteksi otomatis.
+2. Import repo di [vercel.com](https://vercel.com), framework Next.js terdeteksi otomatis.
 3. Set environment variables (untuk form langganan newsletter):
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    Keduanya publik dan aman dikirim ke browser; tabel `subscribers` dilindungi
    row-level security (anon hanya bisa _insert_, tidak bisa membaca daftar).
-   Tanpa env ini, situs tetap jalan — form langganan saja yang nonaktif.
+   Tanpa env ini, situs tetap jalan, form langganan saja yang nonaktif.
 4. Deploy. Sitemap tersedia di `/sitemap.xml`.
 
 > Newsletter pakai Supabase (project `nali-field-journal`). Skema ada di

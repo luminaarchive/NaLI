@@ -1,4 +1,4 @@
-# NaLI — 30-Article Editorial Plan (Phase 9)
+# NaLI, 30-Article Editorial Plan (Phase 9)
 
 _Do not write 30 random articles. Only draft/publish when source requirements are met._
 _Status legend: **PUBLISHED** · **READY** (sources verified, draft next) · **NEEDS-SOURCES** · **RISKY** (legal caution) · **POSTPONE**._
@@ -8,7 +8,7 @@ Each article carries: `category`, `series`, `evidenceBasis`, `firstPartyFieldwor
 
 ---
 
-## Series 1 — Spesies yang Hilang dan Bertahan (`spesies-hilang-bertahan`)
+## Series 1, Spesies yang Hilang dan Bertahan (`spesies-hilang-bertahan`)
 
 | # | Title | Cat | Status | Key claims | Min sources | Image needs |
 |---|---|---|---|---|---|---|
@@ -21,7 +21,7 @@ Each article carries: `category`, `series`, `evidenceBasis`, `firstPartyFieldwor
 | 7 | Tarsius: primata malam | alam | NEEDS-SOURCES | endemik; fragmentasi hutan | IUCN Tarsius + jurnal | verify |
 | 8 | Coelacanth Sulawesi: fosil hidup | alam | **READY** | L. menadoensis 1997–98; VU | IUCN/FWS (done) + deskripsi 1999 | verify museum/PD |
 
-## Series 2 — Fenomena Alam yang Sering Disalahpahami (`fenomena-alam-disalahpahami`)
+## Series 2, Fenomena Alam yang Sering Disalahpahami (`fenomena-alam-disalahpahami`)
 
 | # | Title | Cat | Status | Key claims | Min sources | Image needs |
 |---|---|---|---|---|---|---|
@@ -33,7 +33,7 @@ Each article carries: `category`, `series`, `evidenceBasis`, `firstPartyFieldwor
 | 14 | Rinjani/Samalas 1257 | alam | **READY** | sumber erupsi misteri; M7 | PNAS Lavigne (done) + Babad Lombok | PD map |
 | 15 | Gambut: arsip karbon, api, kabut | alam | **READY** | gambut→emisi besar; El Niño | ACP 2019 + PNAS 2016 (done) | NASA/PD imagery (verify) |
 
-## Series 3 — Sungai, Pesisir, dan Krisis Lingkungan (`sungai-pesisir-krisis-lingkungan`)
+## Series 3, Sungai, Pesisir, dan Krisis Lingkungan (`sungai-pesisir-krisis-lingkungan`)
 
 | # | Title | Cat | Status | Key claims | Min sources | Image needs |
 |---|---|---|---|---|---|---|
@@ -44,7 +44,7 @@ Each article carries: `category`, `series`, `evidenceBasis`, `firstPartyFieldwor
 | 20 | Sampah Plastik Laut | investigasi | NEEDS-SOURCES | data vs narasi | Jambeck 2015 + KKP | verify |
 | 21 | Terumbu Karang: pusat keanekaragaman tertekan | alam | NEEDS-SOURCES | Coral Triangle; bleaching | studi + NOAA | verify |
 
-## Series 4 — Kota, Arsip, dan Memori Kolonial (`kota-arsip-memori-kolonial`)
+## Series 4, Kota, Arsip, dan Memori Kolonial (`kota-arsip-memori-kolonial`)
 
 | # | Title | Cat | Status | Key claims | Min sources | Image needs |
 |---|---|---|---|---|---|---|
@@ -55,7 +55,7 @@ Each article carries: `category`, `series`, `evidenceBasis`, `firstPartyFieldwor
 | 26 | Jalur Rempah | sejarah | NEEDS-SOURCES | komoditas→peta kuasa | Kemendikbud + jurnal | PD map |
 | 27 | Borobudur dalam arsip restorasi | sejarah | **READY** | batu/air/pelestarian | UNESCO Borobudur + Soekmono | PD photo |
 
-## Series 5 — Investigasi Berbasis Sumber Terbuka (`investigasi-sumber-terbuka`)
+## Series 5, Investigasi Berbasis Sumber Terbuka (`investigasi-sumber-terbuka`)
 
 | # | Title | Cat | Status | Notes |
 |---|---|---|---|---|
@@ -67,12 +67,12 @@ Each article carries: `category`, `series`, `evidenceBasis`, `firstPartyFieldwor
 
 ## Drafting order (sources already verified → write next)
 
-1. **Coelacanth Sulawesi** (#8) — IUCN/FWS verified.
-2. **Krakatau + Anak Krakatau** (#11) — GVP + Science Advances verified.
-3. **Toba** (#12), **Merapi** (#13), **Samalas/Rinjani** (#14) — GVP/PNAS verified.
-4. **Gambut** (#15) — ACP/PNAS verified.
-5. **Banda Neira** (#24), **Borobudur** (#27) — verified base sources.
-6. **Deforestasi Kalimantan** (#29), **Konflik manusia-satwa** (#30) — careful framing.
+1. **Coelacanth Sulawesi** (#8), IUCN/FWS verified.
+2. **Krakatau + Anak Krakatau** (#11), GVP + Science Advances verified.
+3. **Toba** (#12), **Merapi** (#13), **Samalas/Rinjani** (#14), GVP/PNAS verified.
+4. **Gambut** (#15), ACP/PNAS verified.
+5. **Banda Neira** (#24), **Borobudur** (#27), verified base sources.
+6. **Deforestasi Kalimantan** (#29), **Konflik manusia-satwa** (#30), careful framing.
 
 Everything marked NEEDS-SOURCES must clear `research_backlog_sources_to_verify.md` first.
 

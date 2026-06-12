@@ -31,7 +31,7 @@ export function Nav() {
     <header className="sticky top-0 z-50 bg-paper">
       <nav className="relative mx-auto flex h-16 max-w-[1240px] items-center justify-between px-5 lg:justify-center">
         {/* mobile brand */}
-        <Link href="/" className="flex items-center gap-2 lg:hidden" aria-label="NaLI by NatIve — beranda">
+        <Link href="/" className="flex items-center gap-2 lg:hidden" aria-label="NaLI by NatIve, beranda">
           <Image src="/logo.png" alt="" width={24} height={24} className="h-6 w-6 object-contain" priority />
           <span className="font-display text-lg font-semibold tracking-tight text-ink-black">
             NaLI <span className="text-ink">by NatIve</span>
@@ -56,7 +56,7 @@ export function Nav() {
           ))}
         </ul>
 
-        {/* theme toggle — desktop, anchored right of the centered links */}
+        {/* theme toggle, desktop, anchored right of the centered links */}
         <div className="absolute right-5 top-1/2 hidden -translate-y-1/2 lg:block">
           <ThemeToggle />
         </div>

@@ -8,7 +8,7 @@ export default function NotFound() {
         Jejak ini buntu.
       </h1>
       <p className="mt-4 max-w-md text-gray">
-        Halaman yang kamu cari tidak ada — mungkin sudah dipindah, atau belum
+        Halaman yang kamu cari tidak ada, mungkin sudah dipindah, atau belum
         pernah ada. Kembali dan telusuri dari awal.
       </p>
       <Link

@@ -4,13 +4,13 @@ export const SITE = {
   // Production domain on Vercel. Swap for a custom domain when one is bought.
   url: "https://nalijournal.vercel.app",
   tagline:
-    "Jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia — disusun dari jurnal, arsip, laporan lembaga, dataset, dan dokumentasi pihak ketiga.",
+    "Jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia, disusun dari jurnal, arsip, laporan lembaga, dataset, dan dokumentasi pihak ketiga.",
   description:
-    "NaLI by NatIve — jurnal riset terbuka (open-source evidence journal) tentang alam, sejarah, dan investigasi Indonesia. Setiap klaim membawa sumber, label tingkat keyakinan, dan batasan.",
+    "NaLI by NatIve, jurnal riset terbuka (open-source evidence journal) tentang alam, sejarah, dan investigasi Indonesia. Setiap klaim membawa sumber, label tingkat keyakinan, dan batasan.",
   locale: "id_ID",
   author: "Ansyahri Darma Tri Jati",
   // Single source of truth for the public contact address (still a placeholder
-  // until the founder wires a real mailbox — see /kontak + /koreksi).
+  // until the founder wires a real mailbox, see /kontak + /koreksi).
   email: "halo@nali.native.id",
 } as const;
 
@@ -23,7 +23,7 @@ export const NAV_LINKS: { href: string; label: string }[] = [
   { href: "/kontak", label: "Kontak" },
 ];
 
-/** Secondary links (footer "Publikasi" column) — categories + trust pages. */
+/** Secondary links (footer "Publikasi" column), categories + trust pages. */
 export const SECONDARY_LINKS: { href: string; label: string }[] = [
   { href: "/alam", label: "Alam" },
   { href: "/sejarah", label: "Sejarah" },
@@ -47,7 +47,7 @@ export const PILLARS: {
     title: "Alam",
     href: "/alam",
     blurb:
-      "Ekologi, satwa, dan fenomena lanskap Indonesia — dibaca dari jurnal, penilaian lembaga, dan observasi peneliti.",
+      "Ekologi, satwa, dan fenomena lanskap Indonesia, dibaca dari jurnal, penilaian lembaga, dan observasi peneliti.",
   },
   {
     key: "sejarah",
@@ -55,7 +55,7 @@ export const PILLARS: {
     title: "Sejarah",
     href: "/sejarah",
     blurb:
-      "Jejak kota tua, arsip kolonial, dan ingatan yang nyaris hilang — dibaca ulang dari arsip dan historiografi dengan hati-hati.",
+      "Jejak kota tua, arsip kolonial, dan ingatan yang nyaris hilang, dibaca ulang dari arsip dan historiografi dengan hati-hati.",
   },
   {
     key: "investigasi",

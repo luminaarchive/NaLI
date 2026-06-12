@@ -23,7 +23,7 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: `${SITE.name} — Jurnal Riset Terbuka Indonesia`,
+    default: `${SITE.name}, Jurnal Riset Terbuka Indonesia`,
     template: `%s | ${SITE.name}`,
   },
   description: SITE.description,
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     apple: "/brand/png-exports/nali-app-icon-512x512.png",
   },
   openGraph: {
-    title: `${SITE.name} — Jurnal Riset Terbuka Indonesia`,
+    title: `${SITE.name}, Jurnal Riset Terbuka Indonesia`,
     description: SITE.description,
     type: "website",
     locale: SITE.locale,

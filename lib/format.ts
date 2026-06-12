@@ -1,4 +1,4 @@
-/** Pure formatting helpers — safe to import from client components. */
+/** Pure formatting helpers, safe to import from client components. */
 
 export function formatDate(date: string): string {
   const parsed = new Date(date);

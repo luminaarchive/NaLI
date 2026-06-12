@@ -1,4 +1,4 @@
-# NaLI — Editorial Trust Sprint: Baseline (Phase 1)
+# NaLI, Editorial Trust Sprint: Baseline (Phase 1)
 
 _Internal note. Branch `editorial-trust-source-archive-30-articles` (already checked out at sprint start)._
 _Run: 2026-06-12._
@@ -22,7 +22,7 @@ _Run: 2026-06-12._
 
 ## Decisions carried into the sprint
 
-1. **Keep the MDX-file content architecture** (do not migrate to a TS data model). Extend frontmatter schema with optional fields — backward-compatible, no break to existing parser/pages.
+1. **Keep the MDX-file content architecture** (do not migrate to a TS data model). Extend frontmatter schema with optional fields, backward-compatible, no break to existing parser/pages.
 2. **Confidence label mapping.** Keep the existing 4-value enum (`high|medium|low|needs-verification`) that drives `ConfidenceBadge`, but relabel its display text to the sprint's vocabulary and add the 5th concept via a separate `evidenceBasis` field rather than fracturing the badge component:
    - `high` → **Terverifikasi kuat**
    - `medium` → **Didukung sumber**

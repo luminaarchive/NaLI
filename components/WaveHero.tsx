@@ -5,8 +5,7 @@ import { DitheringShader } from "@/components/ui/dithering-shader";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 
 /**
- * Home hero: the 21st.dev dithering wave shader, tuned to NaLI's brand —
- * teal wave (#2DD4A7) over deep ink, Bayer 8x8 dithering, museum-slow.
+ * Home hero: the 21st.dev dithering wave shader, tuned to NaLI's brand, * teal wave (#2DD4A7) over deep ink, Bayer 8x8 dithering, museum-slow.
  */
 export function WaveHero() {
   const [reduced, setReduced] = useState(false);
@@ -53,7 +52,7 @@ export function WaveHero() {
         <p className="mt-6 max-w-xl text-base leading-relaxed text-white/75">
           Jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia.
           Kami membaca jurnal, arsip, laporan lembaga, dataset, dan dokumentasi
-          lapangan pihak ketiga — setiap klaim membawa sumber, label keyakinan,
+          lapangan pihak ketiga, setiap klaim membawa sumber, label keyakinan,
           dan batasan.
         </p>
         <div className="mt-8 w-full max-w-md">

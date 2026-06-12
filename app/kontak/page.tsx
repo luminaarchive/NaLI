@@ -4,10 +4,10 @@ import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Kontak",
-  description: "Hubungi NaLI by NatIve — kabar, koreksi, atau usulan topik.",
+  description: "Hubungi NaLI by NatIve, kabar, koreksi, atau usulan topik.",
   openGraph: {
     title: "Kontak | NaLI by NatIve",
-    description: "Hubungi NaLI by NatIve — kabar, koreksi, atau usulan topik.",
+    description: "Hubungi NaLI by NatIve, kabar, koreksi, atau usulan topik.",
     type: "website",
   },
 };
@@ -26,7 +26,7 @@ export default function KontakPage() {
       <PageHeader
         eyebrow="Kontak"
         title="Punya kabar, koreksi, atau usulan topik?"
-        description="Koreksi yang berdasar sangat kami hargai — begitu juga petunjuk untuk penelusuran berikutnya."
+        description="Koreksi yang berdasar sangat kami hargai, begitu juga petunjuk untuk penelusuran berikutnya."
       />
 
       <div className="container-read py-12 sm:py-16">
