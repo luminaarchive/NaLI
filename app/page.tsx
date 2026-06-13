@@ -57,19 +57,11 @@ export default async function HomePage() {
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         {/* ================= HERO, the wave shader as archival plate ================= */}
         <section className="pt-6">
-          <div className="flex flex-wrap items-center justify-between border-b border-dashed border-ink/40 pb-2 font-mono text-[0.66rem] uppercase tracking-wider text-ink/70">
-            <div className="flex items-center gap-4">
-              <span>PLATE 001 // SIMULASI GELOMBANG</span>
-              <span className="hidden sm:inline text-ink/40">|</span>
-              <span className="hidden sm:inline">DITHER: BAYER</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <span>EST. MMXXVI</span>
-              <span className="text-ink/40">|</span>
-              <span className="text-ink font-semibold">STATUS: ONLINE</span>
-            </div>
+          <div className="flex items-center justify-between pb-2">
+            <Meta>Lempeng 001, Gelombang</Meta>
+            <Meta>Arsip: NaLI · MMXXVI</Meta>
           </div>
-          <div className="overflow-hidden border border-dashed border-ink/70 mt-2">
+          <div className="overflow-hidden border border-dashed border-ink/70">
             <WaveHero />
           </div>
         </section>
