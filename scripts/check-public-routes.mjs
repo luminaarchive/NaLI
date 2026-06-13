@@ -9,7 +9,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
-import { loadJournalEntries } from "./load-jurnal.mjs";
+import { loadPublications } from "./load-publications.mjs";
 
 const ROOT = process.cwd();
 const BASE_URL = process.env.NALI_BASE_URL ?? process.env.BASE_URL ?? "http://localhost:3000";
@@ -91,10 +91,10 @@ async function checkDownload(entry) {
     const okType = /text\/(plain|markdown)/i.test(ct);
     const hasTitle = body.includes(entry.title);
     const hasSynopsis = body.includes("SINOPSIS");
-    const hasSources = body.includes("SUMBER");
+    const hasSources = body.includes("URL SUMBER");
     const hasLimits = body.includes("BATASAN");
     const hasChecked = body.includes("DICEK");
-    const hasCover = body.includes("COVER") && body.includes("Jenis cover:") && body.includes("Lisensi:");
+    const hasCover = body.includes("COVER") && body.includes("Lisensi:");
     const noEm = !body.includes(EM_DASH);
     const noBanned = !BANNED.test(body);
     const ok =
@@ -135,7 +135,7 @@ async function main() {
 
   const articles = listSlugs("content/articles").filter((a) => a.status === "published");
   const sources = listSlugs("content/sources");
-  const jurnal = await loadJournalEntries();
+  const jurnal = await loadPublications();
 
   const jurnalSample = sample(jurnal, 12);
 

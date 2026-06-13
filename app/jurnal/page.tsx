@@ -1,52 +1,51 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
-import { JurnalList } from "@/components/JurnalList";
-import { getAllJournalEntries } from "@/lib/jurnal";
+import { PublicationCatalog } from "@/components/PublicationCatalog";
+import { getAllPublications } from "@/lib/jurnal";
 
 export const metadata: Metadata = {
   title: "Jurnal",
   description:
-    "Perpustakaan pengetahuan alam NaLI: catatan ringkas tentang satwa, geologi, laut, hutan, dan iklim Indonesia. Setiap entri pendek, bersumber, dan menyebut batasannya.",
+    "Katalog jurnal dan publikasi ilmiah terbuka yang dikumpulkan NaLI: jurnal, laporan lembaga, dataset, dan arsip nyata tentang alam, konservasi, geologi, dan Indonesia. Tiap entri menampilkan publikasi asli dengan sinopsis Indonesia.",
   alternates: { canonical: "/jurnal" },
   openGraph: {
     title: "Jurnal | NaLI by NatIve",
     description:
-      "Perpustakaan pengetahuan alam NaLI: catatan ringkas tentang satwa, geologi, laut, hutan, dan iklim Indonesia, masing-masing bersumber.",
+      "Katalog jurnal dan publikasi ilmiah terbuka tentang alam, konservasi, geologi, dan Indonesia, dengan sinopsis Indonesia tiap publikasi.",
     type: "website",
   },
 };
 
 export default function JurnalPage() {
-  const entries = getAllJournalEntries().map((e) => ({
-    slug: e.slug,
-    title: e.title,
-    synopsis: e.synopsis,
-    category: e.category,
-    topics: e.topics,
-    geography: e.geography,
-    confidence: e.confidence,
-    readingMinutes: e.readingMinutes,
-    coverImage: e.cover.localPath ?? e.cover.imageUrl ?? null,
-    coverAlt: e.cover.alt,
-    coverIsReal: e.cover.isRealSourceCover,
-    coverSourceTitle: e.cover.sourceTitle,
-    coverPublisher: e.cover.publisherOrInstitution,
-    sourceCount: e.sourceIds.length,
+  const items = getAllPublications().map((p) => ({
+    slug: p.slug,
+    title: p.title,
+    publisherOrInstitution: p.publisherOrInstitution,
+    publicationType: p.publicationType,
+    year: p.year,
+    synopsis: p.synopsis,
+    topics: p.topics,
+    geography: p.geography,
+    accessType: p.accessType,
+    sourceUrl: p.sourceUrl,
+    coverImage: p.cover.localPath ?? p.cover.imageUrl ?? null,
+    coverAlt: p.cover.alt,
+    coverIsReal: p.cover.isRealSourceCover,
   }));
 
   return (
     <>
       <PageHeader
-        eyebrow="Perpustakaan pengetahuan alam"
+        eyebrow="Katalog jurnal dan publikasi ilmiah terbuka"
         title="Jurnal"
-        description="Catatan pendek tentang alam Indonesia dan dunia: satwa, geologi, laut, hutan, dan iklim. Lebih ringkas daripada artikel, tetapi tetap menumpang pada arsip sumber yang dapat diperiksa."
+        description="Kumpulan jurnal, laporan lembaga, dataset, dan arsip ilmiah nyata tentang alam, konservasi, geologi, dan Indonesia. Tiap entri adalah publikasi asli dari penerbitnya, ditampilkan dengan sampul, judul, dan sinopsis Indonesia dari NaLI. NaLI tidak menulis ulang publikasinya; sinopsis hanya merangkum."
       />
 
       <div className="container-editorial py-12">
-        {entries.length === 0 ? (
-          <p className="font-mono text-[0.85rem] text-gray">Jurnal masih kosong.</p>
+        {items.length === 0 ? (
+          <p className="font-mono text-[0.85rem] text-gray">Katalog jurnal masih kosong.</p>
         ) : (
-          <JurnalList entries={entries} />
+          <PublicationCatalog items={items} />
         )}
       </div>
     </>

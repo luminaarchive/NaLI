@@ -1,82 +1,86 @@
-import { getJournalEntryBySlug, getJournalSlugs } from "@/lib/jurnal";
-import { getSourceBySlug } from "@/lib/content";
-import { JOURNAL_CATEGORY_LABEL, CONFIDENCE_LABEL } from "@/lib/types";
+import { getPublicationBySlug, getPublicationSlugs } from "@/lib/jurnal";
+import { ACCESS_TYPE_LABEL, PUBLICATION_TYPE_LABEL } from "@/lib/types";
 import { SITE } from "@/lib/site";
 
 export const dynamic = "force-static";
 
 export function generateStaticParams() {
-  return getJournalSlugs().map((slug) => ({ slug }));
+  return getPublicationSlugs().map((slug) => ({ slug }));
 }
 
 type Params = { slug: string };
 
-function buildText(slug: string): string | null {
-  const e = getJournalEntryBySlug(slug);
-  if (!e) return null;
+function citation(pub: NonNullable<ReturnType<typeof getPublicationBySlug>>): string {
+  const authors = pub.authors && pub.authors.length > 0 ? `${pub.authors.join("; ")}. ` : "";
+  const year = pub.year ? `(${pub.year}). ` : "";
+  const doi = pub.doi ? ` https://doi.org/${pub.doi}` : ` ${pub.sourceUrl}`;
+  return `${authors}${year}${pub.title}. ${pub.publisherOrInstitution}.${doi}`;
+}
 
-  const sources = e.sourceIds.map((id) => {
-    const s = getSourceBySlug(id);
-    if (!s) return `- ${id}`;
-    const link = s.url ?? (s.doi ? `https://doi.org/${s.doi}` : s.archiveUrl ?? `${SITE.url}/arsip-sumber/${s.slug}`);
-    return `- ${s.title}${s.year ? ` (${s.year})` : ""}\n  ${link}`;
-  });
+function buildText(slug: string): string | null {
+  const pub = getPublicationBySlug(slug);
+  if (!pub) return null;
 
   const lines = [
-    `NaLI by NatIve, Jurnal Riset Terbuka Indonesia`,
-    `${SITE.url}/jurnal/${e.slug}`,
+    `NaLI by NatIve, Jurnal: Katalog Jurnal dan Publikasi Ilmiah Terbuka`,
+    `${SITE.url}/jurnal/${pub.slug}`,
+    `Berkas metadata yang disusun NaLI. Ini bukan naskah asli publikasi.`,
     ``,
     `JUDUL`,
-    e.title,
+    pub.title,
+    ...(pub.originalTitle && pub.originalTitle !== pub.title ? [`Judul asli: ${pub.originalTitle}`] : []),
     ``,
-    `DEK`,
-    e.dek,
+    `JENIS PUBLIKASI`,
+    PUBLICATION_TYPE_LABEL[pub.publicationType],
     ``,
-    `SINOPSIS`,
-    e.synopsis,
+    `PENERBIT / LEMBAGA`,
+    pub.publisherOrInstitution,
+    ...(pub.authors && pub.authors.length > 0 ? [``, `PENULIS`, pub.authors.join("; ")] : []),
     ``,
-    `KATEGORI`,
-    JOURNAL_CATEGORY_LABEL[e.category],
+    `TAHUN`,
+    pub.publicationDate ?? pub.year ?? "Tidak dicatat",
+    ``,
+    `URL SUMBER`,
+    pub.sourceUrl,
+    ...(pub.doi ? [``, `DOI`, `https://doi.org/${pub.doi}`] : []),
+    ...(pub.pdfUrl ? [``, `PDF (akses terbuka)`, pub.pdfUrl] : []),
+    ``,
+    `AKSES`,
+    ACCESS_TYPE_LABEL[pub.accessType],
+    ``,
+    `SINOPSIS (RINGKASAN NaLI)`,
+    pub.synopsis,
+    ``,
+    `KENAPA PENTING`,
+    pub.whyItMatters,
     ``,
     `TOPIK`,
-    e.topics.join(", "),
+    pub.topics.join(", "),
     ``,
     `GEOGRAFI`,
-    e.geography.join(", "),
-    ``,
-    `TINGKAT KEYAKINAN`,
-    CONFIDENCE_LABEL[e.confidence],
-    ``,
-    `INTI`,
-    e.keyTakeaway,
-    ``,
-    `ISI`,
-    e.body,
-    ``,
-    `BATASAN`,
-    ...e.limitations.map((l) => `- ${l}`),
-    ``,
-    `SUMBER`,
-    ...sources,
+    pub.geography.join(", "),
     ``,
     `COVER`,
-    `Judul: ${e.cover.title}`,
-    `Jenis cover: ${e.cover.coverKind}`,
-    `Sumber visual: ${e.cover.sourceTitle}`,
-    `Penerbit/lembaga: ${e.cover.publisherOrInstitution}`,
-    ...(e.cover.creator ? [`Pencipta: ${e.cover.creator}`] : []),
-    `URL sumber: ${e.cover.sourceUrl}`,
-    `Lisensi: ${e.cover.license}`,
-    `Dasar penayangan: ${e.cover.displayBasis}`,
-    `Atribusi: ${e.cover.attribution}`,
-    ...(e.cover.fallbackReason ? [`Alasan fallback: ${e.cover.fallbackReason}`] : []),
+    `Visual: ${pub.cover.title}`,
+    `Penerbit/lembaga: ${pub.cover.publisherOrInstitution}`,
+    ...(pub.cover.creator ? [`Pencipta: ${pub.cover.creator}`] : []),
+    `Sumber visual: ${pub.cover.sourceUrl}`,
+    `Lisensi: ${pub.cover.license}`,
+    `Dasar penayangan: ${pub.cover.displayBasis}`,
+    ...(pub.cover.fallbackReason ? [`Catatan cover: ${pub.cover.fallbackReason}`] : []),
+    ``,
+    `BATASAN`,
+    ...pub.limitations.map((l) => `- ${l}`),
     ``,
     `DICEK`,
-    e.checkedAt,
+    pub.checkedAt,
     ``,
-    `LISENSI / CATATAN PENGGUNAAN`,
-    `Catatan ini diterbitkan terbuka oleh NaLI by NatIve untuk dibaca dan dirujuk. Sebutkan sumber asli`,
-    `yang tercantum saat mengutip. Cover adalah visual penjelas internal NaLI, bukan foto lapangan.`,
+    `RUJUKAN`,
+    citation(pub),
+    ``,
+    `CATATAN PENGGUNAAN`,
+    `Berkas ini hanya metadata dan ringkasan yang disusun NaLI untuk membantu menemukan publikasi asli.`,
+    `Naskah lengkap tetap milik dan tanggung jawab penerbit aslinya; baca di URL sumber.`,
     ``,
   ];
 
@@ -86,7 +90,7 @@ function buildText(slug: string): string | null {
 export function GET(_req: Request, { params }: { params: Params }) {
   const text = buildText(params.slug);
   if (text === null) {
-    return new Response("Entri jurnal tidak ditemukan.", { status: 404 });
+    return new Response("Publikasi tidak ditemukan.", { status: 404 });
   }
   return new Response(text, {
     status: 200,

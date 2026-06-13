@@ -1,78 +1,91 @@
-import readingTime from "reading-time";
-import type { JournalCategory, JournalEntry, JurnalCover, RawJournalEntry } from "./types";
-import { journalEntries as rawEntries } from "@/content/jurnal";
-import coversManifest from "@/content/jurnal/covers.json";
+import type {
+  AccessType,
+  JournalPublication,
+  PublicationCover,
+  PublicationType,
+  RawPublication,
+} from "./types";
+import { publications as rawPublications } from "@/content/jurnal";
+import coversManifest from "@/content/jurnal/pub-covers.json";
 
-const COVERS = coversManifest as Record<string, JurnalCover>;
+const COVERS = coversManifest as Record<string, PublicationCover>;
 
-/** Attach the mandatory cover from the manifest and add its sourceId to the cited sources. */
-function resolve(entry: RawJournalEntry): JournalEntry {
-  const cover = COVERS[entry.slug];
-  const sourceIds =
-    cover?.sourceId && !entry.sourceIds.includes(cover.sourceId)
-      ? [...entry.sourceIds, cover.sourceId]
-      : entry.sourceIds;
+function sourceCard(pub: RawPublication): PublicationCover {
   return {
-    ...entry,
-    sourceIds,
-    cover,
-    readingMinutes: Math.max(1, Math.round(readingTime(entry.body).minutes)),
+    title: pub.title,
+    sourceUrl: pub.sourceUrl,
+    publisherOrInstitution: pub.publisherOrInstitution,
+    license: "Tidak menampilkan gambar",
+    displayBasis: "Cover asli tidak ditampilkan karena lisensi belum jelas",
+    attribution: `${pub.publisherOrInstitution}${pub.year ? `, ${pub.year}` : ""}`,
+    alt: `Kartu sumber untuk ${pub.title}`,
+    caption: `${pub.title}. Cover asli tidak ditampilkan karena lisensi belum jelas.`,
+    checkedAt: pub.checkedAt,
+    isRealSourceCover: false,
+    fallbackReason: "Cover belum diverifikasi lisensinya.",
   };
 }
 
-let _cache: JournalEntry[] | null = null;
+function resolve(pub: RawPublication): JournalPublication {
+  return {
+    ...pub,
+    cover: COVERS[pub.slug] ?? sourceCard(pub),
+    download: {
+      enabled: true,
+      downloadKind: "metadata_txt",
+      downloadUrl: `/jurnal/${pub.slug}/download.txt`,
+      note: "Berkas metadata yang disusun NaLI: ringkasan publikasi, bukan naskah aslinya.",
+    },
+  };
+}
 
-/** All Jurnal entries, de-duplicated by slug, newest checkedAt first. */
-export function getAllJournalEntries(): JournalEntry[] {
+let _cache: JournalPublication[] | null = null;
+
+/** All Jurnal publication records, de-duplicated by slug, sorted by title. */
+export function getAllPublications(): JournalPublication[] {
   if (_cache) return _cache;
-  const bySlug = new Map<string, JournalEntry>();
-  for (const entry of rawEntries) {
-    if (!bySlug.has(entry.slug)) bySlug.set(entry.slug, resolve(entry));
+  const bySlug = new Map<string, JournalPublication>();
+  for (const pub of rawPublications) {
+    if (!bySlug.has(pub.slug)) bySlug.set(pub.slug, resolve(pub));
   }
-  _cache = [...bySlug.values()].sort((a, b) => {
-    const byDate = (b.checkedAt ?? "").localeCompare(a.checkedAt ?? "");
-    if (byDate !== 0) return byDate;
-    return a.title.localeCompare(b.title, "id");
-  });
+  _cache = [...bySlug.values()].sort((a, b) => a.title.localeCompare(b.title, "id"));
   return _cache;
 }
 
-export function getJournalCount(): number {
-  return getAllJournalEntries().length;
+export function getPublicationCount(): number {
+  return getAllPublications().length;
 }
 
-export function getJournalSlugs(): string[] {
-  return getAllJournalEntries().map((e) => e.slug);
+export function getPublicationSlugs(): string[] {
+  return getAllPublications().map((p) => p.slug);
 }
 
-export function getJournalEntryBySlug(slug: string): JournalEntry | undefined {
-  return getAllJournalEntries().find((e) => e.slug === slug);
+export function getPublicationBySlug(slug: string): JournalPublication | undefined {
+  return getAllPublications().find((p) => p.slug === slug);
 }
 
-export function getJournalCategories(): { category: JournalCategory; count: number }[] {
-  const counts = new Map<JournalCategory, number>();
-  for (const e of getAllJournalEntries()) {
-    counts.set(e.category, (counts.get(e.category) ?? 0) + 1);
-  }
-  return [...counts.entries()]
-    .map(([category, count]) => ({ category, count }))
-    .sort((a, b) => b.count - a.count || a.category.localeCompare(b.category));
+export function getPublicationTypes(): { type: PublicationType; count: number }[] {
+  const m = new Map<PublicationType, number>();
+  for (const p of getAllPublications()) m.set(p.publicationType, (m.get(p.publicationType) ?? 0) + 1);
+  return [...m.entries()]
+    .map(([type, count]) => ({ type, count }))
+    .sort((a, b) => b.count - a.count || a.type.localeCompare(b.type));
 }
 
-export function getJournalTopics(): string[] {
-  const set = new Set<string>();
-  for (const e of getAllJournalEntries()) for (const t of e.topics) set.add(t);
-  return [...set].sort((a, b) => a.localeCompare(b, "id"));
+export function getPublicationPublishers(): string[] {
+  const s = new Set<string>();
+  for (const p of getAllPublications()) s.add(p.publisherOrInstitution);
+  return [...s].sort((a, b) => a.localeCompare(b, "id"));
 }
 
-export function getJournalGeographies(): string[] {
-  const set = new Set<string>();
-  for (const e of getAllJournalEntries()) for (const g of e.geography) set.add(g);
-  return [...set].sort((a, b) => a.localeCompare(b, "id"));
+export function getPublicationTopics(): string[] {
+  const s = new Set<string>();
+  for (const p of getAllPublications()) for (const t of p.topics) s.add(t);
+  return [...s].sort((a, b) => a.localeCompare(b, "id"));
 }
 
-export function getRelatedJournalEntries(entry: JournalEntry, limit = 4): JournalEntry[] {
-  return getAllJournalEntries()
-    .filter((e) => e.slug !== entry.slug && e.category === entry.category)
-    .slice(0, limit);
+export function getPublicationAccessTypes(): AccessType[] {
+  const s = new Set<AccessType>();
+  for (const p of getAllPublications()) s.add(p.accessType);
+  return [...s];
 }

@@ -19,7 +19,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
-import { loadJournalEntries } from "./load-jurnal.mjs";
+import { loadPublications } from "./load-publications.mjs";
 
 const ROOT = process.cwd();
 const ARTICLES = path.join(ROOT, "content", "articles");
@@ -66,9 +66,9 @@ const articleFiles = new Set(
     : [],
 );
 
-// Jurnal entries loaded from the TypeScript cluster files (single source of truth).
-const journalEntries = await loadJournalEntries();
-const jurnalSlugs = new Set(journalEntries.map((e) => e.slug));
+// Jurnal publication records loaded from the TypeScript batch files.
+const publications = await loadPublications();
+const jurnalSlugs = new Set(publications.map((p) => p.slug));
 
 function read(dir) {
   if (!fs.existsSync(dir)) return [];
@@ -446,199 +446,134 @@ for (const { file, data, content } of read(SOURCES)) {
   if (!hasLimitation) errors.push(`${tag}: missing limitations.`);
 }
 
-/* ---- Jurnal entries ---- */
-const BANNED_SYNOPSIS = [
-  /tulisan ini membahas topik dengan sumber terbuka/i,
-  /catatan ini menjelaskan batas bukti/i,
-  /topik ini penting untuk dipahami secara hati-hati/i,
-  /tulisan ini mengambil jalan yang lebih pelan/i,
-  /catatan ini membahas topik secara hati-hati/i,
+/* ---- Jurnal publication catalog ---- */
+// Titles that look like the old NaLI-authored knowledge notes (must NOT appear here).
+const NOTE_STYLE_TITLE = [
+  /perawat hutan/i,
+  /sebaran pulaunya/i,
+  /tidak mengerami telurnya/i,
+  /, perawat /i,
+  /yang kehilangan ruang/i,
 ];
-const REAL_COVER_KINDS = new Set([
-  "official_journal_cover",
-  "official_report_cover",
-  "official_book_cover",
-  "archive_thumbnail",
-  "museum_thumbnail",
-  "official_source_preview",
-  "public_domain_visual",
+const PUBLICATION_TYPES = new Set([
+  "journal",
+  "journal_article",
+  "journal_issue",
+  "report",
+  "book",
+  "monograph",
+  "proceeding",
+  "dataset",
+  "archive_record",
+  "institutional_page",
 ]);
-const FALLBACK_COVER_KINDS = new Set(["source_card_fallback", "internal_diagram_last_resort"]);
-const DOCUMENTED_LICENSE = /public domain|cc0|cc[ -]by|tidak menampilkan gambar/i;
-const seenJurnalSlugs = new Map();
-const seenJurnalBodies = new Map();
-const seenJurnalSynopses = new Map();
-const seenCoverImages = new Map();
-let jurnalWithCover = 0;
-let jurnalWithSynopsis = 0;
-let jurnalFallbackCovers = 0;
-const coverTypeCounts = new Map();
-for (const entry of journalEntries) {
-  const tag = `[jurnal] ${entry.__file ?? entry.slug}#${entry.slug ?? "?"}`;
-  if (!entry.slug) errors.push(`${tag}: missing slug.`);
-  if (!entry.title) errors.push(`${tag}: missing title.`);
-  if (!entry.dek) errors.push(`${tag}: missing dek.`);
-  if (!entry.body || !String(entry.body).trim()) errors.push(`${tag}: missing body.`);
-  if (!entry.keyTakeaway) errors.push(`${tag}: missing keyTakeaway.`);
-  if (!entry.category) errors.push(`${tag}: missing category.`);
-  if (!entry.confidence) errors.push(`${tag}: missing confidence label.`);
-  if (!entry.checkedAt) errors.push(`${tag}: missing checkedAt.`);
-  if (entry.checkedAt && !ISO_DATE.test(String(entry.checkedAt))) {
-    errors.push(`${tag}: checkedAt must be YYYY-MM-DD.`);
+const ACCESS_TYPES = new Set(["open_access", "free_to_read", "metadata_only", "paywalled", "unknown"]);
+const seenPubSlugs = new Map();
+const seenPubSynopses = new Map();
+const pubTypeCounts = new Map();
+const pubPublishers = new Set();
+let pubRealCovers = 0;
+let pubFallbackCovers = 0;
+let pubWithDoi = 0;
+let pubWithPdf = 0;
+let pubWithDownload = 0;
+let pubInvalidNotes = 0;
+
+for (const pub of publications) {
+  const tag = `[jurnal] ${pub.__file ?? pub.slug}#${pub.slug ?? "?"}`;
+  if (!pub.slug) errors.push(`${tag}: missing slug.`);
+  if (!pub.title) errors.push(`${tag}: missing title.`);
+  if (!pub.checkedAt) errors.push(`${tag}: missing checkedAt.`);
+  if (pub.checkedAt && !ISO_DATE.test(String(pub.checkedAt))) errors.push(`${tag}: checkedAt must be YYYY-MM-DD.`);
+
+  // must be a real external publication record
+  if (!pub.sourceUrl) errors.push(`${tag}: missing sourceUrl (must be an external publication).`);
+  else if (!/^https?:\/\/.+\..+/.test(String(pub.sourceUrl))) errors.push(`${tag}: sourceUrl is not a traceable URL.`);
+  if (!pub.publisherOrInstitution) errors.push(`${tag}: missing publisherOrInstitution.`);
+  else pubPublishers.add(pub.publisherOrInstitution);
+  if (!pub.publicationType) errors.push(`${tag}: missing publicationType.`);
+  else if (!PUBLICATION_TYPES.has(pub.publicationType)) errors.push(`${tag}: unknown publicationType ${pub.publicationType}.`);
+  if (!pub.accessType) errors.push(`${tag}: missing accessType.`);
+  else if (!ACCESS_TYPES.has(pub.accessType)) errors.push(`${tag}: unknown accessType ${pub.accessType}.`);
+
+  // title must not be a NaLI-authored knowledge note
+  if (NOTE_STYLE_TITLE.some((re) => re.test(String(pub.title ?? "")))) {
+    errors.push(`${tag}: title looks like a NaLI-authored note, not an external publication: "${pub.title}".`);
+    pubInvalidNotes++;
   }
 
-  /* cover (mandatory, tied to a cited source, real source visual by default) */
-  const cover = entry.cover;
-  if (!cover || typeof cover !== "object") {
-    errors.push(`${tag}: missing cover.`);
-  } else {
-    const isFallback = FALLBACK_COVER_KINDS.has(cover.coverKind);
-    const image = cover.localPath ?? cover.imageUrl;
-
-    if (!cover.coverKind) errors.push(`${tag}: cover missing coverKind.`);
-    if (!cover.alt) errors.push(`${tag}: cover missing alt.`);
-    if (!cover.caption) errors.push(`${tag}: cover missing caption.`);
-    if (!cover.attribution) errors.push(`${tag}: cover missing attribution.`);
-    if (!cover.license) errors.push(`${tag}: cover missing license.`);
-    if (!cover.displayBasis) errors.push(`${tag}: cover missing displayBasis.`);
-    if (!cover.sourceUrl) errors.push(`${tag}: cover missing sourceUrl.`);
-    if (!cover.publisherOrInstitution) errors.push(`${tag}: cover missing publisher or institution.`);
-    if (cover.checkedAt && !ISO_DATE.test(String(cover.checkedAt))) {
-      errors.push(`${tag}: cover checkedAt must be YYYY-MM-DD.`);
-    }
-
-    // cover must be tied to a cited source
-    if (!cover.sourceId) {
-      errors.push(`${tag}: cover has no linked sourceId.`);
-    } else {
-      if (!sourceFiles.has(String(cover.sourceId))) {
-        errors.push(`${tag}: cover sourceId does not resolve to a source file: ${cover.sourceId}.`);
-      }
-      if (!Array.isArray(entry.sourceIds) || !entry.sourceIds.includes(cover.sourceId)) {
-        errors.push(`${tag}: cover sourceId is not included in the entry's sourceIds.`);
-      }
-    }
-
-    // license must be documented
-    if (cover.license && !DOCUMENTED_LICENSE.test(String(cover.license)) && !cover.licenseUrl) {
-      errors.push(`${tag}: cover license is not documented (no known license token and no licenseUrl).`);
-    }
-
-    // real covers must render a visible image; fallbacks must be documented
-    if (!isFallback) {
-      if (!image) {
-        errors.push(`${tag}: real cover is not visibly renderable (no localPath or imageUrl).`);
-      } else if (String(image).startsWith("/")) {
-        const p = path.join(ROOT, "public", String(image).replace(/^\/+/, ""));
-        if (!fs.existsSync(p)) errors.push(`${tag}: cover image does not exist in public/: ${image}.`);
-      }
-      if (cover.isRealSourceCover !== true) {
-        errors.push(`${tag}: non-fallback cover must set isRealSourceCover true.`);
-      }
-      if (!cover.imageUrl && !image) warnings.push(`${tag}: cover has no imageUrl.`);
-    } else {
-      jurnalFallbackCovers++;
-      if (!cover.fallbackReason) {
-        errors.push(`${tag}: ${cover.coverKind} requires a fallbackReason.`);
-      }
-      if (cover.coverKind === "internal_diagram_last_resort") {
-        warnings.push(`${tag}: internal_diagram_last_resort cover used; replace with a real source visual.`);
-      }
-      warnings.push(`${tag}: coverKind ${cover.coverKind} is not a real source cover.`);
-    }
-
-    if (cover.coverKind && !REAL_COVER_KINDS.has(cover.coverKind) && !FALLBACK_COVER_KINDS.has(cover.coverKind)) {
-      errors.push(`${tag}: unknown coverKind ${cover.coverKind}.`);
-    }
-    if (AI_VISUAL_TERMS.test(JSON.stringify(cover))) {
-      errors.push(`${tag}: cover appears to reference AI-generated imagery, which cannot be used.`);
-    }
-
-    // no reused cover image across entries (no single generic template)
-    if (image) {
-      jurnalWithCover++;
-      if (seenCoverImages.has(image)) {
-        errors.push(`${tag}: cover image reused across entries (shared with ${seenCoverImages.get(image)}).`);
-      } else {
-        seenCoverImages.set(image, entry.slug);
-      }
-    }
-    if (cover.coverKind) coverTypeCounts.set(cover.coverKind, (coverTypeCounts.get(cover.coverKind) ?? 0) + 1);
-  }
-
-  /* synopsis (mandatory, human, 35-80 words) */
-  const synopsis = String(entry.synopsis ?? "");
+  // synopsis (NaLI's Indonesian summary of the external work)
+  const synopsis = String(pub.synopsis ?? "");
   if (!synopsis.trim()) {
     errors.push(`${tag}: missing synopsis.`);
   } else {
-    jurnalWithSynopsis++;
     const sw = wordCount(synopsis);
-    if (sw < 35) errors.push(`${tag}: synopsis has ${sw} words, under the 35-word minimum.`);
-    if (sw > 80) errors.push(`${tag}: synopsis has ${sw} words, over the 80-word maximum.`);
+    if (sw < 20) warnings.push(`${tag}: synopsis has ${sw} words, quite short for a publication summary.`);
     if (synopsis.includes(EM_DASH)) errors.push(`${tag}: synopsis contains an em dash.`);
-    for (const p of BANNED_SYNOPSIS) {
-      if (p.test(synopsis)) errors.push(`${tag}: synopsis contains a banned generic phrase: ${p.source}`);
-    }
     const synKey = synopsis.replace(/\s+/g, " ").trim().toLowerCase();
-    if (seenJurnalSynopses.has(synKey)) {
-      errors.push(`${tag}: duplicate synopsis shared with ${seenJurnalSynopses.get(synKey)}.`);
-    } else {
-      seenJurnalSynopses.set(synKey, entry.slug);
-    }
+    if (seenPubSynopses.has(synKey)) errors.push(`${tag}: duplicate synopsis shared with ${seenPubSynopses.get(synKey)}.`);
+    else seenPubSynopses.set(synKey, pub.slug);
   }
-  if (!Array.isArray(entry.limitations) || entry.limitations.length === 0) {
-    errors.push(`${tag}: missing limitations.`);
-  }
-  if (!Array.isArray(entry.topics) || entry.topics.length === 0) {
-    errors.push(`${tag}: missing topics.`);
-  }
-  if (!Array.isArray(entry.geography) || entry.geography.length === 0) {
-    errors.push(`${tag}: missing geography.`);
-  }
-  if (!Array.isArray(entry.sourceIds) || entry.sourceIds.length === 0) {
-    errors.push(`${tag}: missing sourceIds.`);
+  if (!pub.whyItMatters || !String(pub.whyItMatters).trim()) errors.push(`${tag}: missing whyItMatters.`);
+  if (!Array.isArray(pub.limitations) || pub.limitations.length === 0) errors.push(`${tag}: missing limitations.`);
+  if (!Array.isArray(pub.topics) || pub.topics.length === 0) errors.push(`${tag}: missing topics.`);
+  if (!Array.isArray(pub.geography) || pub.geography.length === 0) errors.push(`${tag}: missing geography.`);
+
+  // cover metadata (real image, or documented source-card)
+  const cover = pub.cover;
+  if (!cover || typeof cover !== "object") {
+    errors.push(`${tag}: missing cover metadata.`);
   } else {
-    entry.sourceIds.forEach((id, i) => {
-      if (!sourceFiles.has(String(id))) {
-        errors.push(`${tag}: sourceIds[${i}] does not resolve to a source entry: ${id}.`);
+    for (const k of ["title", "sourceUrl", "publisherOrInstitution", "license", "displayBasis", "attribution", "alt", "caption"]) {
+      if (!cover[k]) errors.push(`${tag}: cover missing ${k}.`);
+    }
+    const image = cover.localPath ?? cover.imageUrl;
+    if (cover.isRealSourceCover) {
+      pubRealCovers++;
+      if (!image) errors.push(`${tag}: real cover has no localPath/imageUrl.`);
+      else if (String(image).startsWith("/")) {
+        const p = path.join(ROOT, "public", String(image).replace(/^\/+/, ""));
+        if (!fs.existsSync(p)) errors.push(`${tag}: cover image does not exist in public/: ${image}.`);
       }
-    });
-  }
-
-  const body = String(entry.body ?? "");
-  if (FIRST_PERSON_FIELD.test(body)) {
-    errors.push(`${tag}: first-person field claim in a journal entry (no first-party fieldwork).`);
-  }
-  for (const pattern of BANNED_TEMPLATE_PHRASES) {
-    if (pattern.test(body)) errors.push(`${tag}: contains banned template phrase: ${pattern.source}`);
-  }
-  if (DEMO_TERMS.test(body)) errors.push(`${tag}: contains demo/placeholder language.`);
-
-  const wc = wordCount(body);
-  if (wc < 250 || wc > 600) {
-    warnings.push(`${tag}: body has ${wc} words, outside the 250 to 600 recommended range.`);
-  }
-
-  if (entry.slug) {
-    seenJurnalSlugs.set(entry.slug, (seenJurnalSlugs.get(entry.slug) ?? 0) + 1);
-  }
-  const bodyKey = body.replace(/\s+/g, " ").trim().toLowerCase();
-  if (bodyKey) {
-    if (seenJurnalBodies.has(bodyKey)) {
-      errors.push(`${tag}: duplicate body text shared with ${seenJurnalBodies.get(bodyKey)}.`);
     } else {
-      seenJurnalBodies.set(bodyKey, entry.slug);
+      pubFallbackCovers++;
+      if (!cover.fallbackReason) errors.push(`${tag}: source-card fallback cover requires a fallbackReason.`);
+    }
+    if (AI_VISUAL_TERMS.test(JSON.stringify(cover))) errors.push(`${tag}: cover references AI-generated imagery, not allowed.`);
+  }
+
+  // download (mandatory public metadata route)
+  const dl = pub.download;
+  if (!dl || dl.enabled !== true || !dl.downloadUrl) {
+    errors.push(`${tag}: missing public download metadata route.`);
+  } else {
+    pubWithDownload++;
+    if (dl.downloadUrl !== `/jurnal/${pub.slug}/download.txt`) {
+      warnings.push(`${tag}: download URL is not the expected /jurnal/${pub.slug}/download.txt.`);
     }
   }
+
+  // related source ids must resolve when present
+  for (const id of pub.relatedSourceIds ?? []) {
+    if (!sourceFiles.has(String(id))) errors.push(`${tag}: relatedSourceIds "${id}" does not resolve to a source.`);
+  }
+  for (const id of pub.relatedArticleIds ?? []) {
+    if (!articleFiles.has(String(id))) errors.push(`${tag}: relatedArticleIds "${id}" does not resolve to an article.`);
+  }
+
+  if (pub.doi) pubWithDoi++;
+  if (pub.pdfUrl) pubWithPdf++;
+  if (pub.publicationType) pubTypeCounts.set(pub.publicationType, (pubTypeCounts.get(pub.publicationType) ?? 0) + 1);
+  if (pub.slug) seenPubSlugs.set(pub.slug, (seenPubSlugs.get(pub.slug) ?? 0) + 1);
 }
-for (const [slug, count] of seenJurnalSlugs.entries()) {
-  if (count > 1) errors.push(`[jurnal] duplicate slug "${slug}" appears ${count} times.`);
+for (const [slug, count] of seenPubSlugs.entries()) {
+  if (count > 1) errors.push(`[jurnal] duplicate publication slug "${slug}" appears ${count} times.`);
 }
-if (journalEntries.length > 0) {
-  const fallbackRatio = jurnalFallbackCovers / journalEntries.length;
-  if (fallbackRatio > 0.2) {
-    errors.push(
-      `[jurnal] ${jurnalFallbackCovers}/${journalEntries.length} (${Math.round(fallbackRatio * 100)}%) covers are fallbacks; must be 20% or less. Find real source covers.`,
+if (publications.length > 0) {
+  const fbRatio = pubFallbackCovers / publications.length;
+  if (fbRatio > 0.2) {
+    warnings.push(
+      `[jurnal] ${pubFallbackCovers}/${publications.length} (${Math.round(fbRatio * 100)}%) covers are source-card fallbacks (target under 20%). Many are commercial-publisher covers with unclear license; add more open-access / institutional publications with displayable covers.`,
     );
   }
 }
@@ -659,12 +594,15 @@ console.log(`\nEditorial validation summary:`);
 console.log(`  sources checked:        ${sourceCount}`);
 console.log(`  published articles:     ${publishedArticleCount}`);
 console.log(`  article image coverage: ${articlesWithVisual}/${publishedArticleCount}`);
-console.log(`  jurnal entries:         ${journalEntries.length}`);
-console.log(`  jurnal with cover image:${jurnalWithCover}/${journalEntries.length}`);
-console.log(`  jurnal real covers:     ${journalEntries.length - jurnalFallbackCovers}/${journalEntries.length}`);
-console.log(`  jurnal fallback covers: ${jurnalFallbackCovers}/${journalEntries.length}`);
-console.log(`  jurnal with synopsis:   ${jurnalWithSynopsis}/${journalEntries.length}`);
-console.log(`  cover kinds:            ${[...coverTypeCounts.entries()].map(([t, n]) => `${t}:${n}`).join(", ") || "none"}`);
+console.log(`  jurnal publications:    ${publications.length}`);
+console.log(`  by type:                ${[...pubTypeCounts.entries()].map(([t, n]) => `${t}:${n}`).join(", ") || "none"}`);
+console.log(`  distinct publishers:    ${pubPublishers.size}`);
+console.log(`  real covers:            ${pubRealCovers}/${publications.length}`);
+console.log(`  source-card fallbacks:  ${pubFallbackCovers}/${publications.length}`);
+console.log(`  with DOI:               ${pubWithDoi}`);
+console.log(`  with PDF link:          ${pubWithPdf}`);
+console.log(`  with metadata download: ${pubWithDownload}/${publications.length}`);
+console.log(`  invalid self-authored notes: ${pubInvalidNotes}`);
 console.log(`  em dash status:         ${errors.some((e) => e.startsWith("[em-dash]")) ? "FAIL" : "clean"}`);
 if (warnings.length) {
   console.log(`\n${warnings.length} warning(s):`);

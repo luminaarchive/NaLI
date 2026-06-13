@@ -1,17 +1,9 @@
-import type { RawJournalEntry } from "@/lib/types";
-import { satwaEndemik } from "./clusters/satwa-endemik";
-import { geologiGunungApi } from "./clusters/geologi-gunung-api";
-import { lautHutanIklim } from "./clusters/laut-hutan-iklim";
-import { satwaKonservasiA } from "./clusters/satwa-konservasi-a";
+import type { RawPublication } from "@/lib/types";
+import { publicationsBatch1 } from "./publications/batch-1";
 
 /**
- * Master list of Jurnal entries. Each cluster is a separate file so batches can
- * be added without touching the rest. The loader in lib/jurnal.ts de-duplicates
- * by slug and sorts; the validator enforces source resolution and quality.
+ * Master list of Jurnal publication records (real external journals, reports,
+ * datasets, and archives). Covers are attached at load time from pub-covers.json.
+ * Add new batches as separate files under ./publications and register them here.
  */
-export const journalEntries: RawJournalEntry[] = [
-  ...satwaEndemik,
-  ...geologiGunungApi,
-  ...lautHutanIklim,
-  ...satwaKonservasiA,
-];
+export const publications: RawPublication[] = [...publicationsBatch1];

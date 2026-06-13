@@ -190,120 +190,125 @@ export interface FieldNote {
 }
 
 /**
- * Jurnal = the natural-knowledge library. Shorter than a longform Artikel
- * (target 250 to 600 words) but still source-backed: every entry cites at least
- * one entry in Arsip Sumber, carries a confidence label, and states its limits.
+ * Jurnal = the open scientific-publication catalog. Each item is a REAL external
+ * publication (journal, article, report, book, dataset, archive record), shown
+ * with its real cover/visual, title, and an Indonesian synopsis written by NaLI.
+ * NaLI does NOT author the publication; the synopsis summarises the external work.
  */
-export type JournalCategory =
-  | "satwa"
-  | "tumbuhan"
-  | "geologi"
-  | "laut"
-  | "hutan"
-  | "pesisir"
-  | "iklim"
-  | "perairan"
-  | "konservasi"
-  | "wallacea"
-  | "arsip-alam"
-  | "ekologi";
+export type PublicationType =
+  | "journal"
+  | "journal_article"
+  | "journal_issue"
+  | "report"
+  | "book"
+  | "monograph"
+  | "proceeding"
+  | "dataset"
+  | "archive_record"
+  | "institutional_page";
+
+export type AccessType =
+  | "open_access"
+  | "free_to_read"
+  | "metadata_only"
+  | "paywalled"
+  | "unknown";
+
+export type DownloadKind =
+  | "metadata_txt"
+  | "metadata_md"
+  | "external_pdf_link"
+  | "local_open_access_pdf";
+
+export const PUBLICATION_TYPE_LABEL: Record<PublicationType, string> = {
+  journal: "Jurnal",
+  journal_article: "Artikel jurnal",
+  journal_issue: "Edisi jurnal",
+  report: "Laporan",
+  book: "Buku",
+  monograph: "Monograf",
+  proceeding: "Prosiding",
+  dataset: "Dataset",
+  archive_record: "Rekaman arsip",
+  institutional_page: "Halaman lembaga",
+};
+
+export const ACCESS_TYPE_LABEL: Record<AccessType, string> = {
+  open_access: "Akses terbuka",
+  free_to_read: "Gratis dibaca",
+  metadata_only: "Metadata saja",
+  paywalled: "Berbayar",
+  unknown: "Tidak diketahui",
+};
 
 /**
- * The kind of cover used for a Jurnal entry, in the founder's priority order.
- * The default must be a real source publication / official source visual, NOT a
- * NaLI-made decorative diagram. Internal diagrams and source-card fallbacks are
- * documented last resorts only.
+ * Cover for a publication record. A real publisher/issue/source visual is the
+ * default (localPath or imageUrl renders an image). When the real cover's reuse
+ * license is unclear, isRealSourceCover is false and the UI renders a restrained
+ * bibliographic source-card instead, with a fallbackReason.
  */
-export type JurnalCoverKind =
-  | "official_journal_cover"
-  | "official_report_cover"
-  | "official_book_cover"
-  | "archive_thumbnail"
-  | "museum_thumbnail"
-  | "official_source_preview"
-  | "public_domain_visual"
-  | "source_card_fallback"
-  | "internal_diagram_last_resort";
-
-/**
- * Mandatory visible cover for a Jurnal entry, tied to a cited source. Real
- * source / archive / institutional visuals are the default; covers with a
- * `localPath` or `imageUrl` render as actual images. Source-card fallbacks (no
- * safe image) render as a restrained bibliographic card and must carry a
- * `fallbackReason`.
- */
-export interface JurnalCover {
-  id: string;
-  coverKind: JurnalCoverKind;
+export interface PublicationCover {
   title: string;
-  /** Title of the cited source the cover comes from. */
-  sourceTitle: string;
-  /** Must resolve to one of the entry's cited sourceIds. */
-  sourceId: string;
+  imageUrl?: string;
+  localPath?: string;
+  sourceUrl: string;
   publisherOrInstitution: string;
   creator?: string;
-  /** Remote image URL, if displayed by hotlink (not used by default). */
-  imageUrl?: string;
-  /** Local downloaded image path under /public, if displayed locally. */
-  localPath?: string;
-  /** Real source / publisher / archive / publication page. */
-  sourceUrl: string;
   license: string;
   licenseUrl?: string;
-  /** Why this visual may be displayed (e.g. public domain, CC license, NASA). */
   displayBasis: string;
   attribution: string;
-  caption: string;
   alt: string;
+  caption: string;
   checkedAt: string;
-  /** True unless a documented fallback (source-card or internal diagram). */
   isRealSourceCover: boolean;
   fallbackReason?: string;
 }
 
+export interface PublicationDownload {
+  enabled: boolean;
+  downloadKind: DownloadKind;
+  downloadUrl: string;
+  note: string;
+}
+
 /**
- * The raw entry authored in content/jurnal/clusters/*.ts via j(). The mandatory
- * cover is attached at load time from the covers manifest, so the raw shape
- * omits it; the loader produces the full JournalEntry.
+ * A real external publication record authored in
+ * content/jurnal/publications/*.ts. The cover is attached at load time from the
+ * cover manifest (pub-covers.json) built by scripts/build-publication-covers.mjs.
  */
-export interface RawJournalEntry {
+export interface RawPublication {
   id: string;
   slug: string;
   title: string;
-  dek: string;
+  originalTitle?: string;
+  publicationType: PublicationType;
+  publisherOrInstitution: string;
+  authors?: string[];
+  year?: string;
+  publicationDate?: string;
+  sourceUrl: string;
+  doi?: string;
+  pdfUrl?: string;
+  officialPageUrl?: string;
+  /** NaLI's Indonesian summary OF the external publication (not the work itself). */
   synopsis: string;
-  category: JournalCategory;
+  whyItMatters: string;
   topics: string[];
   geography: string[];
-  sourceIds: string[];
-  confidence: Confidence;
-  body: string;
-  keyTakeaway: string;
+  language: string;
+  accessType: AccessType;
+  /** Links to Arsip Sumber entries, if any. */
+  relatedSourceIds: string[];
+  relatedArticleIds?: string[];
   limitations: string[];
   checkedAt: string;
 }
 
-export interface JournalEntry extends RawJournalEntry {
-  /** Mandatory visible cover, tied to a cited source. */
-  cover: JurnalCover;
-  /** Filled by the loader. */
-  readingMinutes?: number;
+export interface JournalPublication extends RawPublication {
+  cover: PublicationCover;
+  download: PublicationDownload;
 }
-
-export const JOURNAL_CATEGORY_LABEL: Record<JournalCategory, string> = {
-  satwa: "Satwa",
-  tumbuhan: "Tumbuhan",
-  geologi: "Geologi",
-  laut: "Laut",
-  hutan: "Hutan",
-  pesisir: "Pesisir",
-  iklim: "Iklim",
-  perairan: "Perairan",
-  konservasi: "Konservasi",
-  wallacea: "Wallacea",
-  "arsip-alam": "Arsip Alam",
-  ekologi: "Ekologi",
-};
 
 export interface SourceEntry {
   /** Stable source ID, normally equal to the file slug. */
