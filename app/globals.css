@@ -171,3 +171,22 @@
 .lp-faq details[open] .lp-chevron {
   transform: rotate(180deg);
 }
+
+/* Opt-in interactive link and button hover polish */
+.interactive-link {
+  @apply transition-all duration-200;
+}
+.interactive-link:hover .link-arrow {
+  transform: translateX(3px);
+}
+.interactive-link:hover .link-arrow-left {
+  transform: translateX(-3px);
+}
+.interactive-link:hover .link-arrow-diagonal {
+  transform: translate(2px, -2px);
+}
+.link-arrow,
+.link-arrow-left,
+.link-arrow-diagonal {
+  @apply inline-block transition-transform duration-200;
+}

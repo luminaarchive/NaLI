@@ -54,17 +54,27 @@ export default function SourceDetailPage({ params }: { params: Params }) {
       <div className="container-read py-12 sm:py-16">
         <Link
           href="/arsip-sumber"
-          className="label text-gray transition-colors hover:text-ink-deep"
+          className="label text-gray transition-colors hover:text-ink-deep interactive-link"
         >
-          ← Arsip sumber
+          <span className="link-arrow-left">←</span> Arsip sumber
         </Link>
 
-        <div className="mt-7 flex flex-wrap items-center gap-3">
-          <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.68rem] uppercase tracking-label text-ink">
+        <div className="mt-7 flex flex-wrap items-center gap-2">
+          <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.68rem] uppercase tracking-label text-ink bg-paper">
             {SOURCE_TYPE_LABEL[source.type]}
           </span>
+          {source.reliabilityLevel && (
+            <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.68rem] uppercase tracking-label text-ink-deep bg-ink-wash/30">
+              {RELIABILITY_LABEL[source.reliabilityLevel]}
+            </span>
+          )}
+          {source.geography && source.geography.map((geo) => (
+            <span key={geo} className="border border-dashed border-ink/35 px-2.5 py-0.5 font-mono text-[0.68rem] uppercase tracking-label text-gray bg-paper">
+              {geo}
+            </span>
+          ))}
           {source.year && (
-            <span className="font-mono text-[0.72rem] uppercase tracking-wider text-ink/70">
+            <span className="border border-dashed border-ink/45 px-2.5 py-0.5 font-mono text-[0.68rem] uppercase tracking-label text-ink/70 bg-paper">
               {source.year}
             </span>
           )}
@@ -172,9 +182,9 @@ export default function SourceDetailPage({ params }: { params: Params }) {
             href={source.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 inline-flex items-center gap-2 border border-ink bg-ink px-5 py-3 font-mono text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-ink-deep"
+            className="mt-6 inline-flex items-center gap-2 border border-ink bg-ink px-5 py-3 font-mono text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-ink-deep interactive-link"
           >
-            Buka sumber asli <span aria-hidden>↗</span>
+            Buka sumber asli <span className="link-arrow-diagonal" aria-hidden="true">↗</span>
           </a>
         )}
 

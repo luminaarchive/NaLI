@@ -53,6 +53,22 @@ const CLAIM_STATUS_COLOR: Record<ClaimStatus, string> = {
   "belum cukup bukti": "text-[#a31515] dark:text-[#f09090]",
 };
 
+const CLAIM_STATUS_BORDER: Record<ClaimStatus, string> = {
+  "terverifikasi kuat": "border-ink/50",
+  "didukung sumber": "border-[#c98f1f]/50",
+  "terbatas": "border-[#d96a23]/50",
+  "diperdebatkan": "border-[#d96a23]/50",
+  "belum cukup bukti": "border-[#d33]/50",
+};
+
+const CLAIM_STATUS_DOT: Record<ClaimStatus, string> = {
+  "terverifikasi kuat": "bg-confidence-high",
+  "didukung sumber": "bg-confidence-medium",
+  "terbatas": "bg-confidence-low",
+  "diperdebatkan": "bg-confidence-low",
+  "belum cukup bukti": "bg-confidence-unverified",
+};
+
 export default async function ArticleDetailPage({ params }: { params: Params }) {
   const article = await getArticleBySlug(params.slug);
   if (!article) notFound();
@@ -90,9 +106,9 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
         <div className="container-read py-12 sm:py-16">
           <Link
             href="/articles"
-            className="label text-gray transition-colors hover:text-ink-deep"
+            className="label text-gray transition-colors hover:text-ink-deep interactive-link"
           >
-            ← Semua artikel
+            <span className="link-arrow-left">←</span> Semua artikel
           </Link>
 
           <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -296,63 +312,73 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
 
         {/* Claim Ledger */}
         {article.claimLedger && article.claimLedger.length > 0 && (
-          <section className="mt-14 border-t border-dashed border-ink/70 pt-6" aria-labelledby="claim-ledger">
-            <h2 id="claim-ledger" className="font-display text-xl font-bold uppercase text-ink">
-              Claim Ledger
-            </h2>
+          <section className="mt-14 border-t border-dashed border-ink/70 pt-8" aria-labelledby="claim-ledger">
+            <div className="flex items-center gap-3">
+              <span className="border border-dashed border-ink/60 px-2 py-0.5 font-mono text-[0.62rem] uppercase tracking-label text-ink bg-ink-wash/30" aria-hidden="true">
+                Ledger
+              </span>
+              <h2 id="claim-ledger" className="font-display text-xl font-bold uppercase text-ink">
+                Claim Ledger
+              </h2>
+            </div>
             <p className="mt-2 font-mono text-[0.78rem] leading-relaxed text-gray">
               Tiap klaim utama dipisahkan dan diberi status bukti sendiri.
             </p>
-            <div className="mt-5 overflow-hidden border border-ink/50">
-              <table className="w-full border-collapse text-left">
-                <thead>
-                  <tr className="bg-ink-wash">
-                    {["Klaim", "Status", "Sumber", "Catatan"].map((h) => (
-                      <th
-                        key={h}
-                        className="border border-ink/40 px-3 py-2.5 font-mono text-[0.64rem] uppercase tracking-label text-ink-deep"
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {article.claimLedger.map((c, i) => (
-                    <tr key={i} className="align-top odd:bg-ink-wash/30">
-                      <td className="border border-ink/30 px-3 py-2.5 text-[0.82rem] leading-snug text-ink-charcoal">
-                        {c.claim}
-                      </td>
-                      <td className={`border border-ink/30 px-3 py-2.5 font-mono text-[0.7rem] font-semibold uppercase ${CLAIM_STATUS_COLOR[c.status]}`}>
-                        {CLAIM_STATUS_LABEL[c.status]}
-                      </td>
-                      <td className="border border-ink/30 px-3 py-2.5 font-mono text-[0.72rem] text-gray">
-                        {c.sources ?? "Tidak dicatat"}
-                      </td>
-                      <td className="border border-ink/30 px-3 py-2.5 font-mono text-[0.72rem] leading-snug text-gray">
-                        {c.limitation ?? c.explanation ?? "Catatan belum tersedia"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="mt-5 space-y-4">
+              {article.claimLedger.map((c, i) => (
+                <div key={i} className={`border border-dashed p-5 bg-paper ${CLAIM_STATUS_BORDER[c.status]}`}>
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-ink/20 pb-3">
+                    <span className="font-mono text-[0.66rem] uppercase tracking-wider text-ink/65">
+                      Klaim #{String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className={`inline-flex items-center gap-1.5 border border-dashed bg-paper px-2 py-0.5 font-mono text-[0.62rem] uppercase tracking-label ${CLAIM_STATUS_BORDER[c.status]} ${CLAIM_STATUS_COLOR[c.status]}`}>
+                      <span className={`h-1.5 w-1.5 ${CLAIM_STATUS_DOT[c.status]}`} aria-hidden="true" />
+                      {CLAIM_STATUS_LABEL[c.status]}
+                    </span>
+                  </div>
+                  <p className="mt-4 font-display text-base font-semibold leading-snug text-ink-charcoal">
+                    {c.claim}
+                  </p>
+                  <div className="mt-4 grid gap-3 border-t border-dashed border-ink/20 pt-3 sm:grid-cols-[6rem_1fr]">
+                    <div className="font-mono text-[0.68rem] uppercase tracking-wider text-ink/65">
+                      Rujukan: <span className="font-semibold text-ink-deep">{c.sources ?? "Tidak dicatat"}</span>
+                    </div>
+                    <div className="font-mono text-[0.74rem] leading-relaxed text-gray">
+                      <span className="font-semibold text-ink/75">Catatan:</span> {c.limitation ?? c.explanation ?? "Catatan belum tersedia"}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
         )}
 
         {/* Limitations */}
         {article.limitations && article.limitations.length > 0 && (
-          <section className="mt-12 border-l-2 border-dashed border-ink/50 pl-5" aria-labelledby="batasan">
-            <h2 id="batasan" className="font-display text-lg font-bold uppercase text-ink">
-              Batasan & hal yang belum pasti
-            </h2>
-            <ul className="mt-3 space-y-2">
-              {article.limitations.map((l) => (
-                <li key={l} className="font-mono text-[0.82rem] leading-relaxed text-gray">
-                  {l}
-                </li>
+          <section className="mt-14 border-t border-dashed border-ink/70 pt-8" aria-labelledby="batasan">
+            <div className="flex items-center gap-3">
+              <span className="border border-dashed border-ink/60 px-2 py-0.5 font-mono text-[0.62rem] uppercase tracking-label text-ink bg-ink-wash/30" aria-hidden="true">
+                Audit
+              </span>
+              <h2 id="batasan" className="font-display text-xl font-bold uppercase text-ink">
+                Batasan Bukti
+              </h2>
+            </div>
+            <p className="mt-2 font-mono text-[0.78rem] leading-relaxed text-gray">
+              Hal-hal penting yang membatasi klaim tulisan ini atau belum terbukti sepenuhnya.
+            </p>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              {article.limitations.map((l, i) => (
+                <div key={i} className="border border-dashed border-ink/40 bg-paper p-5 flex gap-3 align-top">
+                  <span className="font-mono text-[0.74rem] text-ink/40 select-none">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <p className="font-mono text-[0.8rem] leading-relaxed text-gray">
+                    {l}
+                  </p>
+                </div>
               ))}
-            </ul>
+            </div>
           </section>
         )}
 
