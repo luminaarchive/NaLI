@@ -159,28 +159,16 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
                   )}
                 </td>
                 <td className="border border-ink/30 px-4 py-3">
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="border border-dashed border-ink/50 px-2 py-0.5 font-mono text-[0.64rem] uppercase tracking-label text-ink bg-paper">
-                      {SOURCE_TYPE_LABEL[s.type]}
+                  <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.66rem] uppercase tracking-label text-ink">
+                    {SOURCE_TYPE_LABEL[s.type]}
+                  </span>
+                  {s.reliabilityLevel && (
+                    <span className="mt-1.5 block font-mono text-[0.64rem] uppercase tracking-wider text-ink/60">
+                      {RELIABILITY_LABEL[s.reliabilityLevel]}
                     </span>
-                    {s.reliabilityLevel && (
-                      <span className="border border-dashed border-ink/50 px-2 py-0.5 font-mono text-[0.64rem] uppercase tracking-label text-ink-deep bg-ink-wash/30">
-                        {RELIABILITY_LABEL[s.reliabilityLevel]}
-                      </span>
-                    )}
-                    {s.geography && s.geography.map((geo) => (
-                      <span key={geo} className="border border-dashed border-ink/35 px-2 py-0.5 font-mono text-[0.64rem] uppercase tracking-label text-gray bg-paper">
-                        {geo}
-                      </span>
-                    ))}
-                    {s.year && (
-                      <span className="border border-dashed border-ink/45 px-2 py-0.5 font-mono text-[0.64rem] uppercase tracking-label text-ink/70 bg-paper">
-                        {s.year}
-                      </span>
-                    )}
-                  </div>
+                  )}
                   {s.checkedAt && (
-                    <span className="mt-1.5 block font-mono text-[0.6rem] text-ink/40">
+                    <span className="mt-0.5 block font-mono text-[0.6rem] text-ink/40">
                       dicek {s.checkedAt}
                     </span>
                   )}
@@ -194,9 +182,9 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
                 <td className="border border-ink/30 px-4 py-3 whitespace-nowrap">
                   <Link
                     href={`/arsip-sumber/${s.slug}`}
-                    className="font-mono text-[0.68rem] uppercase tracking-wider text-ink hover:underline interactive-link"
+                    className="font-mono text-[0.68rem] uppercase tracking-wider text-ink hover:underline"
                   >
-                    Baca <span className="link-arrow">→</span>
+                    Baca →
                   </Link>
                 </td>
               </tr>
@@ -204,43 +192,38 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
           </tbody>
         </table>
       </div>
- 
+
       {/* stacked (mobile) */}
       <ul className="mt-4 space-y-4 sm:hidden">
         {filtered.map((s) => (
           <li key={s.slug}>
             <Link
               href={`/arsip-sumber/${s.slug}`}
-              className="block border border-dashed border-ink/60 bg-paper p-4 transition-colors hover:bg-ink-wash interactive-link"
+              className="block border border-dashed border-ink/60 bg-paper p-4 transition-colors hover:bg-ink-wash"
             >
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="border border-dashed border-ink/50 px-2 py-0.5 font-mono text-[0.62rem] uppercase tracking-label text-ink bg-paper">
+              <div className="flex items-center justify-between gap-3">
+                <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-label text-ink">
                   {SOURCE_TYPE_LABEL[s.type]}
                 </span>
-                {s.reliabilityLevel && (
-                  <span className="border border-dashed border-ink/50 px-2 py-0.5 font-mono text-[0.62rem] uppercase tracking-label text-ink-deep bg-ink-wash/30">
-                    {RELIABILITY_LABEL[s.reliabilityLevel]}
-                  </span>
-                )}
-                {s.geography && s.geography.map((geo) => (
-                  <span key={geo} className="border border-dashed border-ink/35 px-2 py-0.5 font-mono text-[0.62rem] uppercase tracking-label text-gray bg-paper">
-                    {geo}
-                  </span>
-                ))}
                 {s.year && (
-                  <span className="border border-dashed border-ink/45 px-2 py-0.5 font-mono text-[0.62rem] uppercase tracking-label text-ink/70 bg-paper">
+                  <span className="font-mono text-xs uppercase tracking-wider text-ink/70">
                     {s.year}
                   </span>
                 )}
               </div>
               <p className="mt-2 text-sm font-semibold text-ink-charcoal">{s.title}</p>
+              {s.reliabilityLevel && (
+                <p className="mt-1 font-mono text-[0.62rem] uppercase tracking-wider text-ink/60">
+                  {RELIABILITY_LABEL[s.reliabilityLevel]}
+                </p>
+              )}
               {s.content && (
                 <p className="mt-2 font-mono text-xs leading-relaxed text-gray-light">
                   {excerpt(s.content, 100)}
                 </p>
               )}
               <p className="mt-3 font-mono text-[0.66rem] uppercase tracking-wider text-ink">
-                Baca keterangan <span className="link-arrow">→</span>
+                Baca keterangan →
               </p>
             </Link>
           </li>

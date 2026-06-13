@@ -53,22 +53,6 @@ const CLAIM_STATUS_COLOR: Record<ClaimStatus, string> = {
   "belum cukup bukti": "text-[#a31515] dark:text-[#f09090]",
 };
 
-const CLAIM_STATUS_BORDER: Record<ClaimStatus, string> = {
-  "terverifikasi kuat": "border-ink/50",
-  "didukung sumber": "border-[#c98f1f]/50",
-  "terbatas": "border-[#d96a23]/50",
-  "diperdebatkan": "border-[#d96a23]/50",
-  "belum cukup bukti": "border-[#d33]/50",
-};
-
-const CLAIM_STATUS_DOT: Record<ClaimStatus, string> = {
-  "terverifikasi kuat": "bg-confidence-high",
-  "didukung sumber": "bg-confidence-medium",
-  "terbatas": "bg-confidence-low",
-  "diperdebatkan": "bg-confidence-low",
-  "belum cukup bukti": "bg-confidence-unverified",
-};
-
 export default async function ArticleDetailPage({ params }: { params: Params }) {
   const article = await getArticleBySlug(params.slug);
   if (!article) notFound();
@@ -106,9 +90,9 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
         <div className="container-read py-12 sm:py-16">
           <Link
             href="/articles"
-            className="label text-gray transition-colors hover:text-ink-deep interactive-link"
+            className="label text-gray transition-colors hover:text-ink-deep"
           >
-            <span className="link-arrow-left">←</span> Semua artikel
+            ← Semua artikel
           </Link>
 
           <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -161,32 +145,16 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
 
       {/* evidence-basis banner: honesty about how the piece is sourced */}
       <div className="container-read pt-8">
-        <div className="border border-dashed border-ink/60 bg-paper p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-ink/25 pb-3">
-            <div className="flex items-center gap-2 font-mono text-[0.64rem] uppercase tracking-wider text-ink/75">
-              <span className="bg-ink-wash/30 border border-dashed border-ink/35 px-2 py-0.5 font-semibold text-ink">BASIS BUKTI</span>
-              <span>{"//"}</span>
-              <span>EVIDENCE REGISTER</span>
-            </div>
-            <span className="font-mono text-[0.62rem] text-gray uppercase tracking-wider">
-              REF NO. NL-{article.slug.toUpperCase().slice(0, 8)}
-            </span>
-          </div>
-
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div className="border border-dashed border-ink/20 bg-ink-wash/10 p-3 font-mono text-[0.72rem] leading-relaxed text-gray">
-              <span className="block font-semibold text-ink-deep uppercase tracking-wider text-[0.66rem] mb-1">Metode Analisis</span>
-              {article.evidenceBasis
-                ? `${article.evidenceBasis}, dokumen sejarah, dan peninjauan literatur.`
-                : "Sumber sekunder terbuka, dokumen sejarah, dan peninjauan literatur."}
-            </div>
-            <div className="border border-dashed border-ink/20 bg-ink-wash/10 p-3 font-mono text-[0.72rem] leading-relaxed text-gray">
-              <span className="block font-semibold text-ink-deep uppercase tracking-wider text-[0.66rem] mb-1">Verifikasi Lapangan</span>
-              {article.firstPartyFieldwork
-                ? "Artikel ini memuat bukti lapangan pertama yang diverifikasi secara langsung."
-                : "NaLI tidak melakukan observasi lapangan pribadi. Semua data dirujuk dari penelitian pihak ketiga."}
-            </div>
-          </div>
+        <div className="border border-dashed border-ink/60 bg-ink-wash/40 p-5">
+          <p className="font-mono text-[0.78rem] leading-relaxed text-ink-charcoal">
+            <span className="font-semibold text-ink-deep">Basis tulisan:</span>{" "}
+            {article.evidenceBasis
+              ? `${article.evidenceBasis}, arsip, dan observasi pihak ketiga. `
+              : "sumber terbuka, arsip, dan observasi pihak ketiga. "}
+            {article.firstPartyFieldwork
+              ? "Artikel ini memuat bukti lapangan pertama yang ditampilkan di bawah."
+              : "NaLI tidak mengklaim observasi lapangan pribadi untuk artikel ini."}
+          </p>
         </div>
       </div>
 
@@ -328,73 +296,63 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
 
         {/* Claim Ledger */}
         {article.claimLedger && article.claimLedger.length > 0 && (
-          <section className="mt-14 border-t border-dashed border-ink/70 pt-8" aria-labelledby="claim-ledger">
-            <div className="flex items-center gap-3">
-              <span className="border border-dashed border-ink/60 px-2 py-0.5 font-mono text-[0.62rem] uppercase tracking-label text-ink bg-ink-wash/30" aria-hidden="true">
-                Ledger
-              </span>
-              <h2 id="claim-ledger" className="font-display text-xl font-bold uppercase text-ink">
-                Claim Ledger
-              </h2>
-            </div>
+          <section className="mt-14 border-t border-dashed border-ink/70 pt-6" aria-labelledby="claim-ledger">
+            <h2 id="claim-ledger" className="font-display text-xl font-bold uppercase text-ink">
+              Claim Ledger
+            </h2>
             <p className="mt-2 font-mono text-[0.78rem] leading-relaxed text-gray">
               Tiap klaim utama dipisahkan dan diberi status bukti sendiri.
             </p>
-            <div className="mt-5 space-y-4">
-              {article.claimLedger.map((c, i) => (
-                <div key={i} className={`border border-dashed p-5 bg-paper ${CLAIM_STATUS_BORDER[c.status]}`}>
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-ink/20 pb-3">
-                    <span className="font-mono text-[0.66rem] uppercase tracking-wider text-ink/65">
-                      Klaim #{String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span className={`inline-flex items-center gap-1.5 border border-dashed bg-paper px-2 py-0.5 font-mono text-[0.62rem] uppercase tracking-label ${CLAIM_STATUS_BORDER[c.status]} ${CLAIM_STATUS_COLOR[c.status]}`}>
-                      <span className={`h-1.5 w-1.5 ${CLAIM_STATUS_DOT[c.status]}`} aria-hidden="true" />
-                      {CLAIM_STATUS_LABEL[c.status]}
-                    </span>
-                  </div>
-                  <p className="mt-4 font-display text-base font-semibold leading-snug text-ink-charcoal">
-                    {c.claim}
-                  </p>
-                  <div className="mt-4 grid gap-3 border-t border-dashed border-ink/20 pt-3 sm:grid-cols-[6rem_1fr]">
-                    <div className="font-mono text-[0.68rem] uppercase tracking-wider text-ink/65">
-                      Rujukan: <span className="font-semibold text-ink-deep">{c.sources ?? "Tidak dicatat"}</span>
-                    </div>
-                    <div className="font-mono text-[0.74rem] leading-relaxed text-gray">
-                      <span className="font-semibold text-ink/75">Catatan:</span> {c.limitation ?? c.explanation ?? "Catatan belum tersedia"}
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="mt-5 overflow-hidden border border-ink/50">
+              <table className="w-full border-collapse text-left">
+                <thead>
+                  <tr className="bg-ink-wash">
+                    {["Klaim", "Status", "Sumber", "Catatan"].map((h) => (
+                      <th
+                        key={h}
+                        className="border border-ink/40 px-3 py-2.5 font-mono text-[0.64rem] uppercase tracking-label text-ink-deep"
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {article.claimLedger.map((c, i) => (
+                    <tr key={i} className="align-top odd:bg-ink-wash/30">
+                      <td className="border border-ink/30 px-3 py-2.5 text-[0.82rem] leading-snug text-ink-charcoal">
+                        {c.claim}
+                      </td>
+                      <td className={`border border-ink/30 px-3 py-2.5 font-mono text-[0.7rem] font-semibold uppercase ${CLAIM_STATUS_COLOR[c.status]}`}>
+                        {CLAIM_STATUS_LABEL[c.status]}
+                      </td>
+                      <td className="border border-ink/30 px-3 py-2.5 font-mono text-[0.72rem] text-gray">
+                        {c.sources ?? "Tidak dicatat"}
+                      </td>
+                      <td className="border border-ink/30 px-3 py-2.5 font-mono text-[0.72rem] leading-snug text-gray">
+                        {c.limitation ?? c.explanation ?? "Catatan belum tersedia"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </section>
         )}
 
         {/* Limitations */}
         {article.limitations && article.limitations.length > 0 && (
-          <section className="mt-14 border-t border-dashed border-ink/70 pt-8" aria-labelledby="batasan">
-            <div className="flex items-center gap-3">
-              <span className="border border-dashed border-ink/60 px-2 py-0.5 font-mono text-[0.62rem] uppercase tracking-label text-ink bg-ink-wash/30" aria-hidden="true">
-                Audit
-              </span>
-              <h2 id="batasan" className="font-display text-xl font-bold uppercase text-ink">
-                Batasan Bukti
-              </h2>
-            </div>
-            <p className="mt-2 font-mono text-[0.78rem] leading-relaxed text-gray">
-              Hal-hal penting yang membatasi klaim tulisan ini atau belum terbukti sepenuhnya.
-            </p>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              {article.limitations.map((l, i) => (
-                <div key={i} className="border border-dashed border-ink/40 bg-paper p-5 flex gap-3 align-top">
-                  <span className="font-mono text-[0.74rem] text-ink/40 select-none">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <p className="font-mono text-[0.8rem] leading-relaxed text-gray">
-                    {l}
-                  </p>
-                </div>
+          <section className="mt-12 border-l-2 border-dashed border-ink/50 pl-5" aria-labelledby="batasan">
+            <h2 id="batasan" className="font-display text-lg font-bold uppercase text-ink">
+              Batasan & hal yang belum pasti
+            </h2>
+            <ul className="mt-3 space-y-2">
+              {article.limitations.map((l) => (
+                <li key={l} className="font-mono text-[0.82rem] leading-relaxed text-gray">
+                  {l}
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
         )}
 
@@ -403,23 +361,21 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
         {/* CATEGORY 1: licensed images actually displayed */}
         {article.images && article.images.length > 0 && (
           <section className="mt-12 border-t border-dashed border-ink/40 pt-6" aria-labelledby="kredit-gambar">
-            <div className="flex items-center gap-2 font-mono text-[0.62rem] uppercase tracking-wider text-ink/70 border-b border-dashed border-ink/20 pb-2 mb-3">
-              <span className="bg-ink-wash/30 border border-dashed border-ink/35 px-2 py-0.5 font-semibold text-ink">KREDIT FOTO</span>
-              <span>{"//"}</span>
-              <span>LICENSED VISUAL RECORD</span>
-            </div>
+            <h2 id="kredit-gambar" className="label text-ink/70">
+              Foto berlisensi yang ditampilkan
+            </h2>
             <ul className="mt-4 space-y-3">
               {article.images.map((img, i) => (
                 <li key={i} className="font-mono text-[0.76rem] leading-relaxed text-gray">
                   <span className="text-ink-charcoal">{img.title ?? img.caption}</span>,{" "}
                   {img.attribution}.{" "}
-                  <a href={img.sourceUrl} target="_blank" rel="noopener noreferrer" className="link-teal hover:underline interactive-link">
-                    Sumber <span className="link-arrow-diagonal">↗</span>
+                  <a href={img.sourceUrl} target="_blank" rel="noopener noreferrer" className="link-teal">
+                    Sumber
                   </a>
                   {img.licenseUrl ? (
                     <>
                       {", "}
-                      <a href={img.licenseUrl} target="_blank" rel="noopener noreferrer" className="link-teal hover:underline">
+                      <a href={img.licenseUrl} target="_blank" rel="noopener noreferrer" className="link-teal">
                         {img.license}
                       </a>
                     </>
@@ -428,7 +384,7 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
                   )}
                   {img.checkedAt && <span className="text-ink/40">, dicek {img.checkedAt}</span>}
                 </li>
-               ))}
+              ))}
             </ul>
           </section>
         )}
@@ -436,11 +392,9 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
         {/* CATEGORY 2: external visual evidence, linked only and never displayed */}
         {article.externalVisuals && article.externalVisuals.length > 0 && (
           <section className="mt-10 border-t border-dashed border-ink/40 pt-6" aria-labelledby="bukti-visual">
-            <div className="flex items-center gap-2 font-mono text-[0.62rem] uppercase tracking-wider text-ink/70 border-b border-dashed border-ink/20 pb-2 mb-3">
-              <span className="bg-ink-wash/30 border border-dashed border-ink/35 px-2 py-0.5 font-semibold text-ink">JEJAK VISUAL</span>
-              <span>{"//"}</span>
-              <span>EXTERNAL EVIDENCE POINTERS</span>
-            </div>
+            <h2 id="bukti-visual" className="label text-ink/70">
+              Bukti visual eksternal yang hanya ditautkan
+            </h2>
             <p className="mt-2 font-mono text-[0.74rem] leading-relaxed text-gray">
               Foto/video nyata yang relevan tetapi lisensinya belum jelas. NaLI{" "}
               <strong>tidak menampilkan ulang</strong> gambar ini. Tautan diarahkan ke
@@ -448,14 +402,14 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
             </p>
             <ul className="mt-4 space-y-4">
               {article.externalVisuals.map((ev, i) => (
-                <li key={i} className="border border-dashed border-ink/40 p-4 bg-paper">
+                <li key={i} className="border border-dashed border-ink/40 p-4">
                   <a
                     href={ev.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="link-teal font-mono text-[0.82rem] font-semibold interactive-link hover:underline"
+                    className="link-teal font-mono text-[0.82rem] font-semibold"
                   >
-                    {ev.title} <span className="link-arrow-diagonal">↗</span>
+                    {ev.title} ↗
                   </a>
                   <p className="mt-1.5 font-mono text-[0.74rem] leading-relaxed text-gray">
                     {ev.shows}
@@ -479,11 +433,9 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
           (!article.externalVisuals || article.externalVisuals.length === 0) &&
           article.visualEvidenceNote && (
             <section className="mt-10 border-t border-dashed border-ink/40 pt-6" aria-labelledby="catatan-visual">
-              <div className="flex items-center gap-2 font-mono text-[0.62rem] uppercase tracking-wider text-ink/70 border-b border-dashed border-ink/20 pb-2 mb-3">
-                <span className="bg-ink-wash/30 border border-dashed border-ink/35 px-2 py-0.5 font-semibold text-ink">DESKRIPSI VISUAL</span>
-                <span>{"//"}</span>
-                <span>VISUAL EVIDENCE DEVIATION NOTE</span>
-              </div>
+              <h2 id="catatan-visual" className="label text-ink/70">
+                Catatan bukti visual
+              </h2>
               <p className="mt-3 border border-dashed border-ink/40 p-4 font-mono text-[0.74rem] leading-relaxed text-gray">
                 {article.visualEvidenceNote}
               </p>
@@ -508,11 +460,7 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
       {related.length > 0 && (
         <section className="border-t border-dashed border-ink/40 bg-paper">
           <div className="container-editorial py-14">
-            <div className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-wider text-ink/70 mb-3">
-              <span className="bg-ink-wash/30 border border-dashed border-ink/35 px-2 py-0.5 font-semibold text-ink">ARSIP TERKAIT</span>
-              <span>{"//"}</span>
-              <span>SIMILAR RECORDS</span>
-            </div>
+            <p className="label">Baca juga</p>
             <h2 className="mt-3 font-display text-2xl font-bold uppercase text-ink">
               Dari kategori {CATEGORY_LABEL[article.category]}
             </h2>

@@ -52,49 +52,37 @@ export function ArticleList({
 
   return (
     <div className="container-editorial py-12">
-      {/* filter board wrapper */}
-      <div className="border border-dashed border-ink/40 bg-paper p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-ink/20 pb-3 mb-4 font-mono text-[0.66rem] uppercase tracking-wider text-ink/75">
-          <div className="flex items-center gap-2">
-            <span className="bg-ink-wash/30 border border-dashed border-ink/35 px-2 py-0.5 font-semibold text-ink">SARINGAN</span>
-            <span>{"//"}</span>
-            <span>DATA FILTER</span>
-          </div>
-          <span>TOTAL: {articles.length} ENTRI</span>
-        </div>
-
-        {/* category filter */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-[0.68rem] uppercase tracking-wider text-ink/65 mr-2 w-16">Kategori:</span>
-          <Chip active={category === "all"} onClick={() => setCategory("all")}>
-            Semua
+      {/* category filter */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="label mr-2 hidden sm:inline">Kategori</span>
+        <Chip active={category === "all"} onClick={() => setCategory("all")}>
+          Semua
+        </Chip>
+        {CATEGORIES.map((c) => (
+          <Chip key={c} active={category === c} onClick={() => setCategory(c)}>
+            {CATEGORY_LABEL[c]}
           </Chip>
-          {CATEGORIES.map((c) => (
-            <Chip key={c} active={category === c} onClick={() => setCategory(c)}>
-              {CATEGORY_LABEL[c]}
+        ))}
+      </div>
+
+      {/* tag filter */}
+      {tags.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="label mr-2 hidden sm:inline">Tag</span>
+          {tags.map((t) => (
+            <Chip key={t} active={tag === t} onClick={() => setTag(tag === t ? null : t)}>
+              #{t}
             </Chip>
           ))}
         </div>
-
-        {/* tag filter */}
-        {tags.length > 0 && (
-          <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-dashed border-ink/10 pt-3">
-            <span className="font-mono text-[0.68rem] uppercase tracking-wider text-ink/65 mr-2 w-16">Tag:</span>
-            {tags.map((t) => (
-              <Chip key={t} active={tag === t} onClick={() => setTag(tag === t ? null : t)}>
-                #{t}
-              </Chip>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
 
       <p className="mt-8 font-mono text-xs uppercase tracking-wider text-ink/70">
-        Menampilkan {filtered.length} dari {articles.length} artikel
+        {filtered.length} dari {articles.length} artikel
       </p>
 
       {filtered.length === 0 ? (
-        <p className="mt-12 text-gray font-mono text-sm">
+        <p className="mt-12 text-gray">
           Belum ada artikel yang cocok dengan filter ini.
         </p>
       ) : (

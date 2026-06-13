@@ -57,19 +57,11 @@ export default async function HomePage() {
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         {/* ================= HERO, the wave shader as archival plate ================= */}
         <section className="pt-6">
-          <div className="flex flex-wrap items-center justify-between border-b border-dashed border-ink/40 pb-2 font-mono text-[0.66rem] uppercase tracking-wider text-ink/70">
-            <div className="flex items-center gap-4">
-              <span>PLATE 001 // SIMULASI GELOMBANG</span>
-              <span className="hidden sm:inline text-ink/40">|</span>
-              <span className="hidden sm:inline">DITHER: BAYER</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <span>EST. MMXXVI</span>
-              <span className="text-ink/40">|</span>
-              <span className="text-ink font-semibold">STATUS: ONLINE</span>
-            </div>
+          <div className="flex items-center justify-between pb-2">
+            <Meta>Lempeng 001, Gelombang</Meta>
+            <Meta>Arsip: NaLI · MMXXVI</Meta>
           </div>
-          <div className="overflow-hidden border border-dashed border-ink/70 mt-2">
+          <div className="overflow-hidden border border-dashed border-ink/70">
             <WaveHero />
           </div>
         </section>
@@ -92,11 +84,7 @@ export default async function HomePage() {
         <section className="py-12 sm:py-16">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-wider text-ink/70">
-                <span className="bg-ink-wash/30 border border-dashed border-ink/35 px-2 py-0.5">INDEKS BUKTI TERBUKA</span>
-                <span>{"//"}</span>
-                <span>CATATAN TERBARU</span>
-              </div>
+              <Meta>Indeks, Terbaru</Meta>
               <h2 className="mt-3 font-display text-3xl font-bold uppercase tracking-[0.01em] text-ink sm:text-4xl">
                 Tulisan terbaru
               </h2>
@@ -107,9 +95,9 @@ export default async function HomePage() {
             </div>
             <Link
               href="/articles"
-              className="border border-ink/70 px-5 py-3 font-mono text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-ink hover:text-paper interactive-link"
+              className="border border-ink/70 px-5 py-3 font-mono text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-ink hover:text-paper"
             >
-              Semua artikel <span className="link-arrow">→</span>
+              Semua artikel →
             </Link>
           </div>
 
@@ -148,11 +136,7 @@ export default async function HomePage() {
         {/* ================= THREE PILLARS, clear entry points ================= */}
         <section className="py-14 sm:py-16">
           <div className="mx-auto max-w-xl text-center">
-            <div className="inline-flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-wider text-ink/70 justify-center">
-              <span className="bg-ink-wash/30 border border-dashed border-ink/35 px-2 py-0.5">STRUKTUR UTAMA</span>
-              <span>{"//"}</span>
-              <span>KATEGORI RISET</span>
-            </div>
+            <Meta>Tiga pilar</Meta>
             <h2 className="mt-3 font-display text-3xl font-bold uppercase text-ink sm:text-4xl">
               Pilih pintu masukmu
             </h2>
@@ -164,12 +148,12 @@ export default async function HomePage() {
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {[
               {
-                idx: "01 // NATURE",
+                idx: "01, Nature",
                 title: "Alam",
                 desc: "Ekologi, satwa, dan fenomena lanskap Indonesia.",
                 items: [
                   "Fenomena alam yang jarang dijelaskan tuntas",
-                  "Satwa endemik and status konservasinya",
+                  "Satwa endemik dan status konservasinya",
                   "Catatan riset dari laporan dan observasi pihak ketiga",
                   "Rujukan jurnal di tiap klaim",
                 ],
@@ -178,7 +162,7 @@ export default async function HomePage() {
                 featured: false,
               },
               {
-                idx: "02 // ARCHIVE · LORE",
+                idx: "02, Archive · Lore",
                 title: "Sejarah",
                 desc: "Jejak kota tua, arsip kolonial, dan ingatan yang nyaris hilang.",
                 items: [
@@ -192,7 +176,7 @@ export default async function HomePage() {
                 featured: true,
               },
               {
-                idx: "03 // INVESTIGATION",
+                idx: "03, Investigation",
                 title: "Investigasi",
                 desc: "Penelusuran berbasis sumber publik, tanpa kepastian palsu.",
                 items: [
@@ -228,13 +212,13 @@ export default async function HomePage() {
                 </ul>
                 <Link
                   href={p.href}
-                  className={`mt-7 py-3 text-center font-mono text-[0.8rem] font-semibold uppercase tracking-[0.12em] transition-colors interactive-link ${
+                  className={`mt-7 py-3 text-center font-mono text-[0.8rem] font-semibold uppercase tracking-[0.12em] transition-colors ${
                     p.featured
                       ? "bg-ink text-paper hover:bg-ink-deep"
                       : "border border-ink/70 text-ink hover:bg-ink hover:text-paper"
                   }`}
                 >
-                  {p.cta} <span className="link-arrow">→</span>
+                  {p.cta}
                 </Link>
               </div>
             ))}
@@ -246,11 +230,7 @@ export default async function HomePage() {
         {/* ================= EDITORIAL STANDARDS ================= */}
         <section className="grid gap-10 py-14 sm:py-16 md:grid-cols-[1fr_1.3fr]">
           <div>
-            <div className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-wider text-ink/70">
-              <span className="bg-ink-wash/30 border border-dashed border-ink/35 px-2 py-0.5">PEDOMAN UTAMA</span>
-              <span>{"//"}</span>
-              <span>STANDAR AKURASI</span>
-            </div>
+            <Meta>Standar editorial</Meta>
             <h2 className="mt-3 font-display text-3xl font-bold uppercase leading-tight text-ink sm:text-4xl">
               Aturan main yang tidak bisa ditawar
             </h2>
@@ -301,11 +281,7 @@ export default async function HomePage() {
         <section className="py-14 sm:py-16">
           <div className={`${CARD} flex flex-col items-start gap-6 p-8 sm:flex-row sm:items-center sm:justify-between sm:p-10`}>
             <div>
-              <div className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-wider text-ink/70">
-                <span className="bg-ink-wash/30 border border-dashed border-ink/35 px-2 py-0.5">JEJAK SUMBER</span>
-                <span>{"//"}</span>
-                <span>REKAM BUKTI</span>
-              </div>
+              <Meta>Arsip sumber terbuka</Meta>
               <h2 className="mt-3 font-display text-2xl font-bold uppercase text-ink sm:text-3xl">
                 {sourceCount} entri sumber, bisa diperiksa siapa pun
               </h2>
@@ -316,9 +292,9 @@ export default async function HomePage() {
             </div>
             <Link
               href="/arsip-sumber"
-              className="shrink-0 bg-ink px-6 py-3 font-mono text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-ink-deep interactive-link"
+              className="shrink-0 bg-ink px-6 py-3 font-mono text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-ink-deep"
             >
-              Buka arsip sumber <span className="link-arrow">→</span>
+              Buka arsip sumber →
             </Link>
           </div>
 
@@ -337,11 +313,7 @@ export default async function HomePage() {
         {/* ================= FAQ ================= */}
         <section className="grid gap-10 py-14 sm:py-16 md:grid-cols-[1fr_1.4fr]">
           <div>
-            <div className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-wider text-ink/70">
-              <span className="bg-ink-wash/30 border border-dashed border-ink/35 px-2 py-0.5">INFORMASI KLAIM</span>
-              <span>{"//"}</span>
-              <span>PERTANYAAN UMUM</span>
-            </div>
+            <Meta>FAQ</Meta>
             <h2 className="mt-3 font-display text-3xl font-bold uppercase text-ink sm:text-4xl">
               Masih penasaran?
             </h2>
@@ -351,9 +323,9 @@ export default async function HomePage() {
             </p>
             <Link
               href="/tentang"
-              className="mt-6 inline-block border border-ink/70 px-6 py-3 font-mono text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-ink hover:text-paper interactive-link"
+              className="mt-6 inline-block border border-ink/70 px-6 py-3 font-mono text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-ink hover:text-paper"
             >
-              Tentang NaLI <span className="link-arrow">→</span>
+              Tentang NaLI
             </Link>
           </div>
           <div className="lp-faq space-y-3">

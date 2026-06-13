@@ -36,24 +36,22 @@ export default async function PetaEksplorasiPage() {
         description="Bukan peta interaktif dan bukan jejak ekspedisi pribadi. Ini indeks lokasi dan topik dalam liputan NaLI, disusun dari sumber terbuka."
       />
 
-      <div className="container-editorial py-12 space-y-12">
+      <div className="container-editorial py-12">
         {/* locations */}
-        <section className="border border-dashed border-ink/40 bg-paper p-6">
-          <div className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-wider text-ink/70 border-b border-dashed border-ink/20 pb-3 mb-4">
-            <span className="bg-ink-wash/30 border border-dashed border-ink/35 px-2 py-0.5 font-semibold text-ink">REGISTRASI LOKASI</span>
-            <span>{"//"}</span>
-            <span>COVERED GEOGRAPHIES</span>
-          </div>
+        <section>
+          <h2 className="font-display text-2xl text-ink-black">Lokasi dalam liputan</h2>
           {locations.length === 0 ? (
-            <p className="text-gray font-mono text-sm">Belum ada lokasi tercatat.</p>
+            <p className="mt-3 text-gray">Belum ada lokasi tercatat.</p>
           ) : (
-            <ul className="flex flex-wrap gap-2">
+            <ul className="mt-5 flex flex-wrap gap-3">
               {locations.map((loc) => (
                 <li
                   key={loc}
-                  className="border border-dashed border-ink/50 bg-paper px-3 py-1 font-mono text-[0.74rem] text-ink-charcoal uppercase tracking-wider"
+                  className="border border-dashed border-ink/60 bg-paper px-4 py-2 font-mono text-[0.8rem] text-ink-charcoal"
                 >
-                  <span className="text-ink" aria-hidden>◇ </span>
+                  <span className="text-ink" aria-hidden>
+                    ◇{" "}
+                  </span>
                   {loc}
                 </li>
               ))}
@@ -62,38 +60,30 @@ export default async function PetaEksplorasiPage() {
         </section>
 
         {/* topics by pillar */}
-        <section className="grid gap-6 md:grid-cols-3">
+        <section className="mt-14 grid gap-10 md:grid-cols-3">
           {PILLAR_ORDER.map((cat) => {
             const inCat = articles.filter((a) => a.category === cat);
-            const refNo = `CAT-${cat.toUpperCase().slice(0, 3)}`;
             return (
-              <div key={cat} className="border border-dashed border-ink/40 bg-paper p-5 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between border-b border-dashed border-ink/20 pb-3 mb-4 font-mono text-[0.66rem] uppercase tracking-wider text-ink/70">
-                    <span className="bg-ink-wash/30 border border-dashed border-ink/25 px-2 py-0.5 font-semibold text-ink">
-                      {CATEGORY_LABEL[cat]}
-                    </span>
-                    <span>{refNo}</span>
-                  </div>
-                  {inCat.length === 0 ? (
-                    <p className="mt-4 text-xs font-mono text-gray-light">
-                      Belum ada topik.
-                    </p>
-                  ) : (
-                    <ul className="mt-4 space-y-3">
-                      {inCat.map((a) => (
-                        <li key={a.slug} className="border-b border-dashed border-ink/10 pb-2 last:border-0 last:pb-0">
-                          <Link
-                            href={`/articles/${a.slug}`}
-                            className="font-mono text-[0.78rem] leading-snug text-ink transition-colors hover:text-ink-deep interactive-link"
-                          >
-                            {a.title} <span className="link-arrow">→</span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+              <div key={cat} className="border-t border-dashed border-ink/60 pt-5">
+                <p className="label text-ink">{CATEGORY_LABEL[cat]}</p>
+                {inCat.length === 0 ? (
+                  <p className="mt-4 text-sm text-gray-light">
+                    Belum ada topik.
+                  </p>
+                ) : (
+                  <ul className="mt-4 space-y-3">
+                    {inCat.map((a) => (
+                      <li key={a.slug}>
+                        <Link
+                          href={`/articles/${a.slug}`}
+                          className="font-mono text-[0.8rem] leading-snug text-ink transition-colors hover:text-ink-deep"
+                        >
+                          {a.title}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             );
           })}
