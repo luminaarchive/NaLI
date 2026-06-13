@@ -7,8 +7,10 @@ import type {
 } from "./types";
 import { publications as rawPublications } from "@/content/jurnal";
 import coversManifest from "@/content/jurnal/pub-covers.json";
+import officialMetadataManifest from "@/content/jurnal/official-metadata.json";
 
 const COVERS = coversManifest as Record<string, PublicationCover>;
+const OFFICIAL_METADATA = officialMetadataManifest as Record<string, any>;
 
 function sourceCard(pub: RawPublication): PublicationCover {
   return {
@@ -25,33 +27,6 @@ function sourceCard(pub: RawPublication): PublicationCover {
     fallbackReason: "Cover belum diverifikasi lisensinya.",
   };
 }
-
-const METADATA_INJECTIONS: Record<string, Partial<RawPublication>> = {
-  "anak-krakatau": { peerReviewed: true, volume: "9", issue: "1", pages: "1-10", fileSize: "4.2 MB", license: "Creative Commons CC-BY" },
-  "kelud-eruption": { peerReviewed: true, volume: "29", issue: "1", pages: "12-24", fileSize: "1.8 MB", license: "Creative Commons CC-BY" },
-  "komodo-conservation": { peerReviewed: true, volume: "15", issue: "2", pages: "105-118", fileSize: "2.5 MB", license: "Creative Commons CC-BY" },
-  "tarsier-sulawesi": { peerReviewed: true, volume: "39", issue: "1", pages: "43-52", fileSize: "5.1 MB", license: "Hak Cipta / Fair Use" },
-  "coelacanth-indonesia": { peerReviewed: false, volume: "2", issue: "4", pages: "88-95", fileSize: "3.4 MB", license: "Creative Commons CC-BY" },
-  "javan-rhino": { peerReviewed: true, volume: "49", issue: "2", pages: "215-226", fileSize: "2.1 MB", license: "Creative Commons CC-BY-NC" },
-  "mangrove-blue-carbon": { peerReviewed: true, volume: "22", issue: "6", pages: "2501-2512", fileSize: "4.8 MB", license: "Hak Cipta / Fair Use" },
-  "jakarta-subsidence": { peerReviewed: true, volume: "2", issue: "2", pages: "79-88", fileSize: "1.2 MB", license: "Creative Commons CC-BY-SA" },
-  "proboscis-monkey": { peerReviewed: true, volume: "52", issue: "3", pages: "301-314", fileSize: "2.9 MB", license: "Hak Cipta / Fair Use" },
-  "javan-gibbon": { peerReviewed: true, volume: "18", issue: "1", pages: "55-68", fileSize: "3.7 MB", license: "Hak Cipta / Fair Use" },
-  "sulawesi-macaque": { peerReviewed: true, volume: "11", issue: "2", pages: "121-132", fileSize: "1.5 MB", license: "Hak Cipta / Fair Use" },
-  "seagrass-indonesia": { peerReviewed: true, volume: "15", issue: "1", pages: "3870-3882", fileSize: "4.1 MB", license: "Creative Commons CC-BY" },
-  "reef-fish-indonesia": { peerReviewed: true, volume: "21", issue: "10", pages: "4299-4310", fileSize: "3.0 MB", license: "Creative Commons CC-BY" },
-  "new-species-zookeys": { peerReviewed: true, volume: "4652", issue: "2", pages: "50131-50145", fileSize: "5.8 MB", license: "Creative Commons CC-BY-SA" },
-  "sea-level-coast-id": { peerReviewed: true, volume: "33", issue: "1", pages: "105-115", fileSize: "2.2 MB", license: "Hak Cipta / Fair Use" },
-  "rafflesia": { peerReviewed: true, volume: "2", issue: "1", pages: "14-25", fileSize: "3.5 MB", license: "Creative Commons CC-BY" },
-  "orchid-id": { peerReviewed: true, volume: "52", issue: "2", pages: "29336-29348", fileSize: "1.9 MB", license: "Creative Commons CC-BY" },
-  "butterfly-id": { peerReviewed: true, volume: "21", issue: "11", pages: "4344-4355", fileSize: "2.7 MB", license: "Hak Cipta / Fair Use" },
-  "bird-diversity-id": { peerReviewed: true, volume: "1", issue: "2", pages: "2190-2202", fileSize: "3.1 MB", license: "Creative Commons CC-BY-NC-SA" },
-  "marine-protected-id": { peerReviewed: true, volume: "58", issue: "1", pages: "15-28", fileSize: "4.5 MB", license: "Hak Cipta / Fair Use" },
-  "fisheries-id": { peerReviewed: true, volume: "19", issue: "2", pages: "165196-165208", fileSize: "1.6 MB", license: "Creative Commons CC-BY-NC" },
-  "river-water-java": { peerReviewed: true, volume: "68", issue: "1", pages: "4009-4020", fileSize: "2.4 MB", license: "Creative Commons CC-BY" },
-  "agroforestry-id": { peerReviewed: true, volume: "24", issue: "5", pages: "6800-6812", fileSize: "3.3 MB", license: "Creative Commons CC-BY-NC-SA" },
-  "bamboo-id": { peerReviewed: true, volume: "24", issue: "5", pages: "6794-6805", fileSize: "1.7 MB", license: "Creative Commons CC-BY-NC-SA" },
-};
 
 function buildDownload(pub: RawPublication): JournalPublication["download"] {
   const metadataUrl = `/jurnal/${pub.slug}/download.txt`;
@@ -85,8 +60,15 @@ function buildDownload(pub: RawPublication): JournalPublication["download"] {
 }
 
 function resolve(pub: RawPublication): JournalPublication {
-  const injected = METADATA_INJECTIONS[pub.slug] ?? {};
-  const merged = { ...pub, ...injected };
+  const official = OFFICIAL_METADATA[pub.slug] ?? {};
+  const merged: RawPublication = {
+    ...pub,
+    volume: official.volume || undefined,
+    issue: official.issue || undefined,
+    pages: official.pages || undefined,
+    license: official.license || undefined,
+    peerReviewed: official.peerReviewed ?? undefined,
+  };
   return {
     ...merged,
     cover: COVERS[pub.slug] ?? sourceCard(merged),

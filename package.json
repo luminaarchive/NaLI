@@ -11,7 +11,11 @@
     "typecheck": "tsc --noEmit",
     "check:editorial": "node scripts/validate-editorial-content.mjs",
     "check:article-images": "node scripts/check-article-images.mjs",
-    "check:routes": "node scripts/check-public-routes.mjs"
+    "check:routes": "node scripts/check-public-routes.mjs",
+    "check:metadata": "node scripts/check-metadata-integrity.mjs",
+    "check:covers": "node scripts/check-cover-integrity.mjs",
+    "check:a11y": "node scripts/check-accessibility.mjs",
+    "check:links": "node scripts/check-links.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",
