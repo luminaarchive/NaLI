@@ -11,7 +11,6 @@ export const lautHutanIklim = [
   j({
     slug: "segitiga-terumbu-karang-dunia",
     synopsis: `Perairan Indonesia berada di jantung Segitiga Terumbu Karang, dengan keanekaragaman karang tertinggi di dunia. Terumbu yang sehat menopang perikanan dan melindungi pesisir dari gelombang. Posisi ini membawa tanggung jawab sekaligus kerentanan, karena tekanan pada karang di sini berdampak jauh melampaui Indonesia.`,
-    cover: { type: "diagram", title: "Segitiga Terumbu Karang", alt: "Diagram zona laut dangkal dengan beragam bentuk karang di dasar.", caption: "Diagram zona terumbu karang di perairan dangkal." },
     title: "Indonesia di jantung Segitiga Terumbu Karang",
     dek: "Perairan Nusantara menyimpan keanekaragaman karang tertinggi di planet ini.",
     category: "laut",
@@ -37,7 +36,6 @@ Posisi Indonesia di pusat Coral Triangle berarti tanggung jawab sekaligus kerent
   j({
     slug: "pemutihan-karang-dan-suhu-laut",
     synopsis: `Karang hidup bersama alga renik yang memberinya energi dan warna. Ketika laut terlalu panas terlalu lama, hubungan itu putus dan karang memutih. Belum tentu mati, tetapi kelaparan dan rentan. Pemutihan adalah sinyal langsung bahwa perubahan iklim sudah menyentuh laut yang menopang banyak orang.`,
-    cover: { type: "diagram", title: "Pemutihan karang", alt: "Diagram karang sehat dan karang memutih di samping skala suhu yang naik.", caption: "Diagram pemutihan karang akibat suhu laut yang naik." },
     title: "Pemutihan karang adalah sinyal stres panas",
     dek: "Karang memutih ketika kehilangan alga simbiotik akibat suhu laut yang terlalu tinggi.",
     category: "laut",
@@ -63,7 +61,6 @@ Bagi Indonesia yang kaya terumbu, pemutihan karang adalah sinyal langsung bahwa 
   j({
     slug: "mangrove-karbon-biru",
     synopsis: `Mangrove menyimpan karbon dalam jumlah besar, terutama di tanah berlumpurnya yang dalam, bukan hanya di pohonnya. Ia juga meredam gelombang dan menjadi tempat asuhan ikan. Karena itu merusaknya melepas karbon yang lama terkunci, sementara memulihkannya butuh lebih dari sekadar menancapkan bibit.`,
-    cover: { type: "diagram", title: "Mangrove dan karbon biru", alt: "Diagram mangrove dengan akar tunjang di garis pasang dan karbon tersimpan di tanah.", caption: "Diagram akar mangrove dan simpanan karbon biru di tanah." },
     title: "Mangrove menyimpan karbon biru dalam jumlah besar",
     dek: "Hutan bakau mengunci karbon di tanahnya jauh lebih banyak per luas daripada banyak hutan darat.",
     category: "pesisir",
@@ -89,7 +86,6 @@ Karena perannya ganda untuk iklim dan pesisir, mangrove menjadi fokus konservasi
   j({
     slug: "gambut-karbon-dan-api",
     synopsis: `Selama basah, lahan gambut mengunci karbon yang menumpuk ribuan tahun. Begitu dikeringkan untuk lahan, ia menjadi sangat mudah terbakar, apinya menjalar di bawah permukaan dan melepas asap pekat. Menjaga gambut tetap basah adalah strategi iklim sekaligus perlindungan kesehatan publik.`,
-    cover: { type: "diagram", title: "Gambut, karbon, dan api", alt: "Diagram kolom tanah gambut dengan lapisan karbon dan panah emisi saat kering.", caption: "Diagram kolom gambut dan pelepasan karbon saat kering terbakar." },
     title: "Lahan gambut: gudang karbon yang mudah terbakar",
     dek: "Gambut menyimpan karbon raksasa, tetapi pengeringan membuatnya rawan kebakaran dan kabut asap.",
     category: "hutan",
@@ -115,7 +111,6 @@ Karena itu, menjaga gambut tetap basah adalah strategi iklim sekaligus kesehatan
   j({
     slug: "deforestasi-dipantau-satelit",
     synopsis: `Dulu mengukur hilangnya hutan butuh survei lapangan yang lambat. Kini citra satelit membuat deforestasi bisa dipantau secara terbuka, termasuk di Kalimantan. Datanya kuat untuk memeriksa klaim, tetapi tetap perlu verifikasi lapangan, karena hilangnya tutupan pohon tidak selalu berarti hutan alam yang lenyap.`,
-    cover: { type: "timeline", title: "Tutupan pohon dari satelit", alt: "Linimasa batang yang menurun menggambarkan tren tutupan pohon antar tahun.", caption: "Linimasa skematis arah tren tutupan pohon dari data satelit." },
     title: "Hilangnya hutan kini bisa dipantau dari satelit",
     dek: "Data tutupan pohon global memungkinkan pelacakan deforestasi secara terbuka.",
     category: "hutan",
@@ -141,7 +136,6 @@ Namun data satelit punya batas. Ia menunjukkan kehilangan tutupan pohon, tetapi 
   j({
     slug: "sampah-plastik-laut-indonesia",
     synopsis: `Indonesia sering disebut penyumbang besar plastik laut, tetapi angka itu berasal dari model, bukan timbangan langsung di laut. Masalahnya tetap nyata: pengelolaan sampah yang belum memadai dan sungai yang membawa plastik dari darat ke laut. Membacanya jujur berarti memisahkan estimasi dari kepastian.`,
-    cover: { type: "diagram", title: "Plastik dari darat ke laut", alt: "Diagram aliran sampah plastik dari daratan melalui sungai menuju laut.", caption: "Diagram jalur plastik dari darat ke laut lewat sungai." },
     title: "Plastik laut: masalah data dan kebijakan",
     dek: "Indonesia kerap disebut penyumbang besar sampah plastik laut, tetapi angkanya adalah estimasi.",
     category: "laut",
@@ -167,7 +161,6 @@ Kebijakan yang efektif menyasar hulu: pengurangan plastik sekali pakai, perbaika
   j({
     slug: "jakarta-penurunan-tanah",
     synopsis: `Banjir pesisir Jakarta sering dikira hanya soal laut yang naik. Padahal di banyak titik tanahnya turun lebih cepat, terutama karena air tanah disedot berlebihan. Tanggul saja tidak cukup jika tanah terus amblas. Memisahkan dua proses ini penting agar solusinya menyasar penyebab yang tepat.`,
-    cover: { type: "diagram", title: "Jakarta, tanah yang turun", alt: "Diagram batang membandingkan tanah yang turun dengan muka laut yang naik.", caption: "Diagram penurunan tanah dibanding kenaikan laut di Jakarta." },
     title: "Sebagian Jakarta turun lebih cepat dari naiknya laut",
     dek: "Penurunan muka tanah, bukan hanya kenaikan laut, memperparah banjir di pesisir Jakarta.",
     category: "iklim",
@@ -193,7 +186,6 @@ Kasus Jakarta menunjukkan bahwa bencana pesisir sering merupakan gabungan bebera
   j({
     slug: "citarum-sungai-dan-pencemaran",
     synopsis: `Citarum menopang pertanian, air baku, dan listrik, tetapi juga menanggung limbah industri dan rumah tangga di sepanjang alirannya. Memulihkannya bukan proyek sekali jadi, melainkan tata kelola panjang. Klaim keberhasilan perlu dibaca dengan data kualitas air, bukan sekadar perubahan yang tampak di permukaan.`,
-    cover: { type: "diagram", title: "Citarum, beban pencemaran", alt: "Diagram aliran sungai dengan titik beban industri, permukiman, dan limbah.", caption: "Diagram beban pencemaran di sepanjang aliran Citarum." },
     title: "Citarum dan beban pencemaran industri",
     dek: "Sungai penting Jawa Barat yang lama menanggung limbah dan menjadi ujian tata kelola.",
     category: "perairan",

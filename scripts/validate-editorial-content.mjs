@@ -454,11 +454,24 @@ const BANNED_SYNOPSIS = [
   /tulisan ini mengambil jalan yang lebih pelan/i,
   /catatan ini membahas topik secara hati-hati/i,
 ];
+const REAL_COVER_KINDS = new Set([
+  "official_journal_cover",
+  "official_report_cover",
+  "official_book_cover",
+  "archive_thumbnail",
+  "museum_thumbnail",
+  "official_source_preview",
+  "public_domain_visual",
+]);
+const FALLBACK_COVER_KINDS = new Set(["source_card_fallback", "internal_diagram_last_resort"]);
+const DOCUMENTED_LICENSE = /public domain|cc0|cc[ -]by|tidak menampilkan gambar/i;
 const seenJurnalSlugs = new Map();
 const seenJurnalBodies = new Map();
 const seenJurnalSynopses = new Map();
+const seenCoverImages = new Map();
 let jurnalWithCover = 0;
 let jurnalWithSynopsis = 0;
+let jurnalFallbackCovers = 0;
 const coverTypeCounts = new Map();
 for (const entry of journalEntries) {
   const tag = `[jurnal] ${entry.__file ?? entry.slug}#${entry.slug ?? "?"}`;
@@ -474,35 +487,83 @@ for (const entry of journalEntries) {
     errors.push(`${tag}: checkedAt must be YYYY-MM-DD.`);
   }
 
-  /* cover (mandatory, must be visibly renderable) */
+  /* cover (mandatory, tied to a cited source, real source visual by default) */
   const cover = entry.cover;
   if (!cover || typeof cover !== "object") {
     errors.push(`${tag}: missing cover.`);
   } else {
-    if (!cover.src) {
-      errors.push(`${tag}: cover missing src (not visibly renderable).`);
-    } else if (String(cover.src).startsWith("/")) {
-      const p = path.join(ROOT, "public", String(cover.src).replace(/^\/+/, ""));
-      if (!fs.existsSync(p)) errors.push(`${tag}: cover src does not exist in public/: ${cover.src}.`);
-    }
+    const isFallback = FALLBACK_COVER_KINDS.has(cover.coverKind);
+    const image = cover.localPath ?? cover.imageUrl;
+
+    if (!cover.coverKind) errors.push(`${tag}: cover missing coverKind.`);
     if (!cover.alt) errors.push(`${tag}: cover missing alt.`);
     if (!cover.caption) errors.push(`${tag}: cover missing caption.`);
     if (!cover.attribution) errors.push(`${tag}: cover missing attribution.`);
     if (!cover.license) errors.push(`${tag}: cover missing license.`);
+    if (!cover.displayBasis) errors.push(`${tag}: cover missing displayBasis.`);
     if (!cover.sourceUrl) errors.push(`${tag}: cover missing sourceUrl.`);
-    if (!cover.creator && !cover.institution) errors.push(`${tag}: cover missing creator or institution.`);
+    if (!cover.publisherOrInstitution) errors.push(`${tag}: cover missing publisher or institution.`);
     if (cover.checkedAt && !ISO_DATE.test(String(cover.checkedAt))) {
       errors.push(`${tag}: cover checkedAt must be YYYY-MM-DD.`);
     }
-    const isInternal = /internal explanatory visual/i.test(String(cover.license ?? ""));
-    if (isInternal && !/visual penjelas, bukan foto lapangan/i.test(String(cover.caption ?? ""))) {
-      errors.push(`${tag}: internal cover caption must say "Visual penjelas, bukan foto lapangan.".`);
+
+    // cover must be tied to a cited source
+    if (!cover.sourceId) {
+      errors.push(`${tag}: cover has no linked sourceId.`);
+    } else {
+      if (!sourceFiles.has(String(cover.sourceId))) {
+        errors.push(`${tag}: cover sourceId does not resolve to a source file: ${cover.sourceId}.`);
+      }
+      if (!Array.isArray(entry.sourceIds) || !entry.sourceIds.includes(cover.sourceId)) {
+        errors.push(`${tag}: cover sourceId is not included in the entry's sourceIds.`);
+      }
+    }
+
+    // license must be documented
+    if (cover.license && !DOCUMENTED_LICENSE.test(String(cover.license)) && !cover.licenseUrl) {
+      errors.push(`${tag}: cover license is not documented (no known license token and no licenseUrl).`);
+    }
+
+    // real covers must render a visible image; fallbacks must be documented
+    if (!isFallback) {
+      if (!image) {
+        errors.push(`${tag}: real cover is not visibly renderable (no localPath or imageUrl).`);
+      } else if (String(image).startsWith("/")) {
+        const p = path.join(ROOT, "public", String(image).replace(/^\/+/, ""));
+        if (!fs.existsSync(p)) errors.push(`${tag}: cover image does not exist in public/: ${image}.`);
+      }
+      if (cover.isRealSourceCover !== true) {
+        errors.push(`${tag}: non-fallback cover must set isRealSourceCover true.`);
+      }
+      if (!cover.imageUrl && !image) warnings.push(`${tag}: cover has no imageUrl.`);
+    } else {
+      jurnalFallbackCovers++;
+      if (!cover.fallbackReason) {
+        errors.push(`${tag}: ${cover.coverKind} requires a fallbackReason.`);
+      }
+      if (cover.coverKind === "internal_diagram_last_resort") {
+        warnings.push(`${tag}: internal_diagram_last_resort cover used; replace with a real source visual.`);
+      }
+      warnings.push(`${tag}: coverKind ${cover.coverKind} is not a real source cover.`);
+    }
+
+    if (cover.coverKind && !REAL_COVER_KINDS.has(cover.coverKind) && !FALLBACK_COVER_KINDS.has(cover.coverKind)) {
+      errors.push(`${tag}: unknown coverKind ${cover.coverKind}.`);
     }
     if (AI_VISUAL_TERMS.test(JSON.stringify(cover))) {
       errors.push(`${tag}: cover appears to reference AI-generated imagery, which cannot be used.`);
     }
-    if (cover.src) jurnalWithCover++;
-    if (cover.type) coverTypeCounts.set(cover.type, (coverTypeCounts.get(cover.type) ?? 0) + 1);
+
+    // no reused cover image across entries (no single generic template)
+    if (image) {
+      jurnalWithCover++;
+      if (seenCoverImages.has(image)) {
+        errors.push(`${tag}: cover image reused across entries (shared with ${seenCoverImages.get(image)}).`);
+      } else {
+        seenCoverImages.set(image, entry.slug);
+      }
+    }
+    if (cover.coverKind) coverTypeCounts.set(cover.coverKind, (coverTypeCounts.get(cover.coverKind) ?? 0) + 1);
   }
 
   /* synopsis (mandatory, human, 35-80 words) */
@@ -573,6 +634,14 @@ for (const entry of journalEntries) {
 for (const [slug, count] of seenJurnalSlugs.entries()) {
   if (count > 1) errors.push(`[jurnal] duplicate slug "${slug}" appears ${count} times.`);
 }
+if (journalEntries.length > 0) {
+  const fallbackRatio = jurnalFallbackCovers / journalEntries.length;
+  if (fallbackRatio > 0.2) {
+    errors.push(
+      `[jurnal] ${jurnalFallbackCovers}/${journalEntries.length} (${Math.round(fallbackRatio * 100)}%) covers are fallbacks; must be 20% or less. Find real source covers.`,
+    );
+  }
+}
 
 /* ---- Coverage stats ---- */
 let publishedArticleCount = 0;
@@ -591,9 +660,11 @@ console.log(`  sources checked:        ${sourceCount}`);
 console.log(`  published articles:     ${publishedArticleCount}`);
 console.log(`  article image coverage: ${articlesWithVisual}/${publishedArticleCount}`);
 console.log(`  jurnal entries:         ${journalEntries.length}`);
-console.log(`  jurnal with cover:      ${jurnalWithCover}/${journalEntries.length}`);
+console.log(`  jurnal with cover image:${jurnalWithCover}/${journalEntries.length}`);
+console.log(`  jurnal real covers:     ${journalEntries.length - jurnalFallbackCovers}/${journalEntries.length}`);
+console.log(`  jurnal fallback covers: ${jurnalFallbackCovers}/${journalEntries.length}`);
 console.log(`  jurnal with synopsis:   ${jurnalWithSynopsis}/${journalEntries.length}`);
-console.log(`  cover types:            ${[...coverTypeCounts.entries()].map(([t, n]) => `${t}:${n}`).join(", ") || "none"}`);
+console.log(`  cover kinds:            ${[...coverTypeCounts.entries()].map(([t, n]) => `${t}:${n}`).join(", ") || "none"}`);
 console.log(`  em dash status:         ${errors.some((e) => e.startsWith("[em-dash]")) ? "FAIL" : "clean"}`);
 if (warnings.length) {
   console.log(`\n${warnings.length} warning(s):`);

@@ -30,9 +30,11 @@ entries were created to inflate the count, and no sources were invented.
 
 ## Cover, synopsis, and download coverage
 
-- Entries with a visible cover: 26 of 26 (topic-specific non-AI internal visuals;
-  cover types: map 10, diagram 15, timeline 1). See
-  `docs/nali_jurnal_cover_synopsis_report.md`.
+- Entries with a visible cover: 26 of 26, all REAL license-verified source visuals
+  (public domain / CC0 / CC BY / CC BY-SA) from Wikimedia Commons and public archives,
+  tied to a cited source. 0 fallbacks. Cover kinds: public_domain_visual 17,
+  archive_thumbnail 4, official_source_preview 3, museum_thumbnail 2. See
+  `docs/nali_jurnal_real_cover_replacement_report.md`.
 - Entries with a human synopsis (35 to 80 words): 26 of 26.
 - Entries with a working public `.txt` download: 26 of 26. Route format:
   `/jurnal/[slug]/download.txt`. See `docs/nali_jurnal_download_report.md`.

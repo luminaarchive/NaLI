@@ -26,8 +26,11 @@ export default function JurnalPage() {
     geography: e.geography,
     confidence: e.confidence,
     readingMinutes: e.readingMinutes,
-    coverSrc: e.cover.src,
+    coverImage: e.cover.localPath ?? e.cover.imageUrl ?? null,
     coverAlt: e.cover.alt,
+    coverIsReal: e.cover.isRealSourceCover,
+    coverSourceTitle: e.cover.sourceTitle,
+    coverPublisher: e.cover.publisherOrInstitution,
     sourceCount: e.sourceIds.length,
   }));
 

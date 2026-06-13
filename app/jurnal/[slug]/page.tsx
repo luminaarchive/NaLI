@@ -42,6 +42,7 @@ export default function JurnalEntryPage({ params }: { params: Params }) {
     .map((id) => getSourceBySlug(id))
     .filter((s): s is NonNullable<typeof s> => Boolean(s));
   const related = getRelatedJournalEntries(entry);
+  const coverImage = entry.cover.localPath ?? entry.cover.imageUrl ?? null;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -82,27 +83,45 @@ export default function JurnalEntryPage({ params }: { params: Params }) {
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-gray">{entry.dek}</p>
 
-        {/* mandatory visible cover near the top, with caption and credit */}
+        {/* mandatory visible cover near the top: real source image, or source-card fallback */}
         <figure className="mt-7" data-jurnal-cover="true">
-          <div className="overflow-hidden border border-dashed border-ink/55 bg-ink-wash/30">
-            <Image
-              src={entry.cover.src}
-              alt={entry.cover.alt}
-              width={1200}
-              height={675}
-              className="h-auto w-full object-contain"
-              priority
-            />
-          </div>
+          {coverImage ? (
+            <div className="overflow-hidden border border-dashed border-ink/55 bg-ink-wash/30">
+              <Image
+                src={coverImage}
+                alt={entry.cover.alt}
+                width={1200}
+                height={800}
+                className="h-auto w-full object-contain"
+                priority
+              />
+            </div>
+          ) : (
+            <div
+              className="border border-dashed border-ink/55 bg-ink-wash/40 p-6"
+              data-jurnal-cover-fallback="true"
+            >
+              <p className="label text-ink/60">Kartu sumber</p>
+              <p className="mt-2 font-display text-xl font-semibold leading-snug text-ink-black">
+                {entry.cover.sourceTitle}
+              </p>
+              <p className="mt-1 font-mono text-[0.74rem] text-ink/60">{entry.cover.publisherOrInstitution}</p>
+              <p className="mt-3 font-mono text-[0.7rem] text-ink/50">
+                Cover asli tidak ditampilkan karena lisensi belum jelas
+              </p>
+            </div>
+          )}
           <figcaption className="mt-3" data-jurnal-cover-credit="true">
             <p className="font-mono text-[0.76rem] leading-relaxed text-ink-charcoal">{entry.cover.caption}</p>
             <p className="mt-1 font-mono text-[0.68rem] leading-relaxed text-ink/60">
-              {entry.cover.attribution}.{" "}
-              <a href={entry.cover.sourceUrl} className="link-teal">
+              {entry.cover.creator ? `${entry.cover.creator}. ` : ""}
+              {entry.cover.publisherOrInstitution}.{" "}
+              <a href={entry.cover.sourceUrl} className="link-teal" data-jurnal-cover-source="true">
                 Sumber visual
               </a>
-              , {entry.cover.license}
-              {entry.cover.checkedAt ? <span className="text-ink/40">, dicek {entry.cover.checkedAt}</span> : null}
+              {". "}
+              {entry.cover.displayBasis}
+              {entry.cover.checkedAt ? <span className="text-ink/40"> Dicek {entry.cover.checkedAt}.</span> : null}
             </p>
           </figcaption>
         </figure>

@@ -16,8 +16,11 @@ export type JurnalCard = Pick<
   JournalEntry,
   "slug" | "title" | "synopsis" | "category" | "topics" | "geography" | "confidence" | "readingMinutes"
 > & {
-  coverSrc: string;
+  coverImage: string | null;
   coverAlt: string;
+  coverIsReal: boolean;
+  coverSourceTitle: string;
+  coverPublisher: string;
   sourceCount: number;
 };
 
@@ -134,16 +137,29 @@ export function JurnalList({ entries }: { entries: JurnalCard[] }) {
               href={`/jurnal/${e.slug}`}
               className="flex h-full flex-col border border-dashed border-ink/60 bg-paper transition-colors hover:bg-ink-wash"
             >
-              {/* mandatory visible cover */}
-              <div className="border-b border-dashed border-ink/45 bg-ink-wash/30">
-                <Image
-                  src={e.coverSrc}
-                  alt={e.coverAlt}
-                  width={1200}
-                  height={675}
-                  className="h-auto w-full object-cover"
-                />
-              </div>
+              {/* mandatory visible cover: real source image, or source-card fallback */}
+              {e.coverImage ? (
+                <div className="relative aspect-[16/9] border-b border-dashed border-ink/45 bg-ink-wash/30">
+                  <Image
+                    src={e.coverImage}
+                    alt={e.coverAlt}
+                    fill
+                    sizes="(max-width: 640px) 100vw, 50vw"
+                    className="object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="flex aspect-[16/9] flex-col justify-center border-b border-dashed border-ink/45 bg-ink-wash/40 p-5">
+                  <span className="label text-ink/60">Kartu sumber</span>
+                  <span className="mt-1 font-display text-base font-semibold leading-snug text-ink-black">
+                    {e.coverSourceTitle}
+                  </span>
+                  <span className="mt-1 font-mono text-[0.66rem] text-ink/60">{e.coverPublisher}</span>
+                  <span className="mt-2 font-mono text-[0.62rem] text-ink/50">
+                    Cover asli tidak ditampilkan karena lisensi belum jelas
+                  </span>
+                </div>
+              )}
               <div className="flex flex-1 flex-col p-5">
                 <div className="flex items-center justify-between gap-3">
                   <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-label text-ink">
@@ -156,11 +172,10 @@ export function JurnalList({ entries }: { entries: JurnalCard[] }) {
                 </h2>
                 <p className="mt-2 flex-1 text-sm leading-relaxed text-gray">{e.synopsis}</p>
                 <div className="mt-3 flex items-center justify-between gap-2">
-                  <span className="font-mono text-[0.64rem] uppercase tracking-wider text-ink/50">
-                    {e.topics.slice(0, 2).join(" · ")}
-                    {e.readingMinutes ? ` · ${e.readingMinutes} mnt` : ""}
+                  <span className="truncate font-mono text-[0.62rem] uppercase tracking-wider text-ink/45">
+                    Sampul: {e.coverPublisher}
                   </span>
-                  <span className="font-mono text-[0.62rem] uppercase tracking-wider text-ink-deep">
+                  <span className="shrink-0 font-mono text-[0.62rem] uppercase tracking-wider text-ink-deep">
                     {e.sourceCount} sumber
                   </span>
                 </div>

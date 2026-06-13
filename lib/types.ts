@@ -209,56 +209,83 @@ export type JournalCategory =
   | "ekologi";
 
 /**
- * Mandatory visible cover for a Jurnal entry. Displayed on the listing card and
- * the detail page. May be a licensed photo / archive image / map, or a
- * last-resort internal non-AI explanatory visual (in which case creator is
- * "NaLI by NatIve", license is "Internal explanatory visual for NaLI Jurnal",
- * and the caption states it is an explanatory visual, not a field photo).
+ * The kind of cover used for a Jurnal entry, in the founder's priority order.
+ * The default must be a real source publication / official source visual, NOT a
+ * NaLI-made decorative diagram. Internal diagrams and source-card fallbacks are
+ * documented last resorts only.
+ */
+export type JurnalCoverKind =
+  | "official_journal_cover"
+  | "official_report_cover"
+  | "official_book_cover"
+  | "archive_thumbnail"
+  | "museum_thumbnail"
+  | "official_source_preview"
+  | "public_domain_visual"
+  | "source_card_fallback"
+  | "internal_diagram_last_resort";
+
+/**
+ * Mandatory visible cover for a Jurnal entry, tied to a cited source. Real
+ * source / archive / institutional visuals are the default; covers with a
+ * `localPath` or `imageUrl` render as actual images. Source-card fallbacks (no
+ * safe image) render as a restrained bibliographic card and must carry a
+ * `fallbackReason`.
  */
 export interface JurnalCover {
   id: string;
-  /** Renderable local path or remote URL actually shown. */
-  src: string;
-  type: "photo" | "archive_image" | "map" | "diagram" | "timeline" | "chart";
+  coverKind: JurnalCoverKind;
   title: string;
+  /** Title of the cited source the cover comes from. */
+  sourceTitle: string;
+  /** Must resolve to one of the entry's cited sourceIds. */
+  sourceId: string;
+  publisherOrInstitution: string;
   creator?: string;
-  institution?: string;
-  /** Source page or source record used to build / license the visual. */
+  /** Remote image URL, if displayed by hotlink (not used by default). */
+  imageUrl?: string;
+  /** Local downloaded image path under /public, if displayed locally. */
+  localPath?: string;
+  /** Real source / publisher / archive / publication page. */
   sourceUrl: string;
   license: string;
   licenseUrl?: string;
+  /** Why this visual may be displayed (e.g. public domain, CC license, NASA). */
+  displayBasis: string;
   attribution: string;
   caption: string;
   alt: string;
   checkedAt: string;
-  relatedJurnalIds?: string[];
+  /** True unless a documented fallback (source-card or internal diagram). */
+  isRealSourceCover: boolean;
+  fallbackReason?: string;
 }
 
-export interface JournalEntry {
-  /** Stable id, equal to the slug. */
+/**
+ * The raw entry authored in content/jurnal/clusters/*.ts via j(). The mandatory
+ * cover is attached at load time from the covers manifest, so the raw shape
+ * omits it; the loader produces the full JournalEntry.
+ */
+export interface RawJournalEntry {
   id: string;
   slug: string;
   title: string;
-  /** One-line standfirst. */
   dek: string;
-  /** Human-written synopsis, 35 to 80 words, shown on listing + detail. */
   synopsis: string;
   category: JournalCategory;
   topics: string[];
   geography: string[];
-  /** Must resolve to real entries in Arsip Sumber (content/sources). */
   sourceIds: string[];
   confidence: Confidence;
-  /** Markdown body, 250 to 600 words. */
   body: string;
   keyTakeaway: string;
   limitations: string[];
-  /** Mandatory visible cover. */
-  cover: JurnalCover;
-  /** Optional reference to an article image id, kept for future visuals. */
-  imageId?: string;
-  /** ISO date the entry was last checked. */
   checkedAt: string;
+}
+
+export interface JournalEntry extends RawJournalEntry {
+  /** Mandatory visible cover, tied to a cited source. */
+  cover: JurnalCover;
   /** Filled by the loader. */
   readingMinutes?: number;
 }

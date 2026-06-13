@@ -47,21 +47,33 @@ async function check(url, expect = 200) {
 const EM_DASH = "\u2014";
 const BANNED = /jalan yang lebih pelan|Yang dicari bukan sensasi|membahas topik dengan sumber terbuka|menjelaskan batas bukti/i;
 
-// Jurnal detail page must visibly render a cover and a synopsis.
+// Jurnal detail must render a visible cover (real image or labeled source-card),
+// its caption/credit + source link, the synopsis, and the download link.
 async function checkJurnalDetail(entry) {
   const url = `/jurnal/${entry.slug}`;
   try {
     const res = await fetch(new URL(url, BASE_URL));
     const html = await res.text();
-    const hasCover =
-      html.includes('data-jurnal-cover="true"') &&
-      (html.includes(`/images/jurnal-covers/${entry.slug}.svg`) || /<img[^>]+jurnal-covers/i.test(html));
+    const hasCoverBlock = html.includes('data-jurnal-cover="true"');
+    // a real cover renders an <img> of the downloaded file (next/image URL-encodes
+    // the path, so accept both encoded and plain forms); a fallback is labeled
+    const hasRealImage =
+      /<img/i.test(html) &&
+      (html.includes(`jurnal-covers%2F${entry.slug}`) || html.includes(`jurnal-covers/${entry.slug}`));
+    const hasFallbackCard =
+      html.includes('data-jurnal-cover-fallback="true"') &&
+      /Cover asli tidak ditampilkan karena lisensi belum jelas/i.test(html);
+    const hasCredit = html.includes('data-jurnal-cover-credit="true"');
+    const hasSourceLink = html.includes('data-jurnal-cover-source="true"');
     const hasSynopsis = html.includes('data-jurnal-synopsis="true"');
     const hasDownload = html.includes(`/jurnal/${entry.slug}/download.txt`);
-    const ok = res.status === 200 && hasCover && hasSynopsis && hasDownload;
+    const coverVisible = hasCoverBlock && (hasRealImage || hasFallbackCard) && hasCredit && hasSourceLink;
+    const ok = res.status === 200 && coverVisible && hasSynopsis && hasDownload;
     return {
       url,
-      status: ok ? 200 : `cover:${hasCover} synopsis:${hasSynopsis} download:${hasDownload} http:${res.status}`,
+      status: ok
+        ? 200
+        : `cover:${hasCoverBlock} img:${hasRealImage} fallback:${hasFallbackCard} credit:${hasCredit} srcLink:${hasSourceLink} synopsis:${hasSynopsis} download:${hasDownload} http:${res.status}`,
       ok,
     };
   } catch (error) {
@@ -82,15 +94,16 @@ async function checkDownload(entry) {
     const hasSources = body.includes("SUMBER");
     const hasLimits = body.includes("BATASAN");
     const hasChecked = body.includes("DICEK");
+    const hasCover = body.includes("COVER") && body.includes("Jenis cover:") && body.includes("Lisensi:");
     const noEm = !body.includes(EM_DASH);
     const noBanned = !BANNED.test(body);
     const ok =
-      res.status === 200 && okType && hasTitle && hasSynopsis && hasSources && hasLimits && hasChecked && noEm && noBanned;
+      res.status === 200 && okType && hasTitle && hasSynopsis && hasSources && hasLimits && hasChecked && hasCover && noEm && noBanned;
     return {
       url,
       status: ok
         ? 200
-        : `http:${res.status} type:${okType} title:${hasTitle} syn:${hasSynopsis} src:${hasSources} lim:${hasLimits} chk:${hasChecked} noEm:${noEm} noBanned:${noBanned}`,
+        : `http:${res.status} type:${okType} title:${hasTitle} syn:${hasSynopsis} src:${hasSources} lim:${hasLimits} chk:${hasChecked} cover:${hasCover} noEm:${noEm} noBanned:${noBanned}`,
       ok,
     };
   } catch (error) {

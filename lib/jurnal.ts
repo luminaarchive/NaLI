@@ -1,10 +1,21 @@
 import readingTime from "reading-time";
-import type { JournalCategory, JournalEntry } from "./types";
+import type { JournalCategory, JournalEntry, JurnalCover, RawJournalEntry } from "./types";
 import { journalEntries as rawEntries } from "@/content/jurnal";
+import coversManifest from "@/content/jurnal/covers.json";
 
-function withReadingTime(entry: JournalEntry): JournalEntry {
+const COVERS = coversManifest as Record<string, JurnalCover>;
+
+/** Attach the mandatory cover from the manifest and add its sourceId to the cited sources. */
+function resolve(entry: RawJournalEntry): JournalEntry {
+  const cover = COVERS[entry.slug];
+  const sourceIds =
+    cover?.sourceId && !entry.sourceIds.includes(cover.sourceId)
+      ? [...entry.sourceIds, cover.sourceId]
+      : entry.sourceIds;
   return {
     ...entry,
+    sourceIds,
+    cover,
     readingMinutes: Math.max(1, Math.round(readingTime(entry.body).minutes)),
   };
 }
@@ -16,7 +27,7 @@ export function getAllJournalEntries(): JournalEntry[] {
   if (_cache) return _cache;
   const bySlug = new Map<string, JournalEntry>();
   for (const entry of rawEntries) {
-    if (!bySlug.has(entry.slug)) bySlug.set(entry.slug, withReadingTime(entry));
+    if (!bySlug.has(entry.slug)) bySlug.set(entry.slug, resolve(entry));
   }
   _cache = [...bySlug.values()].sort((a, b) => {
     const byDate = (b.checkedAt ?? "").localeCompare(a.checkedAt ?? "");

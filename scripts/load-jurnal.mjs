@@ -1,45 +1,33 @@
 /**
  * Loads Jurnal entries from the TypeScript cluster files for use by Node
  * validators (which cannot import the path-aliased TS directly). Each cluster
- * file exports a single array of entries built with the `j()` helper. We strip
- * the imports, inline a minimal `j`, transpile to JS, and import it as a data
- * URL. This keeps the TS files the single source of truth.
+ * file exports a single array of raw entries built with the `j()` helper. We
+ * strip the imports, inline a trivial `j`, transpile to JS, and import it as a
+ * data URL. Covers are attached from content/jurnal/covers.json (the manifest
+ * built by scripts/build-jurnal-covers.mjs), mirroring lib/jurnal.ts.
  */
 import fs from "node:fs";
 import path from "node:path";
 import ts from "typescript";
 
 const CLUSTERS_DIR = path.join(process.cwd(), "content", "jurnal", "clusters");
+const MANIFEST = path.join(process.cwd(), "content", "jurnal", "covers.json");
 
-// Mirror of content/jurnal/_helper.ts j(): builds the full mandatory cover from
-// the light per-entry cover input. Keep in sync with the real helper.
-const J_SHIM = `
-const __SITE_URL = "https://nalijournal.vercel.app";
-const __COVER_PHRASE = "Visual penjelas, bukan foto lapangan.";
-const j = (e) => {
-  const caption = e.cover.caption.includes(__COVER_PHRASE)
-    ? e.cover.caption
-    : e.cover.caption + " " + __COVER_PHRASE;
-  const cover = {
-    id: "cover-" + e.slug,
-    src: "/images/jurnal-covers/" + e.slug + ".svg",
-    type: e.cover.type,
-    title: e.cover.title,
-    creator: "NaLI by NatIve",
-    sourceUrl: __SITE_URL + "/arsip-sumber/" + e.sourceIds[0],
-    license: "Internal explanatory visual for NaLI Jurnal",
-    attribution: "Visual internal NaLI by NatIve, non-AI",
-    caption,
-    alt: e.cover.alt,
-    checkedAt: e.checkedAt,
-    relatedJurnalIds: [e.slug],
-  };
-  return { ...e, id: e.id ?? e.slug, cover };
-};
-`;
+// Mirror of content/jurnal/_helper.ts j(): a passthrough that defaults id.
+const J_SHIM = `const j = (e) => ({ ...e, id: e.id ?? e.slug });\n`;
+
+function loadManifest() {
+  if (!fs.existsSync(MANIFEST)) return {};
+  try {
+    return JSON.parse(fs.readFileSync(MANIFEST, "utf8"));
+  } catch {
+    return {};
+  }
+}
 
 export async function loadJournalEntries() {
   if (!fs.existsSync(CLUSTERS_DIR)) return [];
+  const covers = loadManifest();
   const files = fs
     .readdirSync(CLUSTERS_DIR)
     .filter((f) => f.endsWith(".ts"))
@@ -49,9 +37,7 @@ export async function loadJournalEntries() {
   for (const file of files) {
     const full = path.join(CLUSTERS_DIR, file);
     let src = fs.readFileSync(full, "utf8");
-    // strip every import line (the j helper + the `import type` line)
     src = src.replace(/^\s*import[^\n]*\n/gm, "");
-    // turn the single named export into a default export so we can read it back
     src = src.replace(/export\s+const\s+\w+\s*=/, "export default");
     src = J_SHIM + src;
 
@@ -63,7 +49,14 @@ export async function loadJournalEntries() {
     const mod = await import(url);
     const arr = mod.default;
     if (Array.isArray(arr)) {
-      for (const entry of arr) all.push({ ...entry, __file: `content/jurnal/clusters/${file}` });
+      for (const entry of arr) {
+        const cover = covers[entry.slug];
+        const sourceIds =
+          cover && cover.sourceId && !entry.sourceIds.includes(cover.sourceId)
+            ? [...entry.sourceIds, cover.sourceId]
+            : entry.sourceIds;
+        all.push({ ...entry, sourceIds, cover, __file: `content/jurnal/clusters/${file}` });
+      }
     }
   }
   return all;
