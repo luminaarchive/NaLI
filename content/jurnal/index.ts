@@ -2,6 +2,7 @@ import type { RawJournalEntry } from "@/lib/types";
 import { satwaEndemik } from "./clusters/satwa-endemik";
 import { geologiGunungApi } from "./clusters/geologi-gunung-api";
 import { lautHutanIklim } from "./clusters/laut-hutan-iklim";
+import { satwaKonservasiA } from "./clusters/satwa-konservasi-a";
 
 /**
  * Master list of Jurnal entries. Each cluster is a separate file so batches can
@@ -12,4 +13,5 @@ export const journalEntries: RawJournalEntry[] = [
   ...satwaEndemik,
   ...geologiGunungApi,
   ...lautHutanIklim,
+  ...satwaKonservasiA,
 ];

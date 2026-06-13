@@ -5,8 +5,10 @@ Date: 2026-06-12
 ## Honest status
 
 Target: 500 natural-knowledge entries.
-Completed this run: 26 genuine, source-backed entries.
-This is an honest partial count. The 500 target is NOT met and is NOT claimed as done.
+Completed so far: 49 genuine, source-backed entries (26 initial + 23 in Batch 1a:
+endemic species and conservation status). Source archive: 197 verified entries
+(toward the 250 minimum). This is an honest partial count. The 500 target is NOT met
+and is NOT claimed as done. Covers: 49/49 real license-verified source visuals, 0 fallback.
 
 The founder explicitly chose the approach "infra plus genuine batches, honest count":
 build the complete Jurnal system now, author as many real, distinct, source-backed

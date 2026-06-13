@@ -56,6 +56,31 @@ const CONFIG = {
   "deforestasi-dipantau-satelit": { q: "Borneo fires deforestation NASA satellite", kind: "official_source_preview", label: "Kebakaran dan hilangnya hutan dari citra satelit" },
   "jakarta-penurunan-tanah": { q: "Jakarta flooding", kind: "public_domain_visual", label: "Banjir di jalanan Jakarta" },
   "citarum-sungai-dan-pencemaran": { q: "Citarum river West Java", kind: "public_domain_visual", label: "Sungai Citarum, Jawa Barat" },
+
+  // Batch 1a: endemic species and conservation status
+  "harimau-sumatra": { q: "Sumatran tiger Panthera tigris sumatrae", kind: "public_domain_visual", label: "Harimau Sumatra (Panthera tigris sumatrae)" },
+  "gajah-sumatra": { q: "Sumatran elephant Elephas maximus sumatranus", kind: "public_domain_visual", label: "Gajah Sumatra (Elephas maximus sumatranus)" },
+  "badak-sumatra": { q: "Sumatran rhinoceros Dicerorhinus sumatrensis", kind: "public_domain_visual", label: "Badak Sumatra (Dicerorhinus sumatrensis)" },
+  "orangutan-kalimantan": { q: "Bornean orangutan Pongo pygmaeus", kind: "public_domain_visual", label: "Orangutan Kalimantan (Pongo pygmaeus)" },
+  "orangutan-sumatra": { q: "Sumatran orangutan Pongo abelii", kind: "public_domain_visual", label: "Orangutan Sumatra (Pongo abelii)" },
+  "bekantan-hidung-panjang": { q: "Proboscis monkey Nasalis larvatus", kind: "public_domain_visual", label: "Bekantan (Nasalis larvatus)" },
+  "owa-jawa": { q: "Javan gibbon Hylobates moloch", kind: "public_domain_visual", label: "Owa Jawa (Hylobates moloch)" },
+  "siamang-kantung-suara": { q: "Siamang Symphalangus syndactylus", kind: "public_domain_visual", label: "Siamang (Symphalangus syndactylus)" },
+  "beruang-madu": { q: "Sun bear Helarctos malayanus", kind: "public_domain_visual", label: "Beruang madu (Helarctos malayanus)" },
+  "tapir-asia-belang": { q: "Malayan tapir Tapirus indicus", kind: "public_domain_visual", label: "Tapir Asia (Tapirus indicus)" },
+  "trenggiling-sisik": { q: "Sunda pangolin Manis javanica", kind: "public_domain_visual", label: "Trenggiling Sunda (Manis javanica)" },
+  "macan-tutul-jawa": { q: "Javan leopard Panthera pardus melas", kind: "public_domain_visual", label: "Macan tutul Jawa (Panthera pardus melas)" },
+  "banteng-sapi-liar": { q: "Banteng Bos javanicus", kind: "public_domain_visual", label: "Banteng (Bos javanicus)" },
+  "rusa-bawean": { q: "Bawean deer Axis kuhlii", kind: "public_domain_visual", label: "Rusa Bawean (Axis kuhlii)" },
+  "kucing-merah-kalimantan": { q: "Bay cat Catopuma badia Borneo", kind: "public_domain_visual", label: "Kucing merah Kalimantan (Catopuma badia)" },
+  "kucing-kepala-datar": { q: "Flat-headed cat Prionailurus planiceps", kind: "public_domain_visual", label: "Kucing kepala datar (Prionailurus planiceps)" },
+  "macan-dahan-sunda": { q: "Sunda clouded leopard Neofelis diardi", kind: "public_domain_visual", label: "Macan dahan Sunda (Neofelis diardi)" },
+  "binturong-bau-popcorn": { q: "Binturong Arctictis binturong", kind: "public_domain_visual", label: "Binturong (Arctictis binturong)" },
+  "dugong-pemakan-lamun": { q: "Dugong dugon", kind: "public_domain_visual", label: "Dugong (Dugong dugon)" },
+  "pesut-mahakam": { q: "Irrawaddy dolphin Orcaella brevirostris", kind: "public_domain_visual", label: "Pesut, lumba-lumba Irrawaddy (Orcaella brevirostris)" },
+  "yaki-sulawesi": { q: "Celebes crested macaque Macaca nigra", kind: "public_domain_visual", label: "Yaki (Macaca nigra)" },
+  "kukang-jawa": { q: "Javan slow loris Nycticebus javanicus", kind: "public_domain_visual", label: "Kukang Jawa (Nycticebus javanicus)" },
+  "monyet-mentawai": { q: "Kloss gibbon Hylobates klossii", kind: "public_domain_visual", label: "Primata Mentawai (bilou, Hylobates klossii)" },
 };
 
 function licenseOk(short, code) {
