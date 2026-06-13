@@ -40,19 +40,21 @@ export default async function SeriPage() {
                 id={s.slug}
                 className="scroll-mt-24 border border-dashed border-ink/60 bg-paper p-6 sm:p-8"
               >
-                <div className="flex flex-wrap items-center gap-3">
-                  <span
-                    className={`border border-dashed px-2.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-label ${
-                      s.status === "active"
-                        ? "border-ink/60 text-ink-deep"
-                        : "border-ink/40 text-gray"
-                    }`}
-                  >
-                    {s.status === "active" ? "Aktif" : "Direncanakan"}
-                  </span>
-                  <span className="font-mono text-[0.7rem] uppercase tracking-wider text-ink/60">
-                    {inSeries.length} tulisan
-                  </span>
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-ink/20 pb-3 mb-4 font-mono text-[0.66rem] uppercase tracking-wider text-ink/70">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`border border-dashed px-2 py-0.5 font-semibold ${
+                        s.status === "active"
+                          ? "border-ink/65 text-ink-deep bg-ink-wash/30"
+                          : "border-ink/40 text-gray"
+                      }`}
+                    >
+                      {s.status === "active" ? "AKTIF" : "DIRENCANAKAN"}
+                    </span>
+                    <span>{"//"}</span>
+                    <span>{inSeries.length} TULISAN</span>
+                  </div>
+                  <span>REF NO. SER-{s.slug.toUpperCase()}</span>
                 </div>
 
                 <h2 className="mt-4 font-display text-2xl font-bold uppercase leading-tight text-ink sm:text-3xl">
@@ -68,10 +70,10 @@ export default async function SeriPage() {
                       <li key={a.slug} className="py-3">
                         <Link
                           href={`/articles/${a.slug}`}
-                          className="group flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1"
+                          className="group flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 interactive-link"
                         >
-                          <span className="font-display text-lg text-ink-charcoal transition-colors group-hover:text-ink-deep">
-                            {a.title}
+                          <span className="font-display text-lg text-ink-charcoal group-hover:text-ink-deep">
+                            {a.title} <span className="link-arrow">→</span>
                           </span>
                           <ConfidenceBadge confidence={a.confidence} size="sm" />
                         </Link>

@@ -29,30 +29,38 @@ export default function KontakPage() {
         description="Koreksi yang berdasar sangat kami hargai, begitu juga petunjuk untuk penelusuran berikutnya."
       />
 
-      <div className="container-read py-12 sm:py-16">
-        <div className="border border-dashed border-ink/70 bg-paper p-7">
-          <p className="label">Email</p>
+      <div className="container-read py-12 sm:py-16 space-y-6">
+        <div className="border border-dashed border-ink/70 bg-paper p-6">
+          <div className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-wider text-ink/70 border-b border-dashed border-ink/20 pb-3 mb-4">
+            <span className="bg-ink-wash/30 border border-dashed border-ink/35 px-2 py-0.5 font-semibold text-ink">KONTAK SURAT</span>
+            <span>{"//"}</span>
+            <span>DIRECT EMAIL</span>
+          </div>
           <a
             href={`mailto:${EMAIL}`}
-            className="mt-2 inline-block font-display text-2xl text-ink transition-colors hover:text-ink-deep sm:text-3xl"
+            className="inline-flex items-center gap-2 font-display text-2xl text-ink transition-colors hover:text-ink-deep sm:text-3xl interactive-link"
           >
-            {EMAIL}
+            {EMAIL} <span className="link-arrow-diagonal">↗</span>
           </a>
-          <p className="mt-3 text-sm text-gray">
-            Untuk koreksi, sertakan tautan tulisan dan sumber yang mendukung.
+          <p className="mt-3 font-mono text-xs text-gray">
+            Untuk koreksi, sertakan rujukan artikel yang dimaksud serta sumber primer/sekunder yang valid.
           </p>
         </div>
 
-        <div className="mt-10">
-          <p className="label">Tempat kami menerbitkan</p>
-          <ul className="mt-4 space-y-3">
+        <div className="border border-dashed border-ink/70 bg-paper p-6">
+          <div className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-wider text-ink/70 border-b border-dashed border-ink/20 pb-3 mb-4">
+            <span className="bg-ink-wash/30 border border-dashed border-ink/35 px-2 py-0.5 font-semibold text-ink">SALURAN INFORMASI</span>
+            <span>{"//"}</span>
+            <span>PUBLICATION FEEDS</span>
+          </div>
+          <ul className="space-y-3 font-mono text-xs text-gray">
             {CHANNELS.map((c) => (
               <li
                 key={c.label}
-                className="flex items-center justify-between border-b border-dashed border-ink/40 pb-3"
+                className="flex items-center justify-between border-b border-dashed border-ink/20 pb-2 last:border-0"
               >
-                <span className="text-ink-black">{c.label}</span>
-                <span className="text-sm text-gray">{c.note}</span>
+                <span className="text-ink-deep font-semibold">{c.label}</span>
+                <span>{c.note}</span>
               </li>
             ))}
           </ul>

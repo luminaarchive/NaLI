@@ -197,19 +197,22 @@ export default function MetodologiPage() {
           </p>
         </div>
 
-        <ol className="mt-12 space-y-10">
+        <div className="mt-12 grid gap-6 sm:grid-cols-2">
           {SECTIONS.map((s) => (
-            <li key={s.n} className="border-t border-dashed border-ink/50 pt-6">
-              <div className="flex gap-5">
-                <span className="font-mono text-sm text-ink">{s.n}</span>
-                <div className="prose-nali">
-                  <h2 className="!mt-0 font-display text-2xl text-ink-black">{s.title}</h2>
+            <div key={s.n} className="border border-dashed border-ink/40 bg-paper p-5 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between border-b border-dashed border-ink/20 pb-3 mb-4 font-mono text-[0.66rem] uppercase tracking-wider text-ink/70">
+                  <span className="bg-ink-wash/30 border border-dashed border-ink/25 px-2 py-0.5 font-semibold text-ink">PROSEDUR METODE</span>
+                  <span>REF #{s.n}</span>
+                </div>
+                <h2 className="font-display text-lg font-bold uppercase text-ink">{s.title}</h2>
+                <div className="mt-4 font-mono text-[0.78rem] leading-relaxed text-gray space-y-2 [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:space-y-1 [&_strong]:text-ink-deep">
                   {s.body}
                 </div>
               </div>
-            </li>
+            </div>
           ))}
-        </ol>
+        </div>
       </div>
     </>
   );
