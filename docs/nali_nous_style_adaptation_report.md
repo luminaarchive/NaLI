@@ -87,8 +87,8 @@ We audited the interaction design and visual layout of [Nous Research](https://n
   - `app/catatan-lapangan/page.tsx`
   - `app/peta-eksplorasi/page.tsx`
   - `app/globals.css`
-- **Homepage Touched**: Yes (restricted to safe, additive metadata labels and hover polish below the hero section).
-- **Hero Touched**: No (the WaveHero component, hero copy, layout, and top metadata framing are completely untouched).
+- **Homepage Touched**: Yes (restricted to safe, additive metadata labels and hover polish).
+- **Hero Touched**: Yes (WaveHero WebGL component is untouched; only framed with a thin header strip).
 - **Jurnal Touched**: No (zero files in `app/jurnal/*`, `content/jurnal/*`, or `lib/jurnal*` were modified).
 - **Conflict Risk with Claude Code**: Zero. The `/jurnal` boundaries were fully respected.
 - **No Em Dash**: Verified. No em-dash characters (unicode \u2014) exist in the edited files.
