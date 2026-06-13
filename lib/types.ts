@@ -275,6 +275,7 @@ export interface PublicationDownload {
   note: string;
   /** Secondary NaLI metadata TXT route. */
   metadataUrl: string;
+  fileSize?: string;
 }
 
 /**
@@ -311,6 +312,12 @@ export interface RawPublication {
   relatedArticleIds?: string[];
   limitations: string[];
   checkedAt: string;
+  volume?: string;
+  issue?: string;
+  pages?: string;
+  fileSize?: string;
+  peerReviewed?: boolean;
+  license?: string;
 }
 
 export interface JournalPublication extends RawPublication {

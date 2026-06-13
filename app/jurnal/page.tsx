@@ -35,6 +35,16 @@ export default function JurnalPage() {
     downloadUrl: p.download.primaryUrl,
     coverImage: p.cover.localPath ?? p.cover.imageUrl ?? null,
     coverAlt: p.cover.alt,
+    // Academic metadata
+    authors: p.authors,
+    language: p.language,
+    peerReviewed: p.peerReviewed,
+    volume: p.volume,
+    issue: p.issue,
+    pages: p.pages,
+    fileSize: p.download.fileSize,
+    license: p.license,
+    cover: p.cover,
   }));
 
   return (
