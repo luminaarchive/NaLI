@@ -89,7 +89,8 @@ async function checkDownload(entry) {
     const ct = res.headers.get("content-type") ?? "";
     const body = await res.text();
     const okType = /text\/(plain|markdown)/i.test(ct);
-    const hasTitle = body.includes(entry.title);
+    const cleanTitle = entry.title.replace(/<\/?[^>]+(>|$)/g, "");
+    const hasTitle = body.includes(cleanTitle);
     const hasSynopsis = body.includes("SINOPSIS");
     const hasSources = body.includes("URL SUMBER");
     const hasLimits = body.includes("BATASAN");

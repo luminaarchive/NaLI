@@ -1,6 +1,8 @@
 import { getPublicationBySlug, getPublicationSlugs } from "@/lib/jurnal";
 import { ACCESS_TYPE_LABEL, PUBLICATION_TYPE_LABEL } from "@/lib/types";
 import { SITE } from "@/lib/site";
+import { stripHtmlTags } from "@/lib/jurnal-format";
+
 
 export const dynamic = "force-static";
 
@@ -14,7 +16,7 @@ function citation(pub: NonNullable<ReturnType<typeof getPublicationBySlug>>): st
   const authors = pub.authors && pub.authors.length > 0 ? `${pub.authors.join("; ")}. ` : "";
   const year = pub.year ? `(${pub.year}). ` : "";
   const doi = pub.doi ? ` https://doi.org/${pub.doi}` : ` ${pub.sourceUrl}`;
-  return `${authors}${year}${pub.title}. ${pub.publisherOrInstitution}.${doi}`;
+  return `${authors}${year}${stripHtmlTags(pub.title)}. ${pub.publisherOrInstitution}.${doi}`;
 }
 
 function buildText(slug: string): string | null {
@@ -27,8 +29,8 @@ function buildText(slug: string): string | null {
     `Berkas metadata yang disusun NaLI. Ini bukan naskah asli publikasi.`,
     ``,
     `JUDUL`,
-    pub.title,
-    ...(pub.originalTitle && pub.originalTitle !== pub.title ? [`Judul asli: ${pub.originalTitle}`] : []),
+    stripHtmlTags(pub.title),
+    ...(pub.originalTitle && pub.originalTitle !== pub.title ? [`Judul asli: ${stripHtmlTags(pub.originalTitle)}`] : []),
     ``,
     `JENIS PUBLIKASI`,
     PUBLICATION_TYPE_LABEL[pub.publicationType],
@@ -62,7 +64,7 @@ function buildText(slug: string): string | null {
     pub.geography.join(", "),
     ``,
     `COVER`,
-    `Visual: ${pub.cover.title}`,
+    `Visual: ${stripHtmlTags(pub.cover.title)}`,
     `Penerbit/lembaga: ${pub.cover.publisherOrInstitution}`,
     ...(pub.cover.creator ? [`Pencipta: ${pub.cover.creator}`] : []),
     `Sumber visual: ${pub.cover.sourceUrl}`,

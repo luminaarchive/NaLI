@@ -9,6 +9,8 @@ import {
   type AccessType,
   type PublicationType,
 } from "@/lib/types";
+import { renderItalicTitle, stripHtmlTags } from "@/lib/jurnal-format";
+
 
 const ALL = "__all__";
 
@@ -137,7 +139,7 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
           <li key={i.slug} className="flex h-full flex-col border border-dashed border-ink/60 bg-paper">
             {i.coverImage ? (
               <Link href={`/jurnal/${i.slug}`} className="relative block aspect-[16/9] border-b border-dashed border-ink/45 bg-ink-wash/30">
-                <Image src={i.coverImage} alt={i.coverAlt} fill sizes="(max-width: 640px) 100vw, 50vw" className="object-contain p-4" />
+                <Image src={i.coverImage} alt={stripHtmlTags(i.coverAlt)} fill sizes="(max-width: 640px) 100vw, 50vw" className="object-contain p-4" />
               </Link>
             ) : (
               <Link
@@ -145,7 +147,7 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
                 className="flex aspect-[16/9] flex-col justify-center border-b border-dashed border-ink/45 bg-ink-wash/40 p-5 transition-colors hover:bg-ink-wash"
               >
                 <span className="label text-ink/60">{PUBLICATION_TYPE_LABEL[i.publicationType]}</span>
-                <span className="mt-1 font-display text-base font-semibold leading-snug text-ink-black line-clamp-3">{i.title}</span>
+                <span className="mt-1 font-display text-base font-semibold leading-snug text-ink-black line-clamp-3">{renderItalicTitle(i.title)}</span>
                 <span className="mt-1 font-mono text-[0.64rem] text-ink/60">{i.journalOrCollection ?? i.publisherOrInstitution}</span>
               </Link>
             )}
@@ -165,7 +167,7 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
               </div>
               <h2 className="mt-3 font-display text-base font-semibold leading-snug text-ink-black">
                 <Link href={`/jurnal/${i.slug}`} className="hover:text-ink-deep hover:underline">
-                  {i.title}
+                  {renderItalicTitle(i.title)}
                 </Link>
               </h2>
               <p className="mt-1 font-mono text-[0.64rem] uppercase tracking-wider text-ink/55">
