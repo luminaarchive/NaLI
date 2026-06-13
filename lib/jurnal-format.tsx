@@ -35,3 +35,20 @@ export function renderItalicTitle(title: string): React.ReactNode {
     </>
   );
 }
+
+/**
+ * Formats raw API license codes to standardized, human-readable strings.
+ */
+export function formatLicense(license: string | undefined): string {
+  if (!license) return "-";
+  const lower = license.toLowerCase().trim();
+  if (lower === "cc-by" || lower === "cc by") return "CC BY 4.0";
+  if (lower === "cc-by-sa" || lower === "cc by-sa") return "CC BY-SA";
+  if (lower === "cc-by-nc" || lower === "cc by-nc") return "CC BY-NC";
+  if (lower === "cc-by-nd" || lower === "cc by-nd") return "CC BY-ND";
+  if (lower === "cc-by-nc-sa" || lower === "cc by-nc-sa") return "CC BY-NC-SA";
+  if (lower === "cc-by-nc-nd" || lower === "cc by-nc-nd") return "CC BY-NC-ND";
+  if (lower === "cc0") return "CC0 1.0 Universal";
+  if (lower === "other-oa" || lower === "open-access" || lower === "open access") return "Open Access";
+  return license;
+}
