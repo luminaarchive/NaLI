@@ -196,49 +196,46 @@ export interface FieldNote {
  * NaLI does NOT author the publication; the synopsis summarises the external work.
  */
 export type PublicationType =
-  | "journal"
   | "journal_article"
-  | "journal_issue"
   | "report"
   | "book"
   | "monograph"
   | "proceeding"
   | "dataset"
   | "archive_record"
-  | "institutional_page";
+  | "museum_record"
+  | "institutional_document";
 
 export type AccessType =
   | "open_access"
   | "free_to_read"
-  | "metadata_only"
-  | "paywalled"
-  | "unknown";
+  | "official_pdf_available"
+  | "metadata_only";
 
-export type DownloadKind =
-  | "metadata_txt"
-  | "metadata_md"
-  | "external_pdf_link"
-  | "local_open_access_pdf";
+/** What the primary download button delivers. Never metadata TXT as primary. */
+export type DownloadPrimaryKind =
+  | "official_pdf"
+  | "official_document"
+  | "official_dataset"
+  | "external_source_only";
 
 export const PUBLICATION_TYPE_LABEL: Record<PublicationType, string> = {
-  journal: "Jurnal",
   journal_article: "Artikel jurnal",
-  journal_issue: "Edisi jurnal",
   report: "Laporan",
   book: "Buku",
   monograph: "Monograf",
   proceeding: "Prosiding",
   dataset: "Dataset",
   archive_record: "Rekaman arsip",
-  institutional_page: "Halaman lembaga",
+  museum_record: "Rekaman museum",
+  institutional_document: "Dokumen lembaga",
 };
 
 export const ACCESS_TYPE_LABEL: Record<AccessType, string> = {
   open_access: "Akses terbuka",
   free_to_read: "Gratis dibaca",
+  official_pdf_available: "PDF resmi tersedia",
   metadata_only: "Metadata saja",
-  paywalled: "Berbayar",
-  unknown: "Tidak diketahui",
 };
 
 /**
@@ -265,17 +262,25 @@ export interface PublicationCover {
   fallbackReason?: string;
 }
 
+/**
+ * The PRIMARY download. Points to the real official PDF / document / dataset
+ * when available (label "Download PDF"); otherwise external_source_only opens the
+ * official source page. NaLI metadata TXT is a SEPARATE secondary link, never the
+ * primary action.
+ */
 export interface PublicationDownload {
-  enabled: boolean;
-  downloadKind: DownloadKind;
-  downloadUrl: string;
+  primaryKind: DownloadPrimaryKind;
+  primaryUrl: string;
+  label: string;
   note: string;
+  /** Secondary NaLI metadata TXT route. */
+  metadataUrl: string;
 }
 
 /**
- * A real external publication record authored in
- * content/jurnal/publications/*.ts. The cover is attached at load time from the
- * cover manifest (pub-covers.json) built by scripts/build-publication-covers.mjs.
+ * A real, SPECIFIC external publication record (a paper / report / document /
+ * dataset / book / archive record), not a generic journal homepage. Authored in
+ * content/jurnal/publications/*.ts. Cover + download attached at load time.
  */
 export interface RawPublication {
   id: string;
@@ -284,11 +289,14 @@ export interface RawPublication {
   originalTitle?: string;
   publicationType: PublicationType;
   publisherOrInstitution: string;
+  /** The journal / report series / collection this specific item belongs to. */
+  journalOrCollection?: string;
   authors?: string[];
   year?: string;
   publicationDate?: string;
   sourceUrl: string;
   doi?: string;
+  /** Official open-access PDF / document URL (publisher / repository / institution). */
   pdfUrl?: string;
   officialPageUrl?: string;
   /** NaLI's Indonesian summary OF the external publication (not the work itself). */

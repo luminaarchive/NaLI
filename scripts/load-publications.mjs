@@ -22,12 +22,45 @@ function loadManifest() {
   }
 }
 
-export function downloadFor(pub) {
+export function sourceCardFor(pub) {
   return {
-    enabled: true,
-    downloadKind: "metadata_txt",
-    downloadUrl: `/jurnal/${pub.slug}/download.txt`,
-    note: "Berkas metadata yang disusun NaLI: ringkasan publikasi, bukan naskah aslinya.",
+    title: pub.title,
+    sourceUrl: pub.sourceUrl,
+    publisherOrInstitution: pub.publisherOrInstitution,
+    license: "Tidak menampilkan gambar",
+    displayBasis: "Cover asli tidak ditampilkan karena lisensi belum jelas",
+    attribution: `${pub.publisherOrInstitution}${pub.year ? `, ${pub.year}` : ""}`,
+    alt: `Kartu sumber untuk ${pub.title}`,
+    caption: `${pub.title}. Cover asli tidak ditampilkan karena lisensi belum jelas.`,
+    checkedAt: pub.checkedAt,
+    isRealSourceCover: false,
+    fallbackReason: "Cover belum diverifikasi lisensinya.",
+  };
+}
+
+export function downloadFor(pub) {
+  const metadataUrl = `/jurnal/${pub.slug}/download.txt`;
+  if (pub.pdfUrl) {
+    const kind =
+      pub.publicationType === "dataset"
+        ? "official_dataset"
+        : ["report", "institutional_document", "archive_record", "museum_record"].includes(pub.publicationType)
+          ? "official_document"
+          : "official_pdf";
+    return {
+      primaryKind: kind,
+      primaryUrl: pub.pdfUrl,
+      label: kind === "official_dataset" ? "Unduh dataset" : "Download PDF",
+      note: "Tautan ke PDF/dokumen resmi.",
+      metadataUrl,
+    };
+  }
+  return {
+    primaryKind: "external_source_only",
+    primaryUrl: pub.officialPageUrl ?? pub.sourceUrl,
+    label: "Buka sumber asli",
+    note: "PDF resmi tidak tersedia.",
+    metadataUrl,
   };
 }
 
@@ -51,7 +84,7 @@ export async function loadPublications() {
       for (const pub of arr) {
         all.push({
           ...pub,
-          cover: covers[pub.slug] ?? null,
+          cover: covers[pub.slug] ?? sourceCardFor(pub),
           download: downloadFor(pub),
           __file: `content/jurnal/publications/${file}`,
         });

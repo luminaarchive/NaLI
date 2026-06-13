@@ -35,6 +35,7 @@ function buildText(slug: string): string | null {
     ``,
     `PENERBIT / LEMBAGA`,
     pub.publisherOrInstitution,
+    ...(pub.journalOrCollection ? [``, `JURNAL / KOLEKSI`, pub.journalOrCollection] : []),
     ...(pub.authors && pub.authors.length > 0 ? [``, `PENULIS`, pub.authors.join("; ")] : []),
     ``,
     `TAHUN`,

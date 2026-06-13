@@ -456,18 +456,23 @@ const NOTE_STYLE_TITLE = [
   /yang kehilangan ruang/i,
 ];
 const PUBLICATION_TYPES = new Set([
-  "journal",
   "journal_article",
-  "journal_issue",
   "report",
   "book",
   "monograph",
   "proceeding",
   "dataset",
   "archive_record",
-  "institutional_page",
+  "museum_record",
+  "institutional_document",
 ]);
-const ACCESS_TYPES = new Set(["open_access", "free_to_read", "metadata_only", "paywalled", "unknown"]);
+const ACCESS_TYPES = new Set(["open_access", "free_to_read", "official_pdf_available", "metadata_only"]);
+// generic journal names that must NOT be a record title on their own
+const GENERIC_JOURNAL_TITLE =
+  /^(zookeys|plos one|biological conservation|oryx|conservation biology|coral reefs|biodiversity and conservation|nature conservation|cambridge core|springer|elsevier|sciencedirect|treubia|reinwardtia|berita biologi|biodiversitas|marine pollution bulletin|nhess)\b/i;
+const PDF_LIKE = /\.pdf($|\?)|\/pdf\b|\/download\b|\/articles\/.+\.pdf|content\/pdf|pdfdirect|article\/file|\/latest\.pdf/i;
+let pubWithPdfDownload = 0;
+let pubGenericTitles = 0;
 const seenPubSlugs = new Map();
 const seenPubSynopses = new Map();
 const pubTypeCounts = new Map();
@@ -500,6 +505,19 @@ for (const pub of publications) {
   if (NOTE_STYLE_TITLE.some((re) => re.test(String(pub.title ?? "")))) {
     errors.push(`${tag}: title looks like a NaLI-authored note, not an external publication: "${pub.title}".`);
     pubInvalidNotes++;
+  }
+  // title must be a SPECIFIC item, not just a generic journal/collection name
+  const titleWords = String(pub.title ?? "").trim().split(/\s+/).length;
+  if (
+    GENERIC_JOURNAL_TITLE.test(String(pub.title ?? "")) &&
+    titleWords <= 5
+  ) {
+    errors.push(`${tag}: title is a generic journal name, not a specific publication: "${pub.title}".`);
+    pubGenericTitles++;
+  }
+  if (pub.journalOrCollection && String(pub.title ?? "").trim().toLowerCase() === String(pub.journalOrCollection).trim().toLowerCase()) {
+    errors.push(`${tag}: title equals the journal/collection name; record must be a specific item.`);
+    pubGenericTitles++;
   }
 
   // synopsis (NaLI's Indonesian summary of the external work)
@@ -542,14 +560,31 @@ for (const pub of publications) {
     if (AI_VISUAL_TERMS.test(JSON.stringify(cover))) errors.push(`${tag}: cover references AI-generated imagery, not allowed.`);
   }
 
-  // download (mandatory public metadata route)
+  // download: PRIMARY must be the real PDF/document/dataset/source, NEVER metadata TXT.
   const dl = pub.download;
-  if (!dl || dl.enabled !== true || !dl.downloadUrl) {
-    errors.push(`${tag}: missing public download metadata route.`);
+  const PRIMARY_KINDS = new Set(["official_pdf", "official_document", "official_dataset", "external_source_only"]);
+  if (!dl || !dl.primaryKind || !dl.primaryUrl || !dl.label) {
+    errors.push(`${tag}: missing primary download (primaryKind/primaryUrl/label).`);
   } else {
-    pubWithDownload++;
-    if (dl.downloadUrl !== `/jurnal/${pub.slug}/download.txt`) {
-      warnings.push(`${tag}: download URL is not the expected /jurnal/${pub.slug}/download.txt.`);
+    if (!PRIMARY_KINDS.has(dl.primaryKind)) errors.push(`${tag}: unknown download.primaryKind ${dl.primaryKind}.`);
+    if (/\/download\.txt$/.test(String(dl.primaryUrl)) || /metadata/i.test(String(dl.label))) {
+      errors.push(`${tag}: primary download must not be the NaLI metadata TXT.`);
+    }
+    if (dl.primaryKind === "official_pdf") {
+      pubWithPdfDownload++;
+      if (dl.primaryUrl !== pub.pdfUrl) errors.push(`${tag}: official_pdf primaryUrl must equal pdfUrl.`);
+      if (!PDF_LIKE.test(String(dl.primaryUrl))) {
+        errors.push(`${tag}: download.primaryKind is official_pdf but URL is not a PDF/document URL: ${dl.primaryUrl}.`);
+      }
+    } else if (dl.primaryKind === "official_document" || dl.primaryKind === "official_dataset") {
+      pubWithPdfDownload++;
+      if (!pub.pdfUrl) errors.push(`${tag}: ${dl.primaryKind} requires a pdfUrl/document URL.`);
+    }
+    // secondary metadata route must still exist
+    if (!dl.metadataUrl || dl.metadataUrl !== `/jurnal/${pub.slug}/download.txt`) {
+      warnings.push(`${tag}: metadata route is not the expected /jurnal/${pub.slug}/download.txt.`);
+    } else {
+      pubWithDownload++;
     }
   }
 
@@ -600,8 +635,10 @@ console.log(`  distinct publishers:    ${pubPublishers.size}`);
 console.log(`  real covers:            ${pubRealCovers}/${publications.length}`);
 console.log(`  source-card fallbacks:  ${pubFallbackCovers}/${publications.length}`);
 console.log(`  with DOI:               ${pubWithDoi}`);
-console.log(`  with PDF link:          ${pubWithPdf}`);
-console.log(`  with metadata download: ${pubWithDownload}/${publications.length}`);
+console.log(`  with PDF/document link: ${pubWithPdf}`);
+console.log(`  primary download = PDF/doc/dataset: ${pubWithPdfDownload}/${publications.length}`);
+console.log(`  NaLI metadata TXT (secondary): ${pubWithDownload}/${publications.length}`);
+console.log(`  generic journal-name titles: ${pubGenericTitles}`);
 console.log(`  invalid self-authored notes: ${pubInvalidNotes}`);
 console.log(`  em dash status:         ${errors.some((e) => e.startsWith("[em-dash]")) ? "FAIL" : "clean"}`);
 if (warnings.length) {

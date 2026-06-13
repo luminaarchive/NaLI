@@ -21,16 +21,20 @@ export default function JurnalPage() {
     slug: p.slug,
     title: p.title,
     publisherOrInstitution: p.publisherOrInstitution,
+    journalOrCollection: p.journalOrCollection,
     publicationType: p.publicationType,
     year: p.year,
+    doi: p.doi,
     synopsis: p.synopsis,
     topics: p.topics,
     geography: p.geography,
     accessType: p.accessType,
     sourceUrl: p.sourceUrl,
+    pdfAvailable: Boolean(p.pdfUrl),
+    downloadLabel: p.download.label,
+    downloadUrl: p.download.primaryUrl,
     coverImage: p.cover.localPath ?? p.cover.imageUrl ?? null,
     coverAlt: p.cover.alt,
-    coverIsReal: p.cover.isRealSourceCover,
   }));
 
   return (

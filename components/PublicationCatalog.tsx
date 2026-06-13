@@ -16,16 +16,20 @@ export type PublicationCard = {
   slug: string;
   title: string;
   publisherOrInstitution: string;
+  journalOrCollection?: string;
   publicationType: PublicationType;
   year?: string;
+  doi?: string;
   synopsis: string;
   topics: string[];
   geography: string[];
   accessType: AccessType;
   sourceUrl: string;
+  pdfAvailable: boolean;
+  downloadLabel: string;
+  downloadUrl: string;
   coverImage: string | null;
   coverAlt: string;
-  coverIsReal: boolean;
 };
 
 export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
@@ -130,53 +134,60 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
 
       <ul className="mt-4 grid gap-4 sm:grid-cols-2">
         {filtered.map((i) => (
-          <li key={i.slug}>
-            <Link
-              href={`/jurnal/${i.slug}`}
-              className="flex h-full flex-col border border-dashed border-ink/60 bg-paper transition-colors hover:bg-ink-wash"
-            >
-              {i.coverImage ? (
-                <div className="relative aspect-[16/9] border-b border-dashed border-ink/45 bg-ink-wash/30">
-                  <Image
-                    src={i.coverImage}
-                    alt={i.coverAlt}
-                    fill
-                    sizes="(max-width: 640px) 100vw, 50vw"
-                    className="object-contain p-4"
-                  />
-                </div>
-              ) : (
-                <div className="flex aspect-[16/9] flex-col justify-center border-b border-dashed border-ink/45 bg-ink-wash/40 p-5">
-                  <span className="label text-ink/60">Kartu sumber</span>
-                  <span className="mt-1 font-display text-base font-semibold leading-snug text-ink-black line-clamp-3">
-                    {i.title}
+          <li key={i.slug} className="flex h-full flex-col border border-dashed border-ink/60 bg-paper">
+            {i.coverImage ? (
+              <Link href={`/jurnal/${i.slug}`} className="relative block aspect-[16/9] border-b border-dashed border-ink/45 bg-ink-wash/30">
+                <Image src={i.coverImage} alt={i.coverAlt} fill sizes="(max-width: 640px) 100vw, 50vw" className="object-contain p-4" />
+              </Link>
+            ) : (
+              <Link
+                href={`/jurnal/${i.slug}`}
+                className="flex aspect-[16/9] flex-col justify-center border-b border-dashed border-ink/45 bg-ink-wash/40 p-5 transition-colors hover:bg-ink-wash"
+              >
+                <span className="label text-ink/60">{PUBLICATION_TYPE_LABEL[i.publicationType]}</span>
+                <span className="mt-1 font-display text-base font-semibold leading-snug text-ink-black line-clamp-3">{i.title}</span>
+                <span className="mt-1 font-mono text-[0.64rem] text-ink/60">{i.journalOrCollection ?? i.publisherOrInstitution}</span>
+              </Link>
+            )}
+            <div className="flex flex-1 flex-col p-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.6rem] uppercase tracking-label text-ink">
+                  {PUBLICATION_TYPE_LABEL[i.publicationType]}
+                </span>
+                {i.pdfAvailable && (
+                  <span className="border border-dashed border-ink-deep/60 bg-ink-wash/50 px-2.5 py-0.5 font-mono text-[0.6rem] uppercase tracking-label text-ink-deep">
+                    PDF tersedia
                   </span>
-                  <span className="mt-1 font-mono text-[0.66rem] text-ink/60">{i.publisherOrInstitution}</span>
-                  <span className="mt-2 font-mono text-[0.6rem] text-ink/45">
-                    Cover asli tidak ditampilkan karena lisensi belum jelas
-                  </span>
-                </div>
-              )}
-              <div className="flex flex-1 flex-col p-5">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.6rem] uppercase tracking-label text-ink">
-                    {PUBLICATION_TYPE_LABEL[i.publicationType]}
-                  </span>
-                  <span className="font-mono text-[0.6rem] uppercase tracking-wider text-ink-deep">
-                    {ACCESS_TYPE_LABEL[i.accessType]}
-                  </span>
-                </div>
-                <h2 className="mt-3 font-display text-base font-semibold leading-snug text-ink-black">{i.title}</h2>
-                <p className="mt-1 font-mono text-[0.66rem] uppercase tracking-wider text-ink/55">
-                  {i.publisherOrInstitution}
-                  {i.year ? ` · ${i.year}` : ""}
-                </p>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-gray line-clamp-4">{i.synopsis}</p>
-                <p className="mt-3 font-mono text-[0.6rem] uppercase tracking-wider text-ink/45">
-                  {i.topics.slice(0, 3).join(" · ")}
-                </p>
+                )}
+                <span className="ml-auto font-mono text-[0.6rem] uppercase tracking-wider text-ink/55">
+                  {ACCESS_TYPE_LABEL[i.accessType]}
+                </span>
               </div>
-            </Link>
+              <h2 className="mt-3 font-display text-base font-semibold leading-snug text-ink-black">
+                <Link href={`/jurnal/${i.slug}`} className="hover:text-ink-deep hover:underline">
+                  {i.title}
+                </Link>
+              </h2>
+              <p className="mt-1 font-mono text-[0.64rem] uppercase tracking-wider text-ink/55">
+                {i.journalOrCollection ? `${i.journalOrCollection}` : i.publisherOrInstitution}
+                {i.year ? ` · ${i.year}` : ""}
+                {i.doi ? " · DOI" : ""}
+              </p>
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-gray line-clamp-4">{i.synopsis}</p>
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <a
+                  href={i.downloadUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border border-ink bg-ink px-3 py-1.5 font-mono text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-paper transition-colors hover:bg-ink-deep"
+                >
+                  {i.downloadLabel}
+                </a>
+                <Link href={`/jurnal/${i.slug}`} className="font-mono text-[0.62rem] uppercase tracking-wider text-ink hover:underline">
+                  Detail →
+                </Link>
+              </div>
+            </div>
           </li>
         ))}
       </ul>

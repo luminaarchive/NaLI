@@ -42,6 +42,7 @@ export default function PublicationDetailPage({ params }: { params: Params }) {
   if (!pub) notFound();
 
   const coverImage = pub.cover.localPath ?? pub.cover.imageUrl ?? null;
+  const hasPdf = pub.download.primaryKind !== "external_source_only" && Boolean(pub.pdfUrl);
   const relatedSources = (pub.relatedSourceIds ?? [])
     .map((id) => getSourceBySlug(id))
     .filter((s): s is NonNullable<typeof s> => Boolean(s));
@@ -135,38 +136,61 @@ export default function PublicationDetailPage({ params }: { params: Params }) {
           <p className="mt-2 text-[0.95rem] leading-relaxed text-ink-charcoal">{pub.whyItMatters}</p>
         </section>
 
-        {/* actions */}
-        <div className="mt-7 flex flex-wrap gap-3">
+        {/* actions: primary = Download PDF (or Buka sumber asli if no PDF), then DOI, then NaLI metadata */}
+        <div className="mt-7 flex flex-wrap items-center gap-3">
+          {hasPdf ? (
+            <a
+              href={pub.download.primaryUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-ink bg-ink px-5 py-2.5 font-mono text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-ink-deep"
+              data-jurnal-download-primary="pdf"
+            >
+              {pub.download.label} <span aria-hidden>↓</span>
+            </a>
+          ) : (
+            <a
+              href={pub.download.primaryUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-ink bg-ink px-5 py-2.5 font-mono text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-ink-deep"
+              data-jurnal-download-primary="source"
+            >
+              Buka sumber asli <span aria-hidden>↗</span>
+            </a>
+          )}
           <a
             href={pub.sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 border border-ink bg-ink px-4 py-2.5 font-mono text-[0.74rem] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-ink-deep"
+            className="inline-flex items-center gap-2 border border-ink px-4 py-2.5 font-mono text-[0.74rem] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-ink-wash"
           >
-            Buka di sumber asli <span aria-hidden>↗</span>
+            Buka sumber asli <span aria-hidden>↗</span>
           </a>
-          {pub.pdfUrl && (
+          {pub.doi && (
             <a
-              href={pub.pdfUrl}
+              href={`https://doi.org/${pub.doi}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 border border-ink px-4 py-2.5 font-mono text-[0.74rem] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-ink-wash"
+              className="inline-flex items-center gap-2 border border-dashed border-ink px-4 py-2.5 font-mono text-[0.74rem] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-ink-wash"
             >
-              Buka PDF di sumber asli <span aria-hidden>↗</span>
+              DOI <span aria-hidden>↗</span>
             </a>
           )}
           <a
-            href={pub.download.downloadUrl}
+            href={pub.download.metadataUrl}
             download={`nali-jurnal-${pub.slug}.txt`}
-            className="inline-flex items-center gap-2 border border-dashed border-ink px-4 py-2.5 font-mono text-[0.74rem] font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-ink-wash"
+            className="font-mono text-[0.7rem] uppercase tracking-wider text-ink/70 underline decoration-dashed underline-offset-4 hover:text-ink-deep"
+            data-jurnal-metadata="true"
           >
-            Unduh metadata TXT <span aria-hidden>↓</span>
+            Unduh metadata NaLI
           </a>
         </div>
 
         {/* metadata card */}
         <dl className="mt-10 border border-dashed border-ink/60 bg-ink-wash/40 px-6 py-3">
           <Field label="Jenis" value={PUBLICATION_TYPE_LABEL[pub.publicationType]} />
+          {pub.journalOrCollection && <Field label="Jurnal / koleksi" value={pub.journalOrCollection} />}
           <Field label="Penerbit" value={pub.publisherOrInstitution} />
           {pub.authors && pub.authors.length > 0 && <Field label="Penulis" value={pub.authors.join("; ")} />}
           {(pub.year || pub.publicationDate) && (

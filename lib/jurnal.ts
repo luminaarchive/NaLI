@@ -26,16 +26,40 @@ function sourceCard(pub: RawPublication): PublicationCover {
   };
 }
 
+function buildDownload(pub: RawPublication): JournalPublication["download"] {
+  const metadataUrl = `/jurnal/${pub.slug}/download.txt`;
+  if (pub.pdfUrl) {
+    const kind =
+      pub.publicationType === "dataset"
+        ? "official_dataset"
+        : pub.publicationType === "report" ||
+            pub.publicationType === "institutional_document" ||
+            pub.publicationType === "archive_record" ||
+            pub.publicationType === "museum_record"
+          ? "official_document"
+          : "official_pdf";
+    return {
+      primaryKind: kind,
+      primaryUrl: pub.pdfUrl,
+      label: kind === "official_dataset" ? "Unduh dataset" : "Download PDF",
+      note: "Tautan ke PDF/dokumen resmi dari penerbit, repositori, atau lembaga aslinya.",
+      metadataUrl,
+    };
+  }
+  return {
+    primaryKind: "external_source_only",
+    primaryUrl: pub.officialPageUrl ?? pub.sourceUrl,
+    label: "Buka sumber asli",
+    note: "PDF resmi tidak tersedia; buka halaman publikasi di sumber aslinya.",
+    metadataUrl,
+  };
+}
+
 function resolve(pub: RawPublication): JournalPublication {
   return {
     ...pub,
     cover: COVERS[pub.slug] ?? sourceCard(pub),
-    download: {
-      enabled: true,
-      downloadKind: "metadata_txt",
-      downloadUrl: `/jurnal/${pub.slug}/download.txt`,
-      note: "Berkas metadata yang disusun NaLI: ringkasan publikasi, bukan naskah aslinya.",
-    },
+    download: buildDownload(pub),
   };
 }
 
