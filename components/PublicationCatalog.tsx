@@ -611,13 +611,13 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
                   className="group relative flex flex-col md:flex-row border border-solid border-ink/10 bg-paper transition-all duration-200 hover:shadow-sm hover:border-ink/30"
                 >
                   {/* Left Column: Cover preview with compact size (120-140px on desktop) */}
-                  <div className="w-[110px] sm:w-[120px] md:w-[130px] lg:w-[140px] aspect-[3/4] relative flex-shrink-0 border-b md:border-b-0 md:border-r border-solid border-ink/10 bg-ink-wash/5 overflow-hidden flex items-center justify-center">
+                  <div className="w-[90px] sm:w-[110px] md:w-[120px] lg:w-[130px] aspect-[3/4] relative flex-shrink-0 border-b md:border-b-0 md:border-r border-solid border-ink/10 bg-ink-wash/5 overflow-hidden flex items-center justify-center">
                     {coverUrl ? (
                       <Image
                         src={coverUrl}
                         alt={stripHtmlTags(i.coverAlt)}
                         fill
-                        sizes="(max-width: 640px) 110px, (max-width: 768px) 120px, (max-width: 1024px) 130px, 140px"
+                        sizes="(max-width: 640px) 90px, (max-width: 768px) 110px, (max-width: 1024px) 120px, 130px"
                         // Image margin reduction trim formula - no group-hover scale
                         className="object-cover object-top scale-[1.10]"
                         priority={isLcp}
@@ -635,7 +635,7 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
                   </div>
 
                   {/* Right Column: High-Density Details */}
-                  <div className="flex-1 flex flex-col p-4">
+                  <div className="flex-1 flex flex-col p-3.5">
                     {/* Metadata Badges */}
                     <div className="flex flex-wrap items-center gap-1.5">
                       {i.peerReviewed && (
@@ -652,40 +652,40 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
                     </div>
 
                     {/* Publication Title (Compact & Clickable) */}
-                    <h2 className="mt-2 font-display text-[1.2rem] font-bold leading-snug tracking-tight text-ink-black">
+                    <h2 className="mt-1.5 font-display text-[1.125rem] font-bold leading-snug tracking-tight text-ink-black">
                       <Link href={`/jurnal/${i.slug}`} className="hover:text-ink-deep hover:underline focus-visible:outline-none" aria-label={`Read detail page of ${stripHtmlTags(i.title)}`}>
                         {renderItalicTitle(i.title)}
                       </Link>
                     </h2>
 
-                    {/* Authors prominent listing (15px) */}
+                    {/* Authors prominent listing */}
                     {i.authors && i.authors.length > 0 && (
-                      <p className="mt-1 font-mono text-[0.85rem] text-ink-charcoal truncate" title={i.authors.join(", ")}>
+                      <p className="mt-1 font-mono text-[0.82rem] text-ink-charcoal truncate" title={i.authors.join(", ")}>
                         <span className="sr-only">Penulis:</span>
                         {i.authors.join(", ")}
                       </p>
                     )}
 
-                    {/* Journal & Publisher listing (14px) */}
-                    <p className="mt-1 font-mono text-[0.8rem] text-ink/80">
+                    {/* Journal & Publisher listing */}
+                    <p className="mt-1 font-mono text-[0.78rem] text-ink/80">
                       {i.journalOrCollection ? `${i.journalOrCollection}` : i.publisherOrInstitution}
                       {i.year ? ` · ${i.year}` : ""}
                     </p>
 
                     {/* DOI label */}
                     {i.doi && (
-                      <p className="mt-1 font-mono text-[0.7rem] text-ink/45 select-all">
+                      <p className="mt-1 font-mono text-[0.68rem] text-ink/45 select-all">
                         DOI: {i.doi}
                       </p>
                     )}
 
-                    {/* Abstract Synopsis (15px) */}
-                    <p className="mt-2 text-[0.875rem] leading-relaxed text-ink-charcoal line-clamp-3 flex-1">
+                    {/* Abstract Synopsis */}
+                    <p className="mt-1.5 text-[0.85rem] leading-relaxed text-ink-charcoal line-clamp-3 flex-1">
                       {i.synopsis}
                     </p>
 
                     {/* Action Panel */}
-                    <div className="relative z-20 mt-3 pt-2.5 border-t border-solid border-ink/10 flex flex-wrap items-center gap-3">
+                    <div className="relative z-20 mt-2.5 pt-2 border-t border-solid border-ink/10 flex flex-wrap items-center gap-3">
                       {i.pdfAvailable ? (
                         <a
                           href={i.downloadUrl}

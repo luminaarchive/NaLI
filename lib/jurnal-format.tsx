@@ -49,6 +49,7 @@ export function formatLicense(license: string | undefined): string {
   if (lower === "cc-by-nc-sa" || lower === "cc by-nc-sa") return "CC BY-NC-SA";
   if (lower === "cc-by-nc-nd" || lower === "cc by-nc-nd") return "CC BY-NC-ND";
   if (lower === "cc0") return "CC0 1.0 Universal";
-  if (lower === "other-oa" || lower === "open-access" || lower === "open access") return "Open Access";
+  if (lower === "other-oa") return "Other Open Access";
+  if (lower === "open-access" || lower === "open access") return "Open Access";
   return license;
 }

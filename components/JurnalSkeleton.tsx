@@ -29,10 +29,10 @@ export function JurnalSkeleton() {
               className="animate-pulse border border-solid border-ink/10 bg-paper flex flex-col md:flex-row"
             >
               {/* Cover Placeholder matching responsive sizes */}
-              <div className="w-[110px] sm:w-[120px] md:w-[130px] lg:w-[140px] aspect-[3/4] bg-ink-wash/20 border-b md:border-b-0 md:border-r border-solid border-ink/10 flex-shrink-0" />
+              <div className="w-[90px] sm:w-[110px] md:w-[120px] lg:w-[130px] aspect-[3/4] bg-ink-wash/20 border-b md:border-b-0 md:border-r border-solid border-ink/10 flex-shrink-0" />
 
               {/* Details Placeholder */}
-              <div className="flex-1 space-y-3 p-4">
+              <div className="flex-1 space-y-3 p-3.5">
                 <div className="h-4 bg-ink-wash/30 rounded w-1/4" />
                 <div className="space-y-2">
                   <div className="h-6 bg-ink-wash/40 rounded w-5/6" />
