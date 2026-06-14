@@ -32,6 +32,13 @@ const MOTIFS: Partial<Record<Category, React.ReactNode>> = {
       <path d="M52 34v36M34 52h36" />
     </>
   ),
+  // CATATAN LAPANGAN — a field location pin
+  "catatan-lapangan": (
+    <>
+      <path d="M60 20a26 26 0 0 0-26 26c0 19 26 46 26 46s26-27 26-46a26 26 0 0 0-26-26Z" />
+      <circle cx="60" cy="46" r="9" />
+    </>
+  ),
 };
 
 export function PillarMotif({ category }: { category: Category }) {

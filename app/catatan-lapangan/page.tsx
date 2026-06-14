@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
+import { PillarMotif } from "@/components/PillarMotif";
+import { TerminalLog } from "@/components/TerminalLog";
 import { MdxBody } from "@/components/MdxBody";
 import { getAllFieldNotes } from "@/lib/content";
 import { formatDate } from "@/lib/format";
@@ -33,7 +35,8 @@ export default function CatatanRisetPage() {
   const notes = getAllFieldNotes();
 
   return (
-    <>
+    <div className="theme-catatan relative">
+      <PillarMotif category="catatan-lapangan" />
       <PageHeader
         eyebrow="Riset terbuka"
         title="Catatan Riset"
@@ -41,14 +44,17 @@ export default function CatatanRisetPage() {
       />
 
       <div className="container-read py-12 sm:py-16">
-        {/* explicit scope, no fake first-party fieldwork */}
-        <div className="mb-12 border border-dashed border-ink/60 bg-ink-wash/40 p-5">
-          <p className="font-mono text-[0.78rem] leading-relaxed text-ink-charcoal">
-            <span className="font-semibold text-ink-deep">Bukan klaim observasi pribadi NaLI.</span>{" "}
-            Halaman ini merangkum bukti lapangan dari peneliti, lembaga, arsip, foto
-            berlisensi, dan sumber publik yang dapat ditelusuri. NaLI belum melakukan
-            observasi lapangan langsung.
-          </p>
+        {/* explicit scope as a research-log device, no fake first-party fieldwork */}
+        <div className="mb-12">
+          <TerminalLog
+            title="riset@nali — catatan.log"
+            lines={[
+              "$ nali riset --status",
+              "→ basis: jurnal · arsip · laporan lembaga · data publik",
+              "→ observasi lapangan pribadi: belum (bukan klaim NaLI)",
+              "→ tiap klaim membawa sumber + label keyakinan",
+            ]}
+          />
         </div>
 
         {notes.length === 0 ? (
@@ -59,7 +65,7 @@ export default function CatatanRisetPage() {
               <article key={note.slug} className="border-t border-dashed border-ink/70 pt-6">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="label text-ink">{note.location_label}</span>
-                  <span className="text-gray-light" aria-hidden>
+                  <span className="text-gray" aria-hidden>
                     ·
                   </span>
                   <time dateTime={note.date} className="font-mono text-xs text-gray">
@@ -75,7 +81,7 @@ export default function CatatanRisetPage() {
                     {note.evidenceType.map((e) => (
                       <span
                         key={e}
-                        className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-label text-ink"
+                        className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-label text-ink"
                       >
                         {EVIDENCE_LABEL[e] ?? e}
                       </span>
@@ -94,7 +100,7 @@ export default function CatatanRisetPage() {
 
                 {note.limitations && note.limitations.length > 0 && (
                   <div className="mt-5 border-l-2 border-dashed border-ink/40 pl-4">
-                    <p className="label text-ink/70">Batasan</p>
+                    <p className="label text-gray">Batasan</p>
                     <ul className="mt-2 space-y-1.5">
                       {note.limitations.map((l) => (
                         <li key={l} className="font-mono text-[0.78rem] leading-relaxed text-gray">
@@ -107,7 +113,7 @@ export default function CatatanRisetPage() {
 
                 {note.sources && note.sources.length > 0 && (
                   <div className="mt-5">
-                    <p className="label text-ink/70">Sumber</p>
+                    <p className="label text-gray">Sumber</p>
                     <ul className="mt-2 space-y-1.5">
                       {note.sources.map((s, i) => (
                         <li key={i} className="font-mono text-[0.78rem] leading-snug text-ink-charcoal">
@@ -118,7 +124,7 @@ export default function CatatanRisetPage() {
                           ) : (
                             s.title
                           )}
-                          <span className="ml-2 text-ink/50">· {SOURCE_TYPE_LABEL[s.type]}</span>
+                          <span className="ml-2 text-gray">· {SOURCE_TYPE_LABEL[s.type]}</span>
                         </li>
                       ))}
                     </ul>
@@ -142,6 +148,6 @@ export default function CatatanRisetPage() {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

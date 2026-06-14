@@ -11,6 +11,8 @@ import {
 } from "@/lib/types";
 import { SegmentedBar } from "./SegmentedBar";
 import { PulseDot } from "./PulseDot";
+import { Glyph, glyphForSourceType } from "./Glyph";
+import { CopyLinkButton } from "./CopyLinkButton";
 
 function excerpt(text: string | undefined, n = 120): string {
   if (!text) return "";
@@ -68,7 +70,7 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
           <span className="font-mono text-xs uppercase tracking-wider text-gray">
             entri sumber terverifikasi
           </span>
-          <span className="ml-auto flex items-center gap-1.5 font-mono text-[0.7rem] uppercase tracking-wider text-gray">
+          <span className="marching-ants ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 font-mono text-[0.7rem] uppercase tracking-wider text-gray">
             <PulseDot live /> Terus diperbarui
           </span>
         </div>
@@ -169,7 +171,8 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
                   )}
                 </td>
                 <td className="border border-ink/30 px-4 py-3">
-                  <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-label text-ink">
+                  <span className="inline-flex items-center gap-1 border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-label text-ink">
+                    <Glyph name={glyphForSourceType(s.type)} className="h-3 w-3" />
                     {SOURCE_TYPE_LABEL[s.type]}
                   </span>
                   {s.reliabilityLevel && (
@@ -190,12 +193,15 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
                   {s.year ?? "Tidak dicatat"}
                 </td>
                 <td className="border border-ink/30 px-4 py-3 whitespace-nowrap">
-                  <Link
-                    href={`/arsip-sumber/${s.slug}`}
-                    className="font-mono text-[0.7rem] uppercase tracking-wider text-ink hover:underline"
-                  >
-                    Baca →
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/arsip-sumber/${s.slug}`}
+                      className="font-mono text-[0.7rem] uppercase tracking-wider text-ink hover:underline"
+                    >
+                      Baca →
+                    </Link>
+                    <CopyLinkButton path={`/arsip-sumber/${s.slug}`} />
+                  </div>
                 </td>
               </tr>
             ))}
@@ -212,7 +218,8 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
               className="block border border-dashed border-ink/60 bg-paper p-4 transition-colors hover:bg-ink-wash"
             >
               <div className="flex items-center justify-between gap-3">
-                <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-label text-ink">
+                <span className="inline-flex items-center gap-1 border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-label text-ink">
+                  <Glyph name={glyphForSourceType(s.type)} className="h-3 w-3" />
                   {SOURCE_TYPE_LABEL[s.type]}
                 </span>
                 {s.year && (

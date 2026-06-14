@@ -9,6 +9,8 @@ import {
   type PublicationType,
 } from "@/lib/types";
 import { renderItalicTitle, stripHtmlTags } from "@/lib/jurnal-format";
+import { Glyph, glyphForPublicationType } from "@/components/Glyph";
+import { CopyLinkButton } from "@/components/CopyLinkButton";
 
 function excerpt(text: string | undefined, n = 130): string {
   const clean = (text ?? "").replace(/\s+/g, " ").trim();
@@ -543,7 +545,8 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
                 )}
               </td>
               <td className="border border-dashed border-ink/30 px-3 py-2.5">
-                <span className="inline-block border border-dashed border-ink/50 px-2 py-0.5 font-mono text-[0.7rem] uppercase tracking-label text-ink">
+                <span className="inline-flex items-center gap-1 border border-dashed border-ink/50 px-2 py-0.5 font-mono text-[0.7rem] uppercase tracking-label text-ink">
+                  <Glyph name={glyphForPublicationType(i.publicationType)} className="h-3 w-3" />
                   {PUBLICATION_TYPE_LABEL[i.publicationType]}
                 </span>
                 <span className="mt-1.5 block font-mono text-[0.7rem] uppercase tracking-wider text-gray">
@@ -577,6 +580,7 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
                   >
                     Detail <span aria-hidden>→</span>
                   </Link>
+                  <CopyLinkButton path={`/jurnal/${i.slug}`} className="mt-0.5" />
                 </span>
               </td>
             </tr>
