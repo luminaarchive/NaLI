@@ -447,7 +447,15 @@ Sesi UI panjang membandingkan situs ke nousresearch.com lalu mengeksekusi.
 - **Verified:** tsc/lint/build clean; 6 halaman light+dark (Playwright), color-synced,
   terbaca; live production. **Pre-existing gate merah:** `check:editorial` menandai em-dash
   di `docs/nous_full_navbar_style_animation_catalog.md` (docs, tak terkait, tak blok deploy).
+- **Optimasi 60fps + warna nav (commit `1c3337d`):** 6 background ke **60fps** (diukur in-browser).
+  Lever: buang `backdrop-blur` di content sheet (re-blur konten gerak = biaya terbesar → ganti
+  `bg-paper/88-92` solid); smoke+turbulent render resolusi turun (DPR 1 / 60% buffer, CSS upscale);
+  turbulent oktaf noise dikurangi; Warp `maxPixelCount` cap + `swirlIterations` 4; wave buffer
+  kecil tetap (CSS upscale, tanpa blit per-frame) + lookup sin/cos branchless `(v*IDX)&1023`;
+  particles 600. **Warna nav "belang" diperbaiki:** `SiteChrome` cascade tema route ke wrapper
+  `display:contents` (Nav+main+footer) → nav/hairline/footer ikut aksen halaman, tanpa box tekstur
+  kedua / tanpa ubah layout. Verified light+dark, nav match tiap halaman.
 
 ---
 
-*Last updated: 14 Juni 2026, sesi UI Nous-benchmark: identitas warna per-halaman (pilar+nav) + background animasi per nav page (smoke/warp/particles/turbulent/wave, color-synced, light+dark, reduced-motion safe). Pushed `d0ef77a`.*
+*Last updated: 14 Juni 2026, sesi UI Nous-benchmark: identitas warna per-halaman (pilar+nav) + background animasi per nav page (smoke/warp/particles/turbulent/wave, color-synced, light+dark, reduced-motion safe); lalu optimasi 60fps + sinkron warna nav (`display:contents` cascade). Pushed `1c3337d`.*
