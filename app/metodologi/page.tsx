@@ -191,7 +191,7 @@ export default function MetodologiPage() {
         description="Bagaimana NaLI menelusuri, memilih sumber, memakai AI, dan menjaga keputusan editorial tetap di tangan manusia."
       />
 
-      <div className="container-read relative bg-paper/82 py-12 backdrop-blur-sm sm:py-16">
+      <div className="container-read relative bg-paper/92 py-12 sm:py-16">
         <div className="prose-nali">
           <p className="text-lg">
             NaLI menggunakan AI untuk membantu menelusuri, merangkum, menyusun, dan

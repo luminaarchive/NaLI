@@ -23,8 +23,13 @@ export const TurbulentFlowBackground: React.FC = () => {
       alpha: true,
       powerPreference: "high-performance",
     });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // Render at 60% resolution and let CSS upscale the canvas to full size —
+    // a soft background tolerates it and it cuts fragment work to ~0.36x.
+    const RES = 0.6;
+    renderer.setPixelRatio(1);
+    renderer.setSize(window.innerWidth * RES, window.innerHeight * RES, false);
+    renderer.domElement.style.width = "100%";
+    renderer.domElement.style.height = "100%";
     mount.appendChild(renderer.domElement);
 
     const vertexShader = `
@@ -94,12 +99,12 @@ export const TurbulentFlowBackground: React.FC = () => {
 
       float fbm(vec3 p){
         float value=0.0;float amplitude=0.5;float frequency=0.6;
-        for(int i=0;i<6;i++){value+=amplitude*snoise(p*frequency);amplitude*=0.5;frequency*=2.0;}
+        for(int i=0;i<4;i++){value+=amplitude*snoise(p*frequency);amplitude*=0.5;frequency*=2.0;}
         return value;
       }
       float turbulence(vec3 p){
         float t=0.0;float amplitude=1.0;float frequency=0.4;
-        for(int i=0;i<4;i++){t+=abs(snoise(p*frequency))*amplitude;amplitude*=0.5;frequency*=2.0;}
+        for(int i=0;i<3;i++){t+=abs(snoise(p*frequency))*amplitude;amplitude*=0.5;frequency*=2.0;}
         return t;
       }
       vec2 curl(vec2 p,float time){
@@ -159,10 +164,6 @@ export const TurbulentFlowBackground: React.FC = () => {
         finalColor+=mix(color1,color2,0.5)*interaction2;
         finalColor+=mix(color3,color4,0.6)*interaction3;
 
-        float noiseDetail=fbm(vec3(uv*15.0,time*0.1))*0.5;
-        float microTurbulence=turbulence(vec3(uv*25.0,time*0.05))*0.8;
-        finalColor+=(microTurbulence*noiseDetail)*0.35;
-
         finalColor=pow(finalColor,vec3(0.95));
         finalColor*=1.05;
 
@@ -216,8 +217,7 @@ export const TurbulentFlowBackground: React.FC = () => {
     const handleResize = () => {
       const width = window.innerWidth;
       const height = window.innerHeight;
-      renderer.setSize(width, height);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(width * RES, height * RES, false);
       material.uniforms.u_resolution.value.set(width, height);
     };
     window.addEventListener("resize", handleResize);

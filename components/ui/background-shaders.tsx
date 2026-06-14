@@ -10,11 +10,13 @@ export function SeriWarpBackground() {
   return (
     <Warp
       style={{ width: "100%", height: "100%" }}
+      minPixelRatio={1}
+      maxPixelCount={960 * 540}
       proportion={0.4}
       softness={1}
       distortion={0.25}
       swirl={0.8}
-      swirlIterations={10}
+      swirlIterations={4}
       shape="checks"
       shapeScale={0.1}
       scale={1}

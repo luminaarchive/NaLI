@@ -61,7 +61,7 @@ export default function JurnalPage() {
         description="Kumpulan jurnal, laporan lembaga, dataset, dan arsip ilmiah nyata tentang alam, sejarah, dan Indonesia. Tiap entri adalah publikasi asli dari penerbitnya, dengan sinopsis Indonesia dari NaLI."
       />
 
-      <div className="container-editorial relative bg-paper/70 py-12 backdrop-blur-sm">
+      <div className="container-editorial relative bg-paper/88 py-12">
         {items.length === 0 ? (
           <p className="font-mono text-[0.85rem] text-gray">Katalog jurnal masih kosong.</p>
         ) : (

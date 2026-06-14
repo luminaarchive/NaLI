@@ -67,7 +67,9 @@ class Renderer {
   }
 
   updateScale() {
-    const dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+    // Soft, full-screen smoke: render at CSS resolution (dpr 1) and let the
+    // browser upscale. Keeps the fragment-shader cost ~4x lower on retina.
+    const dpr = 1;
     const { innerWidth: width, innerHeight: height } = window;
     this.canvas.width = width * dpr;
     this.canvas.height = height * dpr;

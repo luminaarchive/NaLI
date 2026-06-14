@@ -29,7 +29,7 @@ export default function TentangPage() {
         description="NaLI by NatIve adalah jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia, disusun dari sumber publik yang dapat ditelusuri."
       />
 
-      <div className="container-read relative bg-paper/80 py-12 backdrop-blur-sm sm:py-16">
+      <div className="container-read relative bg-paper/92 py-12 sm:py-16">
         <div className="prose-nali">
           <h2>Apa ini</h2>
           <p>

@@ -34,7 +34,7 @@ export default function KontakPage() {
         description="Koreksi yang berdasar sangat kami hargai, begitu juga petunjuk untuk penelusuran berikutnya."
       />
 
-      <div className="container-read relative bg-paper/72 py-12 backdrop-blur-sm sm:py-16">
+      <div className="container-read relative bg-paper/90 py-12 sm:py-16">
         <div className="border border-dashed border-ink/70 bg-paper p-7">
           <p className="label">Email</p>
           <a

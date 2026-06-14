@@ -93,9 +93,9 @@ interface FluidParticlesBackgroundProps {
  * (trails fade via destination-out), meant to sit inside <PageBackdrop/>.
  */
 export const FluidParticlesBackground = ({
-  particleCount = 1000,
+  particleCount = 600,
   noiseIntensity = 0.0032,
-  particleSize = { min: 0.5, max: 2.4 },
+  particleSize = { min: 0.6, max: 2.6 },
 }: FluidParticlesBackgroundProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 

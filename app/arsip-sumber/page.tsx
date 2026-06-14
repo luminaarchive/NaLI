@@ -32,7 +32,7 @@ export default function ArsipSumberPage() {
         description="Rujukan yang menopang tulisan kami, terbuka untuk diperiksa, dengan catatan keandalan dan batasan tiap sumber. Saring berdasarkan tipe, topik, atau tingkat keandalan."
       />
 
-      <div className="container-editorial relative bg-paper/70 py-12 backdrop-blur-sm">
+      <div className="container-editorial relative bg-paper/88 py-12">
         {sources.length === 0 ? (
           <p className="font-mono text-[0.85rem] text-gray">Arsip sumber masih kosong.</p>
         ) : (
