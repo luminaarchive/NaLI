@@ -10,6 +10,11 @@ import {
 } from "@/lib/types";
 import { renderItalicTitle, stripHtmlTags } from "@/lib/jurnal-format";
 
+function excerpt(text: string | undefined, n = 130): string {
+  const clean = (text ?? "").replace(/\s+/g, " ").trim();
+  return clean.length > n ? `${clean.slice(0, n).trimEnd()}…` : clean;
+}
+
 export type PublicationCard = {
   slug: string;
   title: string;
@@ -50,6 +55,8 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
   const [selectedAccess, setSelectedAccess] = useState<string[]>([]);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("year_desc");
+  // List vs. table presentation (table is the scannable default, like /arsip-sumber)
+  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
 
   // Mobile Filters drawer open state
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -495,8 +502,92 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
     </>
   );
 
+  // Table presentation (desktop sm+), matching the /arsip-sumber archive table.
+  const tableView = (
+    <div className="hidden overflow-x-auto border border-dashed border-ink/60 sm:block">
+      <table className="w-full border-collapse text-sm">
+        <thead>
+          <tr className="bg-ink-wash">
+            {["No.", "Publikasi", "Tipe & akses", "Penerbit / Jurnal", ""].map((h) => (
+              <th
+                key={h}
+                className="border border-dashed border-ink/40 px-3 py-2.5 text-left font-mono text-[0.7rem] uppercase tracking-label text-ink-deep"
+              >
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {sortedAndFiltered.map((i, idx) => (
+            <tr key={i.slug} className="group align-top odd:bg-ink-wash/40 hover:bg-ink-wash">
+              <td className="border border-dashed border-ink/30 px-3 py-2.5 font-mono text-[0.7rem] text-gray">
+                {String(idx + 1).padStart(3, "0")}
+              </td>
+              <td className="border border-dashed border-ink/30 px-3 py-2.5">
+                <Link
+                  href={`/jurnal/${i.slug}`}
+                  className="font-display text-[0.85rem] font-bold leading-snug text-ink-black underline decoration-ink/30 decoration-1 underline-offset-2 group-hover:decoration-ink-deep"
+                >
+                  {renderItalicTitle(i.title)}
+                </Link>
+                {i.authors && i.authors.length > 0 && (
+                  <span className="mt-1 block max-w-md truncate font-mono text-xs text-gray" title={i.authors.join(", ")}>
+                    {i.authors.join(", ")}
+                  </span>
+                )}
+                {i.synopsis && (
+                  <span className="mt-1 block max-w-xl font-mono text-xs leading-relaxed text-gray">
+                    {excerpt(i.synopsis)}
+                  </span>
+                )}
+              </td>
+              <td className="border border-dashed border-ink/30 px-3 py-2.5">
+                <span className="inline-block border border-dashed border-ink/50 px-2 py-0.5 font-mono text-[0.7rem] uppercase tracking-label text-ink">
+                  {PUBLICATION_TYPE_LABEL[i.publicationType]}
+                </span>
+                <span className="mt-1.5 block font-mono text-[0.7rem] uppercase tracking-wider text-gray">
+                  {ACCESS_TYPE_LABEL[i.accessType]}
+                </span>
+                {i.peerReviewed && (
+                  <span className="mt-0.5 block font-mono text-[0.7rem] uppercase tracking-wider text-ink-deep">
+                    Peer reviewed
+                  </span>
+                )}
+              </td>
+              <td className="border border-dashed border-ink/30 px-3 py-2.5 font-mono text-[0.8rem] text-gray">
+                {i.journalOrCollection ?? i.publisherOrInstitution}
+                {i.year ? ` · ${i.year}` : ""}
+              </td>
+              <td className="border border-dashed border-ink/30 px-3 py-2.5 whitespace-nowrap">
+                <span className="flex flex-col gap-1">
+                  {i.pdfAvailable && (
+                    <a
+                      href={i.downloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-[0.7rem] font-bold uppercase tracking-wider text-ink hover:underline"
+                    >
+                      PDF <span aria-hidden>↓</span>
+                    </a>
+                  )}
+                  <Link
+                    href={`/jurnal/${i.slug}`}
+                    className="font-mono text-[0.7rem] uppercase tracking-wider text-gray hover:text-ink hover:underline"
+                  >
+                    Detail <span aria-hidden>→</span>
+                  </Link>
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
   return (
-    <div className="grid lg:grid-cols-[320px_1fr] gap-8 items-start relative">
+    <div className="grid lg:grid-cols-[320px_minmax(0,1fr)] gap-8 items-start relative">
       {/* 1. Desktop Persistent Sidebar */}
       <aside className="hidden lg:block border border-dashed border-ink/40 bg-ink-wash/10 p-5 space-y-6 lg:sticky lg:top-24 max-h-[80vh] overflow-y-auto custom-scrollbar">
         <FilterContent />
@@ -544,22 +635,43 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
       )}
 
       {/* Publications List Column */}
-      <div className="space-y-5 flex-1">
+      <div className="space-y-5 flex-1 min-w-0">
         <div className="hidden lg:flex items-center justify-between gap-4 border-b border-dashed border-ink/40 pb-3">
           <p className="font-mono text-xs uppercase tracking-wider text-gray">
             Ditemukan {sortedAndFiltered.length} dari {items.length} Publikasi Ilmiah
           </p>
-          {isFilterActive && (
-            <div className="flex flex-wrap gap-2 items-center">
-              <span className="font-mono text-[0.7rem] uppercase tracking-wider text-gray">Filter aktif:</span>
-              <button
-                onClick={clearAllFilters}
-                className="border border-dashed border-ink/40 px-2 py-0.5 font-mono text-[0.7rem] uppercase text-ink hover:bg-ink-wash focus-visible:ring-2 focus-visible:ring-ink"
-              >
-                Reset Semuanya ×
-              </button>
+          <div className="flex items-center gap-4">
+            {isFilterActive && (
+              <div className="flex flex-wrap gap-2 items-center">
+                <span className="font-mono text-[0.7rem] uppercase tracking-wider text-gray">Filter aktif:</span>
+                <button
+                  onClick={clearAllFilters}
+                  className="border border-dashed border-ink/40 px-2 py-0.5 font-mono text-[0.7rem] uppercase text-ink hover:bg-ink-wash focus-visible:ring-2 focus-visible:ring-ink"
+                >
+                  Reset Semuanya ×
+                </button>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[0.7rem] uppercase tracking-wider text-gray">Tampilan</span>
+              <div className="flex border border-dashed border-ink/40" role="group" aria-label="Mode tampilan">
+                <button
+                  onClick={() => setViewMode("table")}
+                  aria-pressed={viewMode === "table"}
+                  className={`px-2.5 py-1 font-mono text-[0.7rem] uppercase tracking-wider focus-visible:ring-2 focus-visible:ring-ink ${viewMode === "table" ? "bg-ink text-paper" : "text-gray hover:bg-ink-wash"}`}
+                >
+                  Tabel
+                </button>
+                <button
+                  onClick={() => setViewMode("cards")}
+                  aria-pressed={viewMode === "cards"}
+                  className={`border-l border-dashed border-ink/40 px-2.5 py-1 font-mono text-[0.7rem] uppercase tracking-wider focus-visible:ring-2 focus-visible:ring-ink ${viewMode === "cards" ? "bg-ink text-paper" : "text-gray hover:bg-ink-wash"}`}
+                >
+                  Kartu
+                </button>
+              </div>
             </div>
-          )}
+          </div>
         </div>
 
         {sortedAndFiltered.length === 0 ? (
@@ -573,11 +685,10 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
             </button>
           </div>
         ) : (
-          /* High-Density Card List:
-             - lg:grid-cols-1: Single column list on desktop/laptop
-             - [@media(min-width:1400px)]:grid-cols-2: 2 columns grid side-by-side on wide screens
-          */
-          <ul className="grid gap-5 grid-cols-1">
+          <>
+            {viewMode === "table" && tableView}
+            {/* Card list: full-width in card mode; mobile fallback when table mode */}
+            <ul className={`grid grid-cols-1 gap-5${viewMode === "table" ? " sm:hidden" : ""}`}>
             {sortedAndFiltered.map((i) => {
               return (
                 <li
@@ -660,7 +771,8 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
                 </li>
               );
             })}
-          </ul>
+            </ul>
+          </>
         )}
       </div>
     </div>

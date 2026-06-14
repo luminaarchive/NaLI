@@ -59,12 +59,12 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
     <>
       {/* stats */}
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-        <p className="font-mono text-xs uppercase tracking-wider text-ink/70">
+        <p className="font-mono text-xs uppercase tracking-wider text-gray">
           {sources.length} entri sumber terverifikasi
         </p>
         <ul className="flex flex-wrap gap-x-4 gap-y-1">
           {[...typeCounts.entries()].map(([t, n]) => (
-            <li key={t} className="font-mono text-[0.68rem] uppercase tracking-wider text-gray">
+            <li key={t} className="font-mono text-[0.7rem] uppercase tracking-wider text-gray">
               {SOURCE_TYPE_LABEL[t]} · {n}
             </li>
           ))}
@@ -74,7 +74,7 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
       {/* filters */}
       <div className="mt-5 flex flex-wrap gap-3">
         <label className="flex flex-col gap-1">
-          <span className="label text-ink/60">Tipe</span>
+          <span className="label text-gray">Tipe</span>
           <select className={selectClass} value={type} onChange={(e) => setType(e.target.value)}>
             <option value={ALL}>Semua tipe</option>
             {[...typeCounts.keys()].map((t) => (
@@ -85,7 +85,7 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
           </select>
         </label>
         <label className="flex flex-col gap-1">
-          <span className="label text-ink/60">Topik</span>
+          <span className="label text-gray">Topik</span>
           <select className={selectClass} value={topic} onChange={(e) => setTopic(e.target.value)}>
             <option value={ALL}>Semua topik</option>
             {topics.map((t) => (
@@ -96,7 +96,7 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
           </select>
         </label>
         <label className="flex flex-col gap-1">
-          <span className="label text-ink/60">Keandalan</span>
+          <span className="label text-gray">Keandalan</span>
           <select
             className={selectClass}
             value={reliability}
@@ -112,7 +112,7 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
         </label>
       </div>
 
-      <p className="mt-4 font-mono text-[0.7rem] uppercase tracking-wider text-ink/50">
+      <p className="mt-4 font-mono text-[0.7rem] uppercase tracking-wider text-gray">
         Menampilkan {filtered.length} dari {sources.length}
       </p>
 
@@ -124,7 +124,7 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
               {["No.", "Sumber", "Tipe & keandalan", "Penulis / Lembaga", "Tahun", ""].map((h) => (
                 <th
                   key={h}
-                  className="border border-ink/40 px-4 py-3 text-left font-mono text-[0.68rem] uppercase tracking-label text-ink-deep"
+                  className="border border-ink/40 px-4 py-3 text-left font-mono text-[0.7rem] uppercase tracking-label text-ink-deep"
                 >
                   {h}
                 </th>
@@ -137,7 +137,7 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
                 key={s.slug}
                 className="group align-top font-mono text-[0.8rem] odd:bg-ink-wash/40 hover:bg-ink-wash"
               >
-                <td className="border border-ink/30 px-4 py-3 font-mono text-[0.7rem] text-ink/60">
+                <td className="border border-ink/30 px-4 py-3 font-mono text-[0.7rem] text-gray">
                   {String(i + 1).padStart(3, "0")}
                 </td>
                 <td className="border border-ink/30 px-4 py-3">
@@ -148,27 +148,27 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
                     {s.title}
                   </Link>
                   {s.topics && s.topics.length > 0 && (
-                    <span className="mt-1 block font-mono text-[0.66rem] uppercase tracking-wider text-ink/50">
+                    <span className="mt-1 block font-mono text-[0.7rem] uppercase tracking-wider text-gray">
                       {s.topics.slice(0, 4).join(" · ")}
                     </span>
                   )}
                   {s.content && (
-                    <span className="mt-1 block max-w-xl font-mono text-xs text-gray-light">
+                    <span className="mt-1 block max-w-xl font-mono text-xs text-gray">
                       {excerpt(s.content)}
                     </span>
                   )}
                 </td>
                 <td className="border border-ink/30 px-4 py-3">
-                  <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.66rem] uppercase tracking-label text-ink">
+                  <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-label text-ink">
                     {SOURCE_TYPE_LABEL[s.type]}
                   </span>
                   {s.reliabilityLevel && (
-                    <span className="mt-1.5 block font-mono text-[0.64rem] uppercase tracking-wider text-ink/60">
+                    <span className="mt-1.5 block font-mono text-[0.7rem] uppercase tracking-wider text-gray">
                       {RELIABILITY_LABEL[s.reliabilityLevel]}
                     </span>
                   )}
                   {s.checkedAt && (
-                    <span className="mt-0.5 block font-mono text-[0.6rem] text-ink/40">
+                    <span className="mt-0.5 block font-mono text-[0.7rem] text-gray">
                       dicek {s.checkedAt}
                     </span>
                   )}
@@ -182,7 +182,7 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
                 <td className="border border-ink/30 px-4 py-3 whitespace-nowrap">
                   <Link
                     href={`/arsip-sumber/${s.slug}`}
-                    className="font-mono text-[0.68rem] uppercase tracking-wider text-ink hover:underline"
+                    className="font-mono text-[0.7rem] uppercase tracking-wider text-ink hover:underline"
                   >
                     Baca →
                   </Link>
@@ -202,27 +202,27 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
               className="block border border-dashed border-ink/60 bg-paper p-4 transition-colors hover:bg-ink-wash"
             >
               <div className="flex items-center justify-between gap-3">
-                <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-label text-ink">
+                <span className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.7rem] uppercase tracking-label text-ink">
                   {SOURCE_TYPE_LABEL[s.type]}
                 </span>
                 {s.year && (
-                  <span className="font-mono text-xs uppercase tracking-wider text-ink/70">
+                  <span className="font-mono text-xs uppercase tracking-wider text-gray">
                     {s.year}
                   </span>
                 )}
               </div>
               <p className="mt-2 text-sm font-semibold text-ink-charcoal">{s.title}</p>
               {s.reliabilityLevel && (
-                <p className="mt-1 font-mono text-[0.62rem] uppercase tracking-wider text-ink/60">
+                <p className="mt-1 font-mono text-[0.7rem] uppercase tracking-wider text-gray">
                   {RELIABILITY_LABEL[s.reliabilityLevel]}
                 </p>
               )}
               {s.content && (
-                <p className="mt-2 font-mono text-xs leading-relaxed text-gray-light">
+                <p className="mt-2 font-mono text-xs leading-relaxed text-gray">
                   {excerpt(s.content, 100)}
                 </p>
               )}
-              <p className="mt-3 font-mono text-[0.66rem] uppercase tracking-wider text-ink">
+              <p className="mt-3 font-mono text-[0.7rem] uppercase tracking-wider text-ink">
                 Baca keterangan →
               </p>
             </Link>

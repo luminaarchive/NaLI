@@ -31,7 +31,7 @@ export async function CategoryView({
           </p>
         ) : (
           <>
-            <p className="font-mono text-xs uppercase tracking-wider text-ink/70">
+            <p className="font-mono text-xs uppercase tracking-wider text-gray">
               {articles.length} artikel
             </p>
             <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

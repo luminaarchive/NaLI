@@ -87,7 +87,7 @@ export default function PublicationDetailPage({ params }: { params: Params }) {
               )}
             </div>
             <figcaption className="mt-3 text-center" data-jurnal-cover-credit="true">
-              <p className="font-mono text-[0.7rem] leading-relaxed text-gray">{pub.cover.caption}</p>
+              <p className="font-mono text-[0.7rem] leading-relaxed text-gray">{renderItalicTitle(pub.cover.caption)}</p>
               <p className="mt-1 font-mono text-[0.7rem] leading-relaxed text-gray">
                 {pub.cover.creator ? `${pub.cover.creator}. ` : ""}
                 {pub.cover.publisherOrInstitution}.{" "}

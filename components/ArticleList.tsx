@@ -77,7 +77,7 @@ export function ArticleList({
         </div>
       )}
 
-      <p className="mt-8 font-mono text-xs uppercase tracking-wider text-ink/70">
+      <p className="mt-8 font-mono text-xs uppercase tracking-wider text-gray">
         {filtered.length} dari {articles.length} artikel
       </p>
 
