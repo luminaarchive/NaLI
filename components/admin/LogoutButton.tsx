@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { Glyph } from "@/components/Glyph";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -14,9 +15,10 @@ export function LogoutButton() {
     <button
       type="button"
       onClick={logout}
-      className="border border-dashed border-ink/60 px-3 py-1.5 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-ink transition-colors hover:bg-ink hover:text-paper"
+      className="flex w-full items-center gap-3 border border-dashed border-transparent px-3 py-2 font-mono text-[0.72rem] uppercase tracking-[0.14em] text-gray transition-colors hover:border-ink/40 hover:bg-ink hover:text-paper"
     >
-      Keluar
+      <Glyph name="logout" className="h-4 w-4 shrink-0" />
+      <span className="hidden lg:inline">Keluar</span>
     </button>
   );
 }

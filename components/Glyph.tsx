@@ -16,7 +16,8 @@ export type GlyphName =
   | "dashboard"
   | "stats"
   | "plus"
-  | "external";
+  | "external"
+  | "logout";
 
 const PATHS: Record<GlyphName, React.ReactNode> = {
   article: (
@@ -83,6 +84,12 @@ const PATHS: Record<GlyphName, React.ReactNode> = {
   external: (
     <>
       <path d="M14 4h6v6M20 4l-9 9M18 13v6H5V6h6" />
+    </>
+  ),
+  logout: (
+    <>
+      <path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4" />
+      <path d="M9 12h12M18 9l3 3-3 3" />
     </>
   ),
 };

@@ -1,5 +1,5 @@
 import { getAnalyticsSummary } from "@/lib/analytics";
-import { AdminHeader } from "@/components/admin/AdminHeader";
+import { AdminShell } from "@/components/admin/AdminShell";
 
 export const dynamic = "force-dynamic";
 
@@ -14,8 +14,7 @@ export default async function AnalyticsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-paper">
-      <AdminHeader active="analytics" />
+    <AdminShell active="analytics">
       <div className="container-editorial py-10">
         <h1 className="font-display text-3xl font-black uppercase text-ink">Statistik Pengunjung</h1>
         <p className="mt-2 font-mono text-[0.8rem] text-gray">
@@ -68,6 +67,6 @@ export default async function AnalyticsPage() {
           )}
         </div>
       </div>
-    </div>
+    </AdminShell>
   );
 }

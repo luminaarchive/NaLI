@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { AdminHeader } from "@/components/admin/AdminHeader";
+import { AdminShell } from "@/components/admin/AdminShell";
 import { PostEditor, type EditablePost } from "@/components/admin/PostEditor";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { PostRow } from "@/lib/posts";
@@ -37,8 +37,7 @@ export default async function EditPostPage({ params }: { params: { id: string } 
   };
 
   return (
-    <div className="min-h-screen bg-paper">
-      <AdminHeader active="dashboard" />
+    <AdminShell active="dashboard">
       <div className="container-editorial py-10">
         <div className="mb-8 flex items-center justify-between">
           <h1 className="font-display text-3xl font-black uppercase text-ink">Edit Tulisan</h1>
@@ -53,6 +52,6 @@ export default async function EditPostPage({ params }: { params: { id: string } 
         </div>
         <PostEditor initial={initial} />
       </div>
-    </div>
+    </AdminShell>
   );
 }

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAnalyticsSummary } from "@/lib/analytics";
 import { getAllSources, getAllFieldNotes } from "@/lib/content";
-import { AdminHeader } from "@/components/admin/AdminHeader";
+import { AdminShell } from "@/components/admin/AdminShell";
 import { DeletePostButton } from "@/components/admin/DeletePostButton";
 import { formatDate } from "@/lib/format";
 import { CATEGORY_LABEL, CONFIDENCE_LABEL, type Category, type Confidence, type Status } from "@/lib/types";
@@ -56,8 +56,7 @@ export default async function AdminDashboard() {
   const topPaths = analytics.topPaths.slice(0, 6);
 
   return (
-    <div className="min-h-screen bg-paper">
-      <AdminHeader active="dashboard" />
+    <AdminShell active="dashboard">
       <div className="container-editorial py-10">
         {/* heading + quick actions */}
         <div className="flex flex-wrap items-end justify-between gap-4">
@@ -219,6 +218,6 @@ export default async function AdminDashboard() {
           </div>
         )}
       </div>
-    </div>
+    </AdminShell>
   );
 }
