@@ -49,7 +49,7 @@ export default function JurnalPage() {
   }));
 
   return (
-    <>
+    <div className="theme-jurnal relative">
       <PageHeader
         eyebrow="Katalog jurnal dan publikasi ilmiah terbuka"
         title="Jurnal"
@@ -70,6 +70,6 @@ export default function JurnalPage() {
           </>
         )}
       </div>
-    </>
+    </div>
   );
 }

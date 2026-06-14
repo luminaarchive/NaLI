@@ -292,6 +292,126 @@
   --c-rule: 72 80 46;
 }
 
+/* ── Per-page nav themes (structural pages, same mechanism as pillars) ──────
+   Each top-nav destination gets its own accent + fitting faint texture so the
+   nav feels varied (Nous-style), while Beranda/Artikel keep the default teal
+   as the neutral "all" anchor. Body/gray text stays constant for contrast. */
+
+/* JURNAL — indigo/violet + vertical catalog rules (publication catalog) */
+.theme-jurnal {
+  position: relative;
+  --c-ink: 92 64 168;
+  --c-ink-deep: 60 42 122;
+  --c-ink-wash: 234 230 247;
+  --c-rule: 178 166 216;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgb(var(--c-ink) / 0.05) 0 1px,
+    transparent 1px 30px
+  );
+}
+.dark .theme-jurnal {
+  --c-ink: 170 150 240;
+  --c-ink-deep: 202 188 248;
+  --c-ink-wash: 26 22 46;
+  --c-rule: 66 58 108;
+}
+
+/* SERI — wine/plum + horizontal manuscript lines (editorial series) */
+.theme-seri {
+  position: relative;
+  --c-ink: 158 44 96;
+  --c-ink-deep: 116 28 66;
+  --c-ink-wash: 247 230 240;
+  --c-rule: 212 168 192;
+  background-image: repeating-linear-gradient(
+    rgb(var(--c-ink) / 0.045) 0 1px,
+    transparent 1px 34px
+  );
+}
+.dark .theme-seri {
+  --c-ink: 230 144 184;
+  --c-ink-deep: 242 188 214;
+  --c-ink-wash: 40 20 32;
+  --c-rule: 96 58 80;
+}
+
+/* ARSIP SUMBER — steel slate + ledger grid (factual archive) */
+.theme-arsip {
+  position: relative;
+  --c-ink: 66 92 116;
+  --c-ink-deep: 42 62 84;
+  --c-ink-wash: 233 238 242;
+  --c-rule: 176 192 206;
+  background-image:
+    linear-gradient(rgb(var(--c-ink) / 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--c-ink) / 0.045) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.dark .theme-arsip {
+  --c-ink: 156 180 202;
+  --c-ink-deep: 196 212 228;
+  --c-ink-wash: 22 28 34;
+  --c-rule: 60 72 84;
+}
+
+/* METODOLOGI — graphite charcoal + blueprint hatch (rigor/method) */
+.theme-metodologi {
+  position: relative;
+  --c-ink: 58 64 76;
+  --c-ink-deep: 38 44 54;
+  --c-ink-wash: 235 237 240;
+  --c-rule: 184 190 198;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgb(var(--c-ink) / 0.045) 0 1px,
+    transparent 1px 14px
+  );
+}
+.dark .theme-metodologi {
+  --c-ink: 172 180 194;
+  --c-ink-deep: 204 210 220;
+  --c-ink-wash: 24 26 30;
+  --c-rule: 64 68 76;
+}
+
+/* TENTANG — clay/terracotta + soft stipple (human/personal) */
+.theme-tentang {
+  position: relative;
+  --c-ink: 166 78 50;
+  --c-ink-deep: 120 52 30;
+  --c-ink-wash: 247 234 226;
+  --c-rule: 218 184 166;
+  background-image: radial-gradient(rgb(var(--c-ink) / 0.05) 1.1px, transparent 1.1px);
+  background-size: 22px 22px;
+}
+.dark .theme-tentang {
+  --c-ink: 230 158 118;
+  --c-ink-deep: 244 196 168;
+  --c-ink-wash: 40 26 18;
+  --c-rule: 94 64 44;
+}
+
+/* KONTAK — royal blue + sparse diagonal (signal/contact) */
+.theme-kontak {
+  position: relative;
+  --c-ink: 42 80 152;
+  --c-ink-deep: 26 54 110;
+  --c-ink-wash: 231 237 248;
+  --c-rule: 168 186 220;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgb(var(--c-ink) / 0.04) 0 1px,
+    transparent 1px 16px
+  );
+}
+.dark .theme-kontak {
+  --c-ink: 138 174 240;
+  --c-ink-deep: 184 204 248;
+  --c-ink-wash: 18 26 46;
+  --c-rule: 54 70 110;
+}
+
 /* ── characterful motion devices (Hermes-Agent inspired; reduced-motion-safe via the guard above) ── */
 
 /* terminal cursor blink */

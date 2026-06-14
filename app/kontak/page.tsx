@@ -22,7 +22,7 @@ const CHANNELS = [
 
 export default function KontakPage() {
   return (
-    <>
+    <div className="theme-kontak relative">
       <PageHeader
         eyebrow="Kontak"
         title="Punya kabar, koreksi, atau usulan topik?"
@@ -58,6 +58,6 @@ export default function KontakPage() {
           </ul>
         </div>
       </div>
-    </>
+    </div>
   );
 }

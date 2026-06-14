@@ -179,7 +179,7 @@ const SECTIONS: { n: string; title: string; body: React.ReactNode }[] = [
 
 export default function MetodologiPage() {
   return (
-    <>
+    <div className="theme-metodologi relative">
       <PageHeader
         eyebrow="Cara kerja"
         title="Metodologi"
@@ -211,6 +211,6 @@ export default function MetodologiPage() {
           ))}
         </ol>
       </div>
-    </>
+    </div>
   );
 }

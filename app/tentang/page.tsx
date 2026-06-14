@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function TentangPage() {
   return (
-    <>
+    <div className="theme-tentang relative">
       <PageHeader
         eyebrow="Tentang"
         title="Satu orang, banyak yang belum diceritakan."
@@ -83,6 +83,6 @@ export default function TentangPage() {
           </Link>
         </div>
       </div>
-    </>
+    </div>
   );
 }

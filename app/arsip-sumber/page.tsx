@@ -20,7 +20,7 @@ export default function ArsipSumberPage() {
   const sources = getAllSources();
 
   return (
-    <>
+    <div className="theme-arsip relative">
       <PageHeader
         eyebrow="Transparansi"
         title="Arsip Sumber"
@@ -34,6 +34,6 @@ export default function ArsipSumberPage() {
           <SourceArchive sources={sources} />
         )}
       </div>
-    </>
+    </div>
   );
 }

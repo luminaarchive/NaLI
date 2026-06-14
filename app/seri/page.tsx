@@ -23,7 +23,7 @@ export default async function SeriPage() {
   const articles = await getAllArticles();
 
   return (
-    <>
+    <div className="theme-seri relative">
       <PageHeader
         eyebrow="Editorial"
         title="Seri"
@@ -89,6 +89,6 @@ export default async function SeriPage() {
           })}
         </div>
       </div>
-    </>
+    </div>
   );
 }
