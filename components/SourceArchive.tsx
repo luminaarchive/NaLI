@@ -9,6 +9,8 @@ import {
   type SourceEntry,
   type SourceType,
 } from "@/lib/types";
+import { SegmentedBar } from "./SegmentedBar";
+import { PulseDot } from "./PulseDot";
 
 function excerpt(text: string | undefined, n = 120): string {
   if (!text) return "";
@@ -57,18 +59,26 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
 
   return (
     <>
-      {/* stats */}
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-        <p className="font-mono text-xs uppercase tracking-wider text-gray">
-          {sources.length} entri sumber terverifikasi
-        </p>
-        <ul className="flex flex-wrap gap-x-4 gap-y-1">
-          {[...typeCounts.entries()].map(([t, n]) => (
-            <li key={t} className="font-mono text-[0.7rem] uppercase tracking-wider text-gray">
-              {SOURCE_TYPE_LABEL[t]} · {n}
-            </li>
-          ))}
-        </ul>
+      {/* instrument panel: total + live indicator + type distribution */}
+      <div className="border border-dashed border-ink/40 bg-ink-wash/30 p-4">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <span className="font-mono text-2xl font-bold leading-none text-ink-black">
+            {sources.length}
+          </span>
+          <span className="font-mono text-xs uppercase tracking-wider text-gray">
+            entri sumber terverifikasi
+          </span>
+          <span className="ml-auto flex items-center gap-1.5 font-mono text-[0.7rem] uppercase tracking-wider text-gray">
+            <PulseDot live /> Terus diperbarui
+          </span>
+        </div>
+        <SegmentedBar
+          className="mt-3"
+          segments={[...typeCounts.entries()].map(([t, n]) => ({
+            label: SOURCE_TYPE_LABEL[t],
+            value: n,
+          }))}
+        />
       </div>
 
       {/* filters */}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
 import { PublicationCatalog } from "@/components/PublicationCatalog";
+import { Callout } from "@/components/Callout";
 import { getAllPublications } from "@/lib/jurnal";
 
 export const metadata: Metadata = {
@@ -59,7 +60,14 @@ export default function JurnalPage() {
         {items.length === 0 ? (
           <p className="font-mono text-[0.85rem] text-gray">Katalog jurnal masih kosong.</p>
         ) : (
-          <PublicationCatalog items={items} />
+          <>
+            <Callout title="Cara membaca katalog ini" className="mb-8">
+              Tiap entri adalah publikasi asli dari penerbitnya — NaLI hanya menambahkan
+              sinopsis Indonesia, bukan menulis ulang. Pakai tampilan <strong>Tabel</strong> untuk
+              memindai cepat, atau <strong>Kartu</strong> untuk membaca sinopsis tiap entri.
+            </Callout>
+            <PublicationCatalog items={items} />
+          </>
         )}
       </div>
     </>
