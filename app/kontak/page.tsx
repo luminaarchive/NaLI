@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
+import { PageBackdrop } from "@/components/PageBackdrop";
+import { DynamicWaveBackground } from "@/components/ui/dynamic-wave-canvas-background";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -23,13 +25,16 @@ const CHANNELS = [
 export default function KontakPage() {
   return (
     <div className="theme-kontak relative">
+      <PageBackdrop light="opacity-[0.40]">
+        <DynamicWaveBackground colorLow={[14, 22, 46]} colorHigh={[86, 128, 214]} />
+      </PageBackdrop>
       <PageHeader
         eyebrow="Kontak"
         title="Punya kabar, koreksi, atau usulan topik?"
         description="Koreksi yang berdasar sangat kami hargai, begitu juga petunjuk untuk penelusuran berikutnya."
       />
 
-      <div className="container-read py-12 sm:py-16">
+      <div className="container-read relative bg-paper/72 py-12 backdrop-blur-sm sm:py-16">
         <div className="border border-dashed border-ink/70 bg-paper p-7">
           <p className="label">Email</p>
           <a

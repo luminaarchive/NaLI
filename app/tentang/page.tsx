@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
+import { PageBackdrop } from "@/components/PageBackdrop";
+import { DynamicWaveBackground } from "@/components/ui/dynamic-wave-canvas-background";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -18,13 +20,16 @@ export const metadata: Metadata = {
 export default function TentangPage() {
   return (
     <div className="theme-tentang relative">
+      <PageBackdrop light="opacity-[0.42]">
+        <DynamicWaveBackground colorLow={[40, 20, 12]} colorHigh={[180, 92, 56]} />
+      </PageBackdrop>
       <PageHeader
         eyebrow="Tentang"
         title="Satu orang, banyak yang belum diceritakan."
         description="NaLI by NatIve adalah jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia, disusun dari sumber publik yang dapat ditelusuri."
       />
 
-      <div className="container-read py-12 sm:py-16">
+      <div className="container-read relative bg-paper/80 py-12 backdrop-blur-sm sm:py-16">
         <div className="prose-nali">
           <h2>Apa ini</h2>
           <p>

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
 import { PublicationCatalog } from "@/components/PublicationCatalog";
 import { Callout } from "@/components/Callout";
+import { PageBackdrop } from "@/components/PageBackdrop";
+import { SmokeBackground } from "@/components/ui/spooky-smoke-animation";
 import { getAllPublications } from "@/lib/jurnal";
 
 export const metadata: Metadata = {
@@ -50,13 +52,16 @@ export default function JurnalPage() {
 
   return (
     <div className="theme-jurnal relative">
+      <PageBackdrop light="opacity-[0.42]">
+        <SmokeBackground smokeColor="#5C40A8" />
+      </PageBackdrop>
       <PageHeader
         eyebrow="Katalog jurnal dan publikasi ilmiah terbuka"
         title="Jurnal"
         description="Kumpulan jurnal, laporan lembaga, dataset, dan arsip ilmiah nyata tentang alam, sejarah, dan Indonesia. Tiap entri adalah publikasi asli dari penerbitnya, dengan sinopsis Indonesia dari NaLI."
       />
 
-      <div className="container-editorial py-12">
+      <div className="container-editorial relative bg-paper/70 py-12 backdrop-blur-sm">
         {items.length === 0 ? (
           <p className="font-mono text-[0.85rem] text-gray">Katalog jurnal masih kosong.</p>
         ) : (

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
+import { PageBackdrop } from "@/components/PageBackdrop";
+import { TurbulentFlowBackground } from "@/components/ui/turbulent-flow";
 
 export const metadata: Metadata = {
   title: "Metodologi",
@@ -180,13 +182,16 @@ const SECTIONS: { n: string; title: string; body: React.ReactNode }[] = [
 export default function MetodologiPage() {
   return (
     <div className="theme-metodologi relative">
+      <PageBackdrop>
+        <TurbulentFlowBackground />
+      </PageBackdrop>
       <PageHeader
         eyebrow="Cara kerja"
         title="Metodologi"
         description="Bagaimana NaLI menelusuri, memilih sumber, memakai AI, dan menjaga keputusan editorial tetap di tangan manusia."
       />
 
-      <div className="container-read py-12 sm:py-16">
+      <div className="container-read relative bg-paper/82 py-12 backdrop-blur-sm sm:py-16">
         <div className="prose-nali">
           <p className="text-lg">
             NaLI menggunakan AI untuk membantu menelusuri, merangkum, menyusun, dan

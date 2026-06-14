@@ -4,6 +4,8 @@ import { PageHeader } from "@/components/PageHeader";
 import { ConfidenceBadge } from "@/components/ConfidenceBadge";
 import { getAllArticles } from "@/lib/content";
 import { SERIES } from "@/lib/series";
+import { PageBackdrop } from "@/components/PageBackdrop";
+import { SeriWarpBackground } from "@/components/ui/background-shaders";
 
 export const metadata: Metadata = {
   title: "Seri",
@@ -24,6 +26,9 @@ export default async function SeriPage() {
 
   return (
     <div className="theme-seri relative">
+      <PageBackdrop light="opacity-[0.24]">
+        <SeriWarpBackground />
+      </PageBackdrop>
       <PageHeader
         eyebrow="Editorial"
         title="Seri"
