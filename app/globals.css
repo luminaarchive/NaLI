@@ -15,6 +15,12 @@
     --c-gray: 51 55 61;
     --c-gray-light: 142 147 143;
     --c-rule: 158 205 191;
+
+    /* motion tokens — one easing, three durations (theme-independent) */
+    --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
+    --dur-micro: 120ms;
+    --dur-hover: 250ms;
+    --dur-entrance: 600ms;
   }
 
   /* dark, kertas tinta gelap (turunan warna shader), tinta teal terang */
@@ -85,6 +91,28 @@
   /* editorial link styling for inline links */
   .link-teal {
     @apply text-ink underline decoration-ink/70 decoration-1 underline-offset-[3px] transition-colors hover:text-ink-deep hover:decoration-ink-deep;
+  }
+
+  /* signature hover: an underline that grows in from the left
+     (for links that are NOT underlined at rest, e.g. nav items) */
+  .link-underline {
+    position: relative;
+  }
+  .link-underline::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 2px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-hover) var(--ease-settle);
+  }
+  .link-underline:hover::after,
+  .link-underline:focus-visible::after {
+    transform: scaleX(1);
   }
 
   /* article body, readable serif/sans prose on white, ink accents */
@@ -170,4 +198,16 @@
 }
 .lp-faq details[open] .lp-chevron {
   transform: rotate(180deg);
+}
+
+/* respect users who prefer reduced motion: neutralize transitions/animations site-wide */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

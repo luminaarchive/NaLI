@@ -47,7 +47,7 @@ export function Nav() {
                 className={`font-display text-[0.82rem] font-semibold uppercase tracking-[0.08em] transition-colors ${
                   isActive(link.href)
                     ? "text-ink-black underline decoration-2 underline-offset-4"
-                    : "text-ink hover:text-ink-deep hover:underline hover:underline-offset-4"
+                    : "text-ink hover:text-ink-deep link-underline"
                 }`}
               >
                 {link.label}

@@ -610,13 +610,13 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
 
       {/* Mobile Filters Sliding Drawer / Sheet */}
       {showMobileFilters && (
-        <div className="fixed inset-0 z-50 flex lg:hidden bg-ink-black/40 backdrop-blur-sm animate-fadeIn" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-50 flex lg:hidden bg-ink-black/40 backdrop-blur-sm animate-fade-in" role="dialog" aria-modal="true">
           <div
             ref={drawerRef}
             role="dialog"
             aria-modal="true"
             aria-label="Penyaring & Urutkan"
-            className="w-[300px] max-w-[85vw] bg-paper border-r border-dashed border-ink/40 p-5 flex flex-col justify-between h-full shadow-2xl relative animate-slideRight"
+            className="w-[300px] max-w-[85vw] bg-paper border-r border-dashed border-ink/40 p-5 flex flex-col justify-between h-full shadow-2xl relative animate-slide-right"
           >
             <button
               onClick={() => setShowMobileFilters(false)}

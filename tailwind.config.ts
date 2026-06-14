@@ -67,10 +67,25 @@ const config: Config = {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
+        "slide-right": {
+          "0%": { opacity: "0", transform: "translateX(-100%)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
+        },
       },
       animation: {
-        "fade-up": "fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both",
-        "fade-in": "fade-in 1.1s ease both",
+        // entrance motions share one settle easing
+        "fade-up": "fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "fade-in": "fade-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "slide-right": "slide-right 0.25s cubic-bezier(0.22, 1, 0.36, 1) both",
+      },
+      // motion tokens (values live as CSS vars in globals.css :root)
+      transitionTimingFunction: {
+        settle: "var(--ease-settle)",
+      },
+      transitionDuration: {
+        micro: "var(--dur-micro)",
+        hover: "var(--dur-hover)",
+        entrance: "var(--dur-entrance)",
       },
     },
   },
