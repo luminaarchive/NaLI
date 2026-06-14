@@ -418,6 +418,36 @@ lapangan langsung (gear/budget belum lengkap), jadi semua bukti dari sumber piha
 - **Masih placeholder:** email `halo@nali.native.id` (di `SITE.email`), mailbox nyata =
   tugas founder. Editor `/admin` belum tangkap claimLedger/evidenceBasis untuk post DB.
 
+### 14 Juni 2026, Benchmark Nous Research → identitas per-halaman + background animasi (founder-directed)
+
+Sesi UI panjang membandingkan situs ke nousresearch.com lalu mengeksekusi.
+- **Benchmark + motion audit** (docs: `nali_jurnal_nous_benchmark_ui_ux_report.md`,
+  `nali_nous_forensic_ui_ux_audit.md`, `nali_nous_motion_interaction_audit.md`,
+  `nous_full_navbar_style_animation_catalog.md`). Mengadopsi disiplin Nous "satu skeleton,
+  warna beda tiap halaman" + device kecil (link-underline, PulseDot, SegmentedBar, Callout,
+  Glyph, CopyLinkButton, TerminalLog, PillarMotif). `/jurnal` & `/arsip-sumber` dirombak
+  (overflow fix, tabel/kartu toggle, instrument panel). Admin: header → `AdminShell` sidebar
+  ikon kiri (`AdminHeader.tsx` dihapus).
+- **Tema identitas per-halaman** (CSS-var override di wrapper, light+dark, di `globals.css`):
+  pilar `theme-alam`(hijau)/`sejarah`(bronze)/`investigasi`(slate-biru)/`catatan`(olive) +
+  nav `theme-jurnal`(indigo)/`seri`(plum)/`arsip`(slate)/`metodologi`(graphite)/
+  `tentang`(clay)/`kontak`(royal). Beranda+Artikel tetap teal (jangkar netral). Semua
+  aksen ≥4.5:1 (AA). **Gotcha:** halaman pilar TIDAK ada di nav → founder kira "tak berubah";
+  makanya nav pages diberi warna sendiri.
+- **Background animasi per nav page** (commit `d0ef77a`): `components/PageBackdrop.tsx`
+  (fixed -z-10, pointer-events-none, redup di light, hilang saat reduced-motion → fallback
+  ke tekstur tema statis) membungkus 5 komponen di `components/ui/`: smoke WebGL2 (jurnal,
+  indigo), Warp `@paper-design/shaders-react` (seri, plum), fluid particles canvas (arsip,
+  slate light/dark-aware), turbulent-flow three.js+gsap (metodologi, **diwarnai ulang ke
+  graphite**, bukan rainbow), wave canvas (tentang clay / kontak royal). Konten padat duduk
+  di permukaan `bg-paper/NN backdrop-blur` agar terbaca; hero menampilkan motion.
+  **Dep berat:** `three`+`@types/three`+`gsap` (metodologi 277kB) & `@paper-design/shaders-react`
+  (seri 132kB); 3 background lain vanilla canvas/WebGL (ringan). Komponen aslinya diperbaiki
+  untuk TS strict + diadaptasi dari hero fullscreen → background.
+- **Verified:** tsc/lint/build clean; 6 halaman light+dark (Playwright), color-synced,
+  terbaca; live production. **Pre-existing gate merah:** `check:editorial` menandai em-dash
+  di `docs/nous_full_navbar_style_animation_catalog.md` (docs, tak terkait, tak blok deploy).
+
 ---
 
-*Last updated: 12 Juni 2026, editorial-trust sprint: reposisi open-source evidence journal, +trust pages, arsip 38 sumber terverifikasi + filter, 9/30 artikel ke standar Claim Ledger, validator + final report. Belum push.*
+*Last updated: 14 Juni 2026, sesi UI Nous-benchmark: identitas warna per-halaman (pilar+nav) + background animasi per nav page (smoke/warp/particles/turbulent/wave, color-synced, light+dark, reduced-motion safe). Pushed `d0ef77a`.*
