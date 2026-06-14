@@ -23,6 +23,7 @@ const ROUTE_THEME: { prefix: string; theme: string }[] = [
   { prefix: "/metodologi", theme: "theme-metodologi" },
   { prefix: "/tentang", theme: "theme-tentang" },
   { prefix: "/kontak", theme: "theme-kontak" },
+  { prefix: "/articles", theme: "theme-artikel" },
   { prefix: "/alam", theme: "theme-alam" },
   { prefix: "/sejarah", theme: "theme-sejarah" },
   { prefix: "/investigasi", theme: "theme-investigasi" },

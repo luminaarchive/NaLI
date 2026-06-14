@@ -412,6 +412,23 @@
   --c-rule: 54 70 110;
 }
 
+/* ARTIKEL — magenta/orchid + dot-grid (the all-articles index) */
+.theme-artikel {
+  position: relative;
+  --c-ink: 166 50 126;
+  --c-ink-deep: 124 30 92;
+  --c-ink-wash: 247 230 242;
+  --c-rule: 214 168 200;
+  background-image: radial-gradient(rgb(var(--c-ink) / 0.05) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+.dark .theme-artikel {
+  --c-ink: 232 140 200;
+  --c-ink-deep: 244 186 222;
+  --c-ink-wash: 40 20 34;
+  --c-rule: 96 56 82;
+}
+
 /* ── characterful motion devices (Hermes-Agent inspired; reduced-motion-safe via the guard above) ── */
 
 /* terminal cursor blink */
