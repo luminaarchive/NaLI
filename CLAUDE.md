@@ -458,4 +458,4 @@ Sesi UI panjang membandingkan situs ke nousresearch.com lalu mengeksekusi.
 
 ---
 
-*Last updated: 14 Juni 2026, sesi UI Nous-benchmark: identitas warna per-halaman (pilar+nav) + background animasi per nav page (smoke/warp/particles/turbulent/wave, color-synced, light+dark, reduced-motion safe); lalu optimasi 60fps + sinkron warna nav (`display:contents` cascade). Pushed `1c3337d`.*
+*Last updated: 14 Juni 2026, sesi UI Nous-benchmark: identitas warna per-halaman (pilar+nav) + background animasi per nav page (smoke/warp/particles/turbulent/wave, color-synced, light+dark, reduced-motion safe); lalu optimasi 60fps + sinkron warna nav (`display:contents` cascade); lalu Artikel dapat identitas sendiri (`theme-artikel` magenta + background neural-noise WebGL, 60fps, nav match), Jurnal tetap smoke. Pushed `ac435eb`.*
