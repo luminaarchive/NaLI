@@ -211,3 +211,66 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ── Per-pillar identity themes ───────────────────────────────────────────
+   Inspired by Nous Research (each property its own accent on one skeleton).
+   Each pillar overrides only the ink-accent CSS vars + lays a faint, fitting
+   background texture; the archive skeleton (dashed/mono/Fraunces) is untouched.
+   Body/heading/gray colors stay constant so contrast is preserved. */
+.theme-alam,
+.theme-sejarah,
+.theme-investigasi {
+  position: relative;
+}
+
+/* ALAM — forest green + organic stipple (nature) */
+.theme-alam {
+  --c-ink: 38 122 79;
+  --c-ink-deep: 22 84 53;
+  --c-ink-wash: 230 243 235;
+  --c-rule: 150 200 170;
+  background-image: radial-gradient(rgb(var(--c-ink) / 0.06) 1.2px, transparent 1.2px);
+  background-size: 20px 20px;
+}
+.dark .theme-alam {
+  --c-ink: 98 200 145;
+  --c-ink-deep: 168 226 194;
+  --c-ink-wash: 18 38 28;
+  --c-rule: 42 82 60;
+}
+
+/* SEJARAH — bronze/sepia + faint ledger lines (archive/manuscript) */
+.theme-sejarah {
+  --c-ink: 146 98 48;
+  --c-ink-deep: 99 64 28;
+  --c-ink-wash: 243 236 224;
+  --c-rule: 205 180 150;
+  background-image: repeating-linear-gradient(
+    rgb(var(--c-ink) / 0.05) 0 1px,
+    transparent 1px 30px
+  );
+}
+.dark .theme-sejarah {
+  --c-ink: 216 178 130;
+  --c-ink-deep: 232 208 174;
+  --c-ink-wash: 40 32 22;
+  --c-rule: 92 76 56;
+}
+
+/* INVESTIGASI — slate blue + graph-paper grid (case file) */
+.theme-investigasi {
+  --c-ink: 51 84 122;
+  --c-ink-deep: 30 54 82;
+  --c-ink-wash: 232 238 245;
+  --c-rule: 160 180 205;
+  background-image:
+    linear-gradient(rgb(var(--c-ink) / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--c-ink) / 0.05) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+.dark .theme-investigasi {
+  --c-ink: 140 176 216;
+  --c-ink-deep: 190 210 234;
+  --c-ink-wash: 22 30 42;
+  --c-rule: 62 80 106;
+}
