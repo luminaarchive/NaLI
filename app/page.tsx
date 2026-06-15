@@ -2,7 +2,20 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ArticleCard } from "@/components/ArticleCard";
 import { AuroraHero } from "@/components/AuroraHero";
+import { LivingDashboard } from "@/components/dashboard/LivingDashboard";
 import { getAllArticles, getAllSources } from "@/lib/content";
+import { getLivingStats } from "@/lib/living-engine";
+
+const V2_SURFACES = [
+  { href: "/ruang-kendali", title: "Ruang Kendali", blurb: "Panel lengkap kondisi basis bukti." },
+  { href: "/linimasa", title: "Linimasa", blurb: "Garis waktu peristiwa bertahun pasti." },
+  { href: "/peta-indonesia", title: "Peta Indonesia", blurb: "Lokasi liputan, ringan dan privasi dulu." },
+  { href: "/koneksi", title: "Koneksi", blurb: "Entitas paling terhubung. Everything connects." },
+  { href: "/bukti-dicari", title: "Bukti Dicari", blurb: "Yang buktinya masih perlu diperkuat." },
+  { href: "/misi", title: "Misi Riset", blurb: "Celah riset terbuka, tanpa akun." },
+  { href: "/aktivitas", title: "Aktivitas", blurb: "Apa yang bergerak tiap hari." },
+  { href: "/banding", title: "Banding Sumber", blurb: "Sandingkan dua sumber, nilai sendiri." },
+];
 
 /* ============================== shared bits ============================== */
 
@@ -57,6 +70,7 @@ export default async function HomePage() {
   const articles = await getAllArticles();
   const latest = articles.slice(0, 6);
   const sourceCount = getAllSources().length;
+  const stats = await getLivingStats();
 
   return (
     <div className="bg-paper">
@@ -70,6 +84,28 @@ export default async function HomePage() {
           <div className="overflow-hidden border border-dashed border-ink/70">
             <AuroraHero />
           </div>
+        </section>
+
+        <DashRule />
+
+        {/* ================= RUANG KENDALI, live ================= */}
+        <section className="py-14 sm:py-16">
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <Meta>Ruang kendali</Meta>
+              <h2 className="mt-3 font-display text-3xl font-bold uppercase text-ink sm:text-4xl">
+                Mesin riset yang hidup
+              </h2>
+            </div>
+            <Link
+              href="/ruang-kendali"
+              className="inline-flex items-center gap-2 border border-dashed border-ink/70 px-5 py-3 font-mono text-[0.78rem] font-semibold uppercase tracking-[0.1em] text-ink transition-colors hover:bg-ink hover:text-paper"
+            >
+              Panel lengkap
+              <ArrowRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
+            </Link>
+          </div>
+          <LivingDashboard stats={stats} />
         </section>
 
         <DashRule />
@@ -169,6 +205,40 @@ export default async function HomePage() {
               ))}
             </div>
           )}
+        </section>
+
+        <DashRule />
+
+        {/* ================= MODUL V2, ways to explore ================= */}
+        <section className="py-14 sm:py-16">
+          <div className="mx-auto max-w-xl text-center">
+            <Meta>Cara menjelajah</Meta>
+            <h2 className="mt-3 font-display text-3xl font-bold uppercase text-ink sm:text-4xl">
+              Satu bukti, banyak pintu
+            </h2>
+            <p className="mt-3 text-base leading-relaxed text-gray">
+              Bukti yang sama bisa ditelusuri lewat waktu, tempat, koneksi, atau celah
+              yang belum tertutup. Semua dari data nyata.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {V2_SURFACES.map((s) => (
+              <Link
+                key={s.href}
+                href={s.href}
+                className={`${CARD} group flex flex-col p-6 transition-colors hover:bg-ink-wash`}
+              >
+                <h3 className="font-display text-lg font-bold uppercase text-ink">{s.title}</h3>
+                <p className="mt-2 flex-1 font-mono text-[0.78rem] leading-relaxed text-gray">
+                  {s.blurb}
+                </p>
+                <span className="mt-4 inline-flex items-center gap-2 font-mono text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-ink-deep group-hover:gap-3">
+                  Buka
+                  <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
+                </span>
+              </Link>
+            ))}
+          </div>
         </section>
 
         <DashRule />
