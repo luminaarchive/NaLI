@@ -1,0 +1,1718 @@
+{
+  "tanggal": "2026-06-15",
+  "network": true,
+  "totalFile": 180,
+  "breakdown": {
+    "keep": 180,
+    "update": 0,
+    "archive": 0,
+    "delete": 0
+  },
+  "deadUrls": [],
+  "blockedForManualReview": [
+    {
+      "path": "content/articles/anak-krakatau-2018-runtuhan-tsunami.mdx",
+      "url": "https://www.science.org/doi/10.1126/sciadv.aaz1377",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/anoa-sulawesi-fragmentasi-hutan.mdx",
+      "url": "https://doi.org/10.2305/IUCN.UK.2016-2.RLTS.T3126A46364222.en",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/anoa-sulawesi-fragmentasi-hutan.mdx",
+      "url": "https://ecos.fws.gov/ecp/species/1925",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/articles/anoa-sulawesi-fragmentasi-hutan.mdx",
+      "url": "https://www.gbif.org/species/search?q=Bubalus%20depressicornis",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/babirusa-evolusi-aneh-wallacea.mdx",
+      "url": "https://doi.org/10.2305/IUCN.UK.2016-1.RLTS.T136446A44142964.en",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/babirusa-evolusi-aneh-wallacea.mdx",
+      "url": "https://animaldiversity.org/accounts/Babyrousa_celebensis/",
+      "status": "blocked-503"
+    },
+    {
+      "path": "content/articles/babirusa-evolusi-aneh-wallacea.mdx",
+      "url": "https://www.gbif.org/species/search?q=Babyrousa%20celebensis",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/badak-jawa-benteng-terakhir.mdx",
+      "url": "https://www.iucnredlist.org/species/pdf/18493900",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/badak-jawa-benteng-terakhir.mdx",
+      "url": "https://whc.unesco.org/en/list/608",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/banda-neira-pala-kekerasan-kolonial-arsip.mdx",
+      "url": "https://journals.sagepub.com/doi/pdf/10.1177/17506980241242388",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/batavia-kota-tua-jakarta.mdx",
+      "url": "https://museumsejarahjakarta.id/",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/articles/borobudur-arsip-restorasi-batu-air-pelestarian.mdx",
+      "url": "https://digitalcollections.universiteitleiden.nl/search/Borobudur",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/articles/burung-maleo-sulawesi.mdx",
+      "url": "https://www.gbif.org/species/search?q=Macrocephalon%20maleo",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/cenderawasih-papua-perdagangan-habitat.mdx",
+      "url": "https://www.birds.cornell.edu/home/west-papua-and-the-birds-of-paradise/",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/citarum-sungai-tercemar.mdx",
+      "url": "https://citarumharum.jabarprov.go.id/",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/articles/deforestasi-kalimantan-data-terbuka.mdx",
+      "url": "https://www.science.org/doi/10.1126/science.1244693",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/deforestasi-kalimantan-data-terbuka.mdx",
+      "url": "https://www.bps.go.id/",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/dieng-kawah-gas-bahaya-senyap.mdx",
+      "url": "https://pubs.aip.org/aip/acp/article-pdf/doi/10.1063/5.0134337/17995121/030004_1_5.0134337.pdf",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/gambut-indonesia-karbon-api-kabut.mdx",
+      "url": "https://www.pnas.org/doi/10.1073/pnas.1524888113",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/harimau-bali-kepunahan-arsip.mdx",
+      "url": "https://www.gbif.org/species/search?q=Panthera%20tigris%20sondaica",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/jakarta-tenggelam-penurunan-tanah.mdx",
+      "url": "https://www.gov-online.go.jp/eng/publicity/book/hlj/html/202303/202303_12_en.html",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/komodo-predator-pulau-tekanan-konservasi.mdx",
+      "url": "https://www.biodiversitylibrary.org/part/76070",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/komodo-predator-pulau-tekanan-konservasi.mdx",
+      "url": "https://www.gbif.org/species/search?q=Varanus%20komodoensis",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/komodo-predator-pulau-tekanan-konservasi.mdx",
+      "url": "https://tnkomodo.menlhk.go.id/",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/articles/krakatau-1883-tsunami-arsip-global.mdx",
+      "url": "https://www.loc.gov/search/?fo=json&q=Krakatoa",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/mangrove-indonesia-karbon-biru.mdx",
+      "url": "https://www.sciencedirect.com/science/article/pii/S0272771415301099",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/mangrove-segara-anakan.mdx",
+      "url": "https://www.sciencedirect.com/science/article/pii/S0272771415301099",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/orangutan-tapanuli-spesies-baru-habitat-terbatas.mdx",
+      "url": "https://www.cell.com/current-biology/fulltext/S0960-9822(17)31245-9",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/orangutan-tapanuli-spesies-baru-habitat-terbatas.mdx",
+      "url": "https://conbio.onlinelibrary.wiley.com/doi/10.1111/csp2.33",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/peta-lama-nusantara-kolonial-membaca-pulau-kuasa.mdx",
+      "url": "https://digitalcollections.universiteitleiden.nl/search/Indonesia%20map",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/articles/peta-lama-nusantara-kolonial-membaca-pulau-kuasa.mdx",
+      "url": "https://www.loc.gov/maps/?fa=location:indonesia",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/peta-lama-nusantara-kolonial-membaca-pulau-kuasa.mdx",
+      "url": "https://www.unesco.org/en/memory-world",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/articles/peta-lama-nusantara-kolonial-membaca-pulau-kuasa.mdx",
+      "url": "https://www.unesco.org/en/memory-world/babad-diponegoro-or-autobiographical-chronicle-prince-diponegoro-1785-1855-javanese-nobleman",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/articles/samalas-1257-babad-geologi.mdx",
+      "url": "https://www.pnas.org/doi/10.1073/pnas.1307520110",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/sampah-plastik-laut-indonesia-data-kebijakan.mdx",
+      "url": "https://www.science.org/doi/10.1126/science.1260352",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/sampah-plastik-laut-indonesia-data-kebijakan.mdx",
+      "url": "https://www.bps.go.id/",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/tambora-1815-iklim-dunia.mdx",
+      "url": "https://www.sciencedirect.com/science/article/abs/pii/S0277379103001278",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/tarsius-primata-malam-sulawesi.mdx",
+      "url": "https://www.gbif.org/species/search?q=Tarsius%20Sulawesi",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/tarsius-primata-malam-sulawesi.mdx",
+      "url": "https://www.primate-sg.org/",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/articles/terumbu-karang-indonesia-iklim.mdx",
+      "url": "https://www.coraltriangleinitiative.org/library/study-reefs-risk-revisited-coral-triangle",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/articles/toba-supervolcano-perdebatan-dampak.mdx",
+      "url": "https://www.pnas.org/doi/10.1073/pnas.2013046118",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/anak-krakatau-2018-tsunami.mdx",
+      "url": "https://www.science.org/doi/10.1126/sciadv.aaz1377",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/animal-diversity-web-babirusa.mdx",
+      "url": "https://animaldiversity.org/accounts/Babyrousa_celebensis/",
+      "status": "blocked-503"
+    },
+    {
+      "path": "content/sources/babad-diponegoro.mdx",
+      "url": "https://www.unesco.org/en/memory-world/babad-diponegoro-or-autobiographical-chronicle-prince-diponegoro-1785-1855-javanese-nobleman",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/sources/babad-lombok-samalas-context.mdx",
+      "url": "https://www.pnas.org/doi/10.1073/pnas.1307520110",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/babirusa-redlist-doi.mdx",
+      "url": "https://doi.org/10.2305/IUCN.UK.2016-1.RLTS.T136446A44142964.en",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/banda-conquest-1621-scholarly.mdx",
+      "url": "https://journals.sagepub.com/doi/pdf/10.1177/17506980241242388",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/bps-statistik-indonesia.mdx",
+      "url": "https://www.bps.go.id/",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/citarum-water-quality-report.mdx",
+      "url": "https://citarumharum.jabarprov.go.id/",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/sources/conservation-science-practice-tapanuli-2019.mdx",
+      "url": "https://conbio.onlinelibrary.wiley.com/doi/10.1111/csp2.33",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/cornell-west-papua-birds-of-paradise.mdx",
+      "url": "https://www.birds.cornell.edu/home/west-papua-and-the-birds-of-paradise/",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/cti-cff-reefs-risk.mdx",
+      "url": "https://www.coraltriangleinitiative.org/library/study-reefs-risk-revisited-coral-triangle",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/sources/current-biology-tapanuli-2017.mdx",
+      "url": "https://www.cell.com/current-biology/fulltext/S0960-9822(17)31245-9",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/dieng-gas-hazard-review.mdx",
+      "url": "https://pubs.aip.org/aip/acp/article-pdf/doi/10.1063/5.0134337/17995121/030004_1_5.0134337.pdf",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/fws-lowland-anoa.mdx",
+      "url": "https://ecos.fws.gov/ecp/species/1925",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/sources/gbif-anoa-search.mdx",
+      "url": "https://www.gbif.org/species/search?q=Bubalus%20depressicornis",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/gbif-babirusa-search.mdx",
+      "url": "https://www.gbif.org/species/search?q=Babyrousa%20celebensis",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/gbif-komodo-records.mdx",
+      "url": "https://www.gbif.org/species/search?q=Varanus%20komodoensis",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/gbif-maleo-search.mdx",
+      "url": "https://www.gbif.org/species/search?q=Macrocephalon%20maleo",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/gbif-panthera-tigris-sondaica.mdx",
+      "url": "https://www.gbif.org/species/search?q=Panthera%20tigris%20sondaica",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/gbif-tarsius-search.mdx",
+      "url": "https://www.gbif.org/species/search?q=Tarsius%20Sulawesi",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/hansen-global-forest-change-2013.mdx",
+      "url": "https://www.science.org/doi/10.1126/science.1244693",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/ijen-toxic-natural-pollution-pmc.mdx",
+      "url": "https://www.sciencedirect.com/science/article/abs/pii/S0377027300001870",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/iucn-lowland-anoa-2016.mdx",
+      "url": "https://doi.org/10.2305/IUCN.UK.2016-2.RLTS.T3126A46364222.en",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/iucn-red-list-badak-jawa.mdx",
+      "url": "https://www.iucnredlist.org/species/pdf/18493900",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/jakarta-groundwater-jica-context.mdx",
+      "url": "https://www.gov-online.go.jp/eng/publicity/book/hlj/html/202303/202303_12_en.html",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/jambeck-plastic-waste-science-2015.mdx",
+      "url": "https://www.science.org/doi/10.1126/science.1260352",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/komodo-national-park-official.mdx",
+      "url": "https://tnkomodo.menlhk.go.id/",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/sources/leiden-borobudur-collection-search.mdx",
+      "url": "https://digitalcollections.universiteitleiden.nl/search/Borobudur",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/sources/leiden-old-maps-indonesia-search.mdx",
+      "url": "https://digitalcollections.universiteitleiden.nl/search/Indonesia%20map",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/sources/library-congress-java-map-search.mdx",
+      "url": "https://www.loc.gov/maps/?fa=location:indonesia",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/library-congress-krakatoa.mdx",
+      "url": "https://www.loc.gov/search/?fo=json&q=Krakatoa",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/museum-sejarah-jakarta.mdx",
+      "url": "https://museumsejarahjakarta.id/",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/sources/nagarakretagama-1365.mdx",
+      "url": "https://www.unesco.org/en/memory-world",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/sources/ouwens-komodo-bhl-1912.mdx",
+      "url": "https://www.biodiversitylibrary.org/part/76070",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/pnas-indonesia-fire-elnino-2016.mdx",
+      "url": "https://www.pnas.org/doi/10.1073/pnas.1524888113",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/pnas-samalas-1257-lavigne.mdx",
+      "url": "https://www.pnas.org/doi/10.1073/pnas.1307520110",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/pnas-toba-2021.mdx",
+      "url": "https://www.pnas.org/doi/10.1073/pnas.2013046118",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/primate-sg-tarsier-context.mdx",
+      "url": "https://www.primate-sg.org/",
+      "status": "blocked-timeout"
+    },
+    {
+      "path": "content/sources/segara-anakan-sedimentation.mdx",
+      "url": "https://www.sciencedirect.com/science/article/pii/S0272771415301099",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/tambora-oppenheimer-2003.mdx",
+      "url": "https://www.sciencedirect.com/science/article/abs/pii/S0277379103001278",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/ujung-kulon-unesco.mdx",
+      "url": "https://whc.unesco.org/en/list/608",
+      "status": "blocked-403"
+    }
+  ],
+  "files": [
+    {
+      "path": "content/articles/anak-krakatau-2018-runtuhan-tsunami.mdx",
+      "slug": "anak-krakatau-2018-runtuhan-tsunami",
+      "issues": [],
+      "wordCount": 927,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/anoa-sulawesi-fragmentasi-hutan.mdx",
+      "slug": "anoa-sulawesi-fragmentasi-hutan",
+      "issues": [],
+      "wordCount": 639,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/api-biru-kawah-ijen.mdx",
+      "slug": "api-biru-kawah-ijen",
+      "issues": [],
+      "wordCount": 644,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/babirusa-evolusi-aneh-wallacea.mdx",
+      "slug": "babirusa-evolusi-aneh-wallacea",
+      "issues": [],
+      "wordCount": 609,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/badak-jawa-benteng-terakhir.mdx",
+      "slug": "badak-jawa-benteng-terakhir",
+      "issues": [],
+      "wordCount": 594,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/banda-neira-pala-kekerasan-kolonial-arsip.mdx",
+      "slug": "banda-neira-pala-kekerasan-kolonial-arsip",
+      "issues": [],
+      "wordCount": 581,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/batavia-kota-tua-jakarta.mdx",
+      "slug": "batavia-kota-tua-jakarta",
+      "issues": [],
+      "wordCount": 605,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/borobudur-arsip-restorasi-batu-air-pelestarian.mdx",
+      "slug": "borobudur-arsip-restorasi-batu-air-pelestarian",
+      "issues": [],
+      "wordCount": 545,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/burung-maleo-sulawesi.mdx",
+      "slug": "burung-maleo-sulawesi",
+      "issues": [],
+      "wordCount": 544,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/cenderawasih-papua-perdagangan-habitat.mdx",
+      "slug": "cenderawasih-papua-perdagangan-habitat",
+      "issues": [],
+      "wordCount": 537,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/citarum-sungai-tercemar.mdx",
+      "slug": "citarum-sungai-tercemar",
+      "issues": [],
+      "wordCount": 554,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/coelacanth-sulawesi-fosil-hidup-laut-dalam.mdx",
+      "slug": "coelacanth-sulawesi-fosil-hidup-laut-dalam",
+      "issues": [],
+      "wordCount": 559,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/deforestasi-kalimantan-data-terbuka.mdx",
+      "slug": "deforestasi-kalimantan-data-terbuka",
+      "issues": [],
+      "wordCount": 544,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/dieng-kawah-gas-bahaya-senyap.mdx",
+      "slug": "dieng-kawah-gas-bahaya-senyap",
+      "issues": [],
+      "wordCount": 543,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/gambut-indonesia-karbon-api-kabut.mdx",
+      "slug": "gambut-indonesia-karbon-api-kabut",
+      "issues": [],
+      "wordCount": 547,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/harimau-bali-kepunahan-arsip.mdx",
+      "slug": "harimau-bali-kepunahan-arsip",
+      "issues": [],
+      "wordCount": 535,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/harimau-jawa-lazarus-species.mdx",
+      "slug": "harimau-jawa-lazarus-species",
+      "issues": [],
+      "wordCount": 1069,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/jakarta-tenggelam-penurunan-tanah.mdx",
+      "slug": "jakarta-tenggelam-penurunan-tanah",
+      "issues": [],
+      "wordCount": 546,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/kelud-danau-kawah-rekayasa-bahaya.mdx",
+      "slug": "kelud-danau-kawah-rekayasa-bahaya",
+      "issues": [],
+      "wordCount": 530,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/komodo-predator-pulau-tekanan-konservasi.mdx",
+      "slug": "komodo-predator-pulau-tekanan-konservasi",
+      "issues": [],
+      "wordCount": 510,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/krakatau-1883-tsunami-arsip-global.mdx",
+      "slug": "krakatau-1883-tsunami-arsip-global",
+      "issues": [],
+      "wordCount": 556,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/mangrove-indonesia-karbon-biru.mdx",
+      "slug": "mangrove-indonesia-karbon-biru",
+      "issues": [],
+      "wordCount": 510,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/mangrove-segara-anakan.mdx",
+      "slug": "mangrove-segara-anakan",
+      "issues": [],
+      "wordCount": 503,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/merapi-awan-panas-pemantauan.mdx",
+      "slug": "merapi-awan-panas-pemantauan",
+      "issues": [],
+      "wordCount": 499,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/orangutan-tapanuli-spesies-baru-habitat-terbatas.mdx",
+      "slug": "orangutan-tapanuli-spesies-baru-habitat-terbatas",
+      "issues": [],
+      "wordCount": 529,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/peta-lama-nusantara-kolonial-membaca-pulau-kuasa.mdx",
+      "slug": "peta-lama-nusantara-kolonial-membaca-pulau-kuasa",
+      "issues": [],
+      "wordCount": 505,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/samalas-1257-babad-geologi.mdx",
+      "slug": "samalas-1257-babad-geologi",
+      "issues": [],
+      "wordCount": 477,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/sampah-plastik-laut-indonesia-data-kebijakan.mdx",
+      "slug": "sampah-plastik-laut-indonesia-data-kebijakan",
+      "issues": [],
+      "wordCount": 503,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/tambora-1815-iklim-dunia.mdx",
+      "slug": "tambora-1815-iklim-dunia",
+      "issues": [],
+      "wordCount": 506,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/tarsius-primata-malam-sulawesi.mdx",
+      "slug": "tarsius-primata-malam-sulawesi",
+      "issues": [],
+      "wordCount": 468,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/terumbu-karang-indonesia-iklim.mdx",
+      "slug": "terumbu-karang-indonesia-iklim",
+      "issues": [],
+      "wordCount": 500,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/toba-supervolcano-perdebatan-dampak.mdx",
+      "slug": "toba-supervolcano-perdebatan-dampak",
+      "issues": [],
+      "wordCount": 498,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/acid-crater-lake-ijen.mdx",
+      "slug": "acid-crater-lake-ijen",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/anak-krakatau-2018-tsunami.mdx",
+      "slug": "anak-krakatau-2018-tsunami",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/animal-diversity-web-babirusa.mdx",
+      "slug": "animal-diversity-web-babirusa",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/anoa-genome-pmc-2022.mdx",
+      "slug": "anoa-genome-pmc-2022",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/arsip-voc-anri.mdx",
+      "slug": "arsip-voc-anri",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/asian-wild-cattle-anoa.mdx",
+      "slug": "asian-wild-cattle-anoa",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/australian-museum-red-bird-of-paradise.mdx",
+      "slug": "australian-museum-red-bird-of-paradise",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/babad-diponegoro.mdx",
+      "slug": "babad-diponegoro",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/babad-lombok-samalas-context.mdx",
+      "slug": "babad-lombok-samalas-context",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/babirusa-redlist-doi.mdx",
+      "slug": "babirusa-redlist-doi",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/banda-conquest-1621-scholarly.mdx",
+      "slug": "banda-conquest-1621-scholarly",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/birdlife-red-bird-of-paradise.mdx",
+      "slug": "birdlife-red-bird-of-paradise",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/bmkg-tsunami-selat-sunda-2018.mdx",
+      "slug": "bmkg-tsunami-selat-sunda-2018",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/borobudur-unesco-documents.mdx",
+      "slug": "borobudur-unesco-documents",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/borobudur-unesco.mdx",
+      "slug": "borobudur-unesco",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/bps-statistik-indonesia.mdx",
+      "slug": "bps-statistik-indonesia",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/cambridge-genocide-banda.mdx",
+      "slug": "cambridge-genocide-banda",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/citarum-water-quality-report.mdx",
+      "slug": "citarum-water-quality-report",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/coelacanth-indonesia-1998.mdx",
+      "slug": "coelacanth-indonesia-1998",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/conservation-challenges-birds-of-paradise-scielo.mdx",
+      "slug": "conservation-challenges-birds-of-paradise-scielo",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/conservation-science-practice-tapanuli-2019.mdx",
+      "slug": "conservation-science-practice-tapanuli-2019",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/cornell-west-papua-birds-of-paradise.mdx",
+      "slug": "cornell-west-papua-birds-of-paradise",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/cti-cff-reefs-risk.mdx",
+      "slug": "cti-cff-reefs-risk",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/current-biology-tapanuli-2017.mdx",
+      "slug": "current-biology-tapanuli-2017",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/dieng-gas-hazard-review.mdx",
+      "slug": "dieng-gas-hazard-review",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/duke-plastic-policy-indonesia.mdx",
+      "slug": "duke-plastic-policy-indonesia",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/extinct-tiger-genetic-ancestry-pmc.mdx",
+      "slug": "extinct-tiger-genetic-ancestry-pmc",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/fishbase-latimeria-menadoensis.mdx",
+      "slug": "fishbase-latimeria-menadoensis",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/founding-of-batavia-1619.mdx",
+      "slug": "founding-of-batavia-1619",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/frontiers-toba-supereruption-2014.mdx",
+      "slug": "frontiers-toba-supereruption-2014",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/fws-lowland-anoa.mdx",
+      "slug": "fws-lowland-anoa",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gallica-indonesia-map-search.mdx",
+      "slug": "gallica-indonesia-map-search",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gbif-anoa-search.mdx",
+      "slug": "gbif-anoa-search",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gbif-babirusa-search.mdx",
+      "slug": "gbif-babirusa-search",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gbif-komodo-records.mdx",
+      "slug": "gbif-komodo-records",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gbif-maleo-search.mdx",
+      "slug": "gbif-maleo-search",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gbif-panthera-tigris-sondaica.mdx",
+      "slug": "gbif-panthera-tigris-sondaica",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gbif-tarsius-search.mdx",
+      "slug": "gbif-tarsius-search",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gfw-kalimantan-barat.mdx",
+      "slug": "gfw-kalimantan-barat",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/glad-global-forest-watch-project.mdx",
+      "slug": "glad-global-forest-watch-project",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/global-forest-change-app.mdx",
+      "slug": "global-forest-change-app",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/global-forest-watch-indonesia.mdx",
+      "slug": "global-forest-watch-indonesia",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/global-mangrove-watch-blue-carbon-pdf.mdx",
+      "slug": "global-mangrove-watch-blue-carbon-pdf",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/global-mangrove-watch.mdx",
+      "slug": "global-mangrove-watch",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/global-volcanism-program-ijen.mdx",
+      "slug": "global-volcanism-program-ijen",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gvp-dieng-1979.mdx",
+      "slug": "gvp-dieng-1979",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gvp-dieng.mdx",
+      "slug": "gvp-dieng",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gvp-kelud-1990.mdx",
+      "slug": "gvp-kelud-1990",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gvp-kelud-2014.mdx",
+      "slug": "gvp-kelud-2014",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gvp-kelud.mdx",
+      "slug": "gvp-kelud",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gvp-krakatau.mdx",
+      "slug": "gvp-krakatau",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gvp-merapi.mdx",
+      "slug": "gvp-merapi",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gvp-rinjani-samalas.mdx",
+      "slug": "gvp-rinjani-samalas",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/gvp-toba.mdx",
+      "slug": "gvp-toba",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/hansen-global-forest-change-2013.mdx",
+      "slug": "hansen-global-forest-change-2013",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/harimau-jawa-oryx-2024.mdx",
+      "slug": "harimau-jawa-oryx-2024",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/harimau-jawa-oryx-rebuttal-2024.mdx",
+      "slug": "harimau-jawa-oryx-rebuttal-2024",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/historia-bersama-banda-400.mdx",
+      "slug": "historia-bersama-banda-400",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/hoogerwerf-ujung-kulon-1970.mdx",
+      "slug": "hoogerwerf-ujung-kulon-1970",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/hunting-trade-birds-of-paradise-semanticscholar.mdx",
+      "slug": "hunting-trade-birds-of-paradise-semanticscholar",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/icomoss-borobudur-evaluation.mdx",
+      "slug": "icomoss-borobudur-evaluation",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/ijen-toxic-natural-pollution-pmc.mdx",
+      "slug": "ijen-toxic-natural-pollution-pmc",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/indonesia-peat-fires-acp-2019.mdx",
+      "slug": "indonesia-peat-fires-acp-2019",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/internet-archive-tiger-monograph.mdx",
+      "slug": "internet-archive-tiger-monograph",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/ipcc-srocc-coral-reefs.mdx",
+      "slug": "ipcc-srocc-coral-reefs",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/itic-krakatau-1883.mdx",
+      "slug": "itic-krakatau-1883",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/iucn-babirusa-amazing-species.mdx",
+      "slug": "iucn-babirusa-amazing-species",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/iucn-catsg-tiger.mdx",
+      "slug": "iucn-catsg-tiger",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/iucn-coelacanth-menadoensis.mdx",
+      "slug": "iucn-coelacanth-menadoensis",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/iucn-lowland-anoa-2016.mdx",
+      "slug": "iucn-lowland-anoa-2016",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/iucn-news-tapanuli-2017.mdx",
+      "slug": "iucn-news-tapanuli-2017",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/iucn-red-list-badak-jawa.mdx",
+      "slug": "iucn-red-list-badak-jawa",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/iucn-red-list-harimau-jawa.mdx",
+      "slug": "iucn-red-list-harimau-jawa",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/iucn-red-list-komodo.mdx",
+      "slug": "iucn-red-list-komodo",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/iucn-red-list-maleo.mdx",
+      "slug": "iucn-red-list-maleo",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/iucn-red-list-orangutan-tapanuli.mdx",
+      "slug": "iucn-red-list-orangutan-tapanuli",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/iucn-tarsius-pdf.mdx",
+      "slug": "iucn-tarsius-pdf",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/iucn-wpsg-babirusa.mdx",
+      "slug": "iucn-wpsg-babirusa",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/jakarta-groundwater-jica-context.mdx",
+      "slug": "jakarta-groundwater-jica-context",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/jakarta-subsidence-abidin-2015.mdx",
+      "slug": "jakarta-subsidence-abidin-2015",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/jambeck-plastic-waste-science-2015.mdx",
+      "slug": "jambeck-plastic-waste-science-2015",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/kelud-plume-pmc.mdx",
+      "slug": "kelud-plume-pmc",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/komodo-national-park-official.mdx",
+      "slug": "komodo-national-park-official",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/komodo-unesco.mdx",
+      "slug": "komodo-unesco",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/krakatau-1883-gvp.mdx",
+      "slug": "krakatau-1883-gvp",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/leiden-borobudur-collection-search.mdx",
+      "slug": "leiden-borobudur-collection-search",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/leiden-old-maps-indonesia-search.mdx",
+      "slug": "leiden-old-maps-indonesia-search",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/library-congress-java-map-search.mdx",
+      "slug": "library-congress-java-map-search",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/library-congress-krakatoa.mdx",
+      "slug": "library-congress-krakatoa",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/magma-dieng-profile.mdx",
+      "slug": "magma-dieng-profile",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/magma-merapi-profile.mdx",
+      "slug": "magma-merapi-profile",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/mammaldiversity-tarsius-spectrumgurskyae.mdx",
+      "slug": "mammaldiversity-tarsius-spectrumgurskyae",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/mangrove-blue-carbon.mdx",
+      "slug": "mangrove-blue-carbon",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/mangrove-conservation-restoration-indonesia-pmc.mdx",
+      "slug": "mangrove-conservation-restoration-indonesia-pmc",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/megapode-nesting-ecology.mdx",
+      "slug": "megapode-nesting-ecology",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/merapi-2010-eruption-gfz.mdx",
+      "slug": "merapi-2010-eruption-gfz",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/merapi-gvp-2010-report.mdx",
+      "slug": "merapi-gvp-2010-report",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/mongabay-javan-tiger-2024.mdx",
+      "slug": "mongabay-javan-tiger-2024",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/museum-sejarah-jakarta.mdx",
+      "slug": "museum-sejarah-jakarta",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/nagarakretagama-1365.mdx",
+      "slug": "nagarakretagama-1365",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/nasa-anak-krakatau-collapse.mdx",
+      "slug": "nasa-anak-krakatau-collapse",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/nasa-giss-indonesia-fires-2016.mdx",
+      "slug": "nasa-giss-indonesia-fires-2016",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/nasa-kelud-2014.mdx",
+      "slug": "nasa-kelud-2014",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/naturalis-tiger-collection-search.mdx",
+      "slug": "naturalis-tiger-collection-search",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/nature-communications-toba-2018.mdx",
+      "slug": "nature-communications-toba-2018",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/nature-samalas-news-context.mdx",
+      "slug": "nature-samalas-news-context",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/ncku-banda-genocide-output.mdx",
+      "slug": "ncku-banda-genocide-output",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/nhess-anak-krakatau-2018.mdx",
+      "slug": "nhess-anak-krakatau-2018",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/noaa-coelacanth-status-review.mdx",
+      "slug": "noaa-coelacanth-status-review",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/noaa-coral-reef-watch.mdx",
+      "slug": "noaa-coral-reef-watch",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/noaa-ngdc-tsunami-database.mdx",
+      "slug": "noaa-ngdc-tsunami-database",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/noaa-tambora-climate-context.mdx",
+      "slug": "noaa-tambora-climate-context",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/north-maluku-coelacanth-mnhn.mdx",
+      "slug": "north-maluku-coelacanth-mnhn",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/oregonstate-volcanic-gases.mdx",
+      "slug": "oregonstate-volcanic-gases",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/ouwens-komodo-bhl-1912.mdx",
+      "slug": "ouwens-komodo-bhl-1912",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/peat-fire-health-impacts-2022.mdx",
+      "slug": "peat-fire-health-impacts-2022",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/perpres-15-2018-citarum.mdx",
+      "slug": "perpres-15-2018-citarum",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/physorg-javan-tiger-2024.mdx",
+      "slug": "physorg-javan-tiger-2024",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/pnas-indonesia-fire-elnino-2016.mdx",
+      "slug": "pnas-indonesia-fire-elnino-2016",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/pnas-samalas-1257-lavigne.mdx",
+      "slug": "pnas-samalas-1257-lavigne",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/pnas-toba-2021.mdx",
+      "slug": "pnas-toba-2021",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/primate-sg-tarsier-context.mdx",
+      "slug": "primate-sg-tarsier-context",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/rijksmuseum-banda-search.mdx",
+      "slug": "rijksmuseum-banda-search",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/rijksmuseum-batavia-collection.mdx",
+      "slug": "rijksmuseum-batavia-collection",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/samalas-pubmed-record.mdx",
+      "slug": "samalas-pubmed-record",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/scientific-reports-toba-2023.mdx",
+      "slug": "scientific-reports-toba-2023",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/segara-anakan-sedimentation.mdx",
+      "slug": "segara-anakan-sedimentation",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/smithsonian-komodo-repository.mdx",
+      "slug": "smithsonian-komodo-repository",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/sulfur-combustion-blue-flame-ijen.mdx",
+      "slug": "sulfur-combustion-blue-flame-ijen",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/symons-krakatoa-royal-society-1888.mdx",
+      "slug": "symons-krakatoa-royal-society-1888",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/tambora-1815-gvp.mdx",
+      "slug": "tambora-1815-gvp",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/tambora-oppenheimer-2003.mdx",
+      "slug": "tambora-oppenheimer-2003",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/tarsius-behavior-pmc.mdx",
+      "slug": "tarsius-behavior-pmc",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/ucmp-coelacanth-discovery.mdx",
+      "slug": "ucmp-coelacanth-discovery",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/ujung-kulon-unesco.mdx",
+      "slug": "ujung-kulon-unesco",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/unep-marine-litter-indonesia-context.mdx",
+      "slug": "unep-marine-litter-indonesia-context",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/unesco-borobudur-restoration-context.mdx",
+      "slug": "unesco-borobudur-restoration-context",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/unesco-sumatra-rainforest.mdx",
+      "slug": "unesco-sumatra-rainforest",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/unredd-peatland-fires-indonesia.mdx",
+      "slug": "unredd-peatland-fires-indonesia",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/usgs-vdap-merapi.mdx",
+      "slug": "usgs-vdap-merapi",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/world-bank-citarum-context.mdx",
+      "slug": "world-bank-citarum-context",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/world-bank-jakarta-urban-context.mdx",
+      "slug": "world-bank-jakarta-urban-context",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/world-bank-marine-debris-hotspot.mdx",
+      "slug": "world-bank-marine-debris-hotspot",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/world-bank-plastic-waste-discharges-indonesia.mdx",
+      "slug": "world-bank-plastic-waste-discharges-indonesia",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/wri-reefs-risk-coral-triangle.mdx",
+      "slug": "wri-reefs-risk-coral-triangle",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/wri-reefs-risk-global.mdx",
+      "slug": "wri-reefs-risk-global",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/field-notes/menunggu-maleo.mdx",
+      "slug": "menunggu-maleo",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/field-notes/subuh-di-kawah-ijen.mdx",
+      "slug": "subuh-di-kawah-ijen",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    }
+  ]
+}
