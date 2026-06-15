@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { NAV_LINKS } from "@/lib/site";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { GlobalSearch, SearchTrigger } from "@/components/search/GlobalSearch";
 
 const LINKS = [{ href: "/", label: "Beranda" }, ...NAV_LINKS];
 
@@ -56,13 +57,15 @@ export function Nav() {
           ))}
         </ul>
 
-        {/* theme toggle, desktop, anchored right of the centered links */}
-        <div className="absolute right-5 top-1/2 hidden -translate-y-1/2 lg:block">
+        {/* search + theme toggle, desktop, anchored right of the centered links */}
+        <div className="absolute right-5 top-1/2 hidden -translate-y-1/2 items-center gap-2 lg:flex">
+          <SearchTrigger />
           <ThemeToggle />
         </div>
 
-        {/* mobile: theme toggle + hamburger */}
+        {/* mobile: search + theme toggle + hamburger */}
         <div className="flex items-center gap-2 lg:hidden">
+          <SearchTrigger />
           <ThemeToggle />
           <button
             type="button"
@@ -105,6 +108,8 @@ export function Nav() {
           </ul>
         </div>
       )}
+
+      <GlobalSearch />
     </header>
   );
 }
