@@ -15,6 +15,7 @@ export const SITE = {
 } as const;
 
 export const NAV_LINKS: { href: string; label: string }[] = [
+  { href: "/ruang-kendali", label: "Ruang Kendali" },
   { href: "/articles", label: "Artikel" },
   { href: "/jurnal", label: "Jurnal" },
   { href: "/seri", label: "Seri" },

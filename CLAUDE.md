@@ -551,7 +551,7 @@ mengarang analisis, melanggar LARANGAN-006/008). Lihat
 - **Hasil batch**: +306 jurnal, +306 sumber -> **jurnal=330, arsip-sumber=465**
   (dua-duanya lewat target 300). Hanya 4 di-skip (link mati).
 - **Gotcha yang diperbaiki**: em-dash dari judul/abstrak harvested -> `noEmDash`
-  saat emit (escape `—` di regex sendiri) + `content/raw`,`content/cache`
+  saat emit (escape karakter em-dash di regex sendiri) + `content/raw`,`content/cache`
   ke skipDirs `scanEmDashes` + gitignore; `official_pdf` wajib URL ber-bentuk PDF
   (gate `PDF_LIKE`, kalau resolve tapi URL DOI -> fallback external_source_only);
   false-positive "Java" (bahasa pemrograman) di-drop via `SOFTWARE_FP` tanpa
@@ -564,6 +564,34 @@ mengarang analisis, melanggar LARANGAN-006/008). Lihat
   `generate.mjs --count N` (akumulatif) untuk tambah, dan tulis artikel deep-
   research satu per satu (bukan generate massal).
 
+### 15 Juni 2026 (lanjutan 3), NaLI V2 Modul 1: Living Knowledge Engine (founder-directed)
+
+Founder kirim spec besar `NALI_V2_LIVING_ENGINE.md` (12 modul, ubah situs jadi
+"Living Research Platform"). Perintah: tambahkan saja, jangan rubah yang sudah
+ada, tanpa em-dash, humanize, push ke main. Spec sendiri (LARANGAN-V2-002)
+mewajibkan satu modul per sesi sampai lolos build. Jadi sesi ini = **Modul 1
+saja**, additive penuh.
+
+- **Spec disimpan** sebagai `NALI_V2_LIVING_ENGINE.md` di root (em-dash dibersihkan,
+  humanized) + checklist status modul (Modul 1 dicentang, 2-12 antre).
+- **Modul 1 (dashboard kendali):** `types/living-engine.ts` (LivingStats),
+  `lib/living-engine.ts` (`getLivingStats`, server-only, hitung dari data NYATA:
+  arsip 465, jurnal 330, investigasi, bukti-dicari = artikel < high, revisi hari
+  ini dari checkedAt/updated/changelog, lastUpdated; field tanpa sistem =
+  kontributor/misi diisi 0 jujur, bukan angka palsu), `components/dashboard/
+  LivingDashboard.tsx` (RSC murni, gaya terminal monokrom archive-ink, dot hijau
+  `animate-pulse` saat revisiHariIniCount>0, CSS-only tanpa client JS).
+- **Rute baru `/ruang-kendali`** (force-dynamic, seperti halaman data lain) +
+  1 entri Nav additif ("Ruang Kendali"). **Beranda lama tidak disentuh** (spec
+  ingin ini jadi homepage V2 nanti; saya buat rute terpisah agar additive).
+- Tanpa dependensi baru (LARANGAN-V2-001 ditaati: RSC + Tailwind saja). Pakai
+  `theme-metodologi` (graphite) yang sudah ada.
+- **Verified**: tsc 0, lint clean, check:editorial PASS (sekalian benahi 1 em-dash
+  warisan di log Fase 7 CLAUDE.md:554), build exit 0 (`/ruang-kendali` ƒ dynamic).
+- **Berikutnya** (atas perintah founder, satu per sesi): Modul 2 graf interaktif,
+  3 peta Indonesia, 4 timeline, dst. Modul 5 (komunitas) & 9/10 (pipeline 50k)
+  melampaui keputusan terkunci V1, hanya dikerjakan bila founder minta eksplisit.
+
 ---
 
-*Last updated: 15 Juni 2026, Fase 7 knowledge pipeline (harvest OpenAlex nyata -> +306 jurnal & +306 arsip sumber tertaut, jurnal=330/arsip=465 lewat target 300; artikel/investigasi tetap editorial deep-research, bukan massal). Semua gate hijau (tsc/lint/check:editorial/build). Lihat `docs/nali_fase7_knowledge_pipeline.md` + `content/logs/progress.json`. Sebelumnya: eksekusi NALI_MASTER_BUILD penuh Langkah 1-11 (bug fix, audit + perbaikan 13 URL mati, global search Cmd+K, SEO/RSS, claim ledger/related/depth, newsletter API + series nav + peta eksplorasi interaktif, sitasi + advanced arsip search + /topik, koreksi/catatan-backlog/changelog, internalScore + artikel Pesut Mahakam hasil deep-research). Semua gate hijau, produksi terverifikasi. Pushed `fa14264`. Lihat `NALI_BUILD_REPORT_2026-06-15.md`.*
+*Last updated: 15 Juni 2026, NaLI V2 Modul 1 Living Knowledge Engine (dashboard `/ruang-kendali` dari data nyata, RSC+Tailwind tanpa dep baru, beranda lama utuh; satu modul per sesi per LARANGAN-V2-002). Gate hijau (tsc/lint/check:editorial/build). Lihat `NALI_V2_LIVING_ENGINE.md`. Sebelumnya: Fase 7 knowledge pipeline (harvest OpenAlex nyata -> +306 jurnal & +306 arsip sumber tertaut, jurnal=330/arsip=465 lewat target 300; artikel/investigasi tetap editorial deep-research, bukan massal). Semua gate hijau (tsc/lint/check:editorial/build). Lihat `docs/nali_fase7_knowledge_pipeline.md` + `content/logs/progress.json`. Sebelumnya: eksekusi NALI_MASTER_BUILD penuh Langkah 1-11 (bug fix, audit + perbaikan 13 URL mati, global search Cmd+K, SEO/RSS, claim ledger/related/depth, newsletter API + series nav + peta eksplorasi interaktif, sitasi + advanced arsip search + /topik, koreksi/catatan-backlog/changelog, internalScore + artikel Pesut Mahakam hasil deep-research). Semua gate hijau, produksi terverifikasi. Pushed `fa14264`. Lihat `NALI_BUILD_REPORT_2026-06-15.md`.*
