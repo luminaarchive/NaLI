@@ -456,6 +456,27 @@ Sesi UI panjang membandingkan situs ke nousresearch.com lalu mengeksekusi.
   `display:contents` (Nav+main+footer) → nav/hairline/footer ikut aksen halaman, tanpa box tekstur
   kedua / tanpa ubah layout. Verified light+dark, nav match tiap halaman.
 
+### 15 Juni 2026, Beranda lebih simpel + Tentang gaya "About Us" + bersih em-dash (founder-directed)
+
+- **Beranda dirombak lebih tenang & direct** (`app/page.tsx`): hero shader full-bleed
+  (WaveHero/DitheringShader, kini tak dipakai tapi disimpan untuk revert) diganti hero
+  editorial tenang di kertas (judul Fraunces "Cerita Indonesia, dibangun dari bukti" +
+  CTA "Baca artikel"/"Cara kerja kami" + newsletter light). 7 section dipadatkan jadi 5
+  (hero, apa-ini, tiga pilar dgn dot warna pilar, tulisan terbaru, callout arsip). Warna
+  ditenangkan (tanpa fill berat/silau), copy di-humanize. Verified light+dark.
+- **Tentang jadi section gaya "About Us"** (komponen 21st.dev) dibangun ulang di gaya NaLI
+  (`components/TentangSection.tsx`): background clay wave + theme + PageHeader TIDAK diubah
+  (perintah founder); prosa diganti 6 item "cara kami bekerja" (ikon `lucide-react`)
+  mengelilingi plat emblem NaLI + 4 stat count-up dari data nyata (32 artikel / 146 sumber /
+  7 seri / 2 catatan) + CTA clay tenang. TANPA framer-motion (motion pakai pola ringan situs +
+  IntersectionObserver count-up). Dep baru: `lucide-react`.
+- **Em-dash dibasmi total:** 186 em-dash (docs, komentar CSS/kode, 1 string Jurnal) diganti
+  koma/hyphen via perl UTF-8 sweep, **0 em-dash di repo**. `.playwright-mcp` ditambah ke
+  skipDirs `scanEmDashes` agar `check:editorial` tak menandai artefak tool. Lihat
+  [[no-em-dashes]]. Gate hijau.
+- **Verified:** tsc/lint/check:editorial/build clean; beranda+tentang light+dark (Playwright);
+  live production. **WaveHero/DitheringShader kini dead code** (recoverable, founder bisa minta balik).
+
 ---
 
-*Last updated: 14 Juni 2026, sesi UI Nous-benchmark: identitas warna per-halaman (pilar+nav) + background animasi per nav page (smoke/warp/particles/turbulent/wave, color-synced, light+dark, reduced-motion safe); lalu optimasi 60fps + sinkron warna nav (`display:contents` cascade); lalu Artikel dapat identitas sendiri (`theme-artikel` magenta + background neural-noise WebGL, 60fps, nav match), Jurnal tetap smoke. Pushed `ac435eb`.*
+*Last updated: 15 Juni 2026, founder-directed: Beranda dirombak lebih simpel/tenang/humanize (hero shader diganti hero editorial, 7→5 section), Tentang jadi section gaya About Us di gaya NaLI (clay bg dipertahankan, 6 item + stat count-up nyata, lucide-react, tanpa framer-motion), dan semua em-dash (186) dibasmi jadi 0 (lihat [[no-em-dashes]]). Pushed `d4e2b32`.*
