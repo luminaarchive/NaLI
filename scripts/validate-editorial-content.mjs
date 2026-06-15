@@ -159,6 +159,7 @@ function scanEmDashes() {
     ".playwright-mcp",
     "raw",
     "cache",
+    "_social",
   ]);
   const textExts = new Set([
     ".css",

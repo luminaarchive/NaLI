@@ -38,3 +38,6 @@ yarn-error.log*
 /content/raw
 /content/cache
 
+# generated social distribution drafts (working files)
+/content/_social
+

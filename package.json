@@ -15,7 +15,8 @@
     "check:metadata": "node scripts/check-metadata-integrity.mjs",
     "check:covers": "node scripts/check-cover-integrity.mjs",
     "check:a11y": "node scripts/check-accessibility.mjs",
-    "check:links": "node scripts/check-links.mjs"
+    "check:links": "node scripts/check-links.mjs",
+    "social": "node scripts/social/kit.mjs"
   },
   "dependencies": {
     "@paper-design/shaders-react": "^0.0.76",
