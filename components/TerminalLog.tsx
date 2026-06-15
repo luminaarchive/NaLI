@@ -1,5 +1,5 @@
 /**
- * A small terminal-window "log" device — window chrome + monospace lines +
+ * A small terminal-window "log" device, window chrome + monospace lines +
  * a blinking cursor, wrapped in an animated gradient-stroke frame.
  * Inspired by the Nous Hermes Agent terminal mockup, rebuilt in NaLI ink.
  * Both motions (blink, gradient pan) are neutralized by the reduced-motion guard.

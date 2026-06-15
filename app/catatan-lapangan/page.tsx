@@ -47,7 +47,7 @@ export default function CatatanRisetPage() {
         {/* explicit scope as a research-log device, no fake first-party fieldwork */}
         <div className="mb-12">
           <TerminalLog
-            title="riset@nali — catatan.log"
+            title="riset@nali, catatan.log"
             lines={[
               "$ nali riset --status",
               "→ basis: jurnal · arsip · laporan lembaga · data publik",

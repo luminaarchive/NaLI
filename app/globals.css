@@ -16,7 +16,7 @@
     --c-gray-light: 142 147 143;
     --c-rule: 158 205 191;
 
-    /* motion tokens — one easing, three durations (theme-independent) */
+    /* motion tokens, one easing, three durations (theme-independent) */
     --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
     --dur-micro: 120ms;
     --dur-hover: 250ms;
@@ -223,7 +223,7 @@
   position: relative;
 }
 
-/* ALAM — forest green + organic stipple (nature) */
+/* ALAM, forest green + organic stipple (nature) */
 .theme-alam {
   --c-ink: 38 122 79;
   --c-ink-deep: 22 84 53;
@@ -239,7 +239,7 @@
   --c-rule: 42 82 60;
 }
 
-/* SEJARAH — bronze/sepia + faint ledger lines (archive/manuscript) */
+/* SEJARAH, bronze/sepia + faint ledger lines (archive/manuscript) */
 .theme-sejarah {
   --c-ink: 146 98 48;
   --c-ink-deep: 99 64 28;
@@ -257,7 +257,7 @@
   --c-rule: 92 76 56;
 }
 
-/* INVESTIGASI — slate blue + graph-paper grid (case file) */
+/* INVESTIGASI, slate blue + graph-paper grid (case file) */
 .theme-investigasi {
   --c-ink: 51 84 122;
   --c-ink-deep: 30 54 82;
@@ -275,7 +275,7 @@
   --c-rule: 62 80 106;
 }
 
-/* CATATAN LAPANGAN — olive/khaki + notebook dot-grid (field notes) */
+/* CATATAN LAPANGAN, olive/khaki + notebook dot-grid (field notes) */
 .theme-catatan {
   position: relative;
   --c-ink: 107 115 56;
@@ -297,7 +297,7 @@
    nav feels varied (Nous-style), while Beranda/Artikel keep the default teal
    as the neutral "all" anchor. Body/gray text stays constant for contrast. */
 
-/* JURNAL — indigo/violet + vertical catalog rules (publication catalog) */
+/* JURNAL, indigo/violet + vertical catalog rules (publication catalog) */
 .theme-jurnal {
   position: relative;
   --c-ink: 92 64 168;
@@ -317,7 +317,7 @@
   --c-rule: 66 58 108;
 }
 
-/* SERI — wine/plum + horizontal manuscript lines (editorial series) */
+/* SERI, wine/plum + horizontal manuscript lines (editorial series) */
 .theme-seri {
   position: relative;
   --c-ink: 158 44 96;
@@ -336,7 +336,7 @@
   --c-rule: 96 58 80;
 }
 
-/* ARSIP SUMBER — steel slate + ledger grid (factual archive) */
+/* ARSIP SUMBER, steel slate + ledger grid (factual archive) */
 .theme-arsip {
   position: relative;
   --c-ink: 66 92 116;
@@ -355,7 +355,7 @@
   --c-rule: 60 72 84;
 }
 
-/* METODOLOGI — graphite charcoal + blueprint hatch (rigor/method) */
+/* METODOLOGI, graphite charcoal + blueprint hatch (rigor/method) */
 .theme-metodologi {
   position: relative;
   --c-ink: 58 64 76;
@@ -375,7 +375,7 @@
   --c-rule: 64 68 76;
 }
 
-/* TENTANG — clay/terracotta + soft stipple (human/personal) */
+/* TENTANG, clay/terracotta + soft stipple (human/personal) */
 .theme-tentang {
   position: relative;
   --c-ink: 166 78 50;
@@ -392,7 +392,7 @@
   --c-rule: 94 64 44;
 }
 
-/* KONTAK — royal blue + sparse diagonal (signal/contact) */
+/* KONTAK, royal blue + sparse diagonal (signal/contact) */
 .theme-kontak {
   position: relative;
   --c-ink: 42 80 152;
@@ -412,7 +412,7 @@
   --c-rule: 54 70 110;
 }
 
-/* ARTIKEL — magenta/orchid + dot-grid (the all-articles index) */
+/* ARTIKEL, magenta/orchid + dot-grid (the all-articles index) */
 .theme-artikel {
   position: relative;
   --c-ink: 166 50 126;
@@ -451,7 +451,7 @@
   animation: blink 1.1s steps(1) infinite;
 }
 
-/* marching-ants animated dashed border — use sparingly, for a "live" element */
+/* marching-ants animated dashed border, use sparingly, for a "live" element */
 @keyframes marching {
   to {
     background-position: 14px 0, -14px 100%, 0 -14px, 100% 14px;
@@ -469,7 +469,7 @@
   animation: marching 0.6s linear infinite;
 }
 
-/* animated gradient-stroke border — for a single featured element */
+/* animated gradient-stroke border, for a single featured element */
 @keyframes gradient-pan {
   to {
     background-position: 200% 0;

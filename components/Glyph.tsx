@@ -1,7 +1,7 @@
 import type { PublicationType, SourceType } from "@/lib/types";
 
 /**
- * Small monoline icon set (single stroke, currentColor) — a consistent NaLI
+ * Small monoline icon set (single stroke, currentColor), a consistent NaLI
  * glyph vocabulary for type tags and admin nav, replacing ad-hoc characters.
  */
 export type GlyphName =

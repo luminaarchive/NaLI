@@ -23,7 +23,7 @@ export const TurbulentFlowBackground: React.FC = () => {
       alpha: true,
       powerPreference: "high-performance",
     });
-    // Render at 60% resolution and let CSS upscale the canvas to full size —
+    // Render at 60% resolution and let CSS upscale the canvas to full size -
     // a soft background tolerates it and it cuts fragment work to ~0.36x.
     const RES = 0.6;
     renderer.setPixelRatio(1);

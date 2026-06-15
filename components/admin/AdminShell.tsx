@@ -35,7 +35,7 @@ function NavRow({
 }
 
 /**
- * Admin chrome — a sticky left icon-sidebar (icon-only on mobile, icon+label
+ * Admin chrome, a sticky left icon-sidebar (icon-only on mobile, icon+label
  * on lg) + a content area. Inspired by the Nous Portal dashboard nav, in NaLI
  * ink. Replaces the old top AdminHeader.
  */

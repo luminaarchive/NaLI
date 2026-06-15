@@ -18,7 +18,7 @@ interface DynamicWaveBackgroundProps {
  * Perf: the canvas backing store is kept small (a fixed low-res buffer) and the
  * browser/GPU upscales it to full size via CSS (`w-full h-full`). That avoids a
  * per-frame full-resolution `drawImage` blit, which is what made the original
- * janky — this keeps the per-pixel CPU cost flat and well under one frame.
+ * janky, this keeps the per-pixel CPU cost flat and well under one frame.
  */
 const DynamicWaveBackground: React.FC<DynamicWaveBackgroundProps> = ({
   colorLow = [40, 20, 12],
@@ -58,7 +58,7 @@ const DynamicWaveBackground: React.FC<DynamicWaveBackgroundProps> = ({
       COS_TABLE[i] = Math.cos(angle);
     }
     const IDX = 1024 / (Math.PI * 2);
-    // (v * IDX) & 1023 does ToInt32 truncation + 1024-wrap in one step — no
+    // (v * IDX) & 1023 does ToInt32 truncation + 1024-wrap in one step, no
     // Math.floor / modulo / divide per pixel, which is the hot-loop win.
     const fastSin = (x: number) => SIN_TABLE[(x * IDX) & 1023];
     const fastCos = (x: number) => COS_TABLE[(x * IDX) & 1023];

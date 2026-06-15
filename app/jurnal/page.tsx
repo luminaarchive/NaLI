@@ -67,7 +67,7 @@ export default function JurnalPage() {
         ) : (
           <>
             <Callout title="Cara membaca katalog ini" className="mb-8">
-              Tiap entri adalah publikasi asli dari penerbitnya — NaLI hanya menambahkan
+              Tiap entri adalah publikasi asli dari penerbitnya, NaLI hanya menambahkan
               sinopsis Indonesia, bukan menulis ulang. Pakai tampilan <strong>Tabel</strong> untuk
               memindai cepat, atau <strong>Kartu</strong> untuk membaca sinopsis tiap entri.
             </Callout>
