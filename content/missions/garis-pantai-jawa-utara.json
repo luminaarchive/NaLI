@@ -1,0 +1,19 @@
+{
+  "id": "garis-pantai-jawa-utara",
+  "judul": "Melacak perubahan garis pantai Jawa Utara",
+  "deskripsi": "Pesisir utara Jawa berubah cepat: ada yang tenggelam, ada yang bertambah karena sedimen. Kami ingin menyusun bukti perubahan garis pantai dari citra historis dan peta lama, lalu menautkannya ke arsip dan tulisan yang sudah ada.",
+  "status": "aktif",
+  "progressPercentage": 5,
+  "kebutuhanBukti": [
+    "Citra Landsat atau Sentinel lintas tahun untuk ruas pantai yang sama",
+    "Peta pesisir lama (era kolonial atau awal kemerdekaan) dengan tahun jelas",
+    "Data pasang surut atau penurunan tanah dari lembaga resmi",
+    "Foto dokumentasi berlisensi jelas dari lokasi yang sama lintas waktu"
+  ],
+  "kontributor": {
+    "peneliti": 0,
+    "pembaca": 0,
+    "penerjemah": 0
+  },
+  "logSubmission": []
+}

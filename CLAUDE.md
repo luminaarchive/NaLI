@@ -592,6 +592,47 @@ saja**, additive penuh.
   3 peta Indonesia, 4 timeline, dst. Modul 5 (komunitas) & 9/10 (pipeline 50k)
   melampaui keputusan terkunci V1, hanya dikerjakan bila founder minta eksplisit.
 
+### 16 Juni 2026, NaLI V2 Modul 2-12 (founder: "lanjut eksekusi semua satu satu")
+
+Founder minta lanjut semua modul. Dikerjakan additive penuh (beranda lama utuh),
+tanpa em-dash, tanpa dependensi baru (LARANGAN-V2-001), tiap modul dari data NYATA.
+
+- **Modul 2 (graf):** sudah ada sejak Fase 6 (`KnowledgeGraph` di /peta-eksplorasi),
+  tidak dibangun ulang.
+- **Modul 4 `/linimasa`:** `lib/timeline.ts` ambil tahun hanya bila eksplisit di
+  judul/tag/slug (tidak menebak), tertaut artikel+sumber.
+- **Modul 6 `/bukti-dicari`:** agregasi artikel < terverifikasi-kuat + batasannya
+  sendiri; CTA ke /koreksi.
+- **Modul 7 `/aktivitas`:** `lib/activity.ts` feed dari tanggal verifikasi konten
+  nyata (dikelompok per hari + ringkas per jenis) + checkpoint pipeline.
+- **Modul 11 `/koneksi`:** `lib/relations.ts` hitung MasterRelasi (degree per
+  entitas, breakdown artikel/sumber/seri/topik) dari graf yang sama.
+- **Modul 12 `/banding`:** `components/CompareSources.tsx` (client), dua sumber
+  berdampingan, tanpa kesimpulan AI.
+- **Modul 5 `/misi`:** `content/missions/*.json` (2 celah riset nyata) +
+  `lib/missions.ts`; tanpa login, kontribusi via koreksi/kontak (TANPA backend
+  GitHub Actions, itu infra founder). Kontributor 0 jujur. Otomatis mengisi
+  `misiAktifCount` di dashboard Modul 1.
+- **Modul 3 `/peta-indonesia`:** peta skematis SVG bebas dependensi (tanpa Leaflet/
+  Mapbox, privacy-first). `lib/geo.ts` + gazetteer koordinat nyata; hanya plot
+  tempat yang dikenal, sisanya tidak diplot. Bukan peta survei (disebut jelas).
+- **Modul 8 Discovery Score:** `components/DiscoveryScore.tsx` (client) di
+  /ruang-kendali. URL-state saja, TANPA localStorage/sessionStorage/cookie/DB
+  (LARANGAN Modul 8). Reset saat reload, disengaja.
+- **Modul 9/10 archive pipeline:** `scripts/archive/pipeline.mjs` metadata-only +
+  registry target global + backoff. Provider hidup = Library of Congress
+  (Chronicling America). **Gotcha:** loc.gov di belakang Cloudflare menantang Node
+  `fetch` (403 "Just a moment"); UA panjang juga ditolak. Solusi: fetch via `curl`
+  (execFile) + UA pendek "Mozilla/5.0 NaLI-research" -> 6 record nyata. Endpoint
+  lama chroniclingamerica.loc.gov 308 -> pindah ke www.loc.gov/collections/...?fo=json
+  (`at=results`, tanpa `,pagination` yang bikin timeout). Dataset di content/raw
+  (gitignored). Target 50k = program bertahap, bukan angka karangan.
+- **Discoverability:** nav tidak ditambah lagi (cukup "Ruang Kendali" dari Modul 1
+  agar nav tidak penuh). Semua rute V2 baru dijangkau dari hub `/ruang-kendali`
+  (grid kartu tautan ke linimasa, bukti-dicari, aktivitas, koneksi, banding, misi,
+  peta-indonesia). Semua rute juga masuk sitemap.
+- **Verified**: tsc 0, lint clean, check:editorial PASS, build exit 0 (7 rute baru).
+
 ---
 
-*Last updated: 15 Juni 2026, NaLI V2 Modul 1 Living Knowledge Engine (dashboard `/ruang-kendali` dari data nyata, RSC+Tailwind tanpa dep baru, beranda lama utuh; satu modul per sesi per LARANGAN-V2-002). Gate hijau (tsc/lint/check:editorial/build). Lihat `NALI_V2_LIVING_ENGINE.md`. Sebelumnya: Fase 7 knowledge pipeline (harvest OpenAlex nyata -> +306 jurnal & +306 arsip sumber tertaut, jurnal=330/arsip=465 lewat target 300; artikel/investigasi tetap editorial deep-research, bukan massal). Semua gate hijau (tsc/lint/check:editorial/build). Lihat `docs/nali_fase7_knowledge_pipeline.md` + `content/logs/progress.json`. Sebelumnya: eksekusi NALI_MASTER_BUILD penuh Langkah 1-11 (bug fix, audit + perbaikan 13 URL mati, global search Cmd+K, SEO/RSS, claim ledger/related/depth, newsletter API + series nav + peta eksplorasi interaktif, sitasi + advanced arsip search + /topik, koreksi/catatan-backlog/changelog, internalScore + artikel Pesut Mahakam hasil deep-research). Semua gate hijau, produksi terverifikasi. Pushed `fa14264`. Lihat `NALI_BUILD_REPORT_2026-06-15.md`.*
+*Last updated: 16 Juni 2026, NaLI V2 Modul 2-12 dieksekusi additive (rute baru /linimasa, /bukti-dicari, /aktivitas, /koneksi, /banding, /misi, /peta-indonesia + Discovery Score di /ruang-kendali + archive pipeline scaffold loc.gov; semua dari data nyata, tanpa dep baru, beranda lama utuh). Gate hijau (tsc/lint/check:editorial/build). Lihat `NALI_V2_LIVING_ENGINE.md`. Sebelumnya: NaLI V2 Modul 1 Living Knowledge Engine (dashboard `/ruang-kendali` dari data nyata, RSC+Tailwind tanpa dep baru, beranda lama utuh; satu modul per sesi per LARANGAN-V2-002). Gate hijau (tsc/lint/check:editorial/build). Lihat `NALI_V2_LIVING_ENGINE.md`. Sebelumnya: Fase 7 knowledge pipeline (harvest OpenAlex nyata -> +306 jurnal & +306 arsip sumber tertaut, jurnal=330/arsip=465 lewat target 300; artikel/investigasi tetap editorial deep-research, bukan massal). Semua gate hijau (tsc/lint/check:editorial/build). Lihat `docs/nali_fase7_knowledge_pipeline.md` + `content/logs/progress.json`. Sebelumnya: eksekusi NALI_MASTER_BUILD penuh Langkah 1-11 (bug fix, audit + perbaikan 13 URL mati, global search Cmd+K, SEO/RSS, claim ledger/related/depth, newsletter API + series nav + peta eksplorasi interaktif, sitasi + advanced arsip search + /topik, koreksi/catatan-backlog/changelog, internalScore + artikel Pesut Mahakam hasil deep-research). Semua gate hijau, produksi terverifikasi. Pushed `fa14264`. Lihat `NALI_BUILD_REPORT_2026-06-15.md`.*

@@ -16,16 +16,30 @@ mulai dari mana.
   `lib/living-engine.ts` (statistik dari data nyata, bukan angka karangan), dan
   `components/dashboard/LivingDashboard.tsx`. Tersaji di rute baru `/ruang-kendali`
   tanpa menyentuh beranda lama. Lolos tsc, lint, check:editorial, dan build.
-- [ ] Modul 2, Interactive Knowledge Graph (upgrade peta eksplorasi).
-- [ ] Modul 3, Interactive Indonesia Map.
-- [ ] Modul 4, Historical Timeline.
-- [ ] Modul 5, Research Missions (kolaborasi komunitas).
-- [ ] Modul 6, Living Reports dan Evidence Wanted.
-- [ ] Modul 7, Discovery Feed dan Research Feed.
-- [ ] Modul 8, Personal Intelligence Feed (Discovery Score).
-- [ ] Modul 9 dan 10, Historical Archive Pipeline (target 50.000+ metadata).
-- [ ] Modul 11, Knowledge Relationship Engine ("Everything Connects").
-- [ ] Modul 12, Open Research Workspace dan Compare Sources.
+- [x] **Modul 2, Interactive Knowledge Graph:** sudah ada sejak Fase 6
+  (`components/graph/KnowledgeGraph.tsx` di `/peta-eksplorasi`, warna per kategori,
+  klik simpul, filter). Tidak dibangun ulang.
+- [x] **Modul 3, Interactive Indonesia Map:** `/peta-indonesia`. Peta skematis SVG
+  bebas dependensi (tanpa Leaflet/Mapbox, privacy-first), `lib/geo.ts` +
+  gazetteer koordinat nyata, hanya plot tempat yang dikenal.
+- [x] **Modul 4, Historical Timeline:** `/linimasa`. `lib/timeline.ts` ambil tahun
+  hanya bila tertulis eksplisit di judul/tag/slug, tertaut ke artikel + sumber.
+- [x] **Modul 5, Research Missions:** `/misi`. `content/missions/*.json` (celah riset
+  nyata), tanpa login, kontribusi lewat koreksi/kontak (tanpa backend GitHub
+  Actions, itu infra founder). Kontributor 0 jujur.
+- [x] **Modul 6, Evidence Wanted:** `/bukti-dicari`. Agregasi artikel di bawah
+  terverifikasi kuat + batasannya sendiri.
+- [x] **Modul 7, Discovery/Research Feed:** `/aktivitas`. `lib/activity.ts` dari
+  tanggal verifikasi konten nyata + checkpoint pipeline.
+- [x] **Modul 8, Discovery Score:** `components/DiscoveryScore.tsx` di
+  `/ruang-kendali`. URL-state saja, tanpa localStorage/DB/cookie.
+- [x] **Modul 9 dan 10, Archive Pipeline (scaffold):** `scripts/archive/pipeline.mjs`.
+  Metadata-only, registry target global, backoff. Provider hidup: Library of
+  Congress (lewat curl, no key). Target 50k = program bertahap, BUKAN angka karangan.
+- [x] **Modul 11, Relationship Engine:** `/koneksi`. `lib/relations.ts` hitung
+  MasterRelasi dari graf yang sama. Everything connects.
+- [x] **Modul 12, Compare Sources:** `/banding`. `components/CompareSources.tsx`,
+  dua sumber berdampingan, tanpa kesimpulan AI.
 
 ---
 

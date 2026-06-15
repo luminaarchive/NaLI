@@ -1,0 +1,19 @@
+{
+  "id": "tumpang-tindih-konsesi",
+  "judul": "Memetakan tumpang tindih konsesi dengan kawasan konservasi",
+  "deskripsi": "Kami ingin menelusuri di mana batas izin konsesi (tambang, sawit, kayu) bersinggungan dengan kawasan konservasi resmi. Targetnya bukan menuduh, melainkan menyusun bukti spasial yang bisa diperiksa siapa pun dari dokumen dan citra terbuka.",
+  "status": "aktif",
+  "progressPercentage": 10,
+  "kebutuhanBukti": [
+    "Salinan SK izin konsesi resmi (nomor dan tahun yang bisa diverifikasi)",
+    "Shapefile atau peta batas kawasan konservasi dari sumber pemerintah",
+    "Citra satelit multi-tahun yang menunjukkan perubahan tutupan lahan",
+    "Laporan audit atau kajian lembaga independen yang relevan"
+  ],
+  "kontributor": {
+    "peneliti": 0,
+    "pembaca": 0,
+    "penerjemah": 0
+  },
+  "logSubmission": []
+}
