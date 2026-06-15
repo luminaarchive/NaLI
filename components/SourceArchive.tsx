@@ -26,6 +26,9 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
   const [type, setType] = useState<string>(ALL);
   const [topic, setTopic] = useState<string>(ALL);
   const [reliability, setReliability] = useState<string>(ALL);
+  const [q, setQ] = useState("");
+  const [yearFrom, setYearFrom] = useState("");
+  const [yearTo, setYearTo] = useState("");
 
   const typeCounts = useMemo(() => {
     const m = new Map<SourceType, number>();
@@ -45,16 +48,44 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
     return [...set];
   }, [sources]);
 
-  const filtered = useMemo(
-    () =>
-      sources.filter(
-        (s) =>
-          (type === ALL || s.type === type) &&
-          (topic === ALL || (s.topics ?? []).includes(topic)) &&
-          (reliability === ALL || s.reliabilityLevel === reliability),
-      ),
-    [sources, type, topic, reliability],
-  );
+  const filtered = useMemo(() => {
+    const query = q.trim().toLowerCase();
+    const from = yearFrom ? Number(yearFrom) : null;
+    const to = yearTo ? Number(yearTo) : null;
+    const matchesText = (s: SourceEntry) => {
+      if (!query) return true;
+      const hay = [
+        s.title,
+        s.author,
+        s.institution,
+        s.related_topic,
+        ...(s.topics ?? []),
+        ...(s.keyClaims ?? []),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return hay.includes(query);
+    };
+    return sources.filter(
+      (s) =>
+        (type === ALL || s.type === type) &&
+        (topic === ALL || (s.topics ?? []).includes(topic)) &&
+        (reliability === ALL || s.reliabilityLevel === reliability) &&
+        (from === null || (s.year ?? 0) >= from) &&
+        (to === null || (s.year ?? 9999) <= to) &&
+        matchesText(s),
+    );
+  }, [sources, type, topic, reliability, q, yearFrom, yearTo]);
+
+  const resetAll = () => {
+    setType(ALL);
+    setTopic(ALL);
+    setReliability(ALL);
+    setQ("");
+    setYearFrom("");
+    setYearTo("");
+  };
 
   const selectClass =
     "border border-dashed border-ink/60 bg-paper px-3 py-2 font-mono text-[0.72rem] uppercase tracking-wider text-ink focus:border-ink focus:outline-none";
@@ -83,8 +114,22 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
         />
       </div>
 
+      {/* free-text search */}
+      <div className="mt-5">
+        <label className="flex flex-col gap-1">
+          <span className="label text-gray">Cari teks bebas</span>
+          <input
+            type="search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Judul, penulis, lembaga, topik, atau klaim..."
+            className="w-full border border-dashed border-ink/60 bg-paper px-3 py-2 font-mono text-[0.78rem] text-ink placeholder:text-gray-light focus:border-ink focus:outline-none"
+          />
+        </label>
+      </div>
+
       {/* filters */}
-      <div className="mt-5 flex flex-wrap gap-3">
+      <div className="mt-3 flex flex-wrap items-end gap-3">
         <label className="flex flex-col gap-1">
           <span className="label text-gray">Tipe</span>
           <select className={selectClass} value={type} onChange={(e) => setType(e.target.value)}>
@@ -122,11 +167,46 @@ export function SourceArchive({ sources }: { sources: SourceEntry[] }) {
             ))}
           </select>
         </label>
+        <label className="flex flex-col gap-1">
+          <span className="label text-gray">Tahun</span>
+          <span className="flex items-center gap-1">
+            <input
+              type="number"
+              inputMode="numeric"
+              value={yearFrom}
+              onChange={(e) => setYearFrom(e.target.value)}
+              placeholder="dari"
+              className="w-20 border border-dashed border-ink/60 bg-paper px-2 py-2 font-mono text-[0.72rem] text-ink placeholder:text-gray-light focus:border-ink focus:outline-none"
+            />
+            <span className="text-gray" aria-hidden>
+              –
+            </span>
+            <input
+              type="number"
+              inputMode="numeric"
+              value={yearTo}
+              onChange={(e) => setYearTo(e.target.value)}
+              placeholder="sampai"
+              className="w-20 border border-dashed border-ink/60 bg-paper px-2 py-2 font-mono text-[0.72rem] text-ink placeholder:text-gray-light focus:border-ink focus:outline-none"
+            />
+          </span>
+        </label>
       </div>
 
-      <p className="mt-4 font-mono text-[0.7rem] uppercase tracking-wider text-gray">
-        Menampilkan {filtered.length} dari {sources.length}
-      </p>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <p className="font-mono text-[0.7rem] uppercase tracking-wider text-gray">
+          Menampilkan {filtered.length} dari {sources.length}
+        </p>
+        {(type !== ALL || topic !== ALL || reliability !== ALL || q || yearFrom || yearTo) && (
+          <button
+            type="button"
+            onClick={resetAll}
+            className="border border-dashed border-ink/50 px-2.5 py-1 font-mono text-[0.66rem] uppercase tracking-[0.1em] text-ink transition-colors hover:bg-ink-wash"
+          >
+            Reset filter
+          </button>
+        )}
+      </div>
 
       {/* table (sm+) */}
       <div className="mt-4 hidden overflow-hidden border border-ink/60 sm:block">

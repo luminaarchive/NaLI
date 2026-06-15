@@ -10,11 +10,13 @@ import {
   getSeriesNavigation,
 } from "@/lib/content";
 import { formatDate, articleDepth, DEPTH_LABEL } from "@/lib/format";
+import { slugifyTag } from "@/lib/topics";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { ConfidenceBadge } from "@/components/ConfidenceBadge";
 import { MdxBody } from "@/components/MdxBody";
 import { SourceList } from "@/components/SourceList";
 import { SeriesNavigation } from "@/components/SeriesNavigation";
+import { CitationModal } from "@/components/CitationModal";
 import { ArticleCard } from "@/components/ArticleCard";
 import { CATEGORY_LABEL, CLAIM_STATUS_LABEL, type ClaimStatus } from "@/lib/types";
 
@@ -165,6 +167,11 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
             </p>
           )}
 
+          <div className="mt-6">
+            <CitationModal
+              item={{ title: article.title, slug: article.slug, date: article.date, kind: "articles" }}
+            />
+          </div>
         </div>
       </header>
 
@@ -502,12 +509,13 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
         {article.tags.length > 0 && (
           <div className="mt-12 flex flex-wrap gap-2 border-t border-dashed border-ink/40 pt-6">
             {article.tags.map((tag) => (
-              <span
+              <Link
                 key={tag}
-                className="border border-dashed border-ink/50 bg-paper px-3 py-1 font-mono text-xs text-ink"
+                href={`/topik/${slugifyTag(tag)}`}
+                className="border border-dashed border-ink/50 bg-paper px-3 py-1 font-mono text-xs text-ink transition-colors hover:bg-ink-wash"
               >
                 #{tag}
-              </span>
+              </Link>
             ))}
           </div>
         )}

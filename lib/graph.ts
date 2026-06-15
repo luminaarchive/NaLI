@@ -1,5 +1,6 @@
 import { getAllArticles, getAllSources } from "./content";
 import { SERIES } from "./series";
+import { slugifyTag } from "./topics";
 
 export type GraphNodeType = "artikel" | "sumber" | "seri" | "topik";
 
@@ -99,7 +100,7 @@ export async function buildKnowledgeGraph(): Promise<KnowledgeGraph> {
     for (const t of a.tags) {
       if (!sharedTags.has(t)) continue;
       const tid = `t:${t}`;
-      add({ id: tid, type: "topik", label: t, excerpt: `Topik: ${t}` });
+      add({ id: tid, type: "topik", label: t, href: `/topik/${slugifyTag(t)}`, excerpt: `Topik: ${t}` });
       edges.push({ source: id, target: tid, relasi: "topik sama" });
     }
   }

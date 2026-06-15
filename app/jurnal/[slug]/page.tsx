@@ -7,6 +7,7 @@ import { getSourceBySlug } from "@/lib/content";
 import { ACCESS_TYPE_LABEL, PUBLICATION_TYPE_LABEL } from "@/lib/types";
 import { SITE } from "@/lib/site";
 import { renderItalicTitle, stripHtmlTags, formatLicense } from "@/lib/jurnal-format";
+import { CitationModal } from "@/components/CitationModal";
 
 type Params = { slug: string };
 
@@ -42,10 +43,15 @@ export default function PublicationDetailPage({ params }: { params: Params }) {
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "CreativeWork",
+    "@type": "ScholarlyArticle",
+    headline: stripHtmlTags(pub.title),
     name: stripHtmlTags(pub.title),
     description: pub.synopsis,
     url: pub.sourceUrl,
+    ...(pub.year ? { datePublished: String(pub.year) } : {}),
+    ...(pub.authors?.length
+      ? { author: pub.authors.map((a) => ({ "@type": "Person", name: a })) }
+      : {}),
     ...(pub.doi ? { sameAs: `https://doi.org/${pub.doi}` } : {}),
     publisher: { "@type": "Organization", name: pub.publisherOrInstitution },
     isPartOf: { "@type": "CreativeWorkSeries", name: "Jurnal NaLI", url: `${SITE.url}/jurnal` },
@@ -186,6 +192,16 @@ export default function PublicationDetailPage({ params }: { params: Params }) {
           >
             Metadata NaLI <span aria-hidden>↓</span>
           </a>
+
+          <CitationModal
+            item={{
+              title: stripHtmlTags(pub.title),
+              slug: pub.slug,
+              date: pub.publicationDate ?? (pub.year ? `${pub.year}-01-01` : new Date().toISOString()),
+              kind: "jurnal",
+              authors: pub.authors,
+            }}
+          />
         </div>
 
         {/* 6. Metadata Table (Definition List) */}

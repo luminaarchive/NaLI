@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getAllArticles, getAllSources } from "@/lib/content";
 import { getAllPublications } from "@/lib/jurnal";
+import { getAllTopicSlugs } from "@/lib/topics";
 import { SITE } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -52,5 +53,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
-  return [...routes, ...articles, ...sources, ...jurnal];
+  const topics = (await getAllTopicSlugs()).map((tag) => ({
+    url: `${SITE.url}/topik/${tag}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.4,
+  }));
+
+  return [...routes, ...articles, ...sources, ...jurnal, ...topics];
 }
