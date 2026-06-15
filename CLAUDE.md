@@ -477,6 +477,49 @@ Sesi UI panjang membandingkan situs ke nousresearch.com lalu mengeksekusi.
 - **Verified:** tsc/lint/check:editorial/build clean; beranda+tentang light+dark (Playwright);
   live production. **WaveHero/DitheringShader kini dead code** (recoverable, founder bisa minta balik).
 
+### 15 Juni 2026 (lanjutan), Eksekusi NALI_MASTER_BUILD penuh (Langkah 1-11)
+
+Menjalankan `NALI_MASTER_BUILD.md` (MBD v1.1) langkah 1-11 berurutan, batch per
+batch dengan verifikasi tiap langkah. Founder (AskUserQuestion) memilih: ikuti
+urutan penuh 1-11; handle sosial "Segera hadir"; newsletter tetap Supabase;
+theme toggle tetap pakai localStorage (tidak kenalkan localStorage baru).
+Laporan lengkap: `NALI_BUILD_REPORT_2026-06-15.md`.
+
+- **Langkah 2 bug fix** (`18b600a`): BUG-001 counter /tentang dipusatkan ke
+  `lib/stats.ts` (seri aktif) + hardening count-up; BUG-002 /kontak via
+  `SOCIAL_LINKS` (badge "Segera hadir", slot handle siap) + tautan RSS; BUG-003
+  `calculateReadingTime` tunggal (200 wpm ceil) untuk MDX+DB.
+- **Langkah 3 audit** (`4ade1d7`): `scripts/audit-content.mjs` (skor 0-1, bedakan
+  404 mati vs 403/timeout diblok-bot), `content/_audit/audit-report-2026-06-15.json`
+  (180 file keep, 0 mati, 82 diblok-bot). Perbaiki 13 URL mati ke kanonik live.
+- **Langkah 4 discovery** (`2b8b176`): Global Search Fuse.js Cmd+K
+  (`/api/search-index` + `components/search/GlobalSearch.tsx`); SEO (twitter card
+  artikel, robots disallow /admin+/api); RSS `/feed.xml`.
+- **Langkah 5 depth** (`b985d00`): Claim Ledger collapsible + tautan sourceIds ke
+  /arsip-sumber; related kontekstual (`related[{slug,relasi}]`); badge depth
+  (`articleDepth`).
+- **Langkah 6 retention** (`63f673a`): `/api/subscribe` (Supabase, server-side);
+  SeriesNavigation (progress + prev/next); **Peta Eksplorasi interaktif** =
+  `lib/graph.ts` + `components/graph/KnowledgeGraph.tsx` (canvas force-directed
+  buatan sendiri, tanpa D3/Cytoscape, fallback list mobile).
+- **Langkah 7 library** (`5ef1c91`): `lib/citation.ts` + CitationModal
+  (APA/MLA/Chicago/BibTeX/RIS, salin+unduh); arsip advanced search (teks bebas +
+  rentang tahun digabung filter); `/topik/[tag]` + tag menaut ke sini.
+- **Langkah 8 transparansi** (`0701c98`): /koreksi log (`content/corrections/`) +
+  CorrectionForm; /catatan-lapangan backlog riset (`lib/research-backlog.ts`);
+  changelog artikel (`changelog[]`).
+- **Langkah 9 konten** (`3ce8c4e`): field `internalScore` + **1 artikel terbit
+  hasil deep-research nyata** (Pesut Mahakam, 4 sumber Tier1/2 terverifikasi-live,
+  internalScore 0.86, claimLedger, foto CC BY 3.0). **300 artikel TIDAK
+  digenerate massal**, karena LARANGAN-006/008 melarang konten tanpa riset nyata;
+  sisanya program editorial multi-sesi (antrian di `lib/research-backlog.ts`).
+- **Langkah 10-11**: build/tsc/lint/check:editorial/check:article-images semua
+  hijau; push `327b658..3ce8c4e`; **produksi terverifikasi** (feed.xml, /topik,
+  artikel Pesut, sitemap semua 200). Laporan `fa14264`.
+- **Stack baru**: `fuse.js`. Graf F4.3 sengaja tanpa D3/Cytoscape demi bundle size.
+- **Masih placeholder (tugas founder)**: email `SITE.email`, handle sosial,
+  editor /admin belum tangkap field baru (internalScore/changelog/related).
+
 ---
 
-*Last updated: 15 Juni 2026, founder-directed: Beranda dirombak lebih simpel/tenang/humanize (hero shader diganti hero editorial, 7→5 section), Tentang jadi section gaya About Us di gaya NaLI (clay bg dipertahankan, 6 item + stat count-up nyata, lucide-react, tanpa framer-motion), dan semua em-dash (186) dibasmi jadi 0 (lihat [[no-em-dashes]]). Pushed `d4e2b32`.*
+*Last updated: 15 Juni 2026, eksekusi NALI_MASTER_BUILD penuh Langkah 1-11 (bug fix, audit + perbaikan 13 URL mati, global search Cmd+K, SEO/RSS, claim ledger/related/depth, newsletter API + series nav + peta eksplorasi interaktif, sitasi + advanced arsip search + /topik, koreksi/catatan-backlog/changelog, internalScore + artikel Pesut Mahakam hasil deep-research). Semua gate hijau, produksi terverifikasi. Pushed `fa14264`. Lihat `NALI_BUILD_REPORT_2026-06-15.md`.*
