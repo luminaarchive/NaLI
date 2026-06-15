@@ -19,6 +19,13 @@ export const metadata: Metadata = {
   },
 };
 
+// The harvested catalog synopsis ends with a fixed boilerplate sentence. It
+// belongs on the detail page, not repeated across every listing row, so we strip
+// it here before the data reaches the (client) catalog used for display + search.
+function listingSynopsis(s: string): string {
+  return s.replace(/\s*Sinopsis ini berbasis metadata[^]*$/i, "").trim();
+}
+
 export default function JurnalPage() {
   const items = getAllPublications().map((p) => ({
     slug: p.slug,
@@ -28,7 +35,7 @@ export default function JurnalPage() {
     publicationType: p.publicationType,
     year: p.year,
     doi: p.doi,
-    synopsis: p.synopsis,
+    synopsis: listingSynopsis(p.synopsis),
     topics: p.topics,
     geography: p.geography,
     accessType: p.accessType,
