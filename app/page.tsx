@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ArticleCard } from "@/components/ArticleCard";
-import { NewsletterSignup } from "@/components/NewsletterSignup";
+import { AuroraHero } from "@/components/AuroraHero";
 import { getAllArticles, getAllSources } from "@/lib/content";
 
 /* ============================== shared bits ============================== */
@@ -61,46 +61,14 @@ export default async function HomePage() {
   return (
     <div className="bg-paper">
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
-        {/* ================= HERO, calm editorial ================= */}
-        <section className="flex items-center justify-between pb-3 pt-8">
-          <Meta>Beranda</Meta>
-          <Meta>Arsip NaLI · MMXXVI</Meta>
-        </section>
-        <DashRule />
-
-        <section className="mx-auto max-w-3xl py-16 text-center sm:py-24">
-          <p className="font-mono text-[0.7rem] uppercase tracking-[0.3em] text-ink/70">
-            Nature · Archive · Lore · Investigation
-          </p>
-          <h1 className="mx-auto mt-6 max-w-2xl font-display text-4xl font-black leading-[1.05] tracking-tight text-ink-black sm:text-6xl">
-            Cerita Indonesia, dibangun dari bukti.
-          </h1>
-          <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-gray sm:text-lg">
-            Jurnal riset terbuka tentang alam, sejarah, dan investigasi. Tiap klaim
-            membawa sumber, label keyakinan, dan batasannya, jadi kamu tahu persis
-            seberapa kuat dasarnya sebelum percaya.
-          </p>
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/articles"
-              className="inline-flex items-center gap-2 bg-ink px-7 py-3.5 font-mono text-[0.8rem] font-semibold uppercase tracking-[0.1em] text-paper transition-colors hover:bg-ink-deep"
-            >
-              Baca artikel
-              <ArrowRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
-            </Link>
-            <Link
-              href="/metodologi"
-              className="border border-dashed border-ink/70 px-7 py-3.5 font-mono text-[0.8rem] font-semibold uppercase tracking-[0.1em] text-ink transition-colors hover:bg-ink hover:text-paper"
-            >
-              Cara kerja kami
-            </Link>
+        {/* ================= HERO, aurora ================= */}
+        <section className="pt-8">
+          <div className="flex items-center justify-between pb-3">
+            <Meta>Beranda</Meta>
+            <Meta>Arsip NaLI · MMXXVI</Meta>
           </div>
-
-          <div className="mx-auto mt-12 max-w-md text-left">
-            <p className="mb-3 font-mono text-[0.72rem] uppercase tracking-[0.16em] text-gray">
-              Dapat kabar tiap ada tulisan baru
-            </p>
-            <NewsletterSignup variant="light" />
+          <div className="overflow-hidden border border-dashed border-ink/70">
+            <AuroraHero />
           </div>
         </section>
 
