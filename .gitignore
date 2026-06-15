@@ -34,3 +34,7 @@ yarn-error.log*
 .playwright-mcp
 .venv
 
+# Fase 7 knowledge-pipeline local data (regenerable, bulky raw third-party metadata)
+/content/raw
+/content/cache
+

@@ -524,6 +524,46 @@ Laporan lengkap: `NALI_BUILD_REPORT_2026-06-15.md`.
 - **Masih placeholder (tugas founder)**: email `SITE.email`, handle sosial,
   editor /admin belum tangkap field baru (internalScore/changelog/related).
 
+### 15 Juni 2026 (lanjutan 2), Fase 7 Massive Knowledge Pipeline (founder-directed)
+
+Founder minta pipeline produksi untuk membangun basis pengetahuan besar (target
+300 artikel/jurnal/arsip/investigasi), TANPA data fiktif. Diselesaikan dengan
+menafsirkan "massive" pada bagian yang memang sah di-bulk: **katalog Jurnal +
+Arsip Sumber dari metadata OA nyata**. Artikel/investigasi TIDAK digenerate
+massal (validator wajibkan gambar berlisensi + claim ledger per artikel; bulk =
+mengarang analisis, melanggar LARANGAN-006/008). Lihat
+`docs/nali_fase7_knowledge_pipeline.md`.
+
+- **Miner** (`scripts/mine/harvest.mjs`): harvest metadata nyata dari OpenAlex
+  (no-auth), permutasi 50 topik x 10 region + 25 kueri kurasi, rekonstruksi
+  abstrak, dedup DOI/judul, skor 0..1, filter relevansi Indonesia. 78 keyword
+  ter-cache -> **1.956 record**, 556 score>=0.6 + relevan. Cache & raw_dataset
+  di-gitignore (regenerable, berisi abstrak pihak ketiga). OpenAlex rate-limit
+  -> harvest besar lambat; cache buat re-run instan.
+- **Generator** (`scripts/mine/generate.mjs`): pilih record terbaik yang BELUM
+  dipakai, verifikasi PDF resolve / landing live (cache liveness), emit pasangan
+  **JURNAL** (`content/jurnal/publications/batch-2.ts`, real DOI/venue/penulis +
+  PDF/landing terverifikasi) + **ARSIP SUMBER** (`content/sources/<slug>-src.mdx`)
+  yang saling tertaut (`usedInJurnalIds` <-> `relatedSourceIds`). Sinopsis =
+  deskripsi katalog berbasis metadata (tidak meringkas/mengarang temuan; arahkan
+  ke sumber asli). Auto-register `content/jurnal/index.ts`. Checkpoint
+  `content/logs/progress.json` (STEP 15, resumable).
+- **Hasil batch**: +306 jurnal, +306 sumber -> **jurnal=330, arsip-sumber=465**
+  (dua-duanya lewat target 300). Hanya 4 di-skip (link mati).
+- **Gotcha yang diperbaiki**: em-dash dari judul/abstrak harvested -> `noEmDash`
+  saat emit (escape `—` di regex sendiri) + `content/raw`,`content/cache`
+  ke skipDirs `scanEmDashes` + gitignore; `official_pdf` wajib URL ber-bentuk PDF
+  (gate `PDF_LIKE`, kalau resolve tapi URL DOI -> fallback external_source_only);
+  false-positive "Java" (bahasa pemrograman) di-drop via `SOFTWARE_FP` tanpa
+  sinyal Indonesia kuat. Commit ini juga menyertakan artikel sesi sebelumnya yang
+  belum ter-commit (Prasasti Yupa, Ekspor Pasir Laut + sumber/gambar).
+- **Verified**: tsc 0, lint clean, `check:editorial` PASS, `npm run build` exit 0
+  (330 halaman /jurnal + 327 download.txt + 465 /arsip-sumber ter-render).
+- **Catatan jujur**: cover Jurnal baru pakai source-card fallback (lisensi cover
+  belum jelas) -> WARN >20% non-fatal. Sisa target adalah lanjutan: jalankan ulang
+  `generate.mjs --count N` (akumulatif) untuk tambah, dan tulis artikel deep-
+  research satu per satu (bukan generate massal).
+
 ---
 
-*Last updated: 15 Juni 2026, eksekusi NALI_MASTER_BUILD penuh Langkah 1-11 (bug fix, audit + perbaikan 13 URL mati, global search Cmd+K, SEO/RSS, claim ledger/related/depth, newsletter API + series nav + peta eksplorasi interaktif, sitasi + advanced arsip search + /topik, koreksi/catatan-backlog/changelog, internalScore + artikel Pesut Mahakam hasil deep-research). Semua gate hijau, produksi terverifikasi. Pushed `fa14264`. Lihat `NALI_BUILD_REPORT_2026-06-15.md`.*
+*Last updated: 15 Juni 2026, Fase 7 knowledge pipeline (harvest OpenAlex nyata -> +306 jurnal & +306 arsip sumber tertaut, jurnal=330/arsip=465 lewat target 300; artikel/investigasi tetap editorial deep-research, bukan massal). Semua gate hijau (tsc/lint/check:editorial/build). Lihat `docs/nali_fase7_knowledge_pipeline.md` + `content/logs/progress.json`. Sebelumnya: eksekusi NALI_MASTER_BUILD penuh Langkah 1-11 (bug fix, audit + perbaikan 13 URL mati, global search Cmd+K, SEO/RSS, claim ledger/related/depth, newsletter API + series nav + peta eksplorasi interaktif, sitasi + advanced arsip search + /topik, koreksi/catatan-backlog/changelog, internalScore + artikel Pesut Mahakam hasil deep-research). Semua gate hijau, produksi terverifikasi. Pushed `fa14264`. Lihat `NALI_BUILD_REPORT_2026-06-15.md`.*

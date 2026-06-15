@@ -150,7 +150,16 @@ function scanMethodProseRatio(tag, content) {
 }
 
 function scanEmDashes() {
-  const skipDirs = new Set([".git", ".next", ".vercel", "node_modules", "public", ".playwright-mcp"]);
+  const skipDirs = new Set([
+    ".git",
+    ".next",
+    ".vercel",
+    "node_modules",
+    "public",
+    ".playwright-mcp",
+    "raw",
+    "cache",
+  ]);
   const textExts = new Set([
     ".css",
     ".example",
