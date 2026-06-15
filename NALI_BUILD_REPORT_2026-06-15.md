@@ -53,14 +53,21 @@ di-push ke `main`.
 
 ## Konten Baru (Langkah 9)
 
-- Artikel baru: **1 terbit** ("Pesut Mahakam: Lumba-Lumba Air Tawar yang Tinggal
-  Puluhan", kategori alam, seri spesies-hilang-bertahan, `internalScore` 0.86,
-  confidence high, claimLedger 4 klaim, 2 koneksi kontekstual, foto CC BY 3.0,
-  changelog). Lolos `check:editorial`.
-- Sumber baru: **4** (IUCN Red List subpopulasi Mahakam, IUCN SSC CSG, Kreb &
-  Budiono 2005 Oryx, Yayasan Konservasi RASI), semua Tier 1/2 diverifikasi live.
-- Seri baru: 0 (memakai seri aktif yang ada).
-- Skema baru: field `internalScore` (Bagian 9.3) ditambahkan ke artikel + parser.
+- Artikel baru: **3 terbit**, satu per pilar, semua hasil deep-research penuh:
+  - **Alam:** "Pesut Mahakam: Lumba-Lumba Air Tawar yang Tinggal Puluhan" (seri
+    spesies-hilang-bertahan, internalScore 0.86, confidence high, foto CC BY 3.0).
+    Sumber: IUCN Red List subpopulasi Mahakam, IUCN SSC CSG, Kreb & Budiono 2005
+    Oryx, Yayasan RASI.
+  - **Sejarah:** "Prasasti Yupa: Kalimat Tertua yang Ditulis di Indonesia" (seri
+    arsip-nusantara, internalScore 0.84, confidence high, foto CC0). Sumber:
+    Vogel 1918 (BKI), ANU Press Kutai, Cogent Arts & Humanities 2025.
+  - **Investigasi:** "Ekspor Pasir Laut: Apa yang Benar-Benar Ditulis di PP
+    26/2023" (seri investigasi-sumber-terbuka, internalScore 0.78, confidence
+    medium, framing hak jawab + pemisahan fakta/diperdebatkan/belum cukup bukti).
+    Sumber: teks resmi PP 26/2023 (JDIH BPK), Greenpeace SEA, Mongabay.
+- Sumber baru: **10** (4 pesut + 3 yupa + 3 pasir laut), semua URL diverifikasi live.
+- Audit akhir: **193 file, semua keep, 0 URL mati**.
+- Seri baru: 0 (memakai seri yang ada). Skema baru: field `internalScore` (Bagian 9.3).
 
 ### Kenapa bukan 300 artikel sekaligus
 

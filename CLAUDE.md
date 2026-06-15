@@ -508,11 +508,15 @@ Laporan lengkap: `NALI_BUILD_REPORT_2026-06-15.md`.
 - **Langkah 8 transparansi** (`0701c98`): /koreksi log (`content/corrections/`) +
   CorrectionForm; /catatan-lapangan backlog riset (`lib/research-backlog.ts`);
   changelog artikel (`changelog[]`).
-- **Langkah 9 konten** (`3ce8c4e`): field `internalScore` + **1 artikel terbit
-  hasil deep-research nyata** (Pesut Mahakam, 4 sumber Tier1/2 terverifikasi-live,
-  internalScore 0.86, claimLedger, foto CC BY 3.0). **300 artikel TIDAK
-  digenerate massal**, karena LARANGAN-006/008 melarang konten tanpa riset nyata;
-  sisanya program editorial multi-sesi (antrian di `lib/research-backlog.ts`).
+- **Langkah 9 konten** (`3ce8c4e`, lanjutan `fcc614e`): field `internalScore` +
+  **3 artikel terbit hasil deep-research nyata, satu per pilar**: Pesut Mahakam
+  (alam, IUCN+Oryx+RASI, score 0.86), Prasasti Yupa Kutai (sejarah, Vogel 1918+
+  ANU+Cogent 2025, score 0.84), Ekspor Pasir Laut PP 26/2023 (investigasi, teks
+  resmi BPK+Greenpeace+Mongabay, score 0.78, framing hak jawab). 10 sumber baru
+  terverifikasi-live, foto berlisensi (CC BY/CC0/CC BY-SA). Audit akhir 193 file
+  semua keep, 0 URL mati. **300 artikel TIDAK digenerate massal**, karena
+  LARANGAN-006/008 melarang konten tanpa riset nyata; sisanya program editorial
+  multi-sesi (antrian di `lib/research-backlog.ts`).
 - **Langkah 10-11**: build/tsc/lint/check:editorial/check:article-images semua
   hijau; push `327b658..3ce8c4e`; **produksi terverifikasi** (feed.xml, /topik,
   artikel Pesut, sitemap semua 200). Laporan `fa14264`.
