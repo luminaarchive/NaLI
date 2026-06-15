@@ -67,6 +67,14 @@ founder untuk dieksekusi nanti**, satu per satu.
 - Why: `SITE.email` mati; newsletter Supabase tak tersambung ke email apa pun; handle sosial kosong = nol distribusi.
 - Aksi: pasang mailbox nyata (tugas founder) + pilih SATU kanal (X/IG) dengan ritme tetap (1 thread/carousel per artikel).
 - Risk: low teknis; butuh keputusan + akun founder.
+- **Status (16 Jun 2026):** Kit distribusi SUDAH dibangun (`npm run social -- --slug <slug>`
+  hasilkan draf thread X + carousel IG + caption dari data artikel nyata).
+  Email/newsletter DITUNDA atas pilihan founder ("nanti saja, belum dibuat").
+  Kontak tetap placeholder. **Saat founder siap**, wiring tinggal:
+  1. Founder set mailbox nyata, lalu ganti `SITE.email` di `lib/site.ts`.
+  2. Newsletter: daftar Resend (free tier), simpan `RESEND_API_KEY` di env Vercel,
+     minta agent sambungkan path kirim (sapaan + broadcast) di `/api/subscribe`.
+     Arsitektur sudah provider-agnostic, jadi cepat.
 
 ### 5. Rampingkan navigasi sampai konten menyusul fitur
 - Why: belasan permukaan (V2) untuk 35 artikel; pengunjung tersesat di menu.
