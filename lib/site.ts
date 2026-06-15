@@ -14,13 +14,15 @@ export const SITE = {
   email: "halo@nali.native.id",
 } as const;
 
+// Reader-first order: lead with what to read, not the internal control room.
+// Kept lean on purpose until content volume catches up with the V2 surfaces
+// (those are reachable from the homepage and /ruang-kendali hub).
 export const NAV_LINKS: { href: string; label: string }[] = [
-  { href: "/ruang-kendali", label: "Ruang Kendali" },
   { href: "/articles", label: "Artikel" },
   { href: "/jurnal", label: "Jurnal" },
-  { href: "/seri", label: "Seri" },
   { href: "/arsip-sumber", label: "Arsip Sumber" },
-  { href: "/metodologi", label: "Metodologi" },
+  { href: "/seri", label: "Seri" },
+  { href: "/ruang-kendali", label: "Ruang Kendali" },
   { href: "/tentang", label: "Tentang" },
   { href: "/kontak", label: "Kontak" },
 ];
@@ -63,6 +65,8 @@ export const SECONDARY_LINKS: { href: string; label: string }[] = [
   { href: "/sejarah", label: "Sejarah" },
   { href: "/investigasi", label: "Investigasi" },
   { href: "/catatan-lapangan", label: "Catatan Riset" },
+  { href: "/metodologi", label: "Metodologi" },
+  { href: "/pedoman-sumber", label: "Pedoman Sumber" },
   { href: "/koreksi", label: "Koreksi" },
   { href: "/manifesto", label: "Manifesto" },
   { href: "/peta-eksplorasi", label: "Indeks Eksplorasi" },

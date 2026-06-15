@@ -17,6 +17,16 @@ function excerpt(text: string | undefined, n = 130): string {
   return clean.length > n ? `${clean.slice(0, n).trimEnd()}…` : clean;
 }
 
+// Drop the catalog boilerplate from list/card previews so the listing does not
+// read as a wall of identical "Sinopsis ini berbasis metadata..." sentences.
+// The full text still shows on the detail page.
+function previewSynopsis(text: string | undefined): string {
+  return (text ?? "")
+    .replace(/\s*Sinopsis ini berbasis metadata[^]*$/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export type PublicationCard = {
   slug: string;
   title: string;
@@ -538,9 +548,9 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
                     {i.authors.join(", ")}
                   </span>
                 )}
-                {i.synopsis && (
+                {previewSynopsis(i.synopsis) && (
                   <span className="mt-1 block max-w-xl font-mono text-xs leading-relaxed text-gray">
-                    {excerpt(i.synopsis)}
+                    {excerpt(previewSynopsis(i.synopsis))}
                   </span>
                 )}
               </td>
@@ -736,9 +746,9 @@ export function PublicationCatalog({ items }: { items: PublicationCard[] }) {
                       {i.year ? ` · ${i.year}` : ""}
                     </p>
 
-                    {/* Abstract Synopsis */}
+                    {/* Abstract Synopsis (boilerplate stripped for the preview) */}
                     <p className="mt-2 text-[0.85rem] leading-relaxed text-ink-charcoal line-clamp-2">
-                      {i.synopsis}
+                      {previewSynopsis(i.synopsis)}
                     </p>
 
                     {/* Action row: one primary action + detail link */}
