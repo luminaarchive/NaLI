@@ -6,6 +6,7 @@ import { MdxBody } from "@/components/MdxBody";
 import { getAllFieldNotes } from "@/lib/content";
 import { formatDate } from "@/lib/format";
 import { SOURCE_TYPE_LABEL } from "@/lib/types";
+import { RESEARCH_BACKLOG, BACKLOG_STATUS_LABEL } from "@/lib/research-backlog";
 
 export const metadata: Metadata = {
   title: "Catatan Riset",
@@ -57,6 +58,61 @@ export default function CatatanRisetPage() {
           />
         </div>
 
+        {/* open research backlog (F6.2) */}
+        <section className="mb-16">
+          <h2 className="font-display text-2xl font-bold uppercase text-ink">
+            Yang sedang diriset
+          </h2>
+          <p className="mt-2 max-w-2xl font-mono text-[0.82rem] leading-relaxed text-gray">
+            Topik yang sumbernya sedang dikumpulkan, belum cukup untuk jadi artikel. Kami
+            buka prosesnya, bukan hanya hasilnya.
+          </p>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            {RESEARCH_BACKLOG.map((b) => (
+              <div key={b.topik} className="border border-dashed border-ink/60 bg-paper p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-mono text-[0.64rem] uppercase tracking-[0.14em] text-gray">
+                    {b.kategori}
+                  </span>
+                  <span className="border border-dashed border-ink/50 px-2 py-0.5 font-mono text-[0.62rem] uppercase tracking-[0.1em] text-ink-deep">
+                    {BACKLOG_STATUS_LABEL[b.status]}
+                  </span>
+                </div>
+                <h3 className="mt-2 font-display text-lg font-bold uppercase leading-snug text-ink">
+                  {b.topik}
+                </h3>
+                <p className="mt-3 font-mono text-[0.66rem] uppercase tracking-[0.1em] text-ink/60">
+                  Sumber yang sudah ditemukan
+                </p>
+                <ul className="mt-1 space-y-1">
+                  {b.sumberDitemukan.map((s) => (
+                    <li key={s} className="font-mono text-[0.74rem] leading-snug text-gray">
+                      · {s}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3 font-mono text-[0.66rem] uppercase tracking-[0.1em] text-ink/60">
+                  Pertanyaan yang belum terjawab
+                </p>
+                <ul className="mt-1 space-y-1">
+                  {b.pertanyaanTerbuka.map((q) => (
+                    <li key={q} className="font-mono text-[0.74rem] leading-snug text-gray">
+                      · {q}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3 font-mono text-[0.7rem] text-ink-deep">
+                  Estimasi terbit: {b.estimasiTerbit}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <h2 className="font-display text-2xl font-bold uppercase text-ink">
+          Catatan riset terbit
+        </h2>
+        <div className="mt-6" />
         {notes.length === 0 ? (
           <p className="text-gray">Belum ada catatan riset yang dipublikasikan.</p>
         ) : (

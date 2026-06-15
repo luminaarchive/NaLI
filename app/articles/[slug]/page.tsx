@@ -59,6 +59,13 @@ export async function generateMetadata({
   };
 }
 
+const CHANGE_TYPE_LABEL: Record<string, string> = {
+  koreksi: "Koreksi",
+  "pembaruan-data": "Pembaruan data",
+  "tambahan-sumber": "Tambahan sumber",
+  klarifikasi: "Klarifikasi",
+};
+
 const CLAIM_STATUS_COLOR: Record<ClaimStatus, string> = {
   "terverifikasi kuat": "text-ink-deep",
   "didukung sumber": "text-ink",
@@ -518,6 +525,33 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
               </Link>
             ))}
           </div>
+        )}
+
+        {/* changelog (F6.3) */}
+        {article.changelog && article.changelog.length > 0 && (
+          <details className="group mt-12 border-t border-dashed border-ink/40 pt-6">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+              <h2 className="label text-ink/70">Riwayat perubahan artikel ini</h2>
+              <span className="font-mono text-[0.7rem] text-gray transition-transform group-open:rotate-180" aria-hidden>
+                ▾
+              </span>
+            </summary>
+            <ol className="mt-4 space-y-3">
+              {article.changelog
+                .slice()
+                .sort((a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime())
+                .map((c, i) => (
+                  <li key={i} className="border-l-2 border-dashed border-ink/40 pl-4">
+                    <p className="font-mono text-[0.7rem] uppercase tracking-[0.1em] text-ink-deep">
+                      {formatDate(c.tanggal)} · {CHANGE_TYPE_LABEL[c.tipe]}
+                    </p>
+                    <p className="mt-1 font-mono text-[0.8rem] leading-relaxed text-gray">
+                      {c.deskripsi}
+                    </p>
+                  </li>
+                ))}
+            </ol>
+          </details>
         )}
       </div>
 

@@ -43,6 +43,13 @@ export interface ArticleSource {
   type: SourceType;
 }
 
+/** A single change entry in an article's revision history (F6.3). */
+export interface ArticleChange {
+  tanggal: string;
+  tipe: "koreksi" | "pembaruan-data" | "tambahan-sumber" | "klarifikasi";
+  deskripsi: string;
+}
+
 /** Contextual related-article pointer (F3.2): why the linked article is relevant. */
 export interface RelatedRef {
   slug: string;
@@ -157,6 +164,8 @@ export interface Article {
   series?: string[];
   /** Contextual related articles (F3.2): each with an explicit relevance note. */
   related?: RelatedRef[];
+  /** Revision history shown as a collapsible changelog (F6.3). */
+  changelog?: ArticleChange[];
   /** What the writing is based on. */
   evidenceBasis?: EvidenceBasis;
   /** True only when real first-party field evidence exists. Defaults to false. */

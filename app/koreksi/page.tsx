@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
+import { CorrectionForm } from "@/components/CorrectionForm";
+import { getAllCorrections } from "@/lib/corrections";
+import { formatDate } from "@/lib/format";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -17,6 +20,7 @@ export const metadata: Metadata = {
 };
 
 export default function KoreksiPage() {
+  const corrections = getAllCorrections();
   return (
     <>
       <PageHeader
@@ -44,6 +48,14 @@ export default function KoreksiPage() {
             <li>Sumber pendukung yang dapat ditelusuri (URL, DOI, dokumen resmi).</li>
           </ul>
 
+          <div className="not-prose my-8 border border-dashed border-ink/60 bg-paper p-5 sm:p-6">
+            <p className="label text-ink-deep">Form pengajuan koreksi</p>
+            <p className="mt-2 mb-5 font-mono text-[0.78rem] leading-relaxed text-gray">
+              Isi keempat bagian berikut. Tombol akan menyiapkan email terstruktur ke redaksi.
+            </p>
+            <CorrectionForm />
+          </div>
+
           <h2>Kapan artikel diperbarui</h2>
           <p>
             Jika koreksi terbukti benar, artikel diperbarui dan tanggal{" "}
@@ -65,10 +77,31 @@ export default function KoreksiPage() {
           </p>
 
           <h2>Riwayat koreksi</h2>
-          <p>
-            Belum ada koreksi yang tercatat. Ketika ada, ringkasannya akan muncul di
-            sini dan di catatan koreksi pada artikel terkait.
-          </p>
+          {corrections.length === 0 ? (
+            <p>
+              Belum ada koreksi yang tercatat. Ketika ada, ringkasannya akan muncul di
+              sini dan di catatan koreksi pada artikel terkait.
+            </p>
+          ) : (
+            <ul className="not-prose mt-4 space-y-4">
+              {corrections.map((c) => (
+                <li key={c.id} className="border-l-2 border-dashed border-ink/50 pl-4">
+                  <p className="font-mono text-[0.7rem] uppercase tracking-[0.1em] text-ink-deep">
+                    {formatDate(c.tanggalDiperbaiki)} ·{" "}
+                    <Link href={`/articles/${c.artikelSlug}`}>{c.artikelTitle}</Link>
+                  </p>
+                  <p className="mt-1 font-mono text-[0.8rem] leading-relaxed text-gray">
+                    <span className="text-ink-charcoal">Sebelum:</span> {c.klaimLama}
+                    <br />
+                    <span className="text-ink-charcoal">Sesudah:</span> {c.klaimBaru}
+                  </p>
+                  <p className="mt-1 font-mono text-[0.74rem] leading-relaxed text-gray">
+                    {c.alasan} (sumber: {c.sumberKoreksi})
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
 
           <h2>Kriteria penghapusan atau klarifikasi</h2>
           <p>
