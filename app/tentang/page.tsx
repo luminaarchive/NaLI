@@ -5,7 +5,6 @@ import { DynamicWaveBackground } from "@/components/ui/dynamic-wave-canvas-backg
 import { TentangSection, type TentangStat } from "@/components/TentangSection";
 import { getAllArticles, getAllSources, getAllFieldNotes } from "@/lib/content";
 import { SERIES } from "@/lib/series";
-import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Tentang",
@@ -41,7 +40,7 @@ export default async function TentangPage() {
         title="Satu orang, banyak yang belum diceritakan."
         description="NaLI by NatIve adalah jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia, disusun dari sumber publik yang dapat ditelusuri."
       />
-      <TentangSection stats={stats} author={SITE.author} />
+      <TentangSection stats={stats} />
     </div>
   );
 }

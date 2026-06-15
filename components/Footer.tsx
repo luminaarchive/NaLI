@@ -48,7 +48,7 @@ export function Footer() {
         <div className="hairline" />
         <div className="flex flex-col gap-2 py-6 font-mono text-[0.7rem] text-gray-light sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} {SITE.name}. Disusun oleh {SITE.author}.
+            © {new Date().getFullYear()} {SITE.name}.
           </p>
           <p className="uppercase tracking-label text-ink/70">
             Open-source evidence journal · AI-assisted · bersumber

@@ -131,13 +131,7 @@ function FeatureItem({ feature, delay }: { feature: Feature; delay: number }) {
   );
 }
 
-export function TentangSection({
-  stats,
-  author,
-}: {
-  stats: TentangStat[];
-  author: string;
-}) {
+export function TentangSection({ stats }: { stats: TentangStat[] }) {
   const { ref: statsRef, inView } = useInViewOnce<HTMLDivElement>();
   const left = FEATURES.filter((f) => f.side === "left");
   const right = FEATURES.filter((f) => f.side === "right");
@@ -182,8 +176,8 @@ export function TentangSection({
             </p>
             <div className="my-5 hairline" />
             <p className="font-mono text-[0.78rem] leading-relaxed text-gray">
-              Proyek solo oleh <span className="text-ink-deep">{author}</span>: menelusuri,
-              menulis, dan menerbitkan secara terbuka.
+              Proyek solo yang terbuka: menelusuri, menulis, dan menerbitkan secara
+              konsisten.
             </p>
           </div>
         </div>

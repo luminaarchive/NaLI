@@ -38,7 +38,7 @@ export async function generateMetadata({
       type: "article",
       publishedTime: article.date,
       modifiedTime: article.updated ?? article.date,
-      authors: ["Ansyahri Darma Tri Jati"],
+      authors: ["NaLI by NatIve"],
       tags: article.tags,
       images: metadataImage ? [metadataImage] : undefined,
     },
@@ -74,7 +74,7 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
     description: article.summary || article.subtitle,
     datePublished: article.date,
     dateModified: article.updated ?? article.date,
-    author: { "@type": "Person", name: "Ansyahri Darma Tri Jati" },
+    author: { "@type": "Organization", name: "NaLI by NatIve" },
     publisher: { "@type": "Organization", name: "NaLI by NatIve" },
     ...(metadataImage ? { image: metadataImage } : {}),
   };

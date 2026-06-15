@@ -8,7 +8,7 @@ export const SITE = {
   description:
     "NaLI by NatIve, jurnal riset terbuka (open-source evidence journal) tentang alam, sejarah, dan investigasi Indonesia. Setiap klaim membawa sumber, label tingkat keyakinan, dan batasan.",
   locale: "id_ID",
-  author: "Ansyahri Darma Tri Jati",
+  author: "NaLI by NatIve",
   // Single source of truth for the public contact address (still a placeholder
   // until the founder wires a real mailbox, see /kontak + /koreksi).
   email: "halo@nali.native.id",
