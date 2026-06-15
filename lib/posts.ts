@@ -1,5 +1,5 @@
 import "server-only";
-import readingTime from "reading-time";
+import { calculateReadingTime } from "./format";
 import { createSupabaseServerClient } from "./supabase/server";
 import type {
   Article,
@@ -55,7 +55,7 @@ export function rowToArticle(r: PostRow): Article {
     status: r.status,
     sources: r.sources ?? [],
     content,
-    readingMinutes: Math.max(1, Math.round(readingTime(content).minutes || 1)),
+    readingMinutes: calculateReadingTime(content),
     coverImage: r.cover_image ?? undefined,
     origin: "db",
     evidenceBasis: r.evidence_basis ?? undefined,

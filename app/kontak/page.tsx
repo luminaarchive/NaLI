@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
 import { PageBackdrop } from "@/components/PageBackdrop";
 import { DynamicWaveBackground } from "@/components/ui/dynamic-wave-canvas-background";
-import { SITE } from "@/lib/site";
+import { SITE, SOCIAL_LINKS } from "@/lib/site";
+import { Rss } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Kontak",
@@ -15,12 +16,6 @@ export const metadata: Metadata = {
 };
 
 const EMAIL = SITE.email;
-
-const CHANNELS = [
-  { label: "X (Twitter)", note: "Thread dan tulisan pendek" },
-  { label: "Instagram", note: "Fact card visual & carousel" },
-  { label: "TikTok", note: "Video pendek 30–60 detik" },
-];
 
 export default function KontakPage() {
   return (
@@ -51,16 +46,46 @@ export default function KontakPage() {
         <div className="mt-10">
           <p className="label">Tempat kami menerbitkan</p>
           <ul className="mt-4 space-y-3">
-            {CHANNELS.map((c) => (
+            {SOCIAL_LINKS.map((c) => (
               <li
-                key={c.label}
-                className="flex items-center justify-between border-b border-dashed border-ink/40 pb-3"
+                key={c.platform}
+                className="flex items-center justify-between gap-4 border-b border-dashed border-ink/40 pb-3"
               >
-                <span className="text-ink-black">{c.label}</span>
-                <span className="text-sm text-gray">{c.note}</span>
+                <span className="flex flex-col">
+                  {c.status === "active" && c.url ? (
+                    <a
+                      href={c.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-ink transition-colors hover:text-ink-deep"
+                    >
+                      {c.platform}
+                      {c.handle ? ` ${c.handle}` : ""} ↗
+                    </a>
+                  ) : (
+                    <span className="text-ink-black">{c.platform}</span>
+                  )}
+                  <span className="text-sm text-gray">{c.note}</span>
+                </span>
+                {c.status === "coming-soon" && (
+                  <span className="shrink-0 border border-dashed border-ink/40 px-2 py-0.5 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-gray-light">
+                    Segera hadir
+                  </span>
+                )}
               </li>
             ))}
           </ul>
+        </div>
+
+        <div className="mt-10">
+          <p className="label">Ikuti lewat RSS</p>
+          <a
+            href="/feed.xml"
+            className="mt-3 inline-flex items-center gap-2 border border-dashed border-ink/60 px-4 py-2 font-mono text-[0.78rem] text-ink transition-colors hover:bg-ink-wash"
+          >
+            <Rss className="h-4 w-4" strokeWidth={1.7} aria-hidden />
+            feed.xml
+          </a>
         </div>
       </div>
     </div>

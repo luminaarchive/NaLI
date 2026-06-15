@@ -24,6 +24,38 @@ export const NAV_LINKS: { href: string; label: string }[] = [
   { href: "/kontak", label: "Kontak" },
 ];
 
+/**
+ * Distribution channels (X, Instagram, TikTok). BUG-002: until the founder has
+ * live accounts, status stays "coming-soon" and the UI renders "Segera hadir"
+ * instead of a dead link. To activate, fill `handle` + `url` and flip status to
+ * "active".
+ */
+export interface SocialLink {
+  platform: string;
+  handle?: string;
+  url?: string;
+  note: string;
+  status: "active" | "coming-soon";
+}
+
+export const SOCIAL_LINKS: SocialLink[] = [
+  {
+    platform: "X (Twitter)",
+    note: "Thread dan tulisan pendek",
+    status: "coming-soon",
+  },
+  {
+    platform: "Instagram",
+    note: "Fact card visual dan carousel",
+    status: "coming-soon",
+  },
+  {
+    platform: "TikTok",
+    note: "Video pendek 30-60 detik",
+    status: "coming-soon",
+  },
+];
+
 /** Secondary links (footer "Publikasi" column), categories + trust pages. */
 export const SECONDARY_LINKS: { href: string; label: string }[] = [
   { href: "/alam", label: "Alam" },

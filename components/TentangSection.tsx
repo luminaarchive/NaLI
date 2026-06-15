@@ -65,13 +65,21 @@ const FEATURES: Feature[] = [
   },
 ];
 
-/** Reveals once when scrolled into view. */
+/**
+ * Reveals once when scrolled into view. Hardened against BUG-001: if
+ * IntersectionObserver is unavailable or never fires, a mount fallback still
+ * triggers the count-up so the real numbers are never stuck at 0.
+ */
 function useInViewOnce<T extends HTMLElement>() {
   const ref = useRef<T>(null);
   const [inView, setInView] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -79,10 +87,15 @@ function useInViewOnce<T extends HTMLElement>() {
           io.disconnect();
         }
       },
-      { threshold: 0.3 },
+      { threshold: 0.3, rootMargin: "0px 0px -10% 0px" },
     );
     io.observe(el);
-    return () => io.disconnect();
+    // Safety net: reveal after a short delay even if the observer never fires.
+    const fallback = window.setTimeout(() => setInView(true), 2500);
+    return () => {
+      io.disconnect();
+      window.clearTimeout(fallback);
+    };
   }, []);
   return { ref, inView };
 }

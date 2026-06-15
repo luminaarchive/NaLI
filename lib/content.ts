@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
-import readingTime from "reading-time";
+import { calculateReadingTime } from "./format";
 import { getDbPublishedArticles } from "./posts";
 import type {
   Article,
@@ -35,7 +35,12 @@ function byDateDesc<T extends { date: string }>(a: T, b: T): number {
 
 function parseArticle(slug: string, raw: string): Article {
   const { data, content } = matter(raw);
-  const fm = data as Partial<Article>;
+  const fm = data as Partial<Article> & { readingTime?: number };
+  // Manual frontmatter `readingTime` wins; otherwise compute from the body.
+  const readingMinutes =
+    typeof fm.readingTime === "number" && fm.readingTime > 0
+      ? Math.ceil(fm.readingTime)
+      : calculateReadingTime(content);
   return {
     title: fm.title ?? "Tanpa judul",
     subtitle: fm.subtitle ?? "",
@@ -50,7 +55,7 @@ function parseArticle(slug: string, raw: string): Article {
     sources: fm.sources ?? [],
     coverImage: fm.coverImage,
     content,
-    readingMinutes: Math.max(1, Math.round(readingTime(content).minutes)),
+    readingMinutes,
     series: fm.series,
     evidenceBasis: fm.evidenceBasis,
     firstPartyFieldwork: fm.firstPartyFieldwork ?? false,

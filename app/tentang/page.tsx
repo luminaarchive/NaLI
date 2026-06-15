@@ -3,8 +3,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { PageBackdrop } from "@/components/PageBackdrop";
 import { DynamicWaveBackground } from "@/components/ui/dynamic-wave-canvas-background";
 import { TentangSection, type TentangStat } from "@/components/TentangSection";
-import { getAllArticles, getAllSources, getAllFieldNotes } from "@/lib/content";
-import { SERIES } from "@/lib/series";
+import { getSiteStats } from "@/lib/stats";
 
 export const metadata: Metadata = {
   title: "Tentang",
@@ -22,12 +21,12 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function TentangPage() {
-  const articles = await getAllArticles();
+  const site = await getSiteStats();
   const stats: TentangStat[] = [
-    { value: articles.length, label: "Artikel terbit" },
-    { value: getAllSources().length, label: "Sumber terverifikasi" },
-    { value: SERIES.length, label: "Seri editorial" },
-    { value: getAllFieldNotes().length, label: "Catatan riset" },
+    { value: site.artikel, label: "Artikel terbit" },
+    { value: site.sumber, label: "Sumber terverifikasi" },
+    { value: site.seri, label: "Seri editorial aktif" },
+    { value: site.catatanRiset, label: "Catatan riset" },
   ];
 
   return (
