@@ -10,6 +10,7 @@ import {
   getSeriesNavigation,
 } from "@/lib/content";
 import { formatDate, articleDepth, DEPTH_LABEL } from "@/lib/format";
+import { safeJsonLd } from "@/lib/http";
 import { slugifyTag } from "@/lib/topics";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { ConfidenceBadge } from "@/components/ConfidenceBadge";
@@ -112,7 +113,7 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
     <article>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
       {/* header */}
       <header className="border-b border-dashed border-ink/40">

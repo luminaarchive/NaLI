@@ -6,6 +6,7 @@ import { getPublicationBySlug, getPublicationSlugs } from "@/lib/jurnal";
 import { getSourceBySlug } from "@/lib/content";
 import { ACCESS_TYPE_LABEL, PUBLICATION_TYPE_LABEL } from "@/lib/types";
 import { SITE } from "@/lib/site";
+import { safeJsonLd } from "@/lib/http";
 import { renderItalicTitle, stripHtmlTags, formatLicense } from "@/lib/jurnal-format";
 import { CitationModal } from "@/components/CitationModal";
 
@@ -59,7 +60,7 @@ export default function PublicationDetailPage({ params }: { params: Params }) {
 
   return (
     <article className="bg-paper min-h-screen">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
       
       {/* Navigation header */}
       <div className="mx-auto w-full max-w-editorial px-5 sm:px-8 pt-8 pb-4">

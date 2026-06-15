@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ArticleCard } from "@/components/ArticleCard";
@@ -63,6 +64,11 @@ const PILLARS = [
 ];
 
 /* ============================== the page ============================== */
+
+export const metadata: Metadata = {
+  // Canonical "/" so session-state variants like ?eksplor= are not indexed as duplicates.
+  alternates: { canonical: "/" },
+};
 
 export const dynamic = "force-dynamic";
 

@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
+import { isSameOrigin } from "@/lib/http";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
+  if (!isSameOrigin(req)) return NextResponse.json({ ok: false }, { status: 403 });
   if (!supabase) return NextResponse.json({ ok: false });
   let path = "";
   let referrer: string | null = null;

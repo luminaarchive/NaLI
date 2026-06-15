@@ -25,6 +25,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/manifesto",
     "/tentang",
     "/kontak",
+    // NaLI V2 surfaces
+    "/ruang-kendali",
+    "/linimasa",
+    "/peta-indonesia",
+    "/koneksi",
+    "/bukti-dicari",
+    "/misi",
+    "/aktivitas",
+    "/banding",
   ].map((path) => ({
     url: `${SITE.url}${path}`,
     lastModified: new Date(),

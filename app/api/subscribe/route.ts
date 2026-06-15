@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { isSameOrigin } from "@/lib/http";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,9 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
  * touching the client. Founder decision: keep Supabase.
  */
 export async function POST(request: Request) {
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: "Asal permintaan tidak sah" }, { status: 403 });
+  }
   let email = "";
   try {
     const body = await request.json();
