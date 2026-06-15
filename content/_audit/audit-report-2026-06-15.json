@@ -1,9 +1,9 @@
 {
   "tanggal": "2026-06-15",
   "network": true,
-  "totalFile": 180,
+  "totalFile": 193,
   "breakdown": {
-    "keep": 180,
+    "keep": 193,
     "update": 0,
     "archive": 0,
     "delete": 0
@@ -46,18 +46,13 @@
       "status": "blocked-403"
     },
     {
-      "path": "content/articles/badak-jawa-benteng-terakhir.mdx",
-      "url": "https://www.iucnredlist.org/species/pdf/18493900",
-      "status": "blocked-403"
-    },
-    {
-      "path": "content/articles/badak-jawa-benteng-terakhir.mdx",
-      "url": "https://whc.unesco.org/en/list/608",
-      "status": "blocked-403"
-    },
-    {
       "path": "content/articles/banda-neira-pala-kekerasan-kolonial-arsip.mdx",
       "url": "https://journals.sagepub.com/doi/pdf/10.1177/17506980241242388",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/batavia-kota-tua-jakarta.mdx",
+      "url": "https://www.britannica.com/place/Jakarta/History",
       "status": "blocked-403"
     },
     {
@@ -86,9 +81,14 @@
       "status": "blocked-timeout"
     },
     {
-      "path": "content/articles/deforestasi-kalimantan-data-terbuka.mdx",
-      "url": "https://www.science.org/doi/10.1126/science.1244693",
+      "path": "content/articles/citarum-sungai-tercemar.mdx",
+      "url": "https://www.adb.org/features/cleaning-indonesias-citarum-basin",
       "status": "blocked-403"
+    },
+    {
+      "path": "content/articles/coelacanth-sulawesi-fosil-hidup-laut-dalam.mdx",
+      "url": "https://www.nature.com/articles/26966",
+      "status": "blocked-timeout"
     },
     {
       "path": "content/articles/deforestasi-kalimantan-data-terbuka.mdx",
@@ -156,6 +156,11 @@
       "status": "blocked-403"
     },
     {
+      "path": "content/articles/pesut-mahakam-populasi-terakhir.mdx",
+      "url": "https://www.iucnredlist.org/species/98842174/50386786",
+      "status": "blocked-403"
+    },
+    {
       "path": "content/articles/peta-lama-nusantara-kolonial-membaca-pulau-kuasa.mdx",
       "url": "https://digitalcollections.universiteitleiden.nl/search/Indonesia%20map",
       "status": "blocked-timeout"
@@ -166,14 +171,14 @@
       "status": "blocked-403"
     },
     {
-      "path": "content/articles/peta-lama-nusantara-kolonial-membaca-pulau-kuasa.mdx",
-      "url": "https://www.unesco.org/en/memory-world",
-      "status": "blocked-timeout"
+      "path": "content/articles/prasasti-yupa-kutai-dokumen-tertua.mdx",
+      "url": "https://brill.com/view/journals/bki/74/1/article-p167_4.xml",
+      "status": "blocked-403"
     },
     {
-      "path": "content/articles/peta-lama-nusantara-kolonial-membaca-pulau-kuasa.mdx",
-      "url": "https://www.unesco.org/en/memory-world/babad-diponegoro-or-autobiographical-chronicle-prince-diponegoro-1785-1855-javanese-nobleman",
-      "status": "blocked-timeout"
+      "path": "content/articles/prasasti-yupa-kutai-dokumen-tertua.mdx",
+      "url": "https://www.tandfonline.com/doi/full/10.1080/23311983.2025.2521981",
+      "status": "blocked-403"
     },
     {
       "path": "content/articles/samalas-1257-babad-geologi.mdx",
@@ -206,11 +211,6 @@
       "status": "blocked-timeout"
     },
     {
-      "path": "content/articles/terumbu-karang-indonesia-iklim.mdx",
-      "url": "https://www.coraltriangleinitiative.org/library/study-reefs-risk-revisited-coral-triangle",
-      "status": "blocked-timeout"
-    },
-    {
       "path": "content/articles/toba-supervolcano-perdebatan-dampak.mdx",
       "url": "https://www.pnas.org/doi/10.1073/pnas.2013046118",
       "status": "blocked-403"
@@ -224,11 +224,6 @@
       "path": "content/sources/animal-diversity-web-babirusa.mdx",
       "url": "https://animaldiversity.org/accounts/Babyrousa_celebensis/",
       "status": "blocked-503"
-    },
-    {
-      "path": "content/sources/babad-diponegoro.mdx",
-      "url": "https://www.unesco.org/en/memory-world/babad-diponegoro-or-autobiographical-chronicle-prince-diponegoro-1785-1855-javanese-nobleman",
-      "status": "blocked-timeout"
     },
     {
       "path": "content/sources/babad-lombok-samalas-context.mdx",
@@ -256,6 +251,11 @@
       "status": "blocked-timeout"
     },
     {
+      "path": "content/sources/coelacanth-indonesia-1998.mdx",
+      "url": "https://www.nature.com/articles/26966",
+      "status": "blocked-timeout"
+    },
+    {
       "path": "content/sources/conservation-science-practice-tapanuli-2019.mdx",
       "url": "https://conbio.onlinelibrary.wiley.com/doi/10.1111/csp2.33",
       "status": "blocked-403"
@@ -266,11 +266,6 @@
       "status": "blocked-403"
     },
     {
-      "path": "content/sources/cti-cff-reefs-risk.mdx",
-      "url": "https://www.coraltriangleinitiative.org/library/study-reefs-risk-revisited-coral-triangle",
-      "status": "blocked-timeout"
-    },
-    {
       "path": "content/sources/current-biology-tapanuli-2017.mdx",
       "url": "https://www.cell.com/current-biology/fulltext/S0960-9822(17)31245-9",
       "status": "blocked-403"
@@ -278,6 +273,11 @@
     {
       "path": "content/sources/dieng-gas-hazard-review.mdx",
       "url": "https://pubs.aip.org/aip/acp/article-pdf/doi/10.1063/5.0134337/17995121/030004_1_5.0134337.pdf",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/founding-of-batavia-1619.mdx",
+      "url": "https://www.britannica.com/place/Jakarta/History",
       "status": "blocked-403"
     },
     {
@@ -316,11 +316,6 @@
       "status": "blocked-403"
     },
     {
-      "path": "content/sources/hansen-global-forest-change-2013.mdx",
-      "url": "https://www.science.org/doi/10.1126/science.1244693",
-      "status": "blocked-403"
-    },
-    {
       "path": "content/sources/ijen-toxic-natural-pollution-pmc.mdx",
       "url": "https://www.sciencedirect.com/science/article/abs/pii/S0377027300001870",
       "status": "blocked-403"
@@ -331,8 +326,8 @@
       "status": "blocked-403"
     },
     {
-      "path": "content/sources/iucn-red-list-badak-jawa.mdx",
-      "url": "https://www.iucnredlist.org/species/pdf/18493900",
+      "path": "content/sources/iucn-redlist-pesut-mahakam.mdx",
+      "url": "https://www.iucnredlist.org/species/98842174/50386786",
       "status": "blocked-403"
     },
     {
@@ -376,11 +371,6 @@
       "status": "blocked-timeout"
     },
     {
-      "path": "content/sources/nagarakretagama-1365.mdx",
-      "url": "https://www.unesco.org/en/memory-world",
-      "status": "blocked-timeout"
-    },
-    {
       "path": "content/sources/ouwens-komodo-bhl-1912.mdx",
       "url": "https://www.biodiversitylibrary.org/part/76070",
       "status": "blocked-403"
@@ -416,8 +406,18 @@
       "status": "blocked-403"
     },
     {
-      "path": "content/sources/ujung-kulon-unesco.mdx",
-      "url": "https://whc.unesco.org/en/list/608",
+      "path": "content/sources/vogel-1918-yupa-mulawarman.mdx",
+      "url": "https://brill.com/view/journals/bki/74/1/article-p167_4.xml",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/world-bank-citarum-context.mdx",
+      "url": "https://www.adb.org/features/cleaning-indonesias-citarum-basin",
+      "status": "blocked-403"
+    },
+    {
+      "path": "content/sources/yupa-yantra-shiva-2025.mdx",
+      "url": "https://www.tandfonline.com/doi/full/10.1080/23311983.2025.2521981",
       "status": "blocked-403"
     }
   ],
@@ -535,6 +535,14 @@
       "recommendation": "keep"
     },
     {
+      "path": "content/articles/ekspor-pasir-laut-pp-26-2023.mdx",
+      "slug": "ekspor-pasir-laut-pp-26-2023",
+      "issues": [],
+      "wordCount": 915,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
       "path": "content/articles/gambut-indonesia-karbon-api-kabut.mdx",
       "slug": "gambut-indonesia-karbon-api-kabut",
       "issues": [],
@@ -623,10 +631,26 @@
       "recommendation": "keep"
     },
     {
+      "path": "content/articles/pesut-mahakam-populasi-terakhir.mdx",
+      "slug": "pesut-mahakam-populasi-terakhir",
+      "issues": [],
+      "wordCount": 951,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
       "path": "content/articles/peta-lama-nusantara-kolonial-membaca-pulau-kuasa.mdx",
       "slug": "peta-lama-nusantara-kolonial-membaca-pulau-kuasa",
       "issues": [],
       "wordCount": 505,
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/articles/prasasti-yupa-kutai-dokumen-tertua.mdx",
+      "slug": "prasasti-yupa-kutai-dokumen-tertua",
+      "issues": [],
+      "wordCount": 906,
       "confidenceScore": 1,
       "recommendation": "keep"
     },
@@ -702,6 +726,13 @@
     {
       "path": "content/sources/anoa-genome-pmc-2022.mdx",
       "slug": "anoa-genome-pmc-2022",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/anu-earliest-indic-state-kutai.mdx",
+      "slug": "anu-earliest-indic-state-kutai",
       "issues": [],
       "confidenceScore": 1,
       "recommendation": "keep"
@@ -994,6 +1025,13 @@
       "recommendation": "keep"
     },
     {
+      "path": "content/sources/greenpeace-sea-sand-export-2023.mdx",
+      "slug": "greenpeace-sea-sand-export-2023",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
       "path": "content/sources/gvp-dieng-1979.mdx",
       "slug": "gvp-dieng-1979",
       "issues": [],
@@ -1162,6 +1200,13 @@
       "recommendation": "keep"
     },
     {
+      "path": "content/sources/iucn-csg-pesut-mahakam.mdx",
+      "slug": "iucn-csg-pesut-mahakam",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
       "path": "content/sources/iucn-lowland-anoa-2016.mdx",
       "slug": "iucn-lowland-anoa-2016",
       "issues": [],
@@ -1206,6 +1251,13 @@
     {
       "path": "content/sources/iucn-red-list-orangutan-tapanuli.mdx",
       "slug": "iucn-red-list-orangutan-tapanuli",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/iucn-redlist-pesut-mahakam.mdx",
+      "slug": "iucn-redlist-pesut-mahakam",
       "issues": [],
       "confidenceScore": 1,
       "recommendation": "keep"
@@ -1269,6 +1321,13 @@
     {
       "path": "content/sources/krakatau-1883-gvp.mdx",
       "slug": "krakatau-1883-gvp",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/kreb-budiono-2005-oryx-pesut.mdx",
+      "slug": "kreb-budiono-2005-oryx-pesut",
       "issues": [],
       "confidenceScore": 1,
       "recommendation": "keep"
@@ -1360,6 +1419,13 @@
     {
       "path": "content/sources/mongabay-javan-tiger-2024.mdx",
       "slug": "mongabay-javan-tiger-2024",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/mongabay-sedimentasi-laut-revisi-2023.mdx",
+      "slug": "mongabay-sedimentasi-laut-revisi-2023",
       "issues": [],
       "confidenceScore": 1,
       "recommendation": "keep"
@@ -1526,6 +1592,13 @@
       "recommendation": "keep"
     },
     {
+      "path": "content/sources/pp-26-2023-sedimentasi-laut.mdx",
+      "slug": "pp-26-2023-sedimentasi-laut",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
       "path": "content/sources/primate-sg-tarsier-context.mdx",
       "slug": "primate-sg-tarsier-context",
       "issues": [],
@@ -1659,6 +1732,13 @@
       "recommendation": "keep"
     },
     {
+      "path": "content/sources/vogel-1918-yupa-mulawarman.mdx",
+      "slug": "vogel-1918-yupa-mulawarman",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
       "path": "content/sources/world-bank-citarum-context.mdx",
       "slug": "world-bank-citarum-context",
       "issues": [],
@@ -1696,6 +1776,20 @@
     {
       "path": "content/sources/wri-reefs-risk-global.mdx",
       "slug": "wri-reefs-risk-global",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/ykrasi-pesut-publications.mdx",
+      "slug": "ykrasi-pesut-publications",
+      "issues": [],
+      "confidenceScore": 1,
+      "recommendation": "keep"
+    },
+    {
+      "path": "content/sources/yupa-yantra-shiva-2025.mdx",
+      "slug": "yupa-yantra-shiva-2025",
       "issues": [],
       "confidenceScore": 1,
       "recommendation": "keep"
