@@ -59,6 +59,7 @@ function parseArticle(slug: string, raw: string): Article {
     series: fm.series,
     related: fm.related,
     changelog: fm.changelog,
+    internalScore: fm.internalScore,
     evidenceBasis: fm.evidenceBasis,
     firstPartyFieldwork: fm.firstPartyFieldwork ?? false,
     updated: fm.updated,

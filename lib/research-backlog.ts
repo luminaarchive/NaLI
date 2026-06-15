@@ -25,20 +25,6 @@ export interface BacklogEntry {
 
 export const RESEARCH_BACKLOG: BacklogEntry[] = [
   {
-    topik: "Pesut Mahakam: berapa yang benar-benar tersisa",
-    kategori: "alam",
-    status: "mengumpulkan-sumber",
-    sumberDitemukan: [
-      "Penilaian IUCN Red List untuk Orcaella brevirostris (populasi Mahakam)",
-      "Laporan sensus lembaga konservasi sungai",
-    ],
-    pertanyaanTerbuka: [
-      "Apakah angka populasi terbaru konsisten antar lembaga?",
-      "Seberapa besar pengaruh lalu lintas tongkang batu bara terhadap tren?",
-    ],
-    estimasiTerbit: "Kuartal 3 2026",
-  },
-  {
     topik: "Tumpang tindih peta konsesi dengan kawasan konservasi",
     kategori: "investigasi",
     status: "mengumpulkan-sumber",

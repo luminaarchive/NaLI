@@ -166,6 +166,12 @@ export interface Article {
   related?: RelatedRef[];
   /** Revision history shown as a collapsible changelog (F6.3). */
   changelog?: ArticleChange[];
+  /**
+   * Internal confidence score 0.0-1.0 from the deep-research protocol (Bagian 9.3).
+   * Not shown publicly; >=0.70 may publish, <0.70 stays draft. Drives the public
+   * `confidence` label.
+   */
+  internalScore?: number;
   /** What the writing is based on. */
   evidenceBasis?: EvidenceBasis;
   /** True only when real first-party field evidence exists. Defaults to false. */
