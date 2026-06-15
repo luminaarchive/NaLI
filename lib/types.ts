@@ -43,6 +43,13 @@ export interface ArticleSource {
   type: SourceType;
 }
 
+/** Contextual related-article pointer (F3.2): why the linked article is relevant. */
+export interface RelatedRef {
+  slug: string;
+  /** One sentence explaining the relevance, not a generic "see also". */
+  relasi: string;
+}
+
 export interface ClaimLedgerItem {
   claim: string;
   status: ClaimStatus;
@@ -148,6 +155,8 @@ export interface Article {
   /* ---- Editorial-trust fields (Phase 8, all optional / backward-compatible) ---- */
   /** Series slugs this article belongs to (see lib/series.ts). */
   series?: string[];
+  /** Contextual related articles (F3.2): each with an explicit relevance note. */
+  related?: RelatedRef[];
   /** What the writing is based on. */
   evidenceBasis?: EvidenceBasis;
   /** True only when real first-party field evidence exists. Defaults to false. */

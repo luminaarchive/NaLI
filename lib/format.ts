@@ -19,6 +19,24 @@ export function calculateReadingTime(content: string): number {
   return Math.max(1, Math.ceil(words / WORDS_PER_MINUTE));
 }
 
+export type ArticleDepth = "ringkasan" | "mendalam" | "definitif";
+
+/**
+ * Article depth (F3.3) derived from reading time: <5 min ringkasan,
+ * 5-15 min mendalam, >15 min definitif.
+ */
+export function articleDepth(readingMinutes: number): ArticleDepth {
+  if (readingMinutes > 15) return "definitif";
+  if (readingMinutes >= 5) return "mendalam";
+  return "ringkasan";
+}
+
+export const DEPTH_LABEL: Record<ArticleDepth, string> = {
+  ringkasan: "Ringkasan",
+  mendalam: "Mendalam",
+  definitif: "Definitif",
+};
+
 export function formatDate(date: string): string {
   const parsed = new Date(date);
   if (Number.isNaN(parsed.getTime())) return date;

@@ -57,6 +57,7 @@ function parseArticle(slug: string, raw: string): Article {
     content,
     readingMinutes,
     series: fm.series,
+    related: fm.related,
     evidenceBasis: fm.evidenceBasis,
     firstPartyFieldwork: fm.firstPartyFieldwork ?? false,
     updated: fm.updated,
@@ -114,6 +115,23 @@ export async function getArticlesByCategory(category: Category): Promise<Article
 
 export async function getLatestArticles(limit: number): Promise<ArticleMeta[]> {
   return (await getAllArticles()).slice(0, limit);
+}
+
+/**
+ * Resolve an article's explicit contextual related refs (F3.2) to article
+ * metadata, preserving the author's relevance note and skipping missing slugs.
+ */
+export async function getContextualRelated(
+  refs: { slug: string; relasi: string }[],
+): Promise<{ article: ArticleMeta; relasi: string }[]> {
+  const all = await getAllArticles();
+  const bySlug = new Map(all.map((a) => [a.slug, a]));
+  return refs
+    .map((r) => {
+      const article = bySlug.get(r.slug);
+      return article ? { article, relasi: r.relasi } : null;
+    })
+    .filter((x): x is { article: ArticleMeta; relasi: string } => x !== null);
 }
 
 export async function getRelatedArticles(

@@ -2,9 +2,14 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getArticleBySlug, getRelatedArticles } from "@/lib/content";
+import {
+  getArticleBySlug,
+  getRelatedArticles,
+  getContextualRelated,
+  getAllSources,
+} from "@/lib/content";
 import { getSeries } from "@/lib/series";
-import { formatDate } from "@/lib/format";
+import { formatDate, articleDepth, DEPTH_LABEL } from "@/lib/format";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { ConfidenceBadge } from "@/components/ConfidenceBadge";
 import { MdxBody } from "@/components/MdxBody";
@@ -63,7 +68,17 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
   const article = await getArticleBySlug(params.slug);
   if (!article) notFound();
 
-  const related = await getRelatedArticles(article);
+  const contextualRelated = article.related?.length
+    ? await getContextualRelated(article.related)
+    : [];
+  const related =
+    contextualRelated.length > 0 ? [] : await getRelatedArticles(article);
+  const depth = articleDepth(article.readingMinutes);
+  // resolve cited source IDs to archive entries for clickable Claim Ledger links
+  const allSources = getAllSources();
+  const citedSources = (article.sourceIds ?? [])
+    .map((id) => allSources.find((s) => s.id === id || s.slug === id))
+    .filter((s): s is NonNullable<typeof s> => Boolean(s));
   const series = (article.series ?? [])
     .map((slug) => getSeries(slug))
     .filter((s): s is NonNullable<typeof s> => Boolean(s));
@@ -130,7 +145,26 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
             <span>{article.readingMinutes} menit baca</span>
             <span aria-hidden>·</span>
             <span>{CATEGORY_LABEL[article.category]}</span>
+            <span aria-hidden>·</span>
+            <span
+              className="border border-dashed border-ink/50 px-1.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-ink"
+              title={
+                depth === "ringkasan"
+                  ? "Pengantar singkat ke topik"
+                  : depth === "mendalam"
+                    ? "Analisis dengan banyak sumber"
+                    : "Referensi lengkap dengan data dan debat ilmiah"
+              }
+            >
+              {DEPTH_LABEL[depth]}
+            </span>
           </div>
+
+          {depth === "ringkasan" && (
+            <p className="mt-4 border-l-2 border-dashed border-ink/50 pl-3 font-mono text-[0.72rem] leading-relaxed text-gray">
+              Artikel ini adalah ringkasan. Versi yang lebih mendalam sedang disiapkan.
+            </p>
+          )}
 
           {series.length > 0 && (
             <div className="mt-5 flex flex-wrap items-center gap-2">
@@ -300,16 +334,21 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
       <div className="container-read py-12 sm:py-16">
         <MdxBody source={article.content} />
 
-        {/* Claim Ledger */}
+        {/* Claim Ledger (collapsible) */}
         {article.claimLedger && article.claimLedger.length > 0 && (
-          <section className="mt-14 border-t border-dashed border-ink/70 pt-6" aria-labelledby="claim-ledger">
-            <h2 id="claim-ledger" className="font-display text-xl font-bold uppercase text-ink">
-              Claim Ledger
-            </h2>
+          <details open className="group mt-14 border-t border-dashed border-ink/70 pt-6" aria-labelledby="claim-ledger">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+              <h2 id="claim-ledger" className="font-display text-xl font-bold uppercase text-ink">
+                Claim Ledger
+              </h2>
+              <span className="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-gray transition-transform group-open:rotate-180" aria-hidden>
+                ▾
+              </span>
+            </summary>
             <p className="mt-2 font-mono text-[0.78rem] leading-relaxed text-gray">
               Tiap klaim utama dipisahkan dan diberi status bukti sendiri.
             </p>
-            <div className="mt-5 overflow-hidden border border-ink/50">
+            <div className="mt-5 overflow-x-auto border border-ink/50">
               <table className="w-full border-collapse text-left">
                 <thead>
                   <tr className="bg-ink-wash">
@@ -343,7 +382,27 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
                 </tbody>
               </table>
             </div>
-          </section>
+
+            {citedSources.length > 0 && (
+              <div className="mt-4">
+                <p className="font-mono text-[0.66rem] uppercase tracking-[0.14em] text-ink/60">
+                  Sumber yang dirujuk
+                </p>
+                <ul className="mt-2 flex flex-wrap gap-2">
+                  {citedSources.map((s) => (
+                    <li key={s.slug}>
+                      <Link
+                        href={`/arsip-sumber/${s.slug}`}
+                        className="inline-block border border-dashed border-ink/50 px-2.5 py-1 font-mono text-[0.7rem] text-ink transition-colors hover:bg-ink-wash"
+                      >
+                        {s.title} ↗
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </details>
         )}
 
         {/* Limitations */}
@@ -462,7 +521,41 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
         )}
       </div>
 
-      {/* related */}
+      {/* contextual related (F3.2): explicit relevance per link */}
+      {contextualRelated.length > 0 && (
+        <section className="border-t border-dashed border-ink/40 bg-paper">
+          <div className="container-editorial py-14">
+            <p className="label">Lanjut menelusuri</p>
+            <h2 className="mt-3 font-display text-2xl font-bold uppercase text-ink">
+              Terhubung dengan tulisan ini
+            </h2>
+            <ul className="mt-8 space-y-4">
+              {contextualRelated.map(({ article: r, relasi }) => (
+                <li
+                  key={r.slug}
+                  className="border border-dashed border-ink/50 bg-paper p-5 transition-colors hover:bg-ink-wash"
+                >
+                  <Link href={`/articles/${r.slug}`} className="group block">
+                    <span className="flex items-center gap-2 font-mono text-[0.66rem] uppercase tracking-[0.14em] text-gray">
+                      {CATEGORY_LABEL[r.category]}
+                      <span aria-hidden>·</span>
+                      {r.readingMinutes} mnt
+                    </span>
+                    <span className="mt-2 block font-display text-lg font-bold uppercase leading-snug text-ink group-hover:underline group-hover:underline-offset-4">
+                      {r.title}
+                    </span>
+                    <span className="mt-2 block font-mono text-[0.78rem] leading-relaxed text-gray">
+                      {relasi}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
+      {/* related (category fallback when no explicit contextual links) */}
       {related.length > 0 && (
         <section className="border-t border-dashed border-ink/40 bg-paper">
           <div className="container-editorial py-14">

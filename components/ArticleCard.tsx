@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ArticleMeta } from "@/lib/types";
 import { CATEGORY_LABEL } from "@/lib/types";
-import { formatDate } from "@/lib/format";
+import { formatDate, articleDepth, DEPTH_LABEL } from "@/lib/format";
 import { ConfidenceBadge } from "./ConfidenceBadge";
 
 export function ArticleCard({
@@ -18,7 +18,10 @@ export function ArticleCard({
           {typeof index === "number" ? `No. ${String(index + 1).padStart(3, "0")} · ` : ""}
           {CATEGORY_LABEL[article.category]}
         </span>
-        <span className="shrink-0 font-mono text-[0.7rem] text-gray">
+        <span className="flex shrink-0 items-center gap-2 font-mono text-[0.7rem] text-gray">
+          <span className="border border-dashed border-ink/40 px-1 text-[0.6rem] uppercase tracking-[0.1em] text-ink/70">
+            {DEPTH_LABEL[articleDepth(article.readingMinutes)]}
+          </span>
           {article.readingMinutes} mnt
         </span>
       </div>
