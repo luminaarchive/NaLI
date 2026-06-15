@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { supabase, supabaseConfigured } from "@/lib/supabaseClient";
 
 type Status = "idle" | "loading" | "ok" | "dupe" | "invalid" | "error";
 
@@ -33,21 +32,21 @@ export function NewsletterSignup({
       setStatus("invalid");
       return;
     }
-    if (!supabase) {
-      setStatus("error");
-      return;
-    }
     setStatus("loading");
-    const { error } = await supabase
-      .from("subscribers")
-      .insert({ email: value, source: "web", locale: "id" });
-
-    if (!error) {
-      setStatus("ok");
-      setEmail("");
-    } else if (error.code === "23505") {
-      setStatus("dupe");
-    } else {
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: value }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setStatus(data.code === "dupe" ? "dupe" : "ok");
+        if (data.code !== "dupe") setEmail("");
+      } else {
+        setStatus(data.code === "invalid" ? "invalid" : "error");
+      }
+    } catch {
       setStatus("error");
     }
   }
@@ -107,12 +106,6 @@ export function NewsletterSignup({
           ? "Tanpa spam. Berhenti kapan saja."
           : MESSAGE[status]}
       </p>
-
-      {!supabaseConfigured && (
-        <p className={`mt-1 text-xs ${light ? "text-gray-light" : "text-white/30"}`}>
-          (Langganan aktif setelah Supabase env diatur di deployment.)
-        </p>
-      )}
     </div>
   );
 }

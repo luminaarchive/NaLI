@@ -5,6 +5,8 @@ import {
   getAllArticles,
   getAllFieldNotes,
 } from "@/lib/content";
+import { buildKnowledgeGraph } from "@/lib/graph";
+import { KnowledgeGraph } from "@/components/graph/KnowledgeGraph";
 import { CATEGORY_LABEL, type Category } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -27,16 +29,32 @@ export default async function PetaEksplorasiPage() {
   const articles = await getAllArticles();
   const notes = getAllFieldNotes();
   const locations = [...new Set(notes.map((n) => n.location_label))];
+  const graph = await buildKnowledgeGraph();
 
   return (
     <>
       <PageHeader
         eyebrow="Indeks"
-        title="Indeks Eksplorasi"
-        description="Bukan peta interaktif dan bukan jejak ekspedisi pribadi. Ini indeks lokasi dan topik dalam liputan NaLI, disusun dari sumber terbuka."
+        title="Peta Eksplorasi"
+        description="Bagaimana artikel, sumber, seri, dan topik NaLI saling terhubung. Jelajahi graf di layar lebar, atau telusuri indeks lokasi dan topik di bawah."
       />
 
       <div className="container-editorial py-12">
+        {/* interactive knowledge graph (desktop) */}
+        <section className="mb-14">
+          <h2 className="font-display text-2xl text-ink-black">Graf pengetahuan</h2>
+          <p className="mt-2 max-w-2xl font-mono text-[0.82rem] leading-relaxed text-gray">
+            Tiap simpul adalah artikel, sumber, seri, atau topik. Garis menandai relasi.
+            Klik untuk membuka, seret untuk menata, saring lewat filter.
+          </p>
+          <div className="mt-5">
+            <KnowledgeGraph graph={graph} />
+          </div>
+          <p className="mt-3 font-mono text-[0.7rem] text-gray-light md:hidden">
+            Graf interaktif tampil di layar lebar. Di perangkat kecil, gunakan indeks di bawah.
+          </p>
+        </section>
+
         {/* locations */}
         <section>
           <h2 className="font-display text-2xl text-ink-black">Lokasi dalam liputan</h2>

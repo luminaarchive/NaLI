@@ -117,6 +117,51 @@ export async function getLatestArticles(limit: number): Promise<ArticleMeta[]> {
   return (await getAllArticles()).slice(0, limit);
 }
 
+export interface SeriesNav {
+  slug: string;
+  title: string;
+  promise: string;
+  status: "active" | "planned";
+  /** 1-based position of the current article within the series. */
+  position: number;
+  /** Number of published articles currently in the series. */
+  total: number;
+  next?: { slug: string; title: string };
+  prev?: { slug: string; title: string };
+}
+
+/**
+ * Series navigation for an article (F4.2): for each series the article belongs
+ * to, its position, the published total, and prev/next articles (ordered oldest
+ * to newest). Returns [] for articles not in any series.
+ */
+export async function getSeriesNavigation(articleSlug: string): Promise<SeriesNav[]> {
+  const { SERIES } = await import("./series");
+  const all = (await getAllArticles())
+    .slice()
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const out: SeriesNav[] = [];
+  for (const series of SERIES) {
+    const inSeries = all.filter((a) => (a.series ?? []).includes(series.slug));
+    const idx = inSeries.findIndex((a) => a.slug === articleSlug);
+    if (idx === -1) continue;
+    out.push({
+      slug: series.slug,
+      title: series.title,
+      promise: series.promise,
+      status: series.status,
+      position: idx + 1,
+      total: inSeries.length,
+      prev: idx > 0 ? { slug: inSeries[idx - 1].slug, title: inSeries[idx - 1].title } : undefined,
+      next:
+        idx < inSeries.length - 1
+          ? { slug: inSeries[idx + 1].slug, title: inSeries[idx + 1].title }
+          : undefined,
+    });
+  }
+  return out;
+}
+
 /**
  * Resolve an article's explicit contextual related refs (F3.2) to article
  * metadata, preserving the author's relevance note and skipping missing slugs.

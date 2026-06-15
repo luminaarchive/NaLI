@@ -7,13 +7,14 @@ import {
   getRelatedArticles,
   getContextualRelated,
   getAllSources,
+  getSeriesNavigation,
 } from "@/lib/content";
-import { getSeries } from "@/lib/series";
 import { formatDate, articleDepth, DEPTH_LABEL } from "@/lib/format";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { ConfidenceBadge } from "@/components/ConfidenceBadge";
 import { MdxBody } from "@/components/MdxBody";
 import { SourceList } from "@/components/SourceList";
+import { SeriesNavigation } from "@/components/SeriesNavigation";
 import { ArticleCard } from "@/components/ArticleCard";
 import { CATEGORY_LABEL, CLAIM_STATUS_LABEL, type ClaimStatus } from "@/lib/types";
 
@@ -74,13 +75,11 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
   const related =
     contextualRelated.length > 0 ? [] : await getRelatedArticles(article);
   const depth = articleDepth(article.readingMinutes);
+  const seriesNav = await getSeriesNavigation(article.slug);
   // resolve cited source IDs to archive entries for clickable Claim Ledger links
   const allSources = getAllSources();
   const citedSources = (article.sourceIds ?? [])
     .map((id) => allSources.find((s) => s.id === id || s.slug === id))
-    .filter((s): s is NonNullable<typeof s> => Boolean(s));
-  const series = (article.series ?? [])
-    .map((slug) => getSeries(slug))
     .filter((s): s is NonNullable<typeof s> => Boolean(s));
   const displayedImages = (article.images ?? []).filter((image) => Boolean(image.src));
   const displayedDiagrams = (article.diagrams ?? []).filter((diagram) => Boolean(diagram.src));
@@ -166,22 +165,15 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
             </p>
           )}
 
-          {series.length > 0 && (
-            <div className="mt-5 flex flex-wrap items-center gap-2">
-              <span className="label text-ink/70">Seri</span>
-              {series.map((s) => (
-                <Link
-                  key={s.slug}
-                  href="/seri"
-                  className="border border-dashed border-ink/50 px-2.5 py-0.5 font-mono text-[0.68rem] text-ink transition-colors hover:bg-ink-wash"
-                >
-                  {s.title}
-                </Link>
-              ))}
-            </div>
-          )}
         </div>
       </header>
+
+      {/* series progress + next-article navigation (F4.2) */}
+      {seriesNav.length > 0 && (
+        <div className="container-read pt-8">
+          <SeriesNavigation nav={seriesNav} />
+        </div>
+      )}
 
       {/* evidence-basis banner: honesty about how the piece is sourced */}
       <div className="container-read pt-8">
