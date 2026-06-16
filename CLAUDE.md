@@ -633,6 +633,31 @@ tanpa em-dash, tanpa dependensi baru (LARANGAN-V2-001), tiap modul dari data NYA
   peta-indonesia). Semua rute juga masuk sitemap.
 - **Verified**: tsc 0, lint clean, check:editorial PASS, build exit 0 (7 rute baru).
 
+### 16 Juni 2026 (lanjutan), Klaster Lazarus A4: black-browed babbler (founder-directed)
+
+- **Artikel A4 terbit** (`content/articles/black-browed-babbler-burung-hilang-172-tahun.mdx`,
+  confidence high, ~960 kata, kategori alam, seri `spesies-hilang-bertahan`):
+  burung yang hilang 172 tahun, hanya dikenal dari satu spesimen abad ke-19 di
+  Naturalis (asalnya sempat keliru dikira Jawa), ditemukan kembali Okt 2020 oleh
+  dua warga Kalsel (Suranto & Fauzan) yang ikut jadi penulis makalah. 4 sumber
+  terverifikasi-live (BirdingASIA 2020 via OBC, BirdLife, ABC, Mongabay). Claim
+  ledger 4 baris, batasan jujur (jeda 170-172 thn, populasi belum diketahui).
+  Foto **burung hidup** CC BY 4.0 oleh Panji Gusti Akbar (iNaturalist/Commons) di
+  `public/images/black-browed-babbler/`. `related` ke A1, A3, dan harimau jawa.
+- **Wave 1 klaster Lazarus selesai**: A1 (jangkar konsep), A2 (harimau jawa, sudah
+  ada), A3 (echidna), A4 (babbler). Roadmap `docs/nali_lazarus_species_cluster.md`
+  ditandai A4 SUDAH TERBIT. 3 entri backlog riset yang kini terbit (Lazarus taxon,
+  echidna, babbler) dibersihkan dari `lib/research-backlog.ts`.
+- **Gotcha infra**: `git push` via SSH port 22 timeout (jaringan blokir 22) ->
+  berhasil lewat `GIT_SSH_COMMAND='ssh -o Hostname=ssh.github.com -o Port=443'`
+  (endpoint SSH-over-443 GitHub). Pakai trik ini kalau port 22 mati lagi.
+- **Verified**: tsc 0, lint clean, check:editorial PASS, build exit 0,
+  check:article-images 38/38 render figur bergambar+kredit. Push `b091ef8..c8667e8`.
+  Produksi terverifikasi (`nalijournal.vercel.app`): artikel+gambar 200, muncul di
+  /alam dan /seri. Total artikel terbit = 38.
+- **Berikutnya (founder)**: Wave 2 klaster (B1 coelacanth, B2 lebah Wallace; B3/B4
+  sebagian sudah ada). Satu artikel deep-research per minggu, bukan generate massal.
+
 ---
 
-*Last updated: 16 Juni 2026, beranda V2 (`app/page.tsx`) kini jadi ruang kendali: LivingDashboard tampil tepat di bawah hero + grid "Modul V2" menautkan 8 surface (ruang-kendali/linimasa/peta-indonesia/koneksi/bukti-dicari/misi/aktivitas/banding); section lama (apa-ini, tiga pilar, tulisan terbaru, callout arsip) dipertahankan. Sebelumnya: NaLI V2 Modul 2-12 dieksekusi additive (rute baru /linimasa, /bukti-dicari, /aktivitas, /koneksi, /banding, /misi, /peta-indonesia + Discovery Score di /ruang-kendali + archive pipeline scaffold loc.gov; semua dari data nyata, tanpa dep baru). Gate hijau (tsc/lint/check:editorial/build). Lihat `NALI_V2_LIVING_ENGINE.md`. Sebelumnya: NaLI V2 Modul 1 Living Knowledge Engine (dashboard `/ruang-kendali` dari data nyata, RSC+Tailwind tanpa dep baru, beranda lama utuh; satu modul per sesi per LARANGAN-V2-002). Gate hijau (tsc/lint/check:editorial/build). Lihat `NALI_V2_LIVING_ENGINE.md`. Sebelumnya: Fase 7 knowledge pipeline (harvest OpenAlex nyata -> +306 jurnal & +306 arsip sumber tertaut, jurnal=330/arsip=465 lewat target 300; artikel/investigasi tetap editorial deep-research, bukan massal). Semua gate hijau (tsc/lint/check:editorial/build). Lihat `docs/nali_fase7_knowledge_pipeline.md` + `content/logs/progress.json`. Sebelumnya: eksekusi NALI_MASTER_BUILD penuh Langkah 1-11 (bug fix, audit + perbaikan 13 URL mati, global search Cmd+K, SEO/RSS, claim ledger/related/depth, newsletter API + series nav + peta eksplorasi interaktif, sitasi + advanced arsip search + /topik, koreksi/catatan-backlog/changelog, internalScore + artikel Pesut Mahakam hasil deep-research). Semua gate hijau, produksi terverifikasi. Pushed `fa14264`. Lihat `NALI_BUILD_REPORT_2026-06-15.md`.*
+*Last updated: 16 Juni 2026, klaster Lazarus A4 black-browed babbler terbit (burung hilang 172 tahun, ditemukan dua warga Kalsel; confidence high, 4 sumber, foto burung hidup CC BY 4.0; Wave 1 A1-A4 selesai). Backlog riset dibersihkan dari 3 entri yang kini terbit. Gotcha: push lewat SSH-over-443 karena port 22 diblokir jaringan. Semua gate hijau (tsc/lint/check:editorial/check:article-images/build), produksi terverifikasi, push `c8667e8`. Sebelumnya: beranda V2 (`app/page.tsx`) kini jadi ruang kendali: LivingDashboard tampil tepat di bawah hero + grid "Modul V2" menautkan 8 surface (ruang-kendali/linimasa/peta-indonesia/koneksi/bukti-dicari/misi/aktivitas/banding); section lama (apa-ini, tiga pilar, tulisan terbaru, callout arsip) dipertahankan. Sebelumnya: NaLI V2 Modul 2-12 dieksekusi additive (rute baru /linimasa, /bukti-dicari, /aktivitas, /koneksi, /banding, /misi, /peta-indonesia + Discovery Score di /ruang-kendali + archive pipeline scaffold loc.gov; semua dari data nyata, tanpa dep baru). Gate hijau (tsc/lint/check:editorial/build). Lihat `NALI_V2_LIVING_ENGINE.md`. Sebelumnya: NaLI V2 Modul 1 Living Knowledge Engine (dashboard `/ruang-kendali` dari data nyata, RSC+Tailwind tanpa dep baru, beranda lama utuh; satu modul per sesi per LARANGAN-V2-002). Gate hijau (tsc/lint/check:editorial/build). Lihat `NALI_V2_LIVING_ENGINE.md`. Sebelumnya: Fase 7 knowledge pipeline (harvest OpenAlex nyata -> +306 jurnal & +306 arsip sumber tertaut, jurnal=330/arsip=465 lewat target 300; artikel/investigasi tetap editorial deep-research, bukan massal). Semua gate hijau (tsc/lint/check:editorial/build). Lihat `docs/nali_fase7_knowledge_pipeline.md` + `content/logs/progress.json`. Sebelumnya: eksekusi NALI_MASTER_BUILD penuh Langkah 1-11 (bug fix, audit + perbaikan 13 URL mati, global search Cmd+K, SEO/RSS, claim ledger/related/depth, newsletter API + series nav + peta eksplorasi interaktif, sitasi + advanced arsip search + /topik, koreksi/catatan-backlog/changelog, internalScore + artikel Pesut Mahakam hasil deep-research). Semua gate hijau, produksi terverifikasi. Pushed `fa14264`. Lihat `NALI_BUILD_REPORT_2026-06-15.md`.*
