@@ -25,50 +25,6 @@ export interface BacklogEntry {
 
 export const RESEARCH_BACKLOG: BacklogEntry[] = [
   {
-    topik: "Lazarus species: apa itu, dan bagaimana sebuah spesies dinyatakan punah",
-    kategori: "alam",
-    status: "mengumpulkan-sumber",
-    sumberDitemukan: [
-      "Kriteria IUCN Red List (Extinct, Possibly Extinct)",
-      "Literatur tentang false absence dan effort survei",
-    ],
-    pertanyaanTerbuka: [
-      "Kenapa ketidakhadiran bukti bukan bukti ketiadaan?",
-      "Berapa lama tanpa catatan sampai sebuah spesies layak disebut punah?",
-    ],
-    estimasiTerbit: "Kuartal 3 2026",
-  },
-  {
-    topik: "Echidna Attenborough: hilang 60 tahun, muncul di kamera jebak Cyclops Papua",
-    kategori: "alam",
-    status: "mengumpulkan-sumber",
-    sumberDitemukan: [
-      "Oxford / Expedition Cyclops, November 2023",
-      "npj Biodiversity 2025 (rediscovery via camera-trap + pengetahuan adat)",
-      "Liputan Mongabay 2023",
-    ],
-    pertanyaanTerbuka: [
-      "Apa yang membuat status 'lost species' akhirnya ditutup secara meyakinkan?",
-      "Mengapa tetap dikategorikan Kritis meski ditemukan kembali?",
-    ],
-    estimasiTerbit: "Kuartal 3 2026",
-  },
-  {
-    topik: "Black-browed babbler: burung yang hilang 172 tahun di Kalimantan Selatan",
-    kategori: "alam",
-    status: "mengumpulkan-sumber",
-    sumberDitemukan: [
-      "BirdingASIA / Global Wildlife Conservation 2021",
-      "Spesimen tunggal 1840-an di Naturalis Biodiversity Center",
-      "American Bird Conservancy",
-    ],
-    pertanyaanTerbuka: [
-      "Bagaimana satu spesimen lama menyesatkan asal-usul spesies selama ratusan tahun?",
-      "Apa yang masih belum diketahui soal populasi dan sebarannya?",
-    ],
-    estimasiTerbit: "Kuartal 3 2026",
-  },
-  {
     topik: "Lebah raksasa Wallace: lebah terbesar dunia, tanpa catatan sejak 1981",
     kategori: "alam",
     status: "mengumpulkan-sumber",

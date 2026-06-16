@@ -62,7 +62,8 @@ Bertahan). Tidak perlu seri baru. Semua artikel klaster ini memakai
   Biodiversity 2025 (nature.com/articles/s44185-025-00086-6), Mongabay 2023.
 - Label keyakinan harapan: terverifikasi kuat.
 
-**A4. Black-browed babbler: burung yang hilang 172 tahun, ditemukan dua warga Kalimantan.**
+**A4. Black-browed babbler: burung yang hilang 172 tahun, ditemukan dua warga Kalimantan.** (SUDAH TERBIT)
+- Terbit: `black-browed-babbler-burung-hilang-172-tahun`, confidence high, 4 sumber.
 - Status: ditemukan kembali (Oktober 2020), Kalimantan Selatan.
 - Pertanyaan: bagaimana satu spesimen 1840-an (Naturalis) menyesatkan asal-usulnya
   selama ratusan tahun, lalu Suranto dan Fauzan menutup misterinya?
