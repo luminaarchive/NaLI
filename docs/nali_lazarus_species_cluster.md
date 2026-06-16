@@ -114,8 +114,23 @@ Bertahan). Tidak perlu seri baru. Semua artikel klaster ini memakai
     McPherson & Robinson 2012), foto tumbuhan hidup CC BY 2.0 (Alfindra Primaldhi). Bukan
     Lazarus klasik (ditandai jujur di limitations): spesies yang lama hanya diketahui dari
     SATU individu, lalu populasi kedua ditemukan 2011. Diversifikasi klaster ke tumbuhan.
-- **C3.** "Spesies yang masih hilang": daftar taksa Indonesia yang masih dicari,
-  menyambung ke modul Bukti Dicari dan Misi Riset.
+- **C3.** "Spesies yang masih hilang": daftar taksa Indonesia yang masih dicari. (SUDAH TERBIT)
+  - Terbit: `spesies-indonesia-yang-masih-hilang`, capstone klaster, confidence high,
+    4 sumber (OBC Lost Birds, Re:wild 25 most-wanted, Re:wild 126 lost birds, ABC
+    Search for Lost Birds), foto spesimen sikatan Rueck CC BY 3.0 (Nigel J. Collar).
+    Tiga still-lost: sikatan Rueck (Cyornis ruckii, 1918), biawak Zug (Varanus
+    zugorum, Halmahera), mandar Sharpe (Gallirallus sharpei). Klaim "sudah punah"
+    ditandai belum cukup bukti. Menaut internal ke /bukti-dicari + /misi + A1/babbler/
+    seriwang. Banggai crow SENGAJA tidak dipakai (sudah ditemukan kembali 2007).
+
+---
+
+## Status klaster (per 16 Juni 2026): LENGKAP untuk peta awal
+
+Wave 1: A1 lazarus-taxon, A2 harimau-jawa, A3 echidna, A4 black-browed-babbler. Semua terbit.
+Wave 2: B1 coelacanth (upgraded), B2 lebah-wallace; B3 badak-jawa & B4 pesut-mahakam sudah ada.
+Wave 3: C1 seriwang-sangihe, C2 nepenthes-pitopangii, C3 spesies-masih-hilang. Semua terbit.
+Total artikel terbit situs = 42. Klaster ini bisa diperdalam/diperluas, tapi peta awalnya tuntas.
 
 ---
 
