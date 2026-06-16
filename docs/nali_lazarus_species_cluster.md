@@ -103,8 +103,11 @@ Bertahan). Tidak perlu seri baru. Semua artikel klaster ini memakai
 
 ### Gelombang 3, perluasan (verifikasi kelayakan saat riset)
 
-- **C1.** Burung endemik Sangihe yang dikira punah (mis. Cerulean paradise-flycatcher),
-  ditemukan kembali akhir 1990-an. Verifikasi sumber.
+- **C1.** Seriwang Sangihe (Eutrichomyias rowleyi). (SUDAH TERBIT)
+  - Terbit: `seriwang-sangihe-burung-biru-yang-nyaris-punah`, confidence high, 4 sumber
+    (Riley 2002, BirdLife DataZone, Jakarta Post 2024 tambang, Rainforest Trust),
+    foto burung hidup CC0 (James Eaton). Sudut: ditemukan kembali 1998 tapi hutan
+    terakhirnya terancam tambang emas (klaim tambang ditandai "diperdebatkan").
 - **C2.** Rediscovery tumbuhan atau serangga Indonesia lain dengan bukti kuat
   (mis. Rafflesia atau endemik Sulawesi). Pilih yang sumbernya solid.
 - **C3.** "Spesies yang masih hilang": daftar taksa Indonesia yang masih dicari,
