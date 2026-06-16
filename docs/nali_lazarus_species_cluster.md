@@ -108,8 +108,12 @@ Bertahan). Tidak perlu seri baru. Semua artikel klaster ini memakai
     (Riley 2002, BirdLife DataZone, Jakarta Post 2024 tambang, Rainforest Trust),
     foto burung hidup CC0 (James Eaton). Sudut: ditemukan kembali 1998 tapi hutan
     terakhirnya terancam tambang emas (klaim tambang ditandai "diperdebatkan").
-- **C2.** Rediscovery tumbuhan atau serangga Indonesia lain dengan bukti kuat
-  (mis. Rafflesia atau endemik Sulawesi). Pilih yang sumbernya solid.
+- **C2.** Nepenthes pitopangii (kantong semar Sulawesi). (SUDAH TERBIT)
+  - Terbit: `nepenthes-pitopangii-kantong-semar-paling-langka-sulawesi`, confidence high,
+    4 sumber (Lee dkk. 2009 Gardens' Bulletin, IUCN Rentan, McPherson 2011 populasi kedua,
+    McPherson & Robinson 2012), foto tumbuhan hidup CC BY 2.0 (Alfindra Primaldhi). Bukan
+    Lazarus klasik (ditandai jujur di limitations): spesies yang lama hanya diketahui dari
+    SATU individu, lalu populasi kedua ditemukan 2011. Diversifikasi klaster ke tumbuhan.
 - **C3.** "Spesies yang masih hilang": daftar taksa Indonesia yang masih dicari,
   menyambung ke modul Bukti Dicari dan Misi Riset.
 
