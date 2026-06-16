@@ -25,20 +25,6 @@ export interface BacklogEntry {
 
 export const RESEARCH_BACKLOG: BacklogEntry[] = [
   {
-    topik: "Lebah raksasa Wallace: lebah terbesar dunia, tanpa catatan sejak 1981",
-    kategori: "alam",
-    status: "mengumpulkan-sumber",
-    sumberDitemukan: [
-      "Global Wildlife Conservation, Januari 2019 (rekaman hidup pertama)",
-      "Liputan Mongabay, Februari 2019",
-    ],
-    pertanyaanTerbuka: [
-      "Seberapa rapuh populasinya di Maluku Utara?",
-      "Bagaimana ancaman perdagangan kolektor memengaruhi kelangsungannya?",
-    ],
-    estimasiTerbit: "Kuartal 4 2026",
-  },
-  {
     topik: "Tumpang tindih peta konsesi dengan kawasan konservasi",
     kategori: "investigasi",
     status: "mengumpulkan-sumber",

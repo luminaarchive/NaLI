@@ -73,14 +73,19 @@ Bertahan). Tidak perlu seri baru. Semua artikel klaster ini memakai
 
 ### Gelombang 2, kasus ikonik global yang berakar di Indonesia
 
-**B1. Coelacanth Indonesia (Latimeria menadoensis): fosil hidup dari laut Sulawesi.**
+**B1. Coelacanth Indonesia (Latimeria menadoensis): fosil hidup dari laut Sulawesi.** (SUDAH TERBIT)
+- Terbit: `coelacanth-sulawesi-fosil-hidup-laut-dalam`, ditingkatkan ke standar klaster
+  (claim ledger spesifik, internalScore, related ke A1/B2/A4, kisah Erdmann 1997-1998
+  + estimasi divergensi 40-30 jt thn). Confidence high.
 - Status: ditemukan kembali / dikonfirmasi (1997 hingga 1998, Manado).
 - Pertanyaan: bagaimana ikan yang dikira punah 65 juta tahun ternyata spesies
   Indonesia tersendiri? Apa yang masih belum diketahui soal populasinya?
 - Sumber kandidat: deskripsi spesies (Pouyaud dkk. 1999), IUCN, literatur Latimeria.
 
-**B2. Lebah raksasa Wallace (Megachile pluto): lebah terbesar dunia, hilang sejak 1981.**
-- Status: ditemukan kembali (Januari 2019), Maluku Utara (Bacan).
+**B2. Lebah raksasa Wallace (Megachile pluto): lebah terbesar dunia, hilang sejak 1981.** (SUDAH TERBIT)
+- Terbit: `lebah-raksasa-wallace-megachile-pluto`, confidence high, 4 sumber, gambar
+  ilustrasi Smith 1860 (domain publik). Related ke A1, A4, B1.
+- Status: ditemukan kembali (Januari 2019), Halmahera, Maluku Utara (spesimen Wallace asli dari Bacan).
 - Pertanyaan: 38 tahun tanpa catatan, lalu satu betina difilmkan hidup. Seberapa
   rapuh populasinya dan apa ancaman perdagangannya?
 - Sumber kandidat: Global Wildlife Conservation 2019, Mongabay (Feb 2019), Wikipedia
