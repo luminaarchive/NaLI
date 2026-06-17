@@ -205,55 +205,6 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
         </div>
       </div>
 
-      {/* CATEGORY 1: licensed images actually displayed */}
-      {displayedImages.length > 0 && (
-        <div className="container-read pt-10">
-          <section className="border border-dashed border-ink/60 bg-paper p-5" aria-labelledby="gambar-artikel">
-            <h2 id="gambar-artikel" className="label text-ink/70">
-              Gambar artikel
-            </h2>
-            <div className="mt-5 space-y-7">
-              {displayedImages.map((img, i) => (
-                <figure key={`${img.src}-${i}`} data-article-visual="displayed-image">
-                  <div className="overflow-hidden border border-dashed border-ink/45 bg-ink-wash/30">
-                    <Image
-                      src={img.src ?? ""}
-                      alt={img.alt}
-                      width={1200}
-                      height={675}
-                      className="h-auto w-full object-contain"
-                      priority={i === 0}
-                    />
-                  </div>
-                  <figcaption data-visual-credit="true" className="mt-3">
-                    <p className="font-mono text-[0.76rem] leading-relaxed text-gray">
-                      <span className="text-ink-charcoal">{img.caption}</span>
-                    </p>
-                    <p className="mt-2 font-mono text-[0.68rem] leading-relaxed text-ink/60">
-                      {img.attribution}.{" "}
-                      <a href={img.sourceUrl} target="_blank" rel="noopener noreferrer" className="link-teal">
-                        Sumber
-                      </a>
-                      {img.licenseUrl ? (
-                        <>
-                          {", "}
-                          <a href={img.licenseUrl} target="_blank" rel="noopener noreferrer" className="link-teal">
-                            {img.license}
-                          </a>
-                        </>
-                      ) : (
-                        <>{`, ${img.license}`}</>
-                      )}
-                      {img.checkedAt && <span className="text-ink/40">, dicek {img.checkedAt}</span>}
-                    </p>
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-          </section>
-        </div>
-      )}
-
       {/* cover image fallback for DB-backed posts without structured image records */}
       {displayedImages.length === 0 && displayedDiagrams.length === 0 && article.coverImage && (
         <div className="container-read pt-10">
@@ -270,76 +221,9 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
         </div>
       )}
 
-      {/* internal explanatory diagrams, maps, or timelines */}
-      {displayedDiagrams.length > 0 && (
-        <div className="container-read pt-10">
-          <section className="border border-dashed border-ink/60 bg-paper p-5" aria-labelledby="diagram-penjelas">
-            <h2 id="diagram-penjelas" className="label text-ink/70">
-              Diagram penjelas
-            </h2>
-            <div className="mt-5 space-y-6">
-              {displayedDiagrams.map((diagram, i) => (
-                <figure
-                  key={`${diagram.title}-${i}`}
-                  data-article-visual="displayed-diagram"
-                  className="border-t border-dashed border-ink/35 pt-5 first:border-t-0 first:pt-0"
-                >
-                  <div className="overflow-hidden border border-dashed border-ink/45 bg-ink-wash/30">
-                    <Image
-                      src={diagram.src ?? ""}
-                      alt={diagram.alt}
-                      width={1200}
-                      height={675}
-                      className="h-auto w-full object-contain"
-                      priority={displayedImages.length === 0 && i === 0}
-                    />
-                  </div>
-                  <figcaption data-visual-credit="true" className="mt-3">
-                    <p className="font-display text-lg font-semibold uppercase leading-tight text-ink">
-                      {diagram.title}
-                    </p>
-                    <p className="mt-2 font-mono text-[0.76rem] leading-relaxed text-gray">
-                      {diagram.caption}
-                    </p>
-                  </figcaption>
-                  <ol className="mt-4 grid gap-2 sm:grid-cols-2">
-                    {diagram.items.map((item, itemIndex) => (
-                      <li
-                        key={`${item}-${itemIndex}`}
-                        className="border border-dashed border-ink/35 bg-ink-wash/35 p-3 font-mono text-[0.74rem] leading-relaxed text-ink-charcoal"
-                      >
-                        <span className="mr-2 text-ink/45">{String(itemIndex + 1).padStart(2, "0")}</span>
-                        {item}
-                      </li>
-                    ))}
-                  </ol>
-                  <p className="mt-4 font-mono text-[0.68rem] leading-relaxed text-ink/60">
-                    {diagram.attribution}.{" "}
-                    <a href={diagram.sourceUrl} target="_blank" rel="noopener noreferrer" className="link-teal">
-                      Sumber data
-                    </a>
-                    {diagram.licenseUrl ? (
-                      <>
-                        {", "}
-                        <a href={diagram.licenseUrl} target="_blank" rel="noopener noreferrer" className="link-teal">
-                          {diagram.license}
-                        </a>
-                      </>
-                    ) : (
-                      <>{`, ${diagram.license}`}</>
-                    )}
-                    {diagram.checkedAt && <span className="text-ink/40">, dicek {diagram.checkedAt}</span>}
-                  </p>
-                </figure>
-              ))}
-            </div>
-          </section>
-        </div>
-      )}
-
       {/* body */}
       <div className="container-read py-12 sm:py-16">
-        <MdxBody source={article.content} />
+        <MdxBody source={article.content} images={article.images} diagrams={article.diagrams} />
 
         {/* Claim Ledger (collapsible) */}
         {article.claimLedger && article.claimLedger.length > 0 && (
