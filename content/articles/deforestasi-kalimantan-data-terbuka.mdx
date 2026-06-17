@@ -81,8 +81,8 @@ claimLedger:
     status: terbatas
     sources: '[1][2][3]'
     explanation: >-
-      Peta menunjukkan di mana pohon hilang, bukan siapa pelakunya; menunjuk aktor
-      butuh overlay izin yang diverifikasi.
+      Peta menunjukkan di mana pohon hilang, bukan siapa pelakunya; menunjuk
+      aktor butuh overlay izin yang diverifikasi.
 externalVisuals:
   - title: Global Forest Change interactive map
     sourceUrl: 'https://glad.earthengine.app/view/global-forest-change'
@@ -128,39 +128,140 @@ diagrams:
       - >-
         Dashboard terbuka berguna untuk awal analisis, bukan bukti tunggal
         pelaku.
+images:
+  - src: >-
+      /images/deforestasi-kalimantan-data-terbuka/deforestasi-kalimantan-data-terbuka-img-1.jpg
+    title: Palm forest
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Palm_forest.jpg'
+    license: CC BY 2.5
+    attribution: Sandra Díaz
+    alt: >-
+      Lost Ecosystem Services and Vanishing Ecological Roles.Forest ecosystems
+      in the tropics and subtropics are being quickly replaced by industrial
+      crops 
+    caption: >-
+      Lost Ecosystem Services and Vanishing Ecological Roles.Forest ecosystems
+      in the tropics and subtropics are being quickly replaced by industrial
+      crops and plantations. This provides large amounts of go
+    checkedAt: '2026-06-17'
+    relatedArticleIds:
+      - deforestasi-kalimantan-data-terbuka
+    creator: Sandra Díaz
+  - src: >-
+      /images/deforestasi-kalimantan-data-terbuka/deforestasi-kalimantan-data-terbuka-img-2.JPG
+    title: Logs DSC 9204
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Logs_DSC_9204.JPG'
+    license: CC BY-SA 4.0
+    attribution: T. R. Shankar Raman
+    alt: >-
+      Logging in Sabah, Malaysian Borneo: tall dipterocarp rainforest trees are
+      most commonly felled
+    caption: >-
+      Logging in Sabah, Malaysian Borneo: tall dipterocarp rainforest trees are
+      most commonly felled
+    checkedAt: '2026-06-17'
+    relatedArticleIds:
+      - deforestasi-kalimantan-data-terbuka
+    creator: T. R. Shankar Raman
+  - src: >-
+      /images/deforestasi-kalimantan-data-terbuka/deforestasi-kalimantan-data-terbuka-img-3.JPG
+    title: Oil palm and rainforest fragment Borneo
+    sourceUrl: >-
+      https://commons.wikimedia.org/wiki/File:Oil_palm_and_rainforest_fragment_Borneo.JPG
+    license: CC BY-SA 4.0
+    attribution: T. R. Shankar Raman
+    alt: >-
+      Aerial view of a rainforest fragment amodst large expanse of oil palm
+      plantations in Sabah, Malaysian Borneo
+    caption: >-
+      Aerial view of a rainforest fragment amodst large expanse of oil palm
+      plantations in Sabah, Malaysian Borneo
+    checkedAt: '2026-06-17'
+    relatedArticleIds:
+      - deforestasi-kalimantan-data-terbuka
+    creator: T. R. Shankar Raman
+  - src: >-
+      /images/deforestasi-kalimantan-data-terbuka/deforestasi-kalimantan-data-terbuka-img-4.JPG
+    title: Oil palm clearing ground Borneo
+    sourceUrl: >-
+      https://commons.wikimedia.org/wiki/File:Oil_palm_clearing_ground_Borneo.JPG
+    license: CC BY-SA 4.0
+    attribution: T. R. Shankar Raman
+    alt: >-
+      Land cleared of tropical rainforest for establishment of oil palm
+      plantation in Sabah, Malaysian Borneo
+    caption: >-
+      Land cleared of tropical rainforest for establishment of oil palm
+      plantation in Sabah, Malaysian Borneo
+    checkedAt: '2026-06-17'
+    relatedArticleIds:
+      - deforestasi-kalimantan-data-terbuka
+    creator: T. R. Shankar Raman
 ---
-Peta kehilangan tutupan pohon Kalimantan sering terlihat tegas: warna merah, angka hektar, grafik menurun. Visual semacam itu membuat deforestasi terasa langsung terlihat. Tetapi data satelit tidak berbicara sendiri. Ia perlu definisi, periode, resolusi, dan konteks lahan.
+Peta kehilangan tutupan pohon di pulau Kalimantan sering kali menyajikan visualisasi yang sangat tegas. Tampilan warna merah menyala, grafik luasan hektar yang menurun, serta citra satelit sebelum dan sesudah penebangan menjadi konsumsi publik.
 
-Kalimantan memang menghadapi perubahan tutupan hutan yang besar, namun tidak setiap piksel kehilangan pohon berarti deforestasi hutan alam oleh aktor tertentu. Ada panen perkebunan, kebakaran, hutan tanaman, pembukaan baru, dan gangguan sementara. Data terbuka memberi pintu masuk, bukan vonis lengkap.
+Visualisasi yang mencolok semacam itu membuat kita merasa bahwa proses deforestasi langsung terbukti hanya lewat sekali lihat. Namun demikian, data satelit sesungguhnya tidak pernah bisa berbicara sendiri tanpa analisis mendalam.
 
-## Apa yang dilihat satelit
+Para peneliti membutuhkan definisi yang konsisten, rentang waktu yang jelas, resolusi spasial yang memadai, serta pemahaman tentang status hukum tanah. Kalimantan memang mengalami perubahan tutupan hutan secara dramatis dalam beberapa dekade terakhir.
 
-Dataset seperti Global Forest Watch dan Global Forest Change membaca perubahan tutupan pohon dari citra satelit. Keunggulannya jelas: luas, konsisten, dan dapat dibandingkan lintas waktu. Untuk wilayah sebesar Kalimantan, kemampuan ini sangat penting karena pengamatan manual tidak mungkin mencakup semua lokasi.
+Namun, tidak semua piksel kehilangan pohon pada citra satelit mengindikasikan tindakan deforestasi ilegal pada hutan alam primer. Kita harus memisahkan antara kegiatan panen perkebunan kayu, kebakaran hutan musiman, pembukaan lahan pertanian warga, dan kerusakan sementara.
 
-Namun yang dibaca adalah tutupan pohon, bukan selalu status hukum hutan atau sebab kehilangan. Piksel yang berubah perlu disandingkan dengan peta kawasan, izin, konsesi, kebakaran, dan pengetahuan lokal. Tanpa itu, angka dapat bergerak lebih cepat daripada kesimpulan.
+## Cara Kerja Satelit Pemantau Tutupan Pohon
 
-## Deforestasi sebagai istilah yang harus didefinisikan
+Teknologi modern seperti Global Forest Watch memanfaatkan citra dari satelit Landsat milik Amerika Serikat dan satelit Sentinel milik Uni Eropa. Satelit-satelit ini memotret seluruh permukaan bumi secara berkala untuk menangkap perubahan warna dan refleksi cahaya pada kanopi hutan.
 
-Deforestasi biasanya merujuk pada perubahan hutan menjadi penggunaan lain dalam jangka panjang. Kehilangan tutupan pohon dapat mencakup hal lebih luas. Perbedaan ini bukan permainan kata. Jika definisi tidak jelas, debat publik mudah berubah menjadi saling tuduh berdasarkan grafik yang sama.
+Algoritma komputer kemudian membandingkan foto dari waktu yang berbeda untuk mendeteksi hilangnya dedaunan hijau pada area berukuran 30x30 meter. Ketika tajuk pohon menghilang, sistem merekam koordinat tersebut sebagai titik peringatan kehilangan tutupan pohon.
 
-Untuk Kalimantan, definisi juga menyentuh hutan alam, hutan tanaman, perkebunan, dan lahan yang sudah lama dikelola. Data terbuka perlu dibaca bersama dokumen tata ruang dan izin sebelum dipakai untuk menunjuk pelaku atau menyimpulkan legalitas.
+Universitas Maryland memelopori sistem pemantauan ini dengan merilis data tahunan yang melacak tren global perubahan hutan sejak awal abad ke-21. Data terbuka ini memberikan manfaat luar biasa bagi pemantauan daerah terpencil yang sulit terjangkau patroli darat.
 
-## Kalimantan Barat sebagai contoh pembacaan awal
+Melalui dasbor digital ini, publik dapat mengamati fluktuasi kehilangan hutan dari komputer masing-masing tanpa harus pergi ke pedalaman. Kemudahan akses informasi ini mendemokratisasi pengawasan lingkungan hidup dan memperkuat transparansi data kehutanan secara nasional.
 
-Dashboard provinsi membantu melihat pola dan tren awal. Ia dapat menunjukkan tahun dengan kehilangan tinggi, sebaran kabupaten, atau wilayah yang perlu diperiksa lebih lanjut. Tetapi dashboard tidak menggantikan investigasi lapangan, dokumen izin, dan analisis sebab.
+## Perbedaan Deforestasi dan Kehilangan Tutupan Pohon
 
-Kekuatan data terbuka justru ada pada kemampuannya memandu pertanyaan. Wilayah mana yang berubah cepat? Apakah perubahan terjadi dekat jalan, sungai, konsesi, atau bekas kebakaran? Pertanyaan seperti ini lebih produktif daripada langsung menempelkan kesimpulan.
+Masyarakat sering menyamakan istilah kehilangan tutupan pohon dengan istilah deforestasi hutan alam primer, padahal keduanya memiliki makna berbeda. Kehilangan tutupan pohon merujuk pada hilangnya tajuk vegetasi kayu di atas ketinggian lima meter tanpa memandang jenis tanamannya.
 
-## Mengapa kehati-hatian tidak melemahkan isu
+Deforestasi memiliki makna yang lebih spesifik, yaitu konversi permanen hutan alam menjadi penggunaan lahan lain seperti perkebunan kelapa sawit atau tambang. Perbedaan konseptual ini sangat memengaruhi kesimpulan analisis kebijakan agraria yang diambil oleh para pengambil keputusan.
 
-Sebagian orang mengira definisi dan batasan membuat isu deforestasi tampak kurang genting. Padahal sebaliknya. Ketika istilah jelas, temuan menjadi lebih kuat. Pembaca dapat membedakan kehilangan tutupan pohon, deforestasi hutan alam, degradasi, dan rotasi tanaman.
+Sebagai contoh, ketika sebuah perusahaan hutan tanaman industri memanen pohon eukaliptus yang sengaja mereka tanam, satelit akan mencatatnya sebagai kehilangan pohon. Kejadian ini bukan merupakan deforestasi karena perusahaan akan menanam kembali benih pohon baru di lokasi yang sama.
 
-Kejelasan juga penting secara hukum. Menuduh perusahaan atau konsesi tertentu memerlukan dokumen lokasi dan izin yang diverifikasi. Tanpa itu, artikel lingkungan berisiko benar secara emosional tetapi lemah secara bukti.
+Sebaliknya, pembukaan hutan hujan primer untuk pembangunan jalan atau pemukiman baru merupakan tindakan deforestasi yang tidak dapat pulih dengan cepat. Kita harus menggunakan klasifikasi lahan yang tepat agar tidak mencampuradukkan aktivitas industri legal dengan kerusakan lingkungan ilegal.
 
-## Dua lompatan kesimpulan yang harus dihindari
+## Membaca Pola Historis dan Siklus Kebakaran Hutan
 
-Dua lompatan berpikir paling sering terjadi di isu ini. Pertama, menganggap peta satelit otomatis menunjuk pelaku. Peta hanya menunjukkan di mana tutupan pohon berubah, bukan niat, izin, atau sebabnya. Kedua, menyamakan semua kehilangan pohon dengan deforestasi hutan alam. Padahal panen perkebunan, hutan tanaman, dan kebakaran adalah hal berbeda, dan definisi inilah yang menentukan kesimpulan.
+Sejarah mencatat bahwa angka kehilangan tutupan pohon di Kalimantan melonjak sangat tinggi pada tahun-tahun terjadinya fenomena cuaca El Nino. Cuaca ekstrem ini membawa kemarau panjang yang mengeringkan vegetasi hutan dan memicu kebakaran hutan skala besar.
 
-Isu ini penting karena menyentuh banyak hal sekaligus: iklim, keanekaragaman hayati, masyarakat adat, ekonomi perkebunan, dan tata kelola. Data terbuka memberi warga alat untuk bertanya lebih tajam, selama pertanyaannya tidak melompati apa yang sebenarnya bisa dibuktikan data itu.
+Kebakaran hebat pada tahun 1997, 2015, dan 2019 menghanguskan jutaan hektar hutan rawa gambut dan hutan dataran rendah di Kalimantan Selatan dan Tengah. Satelit merekam kejadian bencana ini sebagai kehilangan tutupan pohon dalam skala masif di peta pemantauan.
 
-Untuk analisis yang benar-benar rinci, masih perlu ditambahkan: overlay izin, riwayat kebakaran, klasifikasi hutan, verifikasi lapangan, dan data tahun terbaru. Tulisan ini sengaja tidak menuduh aktor mana pun; ia hanya menunjukkan cara membaca data terbuka tanpa mengubahnya jadi tuduhan tanpa dokumen. Satelit membantu kita melihat Kalimantan dari atas, tapi keadilan terhadap data baru terjadi ketika gambar itu dibaca bersama definisi di lapangan. Deforestasi bukan sekadar warna merah di layar; ia adalah perubahan ruang hidup yang harus dijelaskan dengan teliti supaya bisa dipertanggungjawabkan.
+Bencana kebakaran hutan semacam ini menghasilkan kabut asap tebal yang mengganggu kesehatan jutaan warga dan menghentikan aktivitas penerbangan. Dampak ekologisnya sangat merusak karena struktur tanah gambut yang terbakar membutuhkan waktu ratusan tahun untuk kembali pulih.
+
+Analisis data terbuka membantu kita mengidentifikasi apakah hilangnya pohon terjadi akibat api tak terkendali atau akibat tebangan terencana. Pemahaman siklus iklim ini mencegah kita membuat kesimpulan keliru mengenai penyebab utama kerusakan hutan pada tahun tertentu.
+
+## Tantangan Menentukan Aktor di Balik Kerusakan Hutan
+
+Data terbuka dari satelit sangat efektif untuk menunjukkan lokasi persis terjadinya kerusakan vegetasi di tengah belantara Kalimantan. Namun, gambar satelit tidak memiliki kemampuan untuk menunjukkan nama pemilik lahan atau izin konsesi yang berlaku di area tersebut.
+
+Untuk mengidentifikasi pelaku pembukaan hutan, analis harus menggabungkan peta satelit dengan peta konsesi resmi dari Kementerian Lingkungan Hidup dan Kehutanan. Proses tumpang susun peta ini membutuhkan ketelitian tinggi agar tidak terjadi kesalahan penunjukan subjek hukum.
+
+Tantangan terbesar muncul karena peta batas wilayah konsesi sering kali tidak tersedia secara bebas untuk konsumsi publik akibat alasan kerahasiaan. Kurangnya transparansi dokumen tata ruang ini membatasi kemampuan warga sipil untuk melakukan pengawasan secara mandiri di lapangan.
+
+Oleh karena itu, warga tidak boleh langsung menuduh perusahaan tertentu hanya berdasarkan titik koordinat merah pada dasbor Global Forest Watch. Analisis hukum yang matang serta verifikasi lapangan tetap menjadi syarat mutlak dalam menyusun laporan investigasi lingkungan.
+
+## Dua Lompatan Berpikir yang Sering Terjadi
+
+Kita harus menghindari dua kesalahan logika yang paling sering muncul saat menerjemahkan data pemantauan hutan satelit. Lompatan berpikir pertama adalah menganggap setiap titik merah kehilangan pohon sebagai bukti adanya aktivitas kejahatan kehutanan.
+
+Titik merah tersebut bisa saja merupakan bagian dari izin pemanfaatan kayu yang sah atau rotasi panen perkebunan rakyat. Kita perlu memeriksa dokumen perizinan setempat untuk memastikan ada tidaknya pelanggaran hukum di lokasi perubahan tutupan tersebut.
+
+Lompatan berpikir kedua adalah menyamakan semua jenis ekosistem hutan yang hilang di bawah satu kategori kerusakan yang sama. Hilangnya satu hektar hutan alam primer jauh lebih merusak keanekaragaman hayati daripada hilangnya satu hektar hutan tanaman produksi.
+
+Hutan alam menyimpan kekayaan flora dan fauna endemik yang tidak mungkin tergantikan oleh homogenitas pohon perkebunan industri. Penilaian dampak ekologis harus selalu mempertimbangkan kualitas serta fungsi lingkungan hidup dari hutan yang mengalami kerusakan tersebut.
+
+## Menjaga Keseimbangan Hutan untuk Masa Depan
+
+Penggunaan data terbuka satelit telah mengubah cara kita memandang pertarungan menyelamatkan sisa hutan hujan tropis di pulau Kalimantan. Informasi digital ini memberikan kekuatan baru bagi komunitas lokal dan jurnalis untuk menyuarakan keadilan lingkungan hidup.
+
+Namun, efektivitas pengawasan ini sangat bergantung pada kedisiplinan kita dalam membaca data secara objektif dan menghindari generalisasi emosional. Kita harus terus mendesak pemerintah agar membuka akses peta perizinan lahan secara lebih luas dan transparan kepada publik.
+
+Penyelamatan hutan Kalimantan bukan sekadar upaya mempertahankan warna hijau pada peta digital, melainkan perjuangan melindungi ruang hidup manusia dan satwa. Hutan yang lestari menjamin ketersediaan air bersih, menjaga stabilitas iklim mikro, dan mencegah bencana banjir bandang di hilir.
+
+Melalui pemahaman data yang akurat, kita dapat merumuskan langkah perlindungan yang lebih tepat sasaran bagi kawasan konservasi yang tersisa. Komitmen merawat paru-paru dunia ini harus terwujud dalam kebijakan tata ruang yang menghargai hak hidup masyarakat adat setempat.

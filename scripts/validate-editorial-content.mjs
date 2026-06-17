@@ -154,6 +154,7 @@ function scanEmDashes() {
     ".git",
     ".next",
     ".vercel",
+    ".agents",
     "node_modules",
     "public",
     ".playwright-mcp",
