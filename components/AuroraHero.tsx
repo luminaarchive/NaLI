@@ -12,6 +12,16 @@ export function AuroraHero() {
     <div className="relative isolate overflow-hidden bg-[#03100d]">
       <AuroraFlow />
 
+      {/* background loop video blended with WebGL shader */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-25 mix-blend-screen"
+        src="/videos/hero.mp4"
+      />
+
       {/* legibility scrim behind the copy */}
       <div
         className="pointer-events-none absolute inset-0"
