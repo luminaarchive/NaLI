@@ -16,7 +16,7 @@ const SLUG_QUERIES = {
   "batavia-kota-tua-jakarta": "Batavia Kota Tua",
   "burung-maleo-sulawesi": "Macrocephalon maleo",
   "cenderawasih-papua-perdagangan-habitat": "Paradisaeidae",
-  "citarum-sungai-tercemar": "Citarum River pollution",
+  "citarum-sungai-tercemar": "Citarum",
   "deforestasi-kalimantan-data-terbuka": "Borneo rainforest deforestation",
   "dieng-kawah-gas-bahaya-senyap": "Kawah Sikidang Dieng",
   "gambut-indonesia-karbon-api-kabut": "Peatland Indonesia fire",
@@ -40,11 +40,17 @@ const SLUG_QUERIES = {
   "anak-krakatau-2018-runtuhan-tsunami": "Anak Krakatau 2018",
   "deforestasi-kalimantan": "Borneo deforestation",
   "harimau-jawa-lazarus-species": "Javan tiger",
-  "lazarus-taxon-bagaimana-kepunahan-dinyatakan": "Lazarus taxon animal",
+  "lazarus-taxon-bagaimana-kepunahan-dinyatakan": "Lazarus taxon",
   "lebah-raksasa-wallace-megachile-pluto": "Megachile pluto",
   "nepenthes-pitopangii-kantong-semar-paling-langka-sulawesi": "Nepenthes pitopangii",
   "seriwang-sangihe-burung-biru-yang-nyaris-punah": "Eutrichomyias rowleyi",
-  "spesies-indonesia-yang-masih-hilang": "extinct birds specimens"
+  "spesies-indonesia-yang-masih-hilang": "extinct birds specimens",
+  "black-browed-babbler-burung-hilang-172-tahun": "Malacocincla perspicillata",
+  "borobudur-arsip-restorasi-batu-air-pelestarian": "Borobudur",
+  "coelacanth-sulawesi-fosil-hidup-laut-dalam": "Latimeria menadoensis",
+  "echidna-attenborough-papua-ditemukan-kembali": "Zaglossus attenboroughi",
+  "ekspor-pasir-laut-pp-26-2023": "sand mining",
+  "pesut-mahakam-populasi-terakhir": "Orcaella brevirostris"
 };
 
 const HEADERS = {
