@@ -223,6 +223,54 @@ Mobile: hamburger menu. Desktop: horizontal nav.
 
 ---
 
+## EDITORIAL & WRITING STYLE GUIDELINES (PEDOMAN MUTLAK PENULISAN)
+
+Aturan mutlak penulisan artikel dan seri NaLI untuk menghindari kesan kaku, membosankan, atau terasa seperti "AI slop" dan "terjemahan mesin":
+
+1. **Jeda Visual & Skimming-Friendly**: 
+   - Paragraf pendek (maksimal 3-4 baris).
+   - Gunakan Sub-judul (headings) yang jelas untuk menandai poin bahasan.
+   - Gunakan teks tebal (bold), miring (italic), atau bullet points secara taktis untuk memberi penekanan.
+
+2. **Intro Lurus & Substantif**:
+   - Pembukaan langsung masuk ke inti masalah, tanpa basa-basi bertele-tele.
+   - Judul harus relevan dengan isi dan menjawab pertanyaan utama.
+
+3. **Gaya Bahasa Hidup & Dinamis**:
+   - Hindari kalimat kaku seperti robot/buku sekolah. Jelaskan jargon rumit dengan analogi sederhana.
+   - Variasikan panjang dan ritme kalimat (kombinasi kalimat pendek-panjang).
+   - Masukkan unsur persona, cerita nyata, atau studi kasus (Storytelling).
+
+4. **Konten Padat & Menjawab "So What?"**:
+   - Hindari pengulangan informasi demi jumlah kata.
+   - Berikan solusi nyata, insight baru, atau langkah konkret.
+   - Targetkan gaya bahasa secara jelas dan fokus pada esensi topik utama.
+
+5. **Kurangi Kalimat Pasif**:
+   - Gunakan kalimat aktif (contoh: *"Kamu bisa menemukan..."* bukan *"Solusi dapat ditemukan olehmu..."*).
+
+6. **Visualisasi Kaya & Sumber Berlisensi**:
+   - Gunakan lebih banyak gambar (minimal 4-5 foto per artikel panjang).
+   - Gambar wajib dicantumkan sumber dan kreditnya, terlepas dari tipe lisensinya.
+
+7. **Kesesuaian Tata Bahasa & EYD V**:
+   - **Konjungsi**: Dilarang menulis konjungsi intrakalimat (seperti *Tapi*, *Dan*, *Karena*, *Sehingga*) langsung di awal kalimat setelah tanda titik. Ganti dengan *Namun*, *Akan tetapi*, *Oleh karena itu*.
+   - **Kata Depan vs Imbuhan**: Bedakan tegas kata depan tempat (*di balik*, *di bawah*) dengan imbuhan pasif (*dikubur*, *ditimbun*, *dipotret*).
+   - **Kata Ganti**: Kata ganti *"Ia"* dan *"Dia"* hanya boleh merujuk pada manusia/makhluk hidup, bukan benda mati atau situs sejarah (seperti candi/monumen). Gunakan nama bendanya langsung (candi ini, Borobudur, monumen tersebut).
+   - **Sintaksis Alami**: Tulis dengan struktur SPOK asli Indonesia, jangan meniru tata bahasa Inggris yang memutar-mutar kalimat.
+   - **Kolokasi (Pasangan Kata Alami)**: Pilih padanan yang alami (contoh: relief itu *ditimbun* atau *dipahat*, bukan *dikubur*; abu vulkanik *digali* atau *dibersihkan*, bukan *dibuka*).
+   - **Lokalisasi Metafora**: Ganti metafora barat (seperti *postcard view*) ke istilah lokal yang akrab (*objek foto estetis*, *pajangan visual*).
+
+8. **Penutup Reflektif (Hantaman Gong)**:
+   - Paragraf penutup artikel long-form sejarah tidak boleh sekadar meringkas ulang secara kaku.
+   - Gunakan **Circular Ending** (memanggil kembali cerita pembuka/intro), jawab pertanyaan **"So What?"** (hubungkan dengan masa kini/depan), atau gunakan **Kontras Emosional** (misal: turis ramai vs kesunyian konservator).
+   - **Haram** memulai paragraf penutup dengan kata penanda malas seperti: *"Kesimpulannya,"*, *"Akhir kata,"*, atau *"Jadi dapat disimpulkan..."*.
+
+9. **Panjang Artikel**:
+   - Untuk artikel naratif mendalam, targetkan berkisar **1.200 - 1.400 kata** substantif, lengkap dengan 4-5 foto detail.
+
+---
+
 ## QUALITY GATES, ALL MUST PASS BEFORE BUILD IS DONE
 
 - [ ] `npm run build` passes with zero errors
