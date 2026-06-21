@@ -40,11 +40,24 @@ interface SimNode extends GraphNode {
   vy: number;
 }
 
+interface LabelBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  text: string;
+  cx: number;
+  cy: number;
+  focused: boolean;
+}
+
 /**
  * A self-organising knowledge web for the landing page. It settles with a
  * force layout, then keeps breathing with a slow rigid rotation so it always
- * looks alive without drifting apart. Hovering a node lights up its direct
- * connections; clicking opens the page behind it.
+ * looks alive without burning the CPU: the heavy O(n^2) physics only runs while
+ * settling, the idle loop is O(n), it pauses entirely when scrolled off-screen,
+ * and it draws without per-node shadow blur. Hovering a node lights up its
+ * direct connections; clicking opens the page behind it.
  */
 export function GraphShowcase({ graph }: { graph: KnowledgeGraph }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -53,11 +66,12 @@ export function GraphShowcase({ graph }: { graph: KnowledgeGraph }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const mobile = window.matchMedia("(max-width: 767px)").matches;
+    const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
 
     let W = 0;
     let H = 0;
@@ -73,20 +87,13 @@ export function GraphShowcase({ graph }: { graph: KnowledgeGraph }) {
     const nodes: SimNode[] = graph.nodes.map((n, i) => {
       const a = (i / graph.nodes.length) * Math.PI * 2;
       const r = 80 + Math.random() * 140;
-      return {
-        ...n,
-        x: W / 2 + Math.cos(a) * r,
-        y: H / 2 + Math.sin(a) * r,
-        vx: 0,
-        vy: 0,
-      };
+      return { ...n, x: W / 2 + Math.cos(a) * r, y: H / 2 + Math.sin(a) * r, vx: 0, vy: 0 };
     });
     const byId = new Map(nodes.map((n) => [n.id, n]));
     const links = graph.edges
       .map((e) => ({ s: byId.get(e.source)!, t: byId.get(e.target)! }))
       .filter((l) => l.s && l.t);
 
-    // adjacency, for hover highlighting
     const adj = new Map<string, Set<string>>();
     for (const l of links) {
       (adj.get(l.s.id) ?? adj.set(l.s.id, new Set()).get(l.s.id)!).add(l.t.id);
@@ -95,25 +102,28 @@ export function GraphShowcase({ graph }: { graph: KnowledgeGraph }) {
 
     const radius = (n: SimNode) => 3.5 + Math.min(9, n.degree ?? 1);
     const maxDeg = Math.max(1, ...nodes.map((n) => n.degree ?? 1));
-    // label only the meaningful hubs so the canvas stays tidy
     const hubThreshold = Math.max(4, Math.round(maxDeg * 0.45));
+    const maxIdleLabels = mobile ? 4 : 7;
+    // the hubs we would label when nothing is hovered, highest degree first
+    const idleHubs = nodes
+      .filter((n) => (n.degree ?? 0) >= hubThreshold)
+      .sort((a, b) => (b.degree ?? 0) - (a.degree ?? 0))
+      .slice(0, maxIdleLabels);
 
     let dragging: SimNode | null = null;
     let hover: SimNode | null = null;
-    let settle = 1; // 1 -> heavy layout, eases toward gentle idle
     let frame = 0;
+    let energizeUntil = reduce ? 0 : 240; // frames of active physics
 
-    const step = () => {
-      const k = settle; // layout strength
-      // repulsion
+    const physics = () => {
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const a = nodes[i];
           const b = nodes[j];
           let dx = a.x - b.x;
           let dy = a.y - b.y;
-          let d2 = dx * dx + dy * dy || 0.01;
-          const f = (1700 / d2) * (0.35 + 0.65 * k);
+          const d2 = dx * dx + dy * dy || 0.01;
+          const f = 1700 / d2;
           const d = Math.sqrt(d2);
           dx /= d;
           dy /= d;
@@ -123,7 +133,6 @@ export function GraphShowcase({ graph }: { graph: KnowledgeGraph }) {
           b.vy -= dy * f;
         }
       }
-      // springs
       for (const l of links) {
         let dx = l.t.x - l.s.x;
         let dy = l.t.y - l.s.y;
@@ -136,35 +145,11 @@ export function GraphShowcase({ graph }: { graph: KnowledgeGraph }) {
         l.t.vx -= dx * f;
         l.t.vy -= dy * f;
       }
-      // centering
       const cx = W / 2;
       const cy = H / 2;
       for (const n of nodes) {
         n.vx += (cx - n.x) * 0.004;
         n.vy += (cy - n.y) * 0.004;
-      }
-      // slow rigid rotation about the centroid keeps the web alive when settled
-      if (!reduce && settle < 0.4) {
-        let mx = 0;
-        let my = 0;
-        for (const n of nodes) {
-          mx += n.x;
-          my += n.y;
-        }
-        mx /= nodes.length;
-        my /= nodes.length;
-        const ang = 0.0011;
-        const cos = Math.cos(ang);
-        const sin = Math.sin(ang);
-        for (const n of nodes) {
-          if (n === dragging) continue;
-          const px = n.x - mx;
-          const py = n.y - my;
-          n.x = mx + px * cos - py * sin;
-          n.y = my + px * sin + py * cos;
-        }
-      }
-      for (const n of nodes) {
         if (n === dragging) {
           n.vx = 0;
           n.vy = 0;
@@ -178,7 +163,51 @@ export function GraphShowcase({ graph }: { graph: KnowledgeGraph }) {
         n.x = Math.max(pad, Math.min(W - pad, n.x));
         n.y = Math.max(pad, Math.min(H - pad, n.y));
       }
-      if (settle > 0.08) settle *= 0.985;
+    };
+
+    // cheap O(n) idle motion: a slow rigid rotation about the centroid
+    const idleMotion = () => {
+      let mx = 0;
+      let my = 0;
+      for (const n of nodes) {
+        mx += n.x;
+        my += n.y;
+      }
+      mx /= nodes.length;
+      my /= nodes.length;
+      const ang = 0.0009;
+      const cos = Math.cos(ang);
+      const sin = Math.sin(ang);
+      for (const n of nodes) {
+        if (n === dragging) continue;
+        const px = n.x - mx;
+        const py = n.y - my;
+        n.x = mx + px * cos - py * sin;
+        n.y = my + px * sin + py * cos;
+      }
+    };
+
+    const placeLabels = (focusId: string | undefined, lit: Set<string> | null): LabelBox[] => {
+      ctx.font = "10px ui-monospace, SFMono-Regular, monospace";
+      const candidates: SimNode[] = focusId
+        ? nodes.filter((n) => n.id === focusId || (lit ? lit.has(n.id) : false))
+        : idleHubs;
+      const placed: LabelBox[] = [];
+      for (const n of candidates) {
+        const text = n.label.length > 26 ? n.label.slice(0, 25) + "…" : n.label;
+        const w = ctx.measureText(text).width;
+        const r = radius(n);
+        const x = n.x + r + 5;
+        const y = n.y;
+        const box: LabelBox = { x, y: y - 7, w, h: 14, text, cx: x, cy: y, focused: n.id === focusId };
+        const clash = placed.some(
+          (p) => !(box.x > p.x + p.w || box.x + box.w < p.x || box.y > p.y + p.h || box.y + box.h < p.y),
+        );
+        if (clash) continue;
+        if (x + w > W - 4) box.cx = n.x - r - 5 - w; // flip leftwards near the edge
+        placed.push(box);
+      }
+      return placed;
     };
 
     const draw = () => {
@@ -188,7 +217,6 @@ export function GraphShowcase({ graph }: { graph: KnowledgeGraph }) {
       const focusId = (dragging ?? hover)?.id;
       const lit = focusId ? adj.get(focusId) ?? new Set<string>() : null;
 
-      // edges
       ctx.lineWidth = 1;
       for (const l of links) {
         const active = focusId && (l.s.id === focusId || l.t.id === focusId);
@@ -203,60 +231,70 @@ export function GraphShowcase({ graph }: { graph: KnowledgeGraph }) {
         ctx.stroke();
       }
 
-      // nodes
       for (const n of nodes) {
         const dim = focusId && n.id !== focusId && !(lit && lit.has(n.id));
         const r = radius(n);
         const col = colorOf(n);
+        if (!dim) {
+          // soft halo, far cheaper than ctx.shadowBlur
+          ctx.globalAlpha = 0.16;
+          ctx.fillStyle = col;
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, r * 2.1, 0, Math.PI * 2);
+          ctx.fill();
+        }
         ctx.globalAlpha = dim ? 0.22 : 1;
-        ctx.shadowBlur = dim ? 0 : 12;
-        ctx.shadowColor = col;
         ctx.fillStyle = col;
         ctx.beginPath();
         ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 0;
         if (n.id === focusId) {
-          ctx.globalAlpha = 1;
           ctx.strokeStyle = "rgba(255,255,255,0.85)";
           ctx.lineWidth = 1.5;
           ctx.beginPath();
           ctx.arc(n.x, n.y, r + 3, 0, Math.PI * 2);
           ctx.stroke();
         }
-        ctx.globalAlpha = 1;
       }
+      ctx.globalAlpha = 1;
 
-      // labels: hubs always, plus focus + its neighbours
+      // tidy, non-overlapping labels
       ctx.font = "10px ui-monospace, SFMono-Regular, monospace";
       ctx.textBaseline = "middle";
-      for (const n of nodes) {
-        const focused = n.id === focusId || (lit && lit.has(n.id));
-        const isHub = (n.degree ?? 0) >= hubThreshold;
-        if (!focused && !(isHub && !focusId)) continue;
-        const r = radius(n);
-        const label = n.label.length > 30 ? n.label.slice(0, 29) + "…" : n.label;
-        const tx = n.x + r + 5;
-        const ty = n.y;
+      for (const lb of placeLabels(focusId, lit)) {
         ctx.lineWidth = 3;
-        ctx.strokeStyle = "rgba(8,35,56,0.85)";
-        ctx.strokeText(label, tx, ty);
-        ctx.fillStyle = focused ? "#EAF2FB" : "rgba(220,232,245,0.72)";
-        ctx.fillText(label, tx, ty);
+        ctx.strokeStyle = "rgba(8,35,56,0.9)";
+        ctx.strokeText(lb.text, lb.cx, lb.cy);
+        ctx.fillStyle = lb.focused ? "#EAF2FB" : "rgba(220,232,245,0.78)";
+        ctx.fillText(lb.text, lb.cx, lb.cy);
       }
     };
 
     let raf = 0;
-    const loop = () => {
-      step();
+    let onScreen = true;
+    const tick = () => {
+      const energized = frame < energizeUntil;
+      if (energized) physics();
+      else if (!reduce) idleMotion();
       draw();
-      raf = requestAnimationFrame(loop);
+      frame++;
+      raf = requestAnimationFrame(tick);
     };
+    const start = () => {
+      if (!raf && onScreen && !document.hidden) raf = requestAnimationFrame(tick);
+    };
+    const stop = () => {
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
     if (reduce) {
-      for (let i = 0; i < 280; i++) step();
+      for (let i = 0; i < 240; i++) physics();
       draw();
     } else {
-      loop();
+      start();
     }
 
     // interaction
@@ -268,6 +306,10 @@ export function GraphShowcase({ graph }: { graph: KnowledgeGraph }) {
       nodes.find((n) => (n.x - x) ** 2 + (n.y - y) ** 2 <= (radius(n) + 6) ** 2) ?? null;
 
     let downAt = { x: 0, y: 0 };
+    const reenergize = () => {
+      energizeUntil = frame + 110;
+      if (reduce) draw();
+    };
     const onDown = (e: PointerEvent) => {
       const { x, y } = pos(e);
       downAt = { x, y };
@@ -282,11 +324,15 @@ export function GraphShowcase({ graph }: { graph: KnowledgeGraph }) {
       if (dragging) {
         dragging.x = Math.max(16, Math.min(W - 16, x));
         dragging.y = Math.max(16, Math.min(H - 16, y));
-        settle = Math.max(settle, 0.25); // nudge the layout back to life
+        reenergize();
         return;
       }
-      hover = hit(x, y);
-      canvas.style.cursor = hover ? "pointer" : "default";
+      const h = hit(x, y);
+      if (h !== hover) {
+        hover = h;
+        canvas.style.cursor = hover ? "pointer" : "default";
+        if (reduce) draw();
+      }
     };
     const onUp = (e: PointerEvent) => {
       const { x, y } = pos(e);
@@ -299,19 +345,41 @@ export function GraphShowcase({ graph }: { graph: KnowledgeGraph }) {
     canvas.addEventListener("pointermove", onMove);
     canvas.addEventListener("pointerup", onUp);
     canvas.addEventListener("pointerleave", () => {
-      hover = null;
-      canvas.style.cursor = "default";
+      if (hover) {
+        hover = null;
+        canvas.style.cursor = "default";
+        if (reduce) draw();
+      }
     });
+
+    // pause when off-screen or the tab is hidden
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        onScreen = entry.isIntersecting;
+        if (!reduce) (onScreen ? start : stop)();
+      },
+      { threshold: 0.01 },
+    );
+    io.observe(canvas);
+    const onVis = () => {
+      if (reduce) return;
+      if (document.hidden) stop();
+      else start();
+    };
+    document.addEventListener("visibilitychange", onVis);
 
     const ro = new ResizeObserver(() => {
       resize();
-      settle = Math.max(settle, 0.3);
+      reenergize();
+      if (reduce) draw();
     });
     ro.observe(canvas);
 
     return () => {
-      cancelAnimationFrame(raf);
+      stop();
+      io.disconnect();
       ro.disconnect();
+      document.removeEventListener("visibilitychange", onVis);
       canvas.removeEventListener("pointerdown", onDown);
       canvas.removeEventListener("pointermove", onMove);
       canvas.removeEventListener("pointerup", onUp);
@@ -321,7 +389,6 @@ export function GraphShowcase({ graph }: { graph: KnowledgeGraph }) {
 
   return (
     <div className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-navy-deep shadow-[0_30px_80px_-30px_rgba(8,35,56,0.7)]">
-      {/* soft radial glow behind the web */}
       <div
         className="pointer-events-none absolute inset-0 opacity-70"
         style={{
@@ -330,7 +397,6 @@ export function GraphShowcase({ graph }: { graph: KnowledgeGraph }) {
         }}
       />
 
-      {/* header row */}
       <div className="relative flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-5 py-4">
         <div className="text-left">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/45">
@@ -345,14 +411,12 @@ export function GraphShowcase({ graph }: { graph: KnowledgeGraph }) {
         </span>
       </div>
 
-      {/* canvas */}
       <canvas
         ref={canvasRef}
         className="block h-[360px] w-full touch-none md:h-[520px]"
-        aria-label="Graf jaringan pengetahuan NaLI. Hubungkan artikel, seri, dan topik."
+        aria-label="Graf jaringan pengetahuan NaLI. Menghubungkan artikel, seri, dan topik."
       />
 
-      {/* legend + hint + cta */}
       <div className="relative flex flex-wrap items-center justify-between gap-3 border-t border-white/10 px-5 py-3">
         <div className="flex flex-wrap gap-x-4 gap-y-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-white/55">
           {LEGEND.map((l) => (

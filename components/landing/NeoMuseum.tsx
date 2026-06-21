@@ -149,7 +149,7 @@ export function NeoMuseum({ chapters, navLinks, featured, graph }: Props) {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen((v) => !v)}
-              className="group relative z-[60] mt-3 flex flex-col items-end gap-[6px] md:hidden"
+              className="group relative z-[60] mt-3 flex flex-col items-end gap-[6px] lg:hidden"
               aria-label={isMobileMenuOpen ? "Tutup menu" : "Buka menu"}
               aria-expanded={isMobileMenuOpen}
             >
@@ -171,22 +171,22 @@ export function NeoMuseum({ chapters, navLinks, featured, graph }: Props) {
             variants={{ ...fadeUp, animate: { ...fadeUp.animate, transition: { duration: 0.8, ease: "easeOut" } } }}
             className="mt-8 flex items-start justify-between gap-6 font-mono text-[10px] uppercase tracking-[0.2em] text-gray md:text-[11px]"
           >
-            <div className="hidden w-[15%] leading-relaxed text-ink/70 md:block">
+            <div className="hidden w-[15%] leading-relaxed text-ink/70 lg:block">
               <p>Nature</p>
               <p>Life</p>
               <p>Intelligence</p>
             </div>
 
-            <ArrowRight size={14} strokeWidth={1} className="mt-1 hidden w-[5%] text-gray-light md:block" />
+            <ArrowRight size={14} strokeWidth={1} className="mt-1 hidden w-[5%] text-gray-light lg:block" />
 
-            <p className="flex-1 leading-relaxed text-ink/80 md:w-[30%] md:flex-none">
+            <p className="flex-1 leading-relaxed text-ink/80 lg:w-[30%] lg:flex-none">
               Jurnal riset terbuka tentang alam, sejarah, dan investigasi
               Indonesia. Tiap klaim membawa sumber, label keyakinan, dan batasan.
             </p>
 
-            <ArrowRight size={14} strokeWidth={1} className="mt-1 hidden w-[5%] text-gray-light md:block" />
+            <ArrowRight size={14} strokeWidth={1} className="mt-1 hidden w-[5%] text-gray-light lg:block" />
 
-            <div className="hidden w-[15%] flex-col items-start gap-2 md:flex">
+            <div className="hidden w-[15%] flex-col items-start gap-2 lg:flex">
               {navLinks.slice(0, 5).map((l) => (
                 <Link
                   key={l.href}
@@ -212,7 +212,7 @@ export function NeoMuseum({ chapters, navLinks, featured, graph }: Props) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="absolute inset-x-0 top-[5.5rem] z-50 border-b border-rule bg-paper px-6 py-8 shadow-xl md:hidden"
+              className="absolute inset-x-0 top-[5.5rem] z-50 border-b border-rule bg-paper px-6 py-8 shadow-xl lg:hidden"
             >
               <ul className="space-y-6 font-mono text-sm uppercase tracking-[0.2em] text-ink-black">
                 {navLinks.map((l) => (
@@ -245,7 +245,7 @@ export function NeoMuseum({ chapters, navLinks, featured, graph }: Props) {
 
           <motion.h2
             variants={fadeUp}
-            className="mt-5 font-display text-[2.5rem] font-normal leading-[1] tracking-tight text-ink-black sm:text-[3.25rem] md:text-[5rem]"
+            className="mt-5 font-display text-[2.5rem] font-normal leading-[1] tracking-tight text-ink-black sm:text-[3.25rem] md:text-[4rem] lg:text-[5rem]"
           >
             BUKTI
             <br />
@@ -279,7 +279,7 @@ export function NeoMuseum({ chapters, navLinks, featured, graph }: Props) {
           initial="initial"
           animate="animate"
           variants={{ animate: { transition: { staggerChildren: 0.15, delayChildren: 0.9 } } }}
-          className="absolute right-16 top-[21rem] z-10 hidden w-[210px] md:flex md:flex-col md:gap-8"
+          className="absolute right-12 top-[22rem] z-10 hidden w-[210px] lg:flex lg:flex-col lg:gap-8 xl:right-16"
         >
           <motion.div variants={fadeUp}>
             <p className="font-mono text-[10px] uppercase tracking-widest text-gray-light">Sorotan</p>
@@ -317,7 +317,7 @@ export function NeoMuseum({ chapters, navLinks, featured, graph }: Props) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.2, duration: 0.8, ease: "easeOut" }}
-          className="absolute bottom-10 left-10 z-10 hidden items-center gap-3 md:left-16 md:flex"
+          className="absolute bottom-10 left-10 z-10 hidden items-center gap-3 lg:left-16 lg:flex"
         >
           <span className="flex h-12 w-12 items-center justify-center rounded-full border border-rule">
             <span className="flex gap-[4px]">
