@@ -135,6 +135,30 @@
   .prose-nali a {
     @apply link-teal;
   }
+  /* Wikipedia-style auto-links: clearly blue and clickable, distinct from ink */
+  .prose-nali a.wikilink,
+  a.wikilink {
+    color: #1d5fb8;
+    text-decoration: none;
+    border-bottom: 1px solid rgb(29 95 184 / 0.35);
+    transition: color var(--dur-hover) var(--ease-settle),
+      border-color var(--dur-hover) var(--ease-settle);
+  }
+  .prose-nali a.wikilink:hover,
+  a.wikilink:hover {
+    color: #15457f;
+    border-bottom-color: #15457f;
+  }
+  :is(.dark) .prose-nali a.wikilink,
+  :is(.dark) a.wikilink {
+    color: #6db4ff;
+    border-bottom-color: rgb(109 180 255 / 0.4);
+  }
+  :is(.dark) .prose-nali a.wikilink:hover,
+  :is(.dark) a.wikilink:hover {
+    color: #a9d2ff;
+    border-bottom-color: #a9d2ff;
+  }
   .prose-nali strong {
     @apply font-semibold text-ink-black;
   }

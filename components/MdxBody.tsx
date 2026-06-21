@@ -4,11 +4,16 @@ import Image from "next/image";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
 import type { ArticleImage, ArticleDiagram } from "@/lib/types";
+import { remarkAutolink, type Entity } from "@/lib/wikilinks";
 
 interface MdxBodyProps {
   source: string;
   images?: ArticleImage[];
   diagrams?: ArticleDiagram[];
+  /** Entity index for Wikipedia-style auto-linking (optional). */
+  entities?: Entity[];
+  /** Current page href, so an article never auto-links to itself. */
+  selfHref?: string;
 }
 
 const baseComponents = {
@@ -23,7 +28,7 @@ const baseComponents = {
   },
 };
 
-export function MdxBody({ source, images = [], diagrams = [] }: MdxBodyProps) {
+export function MdxBody({ source, images = [], diagrams = [], entities, selfHref }: MdxBodyProps) {
   const customComponents = {
     ...baseComponents,
     img: (props: React.ComponentProps<"img">) => {
@@ -151,7 +156,10 @@ export function MdxBody({ source, images = [], diagrams = [] }: MdxBodyProps) {
         options={{
           mdxOptions: {
             format: "md",
-            remarkPlugins: [remarkGfm],
+            remarkPlugins:
+              entities && entities.length > 0
+                ? [remarkGfm, [remarkAutolink, { entities, selfHref }]]
+                : [remarkGfm],
             rehypePlugins: [rehypeSlug],
           },
         }}

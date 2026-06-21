@@ -26,8 +26,8 @@ export function KnowledgeShelves({ shelves }: { shelves: Shelf[] }) {
 
       <div className="flex flex-col gap-12">
         {shelves.map((shelf) => (
-          <div key={shelf.key}>
-            <div className="mx-auto mb-4 flex max-w-[1240px] items-baseline justify-between gap-4 px-5">
+          <div key={shelf.key} className="mx-auto w-full max-w-[1240px]">
+            <div className="mb-4 flex items-baseline justify-between gap-4 px-5 md:px-8">
               <h3 className="font-display text-xl font-bold uppercase tracking-tight text-ink-black md:text-2xl">
                 {shelf.title}
               </h3>
@@ -40,8 +40,7 @@ export function KnowledgeShelves({ shelves }: { shelves: Shelf[] }) {
               </Link>
             </div>
 
-            <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <div className="hidden shrink-0 sm:block sm:w-[max(0px,calc((100vw-1240px)/2-1.25rem))]" aria-hidden />
+            <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 [scrollbar-width:none] [mask-image:linear-gradient(to_right,transparent,black_20px,black_calc(100%-20px),transparent)] md:px-8 [&::-webkit-scrollbar]:hidden">
               {shelf.items.map((article) => (
                 <ShelfCard key={article.slug} article={article} />
               ))}

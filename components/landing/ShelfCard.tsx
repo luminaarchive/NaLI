@@ -23,8 +23,10 @@ export function ShelfCard({ article }: { article: ArticleMeta }) {
             alt=""
             fill
             sizes="300px"
-            className="object-cover duotone-ink transition-transform duration-500 group-hover:scale-[1.03]"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           />
+          {/* soft blur-fade so the colour photo melts into the card */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-paper/85 to-transparent backdrop-blur-[1px] [mask-image:linear-gradient(to_top,black,transparent)]" />
         </div>
       ) : null}
 

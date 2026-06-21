@@ -46,7 +46,7 @@ export function RabbitHole({ surprise }: { surprise?: ArticleMeta }) {
                     alt=""
                     fill
                     sizes="(max-width: 1024px) 100vw, 600px"
-                    className="object-cover duotone-ink transition-transform duration-500 group-hover:scale-[1.03]"
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   />
                 </div>
               ) : null}

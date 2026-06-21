@@ -25,6 +25,7 @@ import { BookmarkButton } from "@/components/article/BookmarkButton";
 import { RabbitHole } from "@/components/article/RabbitHole";
 import { QuickRead } from "@/components/article/QuickRead";
 import { ReadingProgress } from "@/components/article/ReadingProgress";
+import { buildEntityIndex } from "@/lib/wikilinks";
 import { CATEGORY_LABEL, CLAIM_STATUS_LABEL, type ClaimStatus } from "@/lib/types";
 
 /** Stable per-slug index so the "Coba sudut lain" pick is consistent per article. */
@@ -113,6 +114,10 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
   })();
   const surprise =
     surprisePool.length > 0 ? surprisePool[slugHash(article.slug) % surprisePool.length] : undefined;
+
+  // Wikipedia-style inline links across the body
+  const entities = buildEntityIndex(allArticles);
+  const selfHref = `/articles/${article.slug}`;
   // resolve cited source IDs to archive entries for clickable Claim Ledger links
   const allSources = getAllSources();
   const citedSources = (article.sourceIds ?? [])
@@ -262,7 +267,13 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
 
       {/* body */}
       <div id="isi" className="container-read scroll-mt-24 py-12 sm:py-16">
-        <MdxBody source={article.content} images={article.images} diagrams={article.diagrams} />
+        <MdxBody
+          source={article.content}
+          images={article.images}
+          diagrams={article.diagrams}
+          entities={entities}
+          selfHref={selfHref}
+        />
 
         {/* Claim Ledger (collapsible) */}
         {article.claimLedger && article.claimLedger.length > 0 && (
