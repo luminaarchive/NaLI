@@ -39,11 +39,15 @@
 
   html {
     -webkit-text-size-adjust: 100%;
+    /* clip (not hidden) so a stray wide child never causes a mobile h-scrollbar,
+       without turning body into a scroll container (keeps sticky nav working) */
+    overflow-x: clip;
   }
 
   body {
     @apply bg-paper font-mono text-ink-charcoal antialiased;
     font-feature-settings: "kern", "liga", "calt";
+    overflow-x: clip;
   }
 
   ::selection {

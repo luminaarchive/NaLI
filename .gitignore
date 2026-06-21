@@ -46,3 +46,6 @@ yarn-error.log*
 .claude/
 .codex/
 .playwright-mcp/
+
+# original brand artwork (large; processed into public/brand)
+brand-source/

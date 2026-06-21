@@ -32,11 +32,11 @@ export function Nav() {
     <header className="sticky top-0 z-50 bg-paper">
       <nav className="relative mx-auto flex h-16 max-w-[1240px] items-center justify-between px-5 lg:justify-center">
         {/* mobile brand */}
-        <Link href="/" className="flex items-center gap-2 text-ink lg:hidden" aria-label="NaLI, Nature Life Intelligence, beranda">
-          <NaliMark className="h-7 w-auto" />
-          <span className="flex flex-col leading-none">
+        <Link href="/" className="flex min-w-0 items-center gap-2 text-ink lg:hidden" aria-label="NaLI, Nature Life Intelligence, beranda">
+          <NaliMark className="h-7 w-auto shrink-0" />
+          <span className="flex min-w-0 flex-col leading-none">
             <span className="font-display text-lg font-semibold tracking-tight text-ink-black">NaLI</span>
-            <span className="mt-0.5 font-mono text-[0.5rem] uppercase tracking-[0.16em] text-ink/70">
+            <span className="mt-0.5 hidden truncate font-mono text-[0.5rem] uppercase tracking-[0.16em] text-ink/70 min-[400px]:block">
               Nature Life Intelligence
             </span>
           </span>

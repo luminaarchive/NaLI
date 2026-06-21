@@ -168,7 +168,7 @@ export function NeoMuseum({ chapters, navLinks, featured }: Props) {
             variants={{ ...fadeUp, animate: { ...fadeUp.animate, transition: { duration: 0.8, ease: "easeOut" } } }}
             className="mt-8 flex items-start justify-between gap-6 font-mono text-[10px] uppercase tracking-[0.2em] text-gray md:text-[11px]"
           >
-            <div className="w-[15%] leading-relaxed text-ink/70">
+            <div className="hidden w-[15%] leading-relaxed text-ink/70 md:block">
               <p>Nature</p>
               <p>Life</p>
               <p>Intelligence</p>
@@ -233,7 +233,7 @@ export function NeoMuseum({ chapters, navLinks, featured }: Props) {
           initial="initial"
           animate="animate"
           variants={{ animate: { transition: { staggerChildren: 0.15, delayChildren: 0.6 } } }}
-          className="relative z-10 mt-20 w-full max-w-[340px] px-10 sm:mt-28 md:mt-32 md:px-16"
+          className="relative z-10 mt-20 w-full max-w-[340px] px-6 sm:mt-28 sm:px-10 md:mt-32 md:px-16"
         >
           <motion.div variants={fadeUp} className="flex items-center gap-3 font-mono text-xs text-ink/60">
             <span>01</span>
@@ -242,7 +242,7 @@ export function NeoMuseum({ chapters, navLinks, featured }: Props) {
 
           <motion.h2
             variants={fadeUp}
-            className="mt-5 font-display text-[3.5rem] font-normal leading-[1] tracking-tight text-ink-black md:text-[5rem]"
+            className="mt-5 font-display text-[2.5rem] font-normal leading-[1] tracking-tight text-ink-black sm:text-[3.25rem] md:text-[5rem]"
           >
             BUKTI
             <br />
@@ -391,7 +391,7 @@ export function NeoMuseum({ chapters, navLinks, featured }: Props) {
           transition={{ duration: 1.4, ease: "easeOut" }}
           className="pointer-events-none absolute left-1/2 top-0 z-0 w-[110vw] -translate-x-1/2 md:w-[640px]"
         >
-          <NaliMark className="mx-auto h-auto w-[60%] text-white/[0.06] md:w-[60%]" />
+          <NaliMark variant="white" className="mx-auto h-auto w-[55%] opacity-[0.07]" />
         </motion.div>
 
         {/* 3B heading area */}
