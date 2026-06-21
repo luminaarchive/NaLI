@@ -40,6 +40,7 @@
     "three": "^0.184.0"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/typography": "^0.5.15",
     "@types/node": "^20.14.0",
     "@types/react": "^18.3.3",
