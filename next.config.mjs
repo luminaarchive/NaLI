@@ -1,4 +1,7 @@
 /** @type {import('next').NextConfig} */
+const __impeccableLiveDev =
+  process.env.NODE_ENV === "development" ? " http://localhost:8400" : "";
+
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -32,8 +35,8 @@ const nextConfig = {
       "img-src 'self' data: blob: https://*.supabase.co",
       "font-src 'self' data:",
       "style-src 'self' 'unsafe-inline'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
-      "connect-src 'self' https://*.supabase.co https://va.vercel-scripts.com https://vitals.vercel-insights.com",
+      `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com${__impeccableLiveDev}`,
+      `connect-src 'self' https://*.supabase.co https://va.vercel-scripts.com https://vitals.vercel-insights.com${__impeccableLiveDev}`,
       "frame-src 'none'",
       "upgrade-insecure-requests",
     ].join("; ");

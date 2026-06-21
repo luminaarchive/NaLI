@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-21T04:37:00Z",
+  "title": "Design System: NaLI by NatIve",
+  "extensions": {
+    "colorMeta": {
+      "paper": { "role": "neutral", "displayName": "Paper Background", "canonical": "oklch(100% 0 0)" },
+      "ink": { "role": "primary", "displayName": "Archive Teal Ink", "canonical": "oklch(56.7% 0.165 174)" },
+      "ink-deep": { "role": "primary", "displayName": "Deep Teal Ink", "canonical": "oklch(45.5% 0.133 174)" },
+      "ink-wash": { "role": "neutral", "displayName": "Ink Wash Tint", "canonical": "oklch(96.3% 0.024 174)" },
+      "ink-black": { "role": "neutral", "displayName": "Ink Black", "canonical": "oklch(17.8% 0 0)" },
+      "ink-charcoal": { "role": "neutral", "displayName": "Ink Charcoal", "canonical": "oklch(23% 0 0)" },
+      "gray": { "role": "neutral", "displayName": "Archive Gray", "canonical": "oklch(34.8% 0.015 174)" },
+      "gray-light": { "role": "neutral", "displayName": "Archive Gray Light", "canonical": "oklch(67.5% 0.01 174)" },
+      "rule": { "role": "neutral", "displayName": "Rule Border", "canonical": "oklch(81.2% 0.04 174)" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display Font", "purpose": "Serif font for H1s, titles, and main headings." },
+      "body": { "displayName": "Body Font", "purpose": "Monospace font for all research prose and copy." },
+      "label": { "displayName": "Label Font", "purpose": "Monospace font for metadata, tags, and small captions." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "ease-settle", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Standard easing curve for all entrance motions." },
+      { "name": "dur-micro", "value": "120ms", "purpose": "Duration for micro-interactions." },
+      { "name": "dur-hover", "value": "250ms", "purpose": "Duration for hover states." },
+      { "name": "dur-entrance", "value": "600ms", "purpose": "Duration for entry fade animations." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Standard sharp flat primary action button.",
+      "html": "<button class=\"ds-btn-primary\">Artikel Terbaru</button>",
+      "css": ".ds-btn-primary { background-color: #0e8268; color: #ffffff; border-radius: 0px; padding: 8px 16px; font-family: ui-monospace, monospace; font-size: 0.8rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.14em; border: none; cursor: pointer; transition: background-color 250ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-btn-primary:hover { background-color: #085e4b; }"
+    },
+    {
+      "name": "Article Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Dashed border article snippet card with hover state.",
+      "html": "<article class=\"ds-article-card\"><div class=\"ds-card-meta\"><span class=\"ds-label\">No. 001 · Alam</span><span class=\"ds-read-time\">5 mnt</span></div><h3 class=\"ds-card-title\">Api Biru Kawah Ijen</h3><p class=\"ds-card-summary\">Laporan riset geologi tentang fenomena api biru di kawah Gunung Ijen, Jawa Timur.</p><div class=\"ds-card-footer\"><time class=\"ds-date\">21 Jun 2026</time><span class=\"ds-badge\"><span class=\"ds-badge-dot\"></span>High</span></div></article>",
+      "css": ".ds-article-card { border: 1px dashed rgba(14, 130, 104, 0.7); background-color: #ffffff; padding: 24px; display: flex; flex-direction: column; border-radius: 0px; cursor: pointer; transition: background-color 250ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-article-card:hover { background-color: #e9f6f1; } .ds-card-meta { display: flex; justify-content: space-between; margin-bottom: 12px; } .ds-label { font-family: ui-monospace, monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.18em; color: #33373d; } .ds-read-time { font-family: ui-monospace, monospace; font-size: 0.7rem; color: #33373d; } .ds-card-title { font-family: Fraunces, Georgia, serif; font-size: 1.25rem; font-weight: 700; text-transform: uppercase; line-height: 1.3; margin: 0 0 12px 0; color: #0e8268; } .ds-article-card:hover .ds-card-title { text-decoration: underline; text-underline-offset: 4px; } .ds-card-summary { font-family: ui-monospace, monospace; font-size: 0.78rem; line-height: 1.6; color: #33373d; margin: 0 0 16px 0; flex-grow: 1; } .ds-card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed rgba(14, 130, 104, 0.4); padding-top: 12px; } .ds-date { font-family: ui-monospace, monospace; font-size: 0.7rem; text-transform: uppercase; color: #33373d; } .ds-badge { display: inline-flex; align-items: center; gap: 6px; border: 1px dashed rgba(14, 130, 104, 0.6); background-color: #ffffff; padding: 2px 8px; font-family: ui-monospace, monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.14em; color: #085e4b; } .ds-badge-dot { width: 6px; height: 6px; background-color: #2dd4a7; display: inline-block; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Archive Ink Field-Journal",
+    "overview": "NaLI by NatIve's design system evokes the tactile, rigorous feel of a physical archival folder, open-science field report, or academic journal printed with high-quality green-teal ink on raw white paper. The layout emphasizes structure, documentation, and high credibility.",
+    "keyCharacteristics": [
+      "Flat & Sharp: Absolute omission of rounded corners and box-shadows.",
+      "Teal Monoculture: Primary colors are strictly derived from the teal ink spectrum, contrasting against pure paper backgrounds.",
+      "Archive Taxonomy: Uses structural indicators like dashed borders, index numbering, and confidence labels to present articles as verified research files."
+    ],
+    "rules": [
+      { "name": "The Single Accent Rule", "body": "Only one accent color family (Teal) is allowed. Accent colors outside this ramp (except for standard validation indicators) are prohibited.", "section": "colors" },
+      { "name": "The Ink-Wash Contrast Rule", "body": "Highlight layers must use a transparency of the primary ink (Ink Wash) or a direct background shade. Gray-scale hover backgrounds on tinted paper are prohibited.", "section": "colors" },
+      { "name": "The Monospace Prose Rule", "body": "All body copy and prose must be set in monospace (IBM Plex Mono) to emphasize the research-journal character. Proportional sans-serif body copy is forbidden.", "section": "typography" },
+      { "name": "The Flat Print Rule", "body": "All cards, dropdowns, and components must lie flat on the paper surface. Depth is represented using borders, background tints, or horizontal lines, never with shadows or blurs.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use dashed borders for borders and section dividers.",
+      "Do set all interactive buttons and cards to a sharp 0px border-radius.",
+      "Do preserve body text length within 68ch to maintain high readability.",
+      "Do apply a duotone teal filter on photography to maintain a cohesive editorial visual style."
+    ],
+    "donts": [
+      "Don't use card drop shadows or blurred glassmorphism.",
+      "Don't use proportional sans-serif fonts for body prose.",
+      "Don't use decorative side-stripe border accents on cards or alerts.",
+      "Don't use tiny uppercase tracked eyebrows as generic kickers on every single section. Only use metadata subtitles when they convey literal taxonomy."
+    ]
+  }
+}

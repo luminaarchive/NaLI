@@ -12,14 +12,14 @@ export function ArticleCard({
   index?: number;
 }) {
   return (
-    <article className="group relative flex flex-col border border-dashed border-ink/70 bg-paper p-6 transition-colors hover:bg-ink-wash">
+    <article className="group relative flex flex-col border border-dashed border-ink/70 bg-paper p-6 transition-colors hover:bg-ink-wash focus-within:bg-ink-wash">
       <div className="mb-3 flex items-start justify-between gap-3">
         <span className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-gray">
           {typeof index === "number" ? `No. ${String(index + 1).padStart(3, "0")} · ` : ""}
           {CATEGORY_LABEL[article.category]}
         </span>
         <span className="flex shrink-0 items-center gap-2 font-mono text-[0.7rem] text-gray">
-          <span className="border border-dashed border-ink/40 px-1 text-[0.6rem] uppercase tracking-[0.1em] text-ink/70">
+          <span className="border border-dashed border-ink/40 px-1 text-[0.6rem] uppercase tracking-[0.1em] text-ink">
             {DEPTH_LABEL[articleDepth(article.readingMinutes)]}
           </span>
           {article.readingMinutes} mnt
@@ -32,7 +32,7 @@ export function ArticleCard({
         </Link>
       </h3>
 
-      <p className="mt-3 line-clamp-3 flex-1 font-mono text-[0.78rem] leading-relaxed text-gray">
+      <p className="mt-3 line-clamp-3 flex-1 font-mono text-[0.82rem] leading-relaxed text-ink-charcoal">
         {article.summary || article.subtitle}
       </p>
 

@@ -119,7 +119,7 @@ export default async function HomePage() {
             </div>
             <Link
               href="/articles"
-              className="inline-flex items-center gap-2 border border-dashed border-ink/70 px-5 py-3 font-mono text-[0.78rem] font-semibold uppercase tracking-[0.1em] text-ink transition-colors hover:bg-ink hover:text-paper"
+              className="inline-flex items-center gap-2 border border-dashed border-ink/70 px-5 py-3 font-mono text-[0.78rem] font-semibold uppercase tracking-[0.1em] text-ink transition-colors hover:bg-ink-wash"
             >
               Semua artikel
               <ArrowRight className="h-4 w-4" strokeWidth={1.8} aria-hidden />
@@ -181,7 +181,7 @@ export default async function HomePage() {
             {WHY.map((w) => (
               <div key={w.title} className={`${CARD} flex flex-col p-7`}>
                 <h3 className="font-display text-xl font-bold uppercase text-ink">{w.title}</h3>
-                <p className="mt-3 flex-1 font-mono text-[0.82rem] leading-relaxed text-gray">
+                <p className="mt-3 flex-1 font-mono text-[0.85rem] leading-relaxed text-ink-charcoal">
                   {w.desc}
                 </p>
               </div>
@@ -214,7 +214,7 @@ export default async function HomePage() {
                 <h3 className="mt-4 font-display text-2xl font-bold uppercase text-ink">
                   {p.title}
                 </h3>
-                <p className="mt-3 flex-1 font-mono text-[0.82rem] leading-relaxed text-gray">
+                <p className="mt-3 flex-1 font-mono text-[0.85rem] leading-relaxed text-ink-charcoal">
                   {p.desc}
                 </p>
                 <span className="mt-6 inline-flex items-center gap-2 font-mono text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-ink-deep group-hover:gap-3">
@@ -236,7 +236,7 @@ export default async function HomePage() {
               <h2 className="mt-3 font-display text-2xl font-bold uppercase text-ink sm:text-3xl">
                 {sourceCount} sumber, bisa diperiksa siapa pun
               </h2>
-              <p className="mt-3 max-w-xl font-mono text-[0.85rem] leading-relaxed text-gray">
+              <p className="mt-3 max-w-xl font-mono text-[0.88rem] leading-relaxed text-ink-charcoal">
                 Jurnal, arsip, buku, dan laporan di balik tiap tulisan, terbuka untuk
                 kamu telusuri sendiri. Atau lihat denyut riset kami di Ruang Kendali.
               </p>
