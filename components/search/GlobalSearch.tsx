@@ -40,8 +40,8 @@ export function SearchTrigger({ variant = "icon" }: { variant?: "icon" | "bar" }
       title="Cari (⌘K)"
     >
       <Search className="h-4 w-4" strokeWidth={1.7} aria-hidden />
-      <span className="hidden lg:inline">Cari</span>
-      <kbd className="hidden border border-ink/30 px-1 text-[0.6rem] text-ink/60 lg:inline">⌘K</kbd>
+      <span className="hidden xl:inline">Cari</span>
+      <kbd className="hidden border border-ink/30 px-1 text-[0.6rem] text-ink/60 xl:inline">⌘K</kbd>
     </button>
   );
 }

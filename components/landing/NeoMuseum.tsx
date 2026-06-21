@@ -20,6 +20,8 @@ import { NaliMark } from "@/components/brand/NaliMark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { GlobalSearch, SearchTrigger } from "@/components/search/GlobalSearch";
 import { SandTransitionImage } from "@/components/landing/SandTransitionImage";
+import { GraphShowcase } from "@/components/graph/GraphShowcase";
+import type { KnowledgeGraph } from "@/lib/graph";
 
 export type Chapter = {
   name: string;
@@ -32,6 +34,7 @@ type Props = {
   chapters: Chapter[];
   navLinks: { href: string; label: string }[];
   featured: { title: string; subtitle: string; href: string; label: string; sources: string };
+  graph: KnowledgeGraph;
 };
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
@@ -58,7 +61,7 @@ const PILLS = [
   { icon: BookOpen, label: "Metodologi", href: "/metodologi" },
 ];
 
-export function NeoMuseum({ chapters, navLinks, featured }: Props) {
+export function NeoMuseum({ chapters, navLinks, featured, graph }: Props) {
   const [showVideo, setShowVideo] = useState(false);
   const [activeChapter, setActiveChapter] = useState(
     chapters.length > 2 ? 2 : 0
@@ -369,7 +372,16 @@ export function NeoMuseum({ chapters, navLinks, featured }: Props) {
           ))}
         </motion.div>
 
-        <div className="min-h-[120px] w-full md:min-h-[260px]" />
+        {/* knowledge web: the exploration map, on display */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.9, ease: EASE }}
+          className="w-full max-w-[1100px] px-6 pb-24 md:pb-28"
+        >
+          <GraphShowcase graph={graph} />
+        </motion.div>
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden items-end justify-between px-8 pb-8 md:flex md:px-16 md:pb-12">
           <p className="font-mono text-[10px] font-medium uppercase tracking-widest text-gray-light">

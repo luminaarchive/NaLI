@@ -30,25 +30,25 @@ export function Nav() {
 
   return (
     <header className="sticky top-0 z-50 bg-paper">
-      <nav className="relative mx-auto flex h-16 max-w-[1240px] items-center justify-between px-5 lg:justify-center">
-        {/* mobile brand */}
-        <Link href="/" className="flex min-w-0 items-center gap-2 text-ink lg:hidden" aria-label="NaLI, Nature Life Intelligence, beranda">
+      <nav className="relative mx-auto flex h-16 max-w-[1240px] items-center gap-4 px-5">
+        {/* brand, left aligned on all sizes (doubles as the home link) */}
+        <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2 text-ink" aria-label="NaLI, Nature Life Intelligence, beranda">
           <NaliMark className="h-7 w-auto shrink-0" />
           <span className="flex min-w-0 flex-col leading-none">
             <span className="font-display text-lg font-semibold tracking-tight text-ink-black">NaLI</span>
-            <span className="mt-0.5 hidden truncate font-mono text-[0.5rem] uppercase tracking-[0.16em] text-ink/70 min-[400px]:block">
+            <span className="mt-0.5 hidden truncate font-mono text-[0.5rem] uppercase tracking-[0.16em] text-ink/70 min-[400px]:block lg:hidden xl:block">
               Nature Life Intelligence
             </span>
           </span>
         </Link>
 
-        {/* desktop: centered serif caps, archive style */}
-        <ul className="hidden items-center gap-7 lg:flex">
-          {LINKS.map((link) => (
+        {/* desktop: centered serif caps, archive style, between brand + controls */}
+        <ul className="hidden flex-1 items-center justify-center gap-4 lg:flex xl:gap-6">
+          {NAV_LINKS.map((link) => (
             <li key={link.href}>
               <Link
                 href={link.href}
-                className={`font-display text-[0.82rem] font-semibold uppercase tracking-[0.08em] transition-colors ${
+                className={`whitespace-nowrap font-display text-[0.82rem] font-semibold uppercase tracking-[0.08em] transition-colors ${
                   isActive(link.href)
                     ? "text-ink-black underline decoration-2 underline-offset-4"
                     : "text-ink hover:text-ink-deep link-underline"
@@ -60,14 +60,14 @@ export function Nav() {
           ))}
         </ul>
 
-        {/* search + theme toggle, desktop, anchored right of the centered links */}
-        <div className="absolute right-5 top-1/2 hidden -translate-y-1/2 items-center gap-2 lg:flex">
+        {/* search + theme toggle, desktop, in flow on the right */}
+        <div className="hidden shrink-0 items-center gap-2 lg:flex">
           <SearchTrigger />
           <ThemeToggle />
         </div>
 
         {/* mobile: search + theme toggle + hamburger */}
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="ml-auto flex items-center gap-2 lg:hidden">
           <SearchTrigger />
           <ThemeToggle />
           <button

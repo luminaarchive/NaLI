@@ -118,3 +118,79 @@ export async function buildKnowledgeGraph(): Promise<KnowledgeGraph> {
 
   return { nodes: [...nodes.values()], edges, tags, years };
 }
+
+/**
+ * A leaner, curated graph for the landing showcase: articles, the series and
+ * shared-topic hubs that bind them, and the explicit article-to-article
+ * relations. Sources are intentionally left out (there are hundreds) so the web
+ * stays legible and clearly shows how the writing connects to itself.
+ */
+export async function buildShowcaseGraph(): Promise<KnowledgeGraph> {
+  const articles = await getAllArticles();
+
+  const nodes = new Map<string, GraphNode>();
+  const edges: GraphEdge[] = [];
+  const add = (n: GraphNode) => {
+    if (!nodes.has(n.id)) nodes.set(n.id, n);
+  };
+
+  const tagCount = new Map<string, number>();
+  for (const a of articles) for (const t of a.tags) tagCount.set(t, (tagCount.get(t) ?? 0) + 1);
+  const sharedTags = new Set([...tagCount.entries()].filter(([, c]) => c >= 2).map(([t]) => t));
+
+  for (const a of articles) {
+    const id = `a:${a.slug}`;
+    add({
+      id,
+      type: "artikel",
+      label: a.title,
+      href: `/articles/${a.slug}`,
+      category: a.category,
+      year: new Date(a.date).getFullYear(),
+      tags: a.tags,
+      series: a.series,
+      excerpt: a.summary || a.subtitle,
+    });
+
+    for (const s of a.series ?? []) {
+      const series = SERIES.find((x) => x.slug === s);
+      if (!series) continue;
+      const sid = `s:${series.slug}`;
+      add({ id: sid, type: "seri", label: series.title, href: "/seri", excerpt: series.promise });
+      edges.push({ source: id, target: sid, relasi: "bagian dari seri" });
+    }
+
+    for (const t of a.tags) {
+      if (!sharedTags.has(t)) continue;
+      const tid = `t:${t}`;
+      add({ id: tid, type: "topik", label: t, href: `/topik/${slugifyTag(t)}`, excerpt: `Topik: ${t}` });
+      edges.push({ source: id, target: tid, relasi: "topik sama" });
+    }
+  }
+
+  // explicit article-to-article relations (deduped, both endpoints must exist)
+  const seen = new Set<string>();
+  for (const a of articles) {
+    for (const r of a.related ?? []) {
+      const sid = `a:${a.slug}`;
+      const tid = `a:${r.slug}`;
+      if (!nodes.has(tid)) continue;
+      const key = [sid, tid].sort().join("|");
+      if (seen.has(key)) continue;
+      seen.add(key);
+      edges.push({ source: sid, target: tid, relasi: r.relasi || "terkait" });
+    }
+  }
+
+  for (const e of edges) {
+    const s = nodes.get(e.source);
+    const t = nodes.get(e.target);
+    if (s) s.degree = (s.degree ?? 0) + 1;
+    if (t) t.degree = (t.degree ?? 0) + 1;
+  }
+
+  const years = [...new Set(articles.map((a) => new Date(a.date).getFullYear()))].sort();
+  const tags = [...sharedTags].sort((a, b) => a.localeCompare(b));
+
+  return { nodes: [...nodes.values()], edges, tags, years };
+}

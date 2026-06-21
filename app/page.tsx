@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getAllArticles } from "@/lib/content";
 import { NAV_LINKS } from "@/lib/site";
+import { buildShowcaseGraph } from "@/lib/graph";
 import { NeoMuseum, type Chapter } from "@/components/landing/NeoMuseum";
 import type { ArticleMeta } from "@/lib/types";
 
@@ -24,6 +25,7 @@ function cover(a: ArticleMeta): string | undefined {
 
 export default async function HomePage() {
   const articles = await getAllArticles();
+  const graph = await buildShowcaseGraph();
 
   // Chapters = newest published articles that carry a real (licensed) image.
   const withImages = articles.filter((a) => Boolean(cover(a)));
@@ -64,6 +66,6 @@ export default async function HomePage() {
       };
 
   return (
-    <NeoMuseum chapters={chapters} navLinks={NAV_LINKS} featured={featured} />
+    <NeoMuseum chapters={chapters} navLinks={NAV_LINKS} featured={featured} graph={graph} />
   );
 }

@@ -116,6 +116,10 @@ export function KnowledgeGraph({ graph }: { graph: KnowledgeGraph }) {
       .map((e) => ({ s: byId.get(e.source)!, t: byId.get(e.target)! }))
       .filter((l) => l.s && l.t);
     const radius = (n: SimNode) => 4 + Math.min(8, (n.degree ?? 1));
+    // only label the genuine hubs so dense graphs stay readable
+    const maxDeg = Math.max(1, ...nodes.map((n) => n.degree ?? 1));
+    const hubThreshold = Math.max(5, Math.round(maxDeg * 0.5));
+    const haloColor = dark ? "rgba(8,18,15,0.85)" : "rgba(255,255,255,0.85)";
 
     let dragging: SimNode | null = null;
     let hover: SimNode | null = null;
@@ -206,12 +210,17 @@ export function KnowledgeGraph({ graph }: { graph: KnowledgeGraph }) {
           ctx.stroke();
         }
         // labels for hubs / hovered / selected
-        if (n === hover || n.id === selId || (n.degree ?? 0) >= 4) {
+        if (n === hover || n.id === selId || (n.degree ?? 0) >= hubThreshold) {
           ctx.globalAlpha = dim ? 0.35 : 1;
-          ctx.fillStyle = labelColor;
           ctx.font = "10px ui-monospace, monospace";
           const label = n.label.length > 28 ? n.label.slice(0, 27) + "…" : n.label;
-          ctx.fillText(label, n.x + radius(n) + 3, n.y + 3);
+          const tx = n.x + radius(n) + 4;
+          const ty = n.y + 3;
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = haloColor;
+          ctx.strokeText(label, tx, ty);
+          ctx.fillStyle = labelColor;
+          ctx.fillText(label, tx, ty);
         }
         ctx.globalAlpha = 1;
       }
