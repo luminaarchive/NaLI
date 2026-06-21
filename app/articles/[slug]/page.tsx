@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   getArticleBySlug,
+  getAllArticles,
   getRelatedArticles,
   getContextualRelated,
   getAllSources,
@@ -19,7 +20,17 @@ import { SourceList } from "@/components/SourceList";
 import { SeriesNavigation } from "@/components/SeriesNavigation";
 import { CitationModal } from "@/components/CitationModal";
 import { ArticleCard } from "@/components/ArticleCard";
+import { ReadingTracker } from "@/components/article/ReadingTracker";
+import { BookmarkButton } from "@/components/article/BookmarkButton";
+import { RabbitHole } from "@/components/article/RabbitHole";
 import { CATEGORY_LABEL, CLAIM_STATUS_LABEL, type ClaimStatus } from "@/lib/types";
+
+/** Stable per-slug index so the "Coba sudut lain" pick is consistent per article. */
+function slugHash(slug: string): number {
+  let h = 0;
+  for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) >>> 0;
+  return h;
+}
 
 type Params = { slug: string };
 
@@ -86,6 +97,20 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
     contextualRelated.length > 0 ? [] : await getRelatedArticles(article);
   const depth = articleDepth(article.readingMinutes);
   const seriesNav = await getSeriesNavigation(article.slug);
+
+  // "Coba sudut lain": prefer an open-question article from another angle, so the
+  // foot of every piece offers a fresh, deterministic jump-off.
+  const allArticles = await getAllArticles();
+  const surprisePool = (() => {
+    const open = allArticles.filter(
+      (a) => a.slug !== article.slug && (a.confidence === "needs-verification" || a.confidence === "low"),
+    );
+    const cross = allArticles.filter((a) => a.slug !== article.slug && a.category !== article.category);
+    const base = open.length > 0 ? open : cross.length > 0 ? cross : allArticles.filter((a) => a.slug !== article.slug);
+    return base;
+  })();
+  const surprise =
+    surprisePool.length > 0 ? surprisePool[slugHash(article.slug) % surprisePool.length] : undefined;
   // resolve cited source IDs to archive entries for clickable Claim Ledger links
   const allSources = getAllSources();
   const citedSources = (article.sourceIds ?? [])
@@ -111,6 +136,7 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
 
   return (
     <article>
+      <ReadingTracker slug={article.slug} title={article.title} category={article.category} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
@@ -175,10 +201,11 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
             </p>
           )}
 
-          <div className="mt-6">
+          <div className="mt-6 flex flex-wrap items-center gap-3">
             <CitationModal
               item={{ title: article.title, slug: article.slug, date: article.date, kind: "articles" }}
             />
+            <BookmarkButton slug={article.slug} />
           </div>
         </div>
       </header>
@@ -490,6 +517,9 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
           </div>
         </section>
       )}
+
+      {/* rabbit-hole: never let the reader hit a dead end */}
+      <RabbitHole surprise={surprise} />
     </article>
   );
 }

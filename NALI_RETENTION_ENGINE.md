@@ -169,7 +169,12 @@ Tujuan: turunkan bounce dari "12 menit membaca". Beri level konsumsi.
       Hook = standfirst subtitle (sentence-case), bukan clickbait. Diaudit lewat
       taste-skill: eyebrow per-rak dibuang, nomor section eyebrow dilepas.
       Gate hijau, verifikasi desktop+mobile.
-- [ ] PART 2
+- [x] PART 2 - localStorage reading memory (lib/reading-history.ts), ReadingTracker,
+      BookmarkButton (artikel header), RabbitHole "Lanjutkan eksplorasi" di kaki tiap
+      artikel (surprise pick deterministik + 4 pintu eksplorasi), ContinueRail di landing
+      (Lanjutkan membaca + rekomendasi sekategori, render after-mount). Gate hijau,
+      verifikasi desktop+mobile. Catatan: artikel punya hydration warning #418/#423 yang
+      PRE-EXISTING (sama persis di produksi tanpa Part 2), tidak diintroduksi sesi ini.
 - [ ] PART 3
 
 Catatan: kerjakan per part, verifikasi, commit, baru lanjut. Update checklist + bagian

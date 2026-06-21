@@ -7,6 +7,7 @@ import { buildShelves } from "@/lib/shelves";
 import { NeoMuseum, type Chapter } from "@/components/landing/NeoMuseum";
 import { DailyBand } from "@/components/landing/DailyBand";
 import { KnowledgeShelves } from "@/components/landing/KnowledgeShelves";
+import { ContinueRail, type RailArticle } from "@/components/landing/ContinueRail";
 import type { ArticleMeta } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -32,6 +33,12 @@ export default async function HomePage() {
   const graph = await buildShowcaseGraph();
   const daily = getDaily(articles);
   const shelves = await buildShelves(articles);
+  const railPool: RailArticle[] = articles.map((a) => ({
+    slug: a.slug,
+    title: a.title,
+    category: a.category,
+    subtitle: a.subtitle,
+  }));
 
   // Chapters = newest published articles that carry a real (licensed) image.
   const withImages = articles.filter((a) => Boolean(cover(a)));
@@ -79,6 +86,7 @@ export default async function HomePage() {
       graph={graph}
       extras={
         <>
+          <ContinueRail pool={railPool} />
           <DailyBand daily={daily} />
           <KnowledgeShelves shelves={shelves} />
         </>
