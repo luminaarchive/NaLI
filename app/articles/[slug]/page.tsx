@@ -23,6 +23,8 @@ import { ArticleCard } from "@/components/ArticleCard";
 import { ReadingTracker } from "@/components/article/ReadingTracker";
 import { BookmarkButton } from "@/components/article/BookmarkButton";
 import { RabbitHole } from "@/components/article/RabbitHole";
+import { QuickRead } from "@/components/article/QuickRead";
+import { ReadingProgress } from "@/components/article/ReadingProgress";
 import { CATEGORY_LABEL, CLAIM_STATUS_LABEL, type ClaimStatus } from "@/lib/types";
 
 /** Stable per-slug index so the "Coba sudut lain" pick is consistent per article. */
@@ -136,6 +138,7 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
 
   return (
     <article>
+      <ReadingProgress />
       <ReadingTracker slug={article.slug} title={article.title} category={article.category} />
       <script
         type="application/ld+json"
@@ -210,6 +213,15 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
         </div>
       </header>
 
+      {/* quick read: 30-second entry into a long piece */}
+      <div className="container-read pt-8">
+        <QuickRead
+          summary={article.summary}
+          readingMinutes={article.readingMinutes}
+          claimLedger={article.claimLedger}
+        />
+      </div>
+
       {/* series progress + next-article navigation (F4.2) */}
       {seriesNav.length > 0 && (
         <div className="container-read pt-8">
@@ -249,7 +261,7 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
       )}
 
       {/* body */}
-      <div className="container-read py-12 sm:py-16">
+      <div id="isi" className="container-read scroll-mt-24 py-12 sm:py-16">
         <MdxBody source={article.content} images={article.images} diagrams={article.diagrams} />
 
         {/* Claim Ledger (collapsible) */}

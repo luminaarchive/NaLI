@@ -175,7 +175,13 @@ Tujuan: turunkan bounce dari "12 menit membaca". Beri level konsumsi.
       (Lanjutkan membaca + rekomendasi sekategori, render after-mount). Gate hijau,
       verifikasi desktop+mobile. Catatan: artikel punya hydration warning #418/#423 yang
       PRE-EXISTING (sama persis di produksi tanpa Part 2), tidak diintroduksi sesi ini.
-- [ ] PART 3
+- [x] PART 3 - QuickRead (Ringkasan 30 detik = summary, Inti 1 menit = claim ledger
+      via <details>, Baca lengkap -> #isi) di atas artikel + ReadingProgress bar
+      (framer-motion useScroll/useSpring, hemat, tanpa scroll listener). Gate hijau,
+      verifikasi desktop (progress bar tracking) + mobile (no overflow).
+
+SEMUA PART SELESAI. Tindak lanjut terpisah: hydration #418/#423 pre-existing di
+artikel (lihat chip background task).
 
 Catatan: kerjakan per part, verifikasi, commit, baru lanjut. Update checklist + bagian
 SESSION LOG di CLAUDE.md tiap part selesai.
