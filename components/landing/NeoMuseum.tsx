@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -35,6 +35,8 @@ type Props = {
   navLinks: { href: string; label: string }[];
   featured: { title: string; subtitle: string; href: string; label: string; sources: string };
   graph: KnowledgeGraph;
+  /** Server-rendered sections (daily band, shelves) inserted after the explore section. */
+  extras?: ReactNode;
 };
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
@@ -61,7 +63,7 @@ const PILLS = [
   { icon: BookOpen, label: "Metodologi", href: "/metodologi" },
 ];
 
-export function NeoMuseum({ chapters, navLinks, featured, graph }: Props) {
+export function NeoMuseum({ chapters, navLinks, featured, graph, extras }: Props) {
   const [showVideo, setShowVideo] = useState(false);
   const [activeChapter, setActiveChapter] = useState(
     chapters.length > 2 ? 2 : 0
@@ -392,6 +394,9 @@ export function NeoMuseum({ chapters, navLinks, featured, graph }: Props) {
           </p>
         </div>
       </section>
+
+      {/* ============ DAILY + SHELVES (server-rendered, additive) =============== */}
+      {extras}
 
       {/* ===================== SECTION 3: ANCIENT COLLECTION ==================== */}
       <section className="relative z-30 flex w-full flex-col bg-navy-deep text-white">

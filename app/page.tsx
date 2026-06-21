@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import { getAllArticles } from "@/lib/content";
 import { NAV_LINKS } from "@/lib/site";
 import { buildShowcaseGraph } from "@/lib/graph";
+import { getDaily } from "@/lib/daily";
+import { buildShelves } from "@/lib/shelves";
 import { NeoMuseum, type Chapter } from "@/components/landing/NeoMuseum";
+import { DailyBand } from "@/components/landing/DailyBand";
+import { KnowledgeShelves } from "@/components/landing/KnowledgeShelves";
 import type { ArticleMeta } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -26,6 +30,8 @@ function cover(a: ArticleMeta): string | undefined {
 export default async function HomePage() {
   const articles = await getAllArticles();
   const graph = await buildShowcaseGraph();
+  const daily = getDaily(articles);
+  const shelves = await buildShelves(articles);
 
   // Chapters = newest published articles that carry a real (licensed) image.
   const withImages = articles.filter((a) => Boolean(cover(a)));
@@ -66,6 +72,17 @@ export default async function HomePage() {
       };
 
   return (
-    <NeoMuseum chapters={chapters} navLinks={NAV_LINKS} featured={featured} graph={graph} />
+    <NeoMuseum
+      chapters={chapters}
+      navLinks={NAV_LINKS}
+      featured={featured}
+      graph={graph}
+      extras={
+        <>
+          <DailyBand daily={daily} />
+          <KnowledgeShelves shelves={shelves} />
+        </>
+      }
+    />
   );
 }
