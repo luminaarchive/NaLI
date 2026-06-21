@@ -12,6 +12,7 @@ import {
   ArrowRight,
   type LucideIcon,
 } from "lucide-react";
+import { NaliMark } from "@/components/brand/NaliMark";
 
 export interface TentangStat {
   value: number;
@@ -172,20 +173,10 @@ export function TentangSection({ stats }: { stats: TentangStat[] }) {
         {/* center: archive plate */}
         <div className="order-first flex items-start justify-center md:order-none">
           <div className="w-full max-w-xs border border-dashed border-ink/70 bg-paper p-7 text-center motion-safe:animate-fade-up">
-            <svg viewBox="0 0 96 96" className="mx-auto h-24 w-24 text-ink" aria-hidden>
-              <circle cx="48" cy="48" r="44" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray="5 3" />
-              <circle cx="48" cy="48" r="34" fill="none" stroke="currentColor" strokeWidth="1" />
-              <text x="48" y="44" textAnchor="middle" fontSize="16" fontWeight="700" fill="currentColor" fontFamily="var(--font-display)">
-                NaLI
-              </text>
-              <text x="48" y="60" textAnchor="middle" fontSize="7.5" letterSpacing="1.5" fill="currentColor" fontFamily="var(--font-mono)">
-                BY NATIVE
-              </text>
-              <path d="M 20 70 Q 48 84 76 70" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            </svg>
-            <p className="mt-5 font-display text-lg font-bold uppercase text-ink">NaLI by NatIve</p>
+            <NaliMark className="mx-auto h-24 w-auto text-ink" />
+            <p className="mt-5 font-display text-lg font-bold uppercase text-ink">NaLI</p>
             <p className="mt-1 font-mono text-[0.72rem] uppercase tracking-[0.16em] text-gray">
-              Est. MMXXVI
+              Nature Life Intelligence · Est. MMXXVI
             </p>
             <div className="my-5 hairline" />
             <p className="font-mono text-[0.78rem] leading-relaxed text-gray">

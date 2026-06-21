@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     "Sumber terverifikasi yang dipakai NaLI, jurnal, laporan lembaga, arsip, dataset, buku, dan media. Setiap entri punya metadata, catatan keandalan, dan batasannya sendiri.",
   alternates: { canonical: "/arsip-sumber" },
   openGraph: {
-    title: "Arsip Sumber | NaLI by NatIve",
+    title: "Arsip Sumber | NaLI",
     description:
       "Sumber terverifikasi yang dipakai NaLI, jurnal, laporan lembaga, arsip, dataset, buku, dan media.",
     type: "website",

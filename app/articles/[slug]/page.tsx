@@ -42,12 +42,12 @@ export async function generateMetadata({
     description,
     alternates: { canonical: `/articles/${article.slug}` },
     openGraph: {
-      title: `${article.title} | NaLI by NatIve`,
+      title: `${article.title} | NaLI`,
       description,
       type: "article",
       publishedTime: article.date,
       modifiedTime: article.updated ?? article.date,
-      authors: ["NaLI by NatIve"],
+      authors: ["NaLI"],
       tags: article.tags,
       images: metadataImage ? [metadataImage] : undefined,
     },
@@ -104,8 +104,8 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
     description: article.summary || article.subtitle,
     datePublished: article.date,
     dateModified: article.updated ?? article.date,
-    author: { "@type": "Organization", name: "NaLI by NatIve" },
-    publisher: { "@type": "Organization", name: "NaLI by NatIve" },
+    author: { "@type": "Organization", name: "NaLI" },
+    publisher: { "@type": "Organization", name: "NaLI" },
     ...(metadataImage ? { image: metadataImage } : {}),
   };
 

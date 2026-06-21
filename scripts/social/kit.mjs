@@ -81,7 +81,7 @@ function buildCarousel(fm, url) {
   const claims = (fm.claimLedger ?? []).slice(0, 4);
   const lim = (fm.limitations ?? [])[0];
   const slides = [];
-  slides.push(`SLIDE 1 (sampul)\n${tidy(fm.title)}\nNaLI by NatIve, ${tidy(fm.category)}`);
+  slides.push(`SLIDE 1 (sampul)\n${tidy(fm.title)}\nNaLI, ${tidy(fm.category)}`);
   slides.push(`SLIDE 2\n${tidy(fm.summary)}`);
   let i = 3;
   for (const c of claims) {

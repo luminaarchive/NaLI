@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description:
     "Catatan awal dari sumber terbuka, laporan peneliti, arsip, dokumentasi pihak ketiga, dan data publik, sebelum disusun jadi artikel. Bukan klaim observasi pribadi NaLI.",
   openGraph: {
-    title: "Catatan Riset | NaLI by NatIve",
+    title: "Catatan Riset | NaLI",
     description:
       "Catatan awal dari sumber terbuka sebelum jadi artikel. Bukan klaim observasi pribadi NaLI.",
     type: "website",

@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     "Ekologi, satwa, dan fenomena lanskap Indonesia, dibaca dari jurnal, laporan lembaga, dan observasi peneliti.",
   openGraph: {
-    title: "Alam | NaLI by NatIve",
+    title: "Alam | NaLI",
     description:
       "Ekologi, satwa, dan fenomena lanskap Indonesia, dibaca dari rujukan terbuka.",
     type: "website",

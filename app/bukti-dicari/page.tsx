@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     "Transparansi terbalik: daftar tulisan yang jangkar buktinya masih belum kuat, lengkap dengan batasan yang kami akui sendiri. Bantu kami menutupnya.",
   alternates: { canonical: "/bukti-dicari" },
   openGraph: {
-    title: "Bukti Dicari | NaLI by NatIve",
+    title: "Bukti Dicari | NaLI",
     description:
       "Tulisan NaLI yang buktinya masih perlu diperkuat, beserta batasannya yang kami akui terbuka.",
     type: "website",

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     "Everything connects. Entitas yang paling banyak menautkan artikel, sumber, seri, dan topik di NaLI, dihitung dari graf pengetahuan yang sama.",
   alternates: { canonical: "/koneksi" },
   openGraph: {
-    title: "Koneksi | NaLI by NatIve",
+    title: "Koneksi | NaLI",
     description: "Entitas paling terhubung di basis pengetahuan NaLI.",
     type: "website",
   },

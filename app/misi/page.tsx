@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     "Misi riset terbuka NaLI: celah pembuktian nyata yang sedang kami kerjakan, dan bukti apa yang masih dibutuhkan. Tanpa akun, kontribusi ditinjau manual.",
   alternates: { canonical: "/misi" },
   openGraph: {
-    title: "Misi Riset | NaLI by NatIve",
+    title: "Misi Riset | NaLI",
     description: "Celah riset terbuka NaLI dan bukti yang masih dibutuhkan.",
     type: "website",
   },

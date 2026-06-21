@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     "Katalog jurnal dan publikasi ilmiah terbuka yang dikumpulkan NaLI: jurnal, laporan lembaga, dataset, dan arsip nyata tentang alam, konservasi, geologi, dan Indonesia. Tiap entri menampilkan publikasi asli dengan sinopsis Indonesia.",
   alternates: { canonical: "/jurnal" },
   openGraph: {
-    title: "Jurnal | NaLI by NatIve",
+    title: "Jurnal | NaLI",
     description:
       "Katalog jurnal dan publikasi ilmiah terbuka tentang alam, konservasi, geologi, dan Indonesia, dengan sinopsis Indonesia tiap publikasi.",
     type: "website",
@@ -60,7 +60,7 @@ export default function JurnalPage() {
   return (
     <div className="theme-jurnal relative">
       <PageBackdrop light="opacity-[0.42]">
-        <SmokeBackground smokeColor="#5C40A8" />
+        <SmokeBackground smokeColor="#1E5A8C" />
       </PageBackdrop>
       <PageHeader
         eyebrow="Katalog jurnal dan publikasi ilmiah terbuka"

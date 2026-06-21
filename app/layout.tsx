@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, IBM_Plex_Mono } from "next/font/google";
+import { Fraunces, IBM_Plex_Mono, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { Footer } from "@/components/Footer";
@@ -20,6 +20,14 @@ const mono = IBM_Plex_Mono({
   variable: "--font-mono",
 });
 
+// Clean grotesque for the neo-museum landing display type (scoped via --font-inter).
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  display: "swap",
+  variable: "--font-inter",
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
@@ -31,7 +39,7 @@ export const metadata: Metadata = {
   authors: [{ name: SITE.author }],
   keywords: [
     "NaLI",
-    "NatIve",
+    "Nature Life Intelligence",
     "jurnal riset terbuka Indonesia",
     "open-source evidence journal",
     "riset alam Indonesia",
@@ -39,10 +47,7 @@ export const metadata: Metadata = {
     "investigasi sumber terbuka",
     "arsip sumber",
   ],
-  icons: {
-    icon: "/brand/png-exports/nali-app-icon-192x192.png",
-    apple: "/brand/png-exports/nali-app-icon-512x512.png",
-  },
+  // favicon/apple-icon resolved from the app/icon.svg file convention (navy gunungan tile)
   openGraph: {
     title: `${SITE.name}, Jurnal Riset Terbuka Indonesia`,
     description: SITE.description,
@@ -73,7 +78,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className={`${display.variable} ${mono.variable}`} suppressHydrationWarning>
+    <html lang="id" className={`${display.variable} ${mono.variable} ${inter.variable}`} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col">
         {/* set theme before paint: saved preference, else system */}
         <script

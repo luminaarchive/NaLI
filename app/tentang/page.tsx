@@ -8,12 +8,12 @@ import { getSiteStats } from "@/lib/stats";
 export const metadata: Metadata = {
   title: "Tentang",
   description:
-    "Tentang NaLI by NatIve dan pendirinya, jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia.",
+    "Tentang NaLI dan pendirinya, jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia.",
   alternates: { canonical: "/tentang" },
   openGraph: {
-    title: "Tentang | NaLI by NatIve",
+    title: "Tentang | NaLI",
     description:
-      "Tentang NaLI by NatIve, jurnal riset terbuka tentang Indonesia.",
+      "Tentang NaLI, jurnal riset terbuka tentang Indonesia.",
     type: "website",
   },
 };
@@ -32,12 +32,12 @@ export default async function TentangPage() {
   return (
     <div className="theme-tentang relative">
       <PageBackdrop light="opacity-[0.42]">
-        <DynamicWaveBackground colorLow={[40, 20, 12]} colorHigh={[180, 92, 56]} />
+        <DynamicWaveBackground colorLow={[8, 26, 44]} colorHigh={[58, 116, 172]} />
       </PageBackdrop>
       <PageHeader
         eyebrow="Tentang"
         title="Satu orang, banyak yang belum diceritakan."
-        description="NaLI by NatIve adalah jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia, disusun dari sumber publik yang dapat ditelusuri."
+        description="NaLI adalah jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia, disusun dari sumber publik yang dapat ditelusuri."
       />
       <TentangSection stats={stats} />
     </div>

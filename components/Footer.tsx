@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NaliMark } from "@/components/brand/NaliMark";
 import { NAV_LINKS, SECONDARY_LINKS, SITE } from "@/lib/site";
 
 export function Footer() {
@@ -8,12 +9,18 @@ export function Footer() {
         <div className="hairline" />
         <div className="grid gap-10 py-12 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
-            <p className="font-display text-xl font-semibold text-ink-black">
-              NaLI <span className="text-ink">by NatIve</span>
-            </p>
-            <p className="mt-3 max-w-sm font-mono text-[0.8rem] leading-relaxed text-gray">
-              Nature · Archive · Lore · Investigation. Jurnal riset terbuka
-              tentang Indonesia. Setiap klaim membawa sumber dan batasan.
+            <div className="flex items-center gap-3 text-ink">
+              <NaliMark className="h-9 w-auto" />
+              <div className="leading-none">
+                <p className="font-display text-xl font-semibold text-ink-black">NaLI</p>
+                <p className="mt-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-ink/70">
+                  Nature Life Intelligence
+                </p>
+              </div>
+            </div>
+            <p className="mt-4 max-w-sm font-mono text-[0.8rem] leading-relaxed text-gray">
+              Nature · Life · Intelligence. Jurnal riset terbuka tentang
+              Indonesia. Setiap klaim membawa sumber dan batasan.
             </p>
             <p className="label mt-5">Setiap klaim diberi label keyakinan</p>
           </div>

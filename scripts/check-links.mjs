@@ -1,6 +1,6 @@
 import { loadPublications } from "./load-publications.mjs";
 
-const UA = "NaLI-by-NatIve-research/0.1 (open editorial journal)";
+const UA = "NaLI-research/0.1 (open editorial journal)";
 
 async function checkLink(url, label) {
   if (!url) return { ok: false, status: "Missing URL", label };

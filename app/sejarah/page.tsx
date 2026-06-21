@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     "Jejak kota tua, arsip kolonial, dan ingatan yang nyaris hilang, dibaca ulang dengan hati-hati.",
   openGraph: {
-    title: "Sejarah | NaLI by NatIve",
+    title: "Sejarah | NaLI",
     description:
       "Jejak kota tua, arsip kolonial, dan ingatan yang nyaris hilang.",
     type: "website",

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     "Bagaimana NaLI bekerja: jurnal riset terbuka yang menyusun cerita dari jurnal, arsip, laporan lembaga, dataset, dan dokumentasi pihak ketiga, bukan observasi lapangan pribadi.",
   alternates: { canonical: "/metodologi" },
   openGraph: {
-    title: "Metodologi | NaLI by NatIve",
+    title: "Metodologi | NaLI",
     description:
       "Cara NaLI memilih topik, mengumpulkan sumber, memakai AI, dan menjaga keputusan editorial di tangan manusia.",
     type: "article",
@@ -23,7 +23,7 @@ const SECTIONS: { n: string; title: string; body: React.ReactNode }[] = [
     title: "Apa itu NaLI",
     body: (
       <p>
-        NaLI by NatIve adalah <strong>jurnal riset terbuka</strong> (open-source
+        NaLI adalah <strong>jurnal riset terbuka</strong> (open-source
         evidence journal) tentang alam, sejarah, dan investigasi Indonesia. Kami
         membaca jurnal ilmiah, arsip, laporan lembaga, dataset, peta, observasi
         peneliti, dan foto berlisensi, lalu menyusunnya menjadi cerita yang bisa

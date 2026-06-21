@@ -155,6 +155,8 @@ function scanEmDashes() {
     ".next",
     ".vercel",
     ".agents",
+    ".claude",
+    ".codex",
     "node_modules",
     "public",
     ".playwright-mcp",

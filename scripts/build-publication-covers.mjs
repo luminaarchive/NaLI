@@ -18,7 +18,7 @@ const ROOT = process.cwd();
 const OUT_IMG = path.join(ROOT, "public", "images", "jurnal-covers");
 const MANIFEST = path.join(ROOT, "content", "jurnal", "pub-covers.json");
 const CHECKED = "2026-06-13";
-const UA = "NaLI-by-NatIve-research/0.1 (open editorial journal)";
+const UA = "NaLI-research/0.1 (open editorial journal)";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const ACCEPT = [/^cc0/i, /^cc-by(-sa)?-/i, /public domain/i, /^pd-/i];

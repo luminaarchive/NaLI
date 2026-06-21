@@ -1,14 +1,14 @@
 export const SITE = {
-  name: "NaLI by NatIve",
+  name: "NaLI",
   shortName: "NaLI",
   // Production domain on Vercel. Swap for a custom domain when one is bought.
   url: "https://nalijournal.vercel.app",
   tagline:
     "Jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia, disusun dari jurnal, arsip, laporan lembaga, dataset, dan dokumentasi pihak ketiga.",
   description:
-    "NaLI by NatIve, jurnal riset terbuka (open-source evidence journal) tentang alam, sejarah, dan investigasi Indonesia. Setiap klaim membawa sumber, label tingkat keyakinan, dan batasan.",
+    "NaLI, jurnal riset terbuka (open-source evidence journal) tentang alam, sejarah, dan investigasi Indonesia. Setiap klaim membawa sumber, label tingkat keyakinan, dan batasan.",
   locale: "id_ID",
-  author: "NaLI by NatIve",
+  author: "NaLI",
   // Single source of truth for the public contact address (still a placeholder
   // until the founder wires a real mailbox, see /kontak + /koreksi).
   email: "halo@nali.native.id",

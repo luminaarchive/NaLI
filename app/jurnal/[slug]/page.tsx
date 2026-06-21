@@ -21,11 +21,11 @@ export function generateMetadata({ params }: { params: Params }): Metadata {
   if (!pub) return { title: "Publikasi tidak ditemukan" };
   const cleanTitle = stripHtmlTags(pub.title);
   return {
-    title: `${cleanTitle} | Jurnal, NaLI by NatIve`,
+    title: `${cleanTitle} | Jurnal, NaLI`,
     description: pub.synopsis.slice(0, 160),
     alternates: { canonical: `/jurnal/${pub.slug}` },
     openGraph: {
-      title: `${cleanTitle} | Jurnal, NaLI by NatIve`,
+      title: `${cleanTitle} | Jurnal, NaLI`,
       description: pub.synopsis.slice(0, 160),
       type: "article",
     },

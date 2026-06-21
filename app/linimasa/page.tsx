@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     "Garis waktu peristiwa yang ditelusuri NaLI, disusun dari tulisan yang menyebut tahunnya secara eksplisit. Tiap titik tersambung ke artikel dan sumbernya.",
   alternates: { canonical: "/linimasa" },
   openGraph: {
-    title: "Linimasa | NaLI by NatIve",
+    title: "Linimasa | NaLI",
     description:
       "Garis waktu peristiwa Indonesia yang ditelusuri NaLI, tersambung ke artikel dan sumber.",
     type: "website",

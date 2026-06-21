@@ -818,6 +818,42 @@ tanpa em-dash, tanpa dependensi baru (LARANGAN-V2-001), tiap modul dari data NYA
   via `related` + seri. Berikutnya: perdalam yang ada, atau buka klaster/pilar baru
   (sejarah/investigasi) sesuai arahan founder. Tetap satu artikel deep-research per sesi.
 
+### 21 Juni 2026, Rebrand navy + logo gunungan baru + landing "neo-museum" (founder-directed)
+
+Founder kirim spec lengkap landing "neo-museum" (motionsites.ai) + logo NaLI baru
+(gunungan/kayon, navy) dan minta: ubah beranda persis seperti spec TAPI konten NaLI
++ semua beranimasi persis, warnai navy yang match logo, ganti semua logo, dan
+"kerjakan semua, tanpa langkah manual". Lihat [[navy-rebrand-neo-museum]] di memory.
+- **Stack tetap terkunci** (Next 14/React 18/Tailwind 3); spec Vite/React19/TW4 diport,
+  bukan ganti framework. Dep baru: **framer-motion ^11** + font **Inter** (`--font-inter`,
+  hanya di landing).
+- **Rebrand navy site-wide** (override token teal di CLAUDE.md, perintah founder):
+  CSS var archive-ink di `globals.css` (`:root`+`.dark`) jadi navy `#0E3A5C`/deep
+  `#082338`; token tailwind `teal` di-repoint ke navy (satu tempat = semua `bg-teal`
+  ikut); token `navy` baru; confidence palette tetap semantik. Semua tema per-halaman
+  (`theme-*`) dinetralkan ke ramp navy (tekstur per-halaman dipertahankan); backdrop
+  animasi (wave/smoke/neural/warp) di-recolor navy per page/komponen. `::selection` → navy.
+- **Logo baru direka ulang sebagai SVG** (founder tak suplai file): `components/brand/
+  NaliMark.tsx` (gunungan monokrom currentColor) dipakai di Nav, Footer, plat TentangSection,
+  AdminShell, hero + overlay dark landing. Favicon `app/icon.svg` (tile navy). Wordmark →
+  "NaLI" + "Nature Life Intelligence" (drop "by NatIve"). **SITE.name + author +
+  semua judul SEO/teks "NaLI by NatIve" -> "NaLI"** (founder setuju rename),
+  termasuk caption diagram + `<text>` di SVG article-diagrams. Manifesto baris
+  arti-nama diperbarui ke "Nature Life Intelligence". Docs/README/.env internal
+  dibiarkan.
+- **Landing** (`app/page.tsx` server force-dynamic → `components/landing/NeoMuseum.tsx`
+  client): 3 seksi spec, konten NaLI. Chapters = 5 artikel terbaru ber-cover; specimen =
+  Harimau Jawa. Hero (wordmark letter-block, sub-nav Nature/Life/Intelligence, hero.mp4
+  fade-in 2800ms), "Jelajahi Dunia Kami" (pills), seksi gelap "Koleksi" (chapter auto-cycle
+  3500ms + `SandTransitionImage` dissolve pasir filter SVG). Landing opt-out chrome via
+  `SiteChrome` (`pathname==="/"`), punya header + footer gelap sendiri.
+- **Gotcha**: jangan `npm run build` saat `next dev` jalan di :3000, build clobber `.next`
+  dev -> CSS korup + emblem raksasa + warna stale (8 console error). Verifikasi pakai prod
+  server bersih. Validator em-dash kini skip `.claude`+`.codex` (dir skill/tool vendor).
+- **Verified** (Playwright, prod server): hero+s2+s3 landing, /articles, /jurnal, /tentang
+  (emblem baru+wave navy), /seri semua navy & konsisten. Gate hijau: tsc/lint/build exit 0/
+  check:editorial/check:article-images 42/42. **Belum di-push** (menunggu keputusan founder).
+
 ---
 
 *Last updated: 16 Juni 2026, klaster Lazarus Wave 3 C3 capstone "Spesies Indonesia yang Masih Hilang" terbit (sintesis taksa belum ditemukan: sikatan Rueck/biawak Zug/mandar Sharpe; definisi hilang vs punah; "sudah punah" = belum cukup bukti; menaut ke /bukti-dicari + /misi; foto spesimen CC BY 3.0). KLASTER LAZARUS PETA AWAL LENGKAP (Wave 1-3). Gate hijau (tsc/check:editorial/check:article-images 42/42/build), produksi terverifikasi, push `15e85ef`. Total artikel = 42. Sebelumnya: klaster Lazarus Wave 3 C2 Nepenthes pitopangii terbit (kantong semar Sulawesi yang lama hanya diketahui dari satu individu, populasi kedua ditemukan 2011; mendiversifikasi klaster ke tumbuhan; confidence high, 4 sumber, foto CC BY 2.0 Alfindra Primaldhi; ditandai jujur bukan Lazarus klasik). Gotcha: sumber buku butuh url bibliografi yang dapat ditelusuri agar lolos check:editorial. Gate hijau (tsc/check:editorial/check:article-images 41/41/build), produksi terverifikasi, push `99ff8dc`. Total artikel = 41. Sebelumnya: klaster Lazarus Wave 3 C1 seriwang Sangihe terbit (Eutrichomyias rowleyi, hilang 125 thn ditemukan 1998, kini terancam tambang emas; confidence high, 4 sumber, foto hidup CC0 James Eaton, ancaman tambang ditandai diperdebatkan). Gate hijau (tsc/lint/check:editorial/check:article-images 40/40/build), produksi terverifikasi, push `a58b723`. Total artikel = 40. Sebelumnya: klaster Lazarus Wave 2: B2 lebah raksasa Wallace terbit (lebah terbesar dunia, hilang 38 thn, ditemukan 2019 Halmahera; confidence high, 4 sumber, ilustrasi Smith 1860 domain publik) + B1 coelacanth ditingkatkan ke standar klaster (claim ledger spesifik, related, internalScore). Ketiga artikel Wave (A4/B1/B2) diperluas lewat floor 900 kata. Gotcha: server node basi di :3000 bikin curl lokal kena build lama (cek `lsof :3000`, kill, start ulang). Gate hijau (tsc/lint/check:editorial/check:article-images/build), produksi terverifikasi, push `e9b1844`. Total artikel = 39. Sebelumnya: klaster Lazarus A4 black-browed babbler terbit (burung hilang 172 tahun, ditemukan dua warga Kalsel; confidence high, 4 sumber, foto burung hidup CC BY 4.0; Wave 1 A1-A4 selesai). Backlog riset dibersihkan dari 3 entri yang kini terbit. Gotcha: push lewat SSH-over-443 karena port 22 diblokir jaringan. Semua gate hijau (tsc/lint/check:editorial/check:article-images/build), produksi terverifikasi, push `c8667e8`. Sebelumnya: beranda V2 (`app/page.tsx`) kini jadi ruang kendali: LivingDashboard tampil tepat di bawah hero + grid "Modul V2" menautkan 8 surface (ruang-kendali/linimasa/peta-indonesia/koneksi/bukti-dicari/misi/aktivitas/banding); section lama (apa-ini, tiga pilar, tulisan terbaru, callout arsip) dipertahankan. Sebelumnya: NaLI V2 Modul 2-12 dieksekusi additive (rute baru /linimasa, /bukti-dicari, /aktivitas, /koneksi, /banding, /misi, /peta-indonesia + Discovery Score di /ruang-kendali + archive pipeline scaffold loc.gov; semua dari data nyata, tanpa dep baru). Gate hijau (tsc/lint/check:editorial/build). Lihat `NALI_V2_LIVING_ENGINE.md`. Sebelumnya: NaLI V2 Modul 1 Living Knowledge Engine (dashboard `/ruang-kendali` dari data nyata, RSC+Tailwind tanpa dep baru, beranda lama utuh; satu modul per sesi per LARANGAN-V2-002). Gate hijau (tsc/lint/check:editorial/build). Lihat `NALI_V2_LIVING_ENGINE.md`. Sebelumnya: Fase 7 knowledge pipeline (harvest OpenAlex nyata -> +306 jurnal & +306 arsip sumber tertaut, jurnal=330/arsip=465 lewat target 300; artikel/investigasi tetap editorial deep-research, bukan massal). Semua gate hijau (tsc/lint/check:editorial/build). Lihat `docs/nali_fase7_knowledge_pipeline.md` + `content/logs/progress.json`. Sebelumnya: eksekusi NALI_MASTER_BUILD penuh Langkah 1-11 (bug fix, audit + perbaikan 13 URL mati, global search Cmd+K, SEO/RSS, claim ledger/related/depth, newsletter API + series nav + peta eksplorasi interaktif, sitasi + advanced arsip search + /topik, koreksi/catatan-backlog/changelog, internalScore + artikel Pesut Mahakam hasil deep-research). Semua gate hijau, produksi terverifikasi. Pushed `fa14264`. Lihat `NALI_BUILD_REPORT_2026-06-15.md`.*

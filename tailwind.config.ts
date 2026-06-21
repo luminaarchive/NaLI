@@ -11,10 +11,18 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // NaLI navy, sampled from the gunungan logo. Kept under the `teal` token
+        // name so every existing bg-teal/text-teal utility rebrands in one place.
         teal: {
-          DEFAULT: "#2DD4A7",
-          dark: "#1BA882",
-          bg: "#EAF8F3",
+          DEFAULT: "#0E3A5C",
+          dark: "#082338",
+          bg: "#E8F0F7",
+        },
+        navy: {
+          DEFAULT: "#0E3A5C",
+          deep: "#082338",
+          ink: "#091C2D",
+          wash: "#E8F0F7",
         },
         // archive-ink system, CSS variables so light/dark swap everywhere
         ink: {
@@ -40,6 +48,7 @@ const config: Config = {
       },
       fontFamily: {
         display: ["var(--font-display)", "Georgia", "serif"],
+        inter: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
         sans: [
           "-apple-system",
           "BlinkMacSystemFont",

@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     "Penelusuran berbasis sumber publik. Tanpa tuduhan tanpa bukti, tanpa kepastian palsu.",
   openGraph: {
-    title: "Investigasi | NaLI by NatIve",
+    title: "Investigasi | NaLI",
     description:
       "Penelusuran berbasis sumber publik. Tanpa tuduhan tanpa bukti, tanpa kepastian palsu.",
     type: "website",

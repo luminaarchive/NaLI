@@ -3,18 +3,18 @@
 @tailwind utilities;
 
 @layer base {
-  /* archive-ink palette, light (kertas putih, tinta teal) */
+  /* archive-ink palette, light (kertas putih, tinta navy NaLI dari logo gunungan) */
   :root {
     color-scheme: light;
     --c-paper: 255 255 255;
-    --c-ink: 14 130 104;
-    --c-ink-deep: 8 94 75;
-    --c-ink-wash: 233 246 241;
-    --c-ink-black: 10 10 10;
-    --c-ink-charcoal: 28 28 28;
-    --c-gray: 51 55 61;
-    --c-gray-light: 142 147 143;
-    --c-rule: 158 205 191;
+    --c-ink: 14 58 92;
+    --c-ink-deep: 8 38 62;
+    --c-ink-wash: 232 240 247;
+    --c-ink-black: 9 28 45;
+    --c-ink-charcoal: 24 40 56;
+    --c-gray: 51 60 72;
+    --c-gray-light: 132 147 162;
+    --c-rule: 167 191 210;
 
     /* motion tokens, one easing, three durations (theme-independent) */
     --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
@@ -23,18 +23,18 @@
     --dur-entrance: 600ms;
   }
 
-  /* dark, kertas tinta gelap (turunan warna shader), tinta teal terang */
+  /* dark, kertas tinta navy gelap (turunan warna logo), tinta biru terang */
   .dark {
     color-scheme: dark;
-    --c-paper: 10 20 17;
-    --c-ink: 70 207 168;
-    --c-ink-deep: 154 233 208;
-    --c-ink-wash: 17 36 30;
-    --c-ink-black: 238 247 243;
-    --c-ink-charcoal: 213 228 222;
-    --c-gray: 158 176 169;
-    --c-gray-light: 108 126 119;
-    --c-rule: 42 74 64;
+    --c-paper: 8 22 36;
+    --c-ink: 124 176 220;
+    --c-ink-deep: 176 208 236;
+    --c-ink-wash: 16 36 56;
+    --c-ink-black: 233 240 248;
+    --c-ink-charcoal: 210 224 238;
+    --c-gray: 150 170 190;
+    --c-gray-light: 105 125 145;
+    --c-rule: 38 64 92;
   }
 
   html {
@@ -47,8 +47,8 @@
   }
 
   ::selection {
-    background: #2dd4a7;
-    color: #0a0a0a;
+    background: rgb(var(--c-ink));
+    color: rgb(var(--c-paper));
   }
 
   :focus-visible {
@@ -183,6 +183,19 @@
   .container-read {
     @apply mx-auto w-full max-w-[760px] px-5 sm:px-8;
   }
+  /* neo-museum oversized display type */
+  .text-mega {
+    font-size: 21vw;
+    line-height: 0.75;
+    letter-spacing: -0.04em;
+  }
+}
+
+/* neo-museum landing: sand/particle dissolve image transition uses these filters
+   inline per-instance; the wrapper just guarantees GPU compositing */
+.nm-sand-img {
+  will-change: filter, transform, opacity;
+  backface-visibility: hidden;
 }
 
 /* landing FAQ accordion */
@@ -223,87 +236,90 @@
   position: relative;
 }
 
-/* ALAM, forest green + organic stipple (nature) */
+/* Whole-site navy rebrand: every page now shares the NaLI navy ink ramp so the
+   color always matches the gunungan logo. Each page keeps its distinct faint
+   TEXTURE (stipple / ledger / grid / hatch / dot-grid) for variety, but the
+   texture is tinted from --c-ink, so it reads as a navy pattern everywhere.
+   Light ramp = :root navy; dark ramp = .dark navy. */
+
+/* ALAM, organic stipple (nature) */
 .theme-alam {
-  --c-ink: 38 122 79;
-  --c-ink-deep: 22 84 53;
-  --c-ink-wash: 230 243 235;
-  --c-rule: 150 200 170;
+  --c-ink: 14 58 92;
+  --c-ink-deep: 8 38 62;
+  --c-ink-wash: 232 240 247;
+  --c-rule: 167 191 210;
   background-image: radial-gradient(rgb(var(--c-ink) / 0.06) 1.2px, transparent 1.2px);
   background-size: 20px 20px;
 }
 .dark .theme-alam {
-  --c-ink: 98 200 145;
-  --c-ink-deep: 168 226 194;
-  --c-ink-wash: 18 38 28;
-  --c-rule: 42 82 60;
+  --c-ink: 124 176 220;
+  --c-ink-deep: 176 208 236;
+  --c-ink-wash: 16 36 56;
+  --c-rule: 38 64 92;
 }
 
-/* SEJARAH, bronze/sepia + faint ledger lines (archive/manuscript) */
+/* SEJARAH, faint ledger lines (archive/manuscript) */
 .theme-sejarah {
-  --c-ink: 146 98 48;
-  --c-ink-deep: 99 64 28;
-  --c-ink-wash: 243 236 224;
-  --c-rule: 205 180 150;
+  --c-ink: 14 58 92;
+  --c-ink-deep: 8 38 62;
+  --c-ink-wash: 232 240 247;
+  --c-rule: 167 191 210;
   background-image: repeating-linear-gradient(
     rgb(var(--c-ink) / 0.05) 0 1px,
     transparent 1px 30px
   );
 }
 .dark .theme-sejarah {
-  --c-ink: 216 178 130;
-  --c-ink-deep: 232 208 174;
-  --c-ink-wash: 40 32 22;
-  --c-rule: 92 76 56;
+  --c-ink: 124 176 220;
+  --c-ink-deep: 176 208 236;
+  --c-ink-wash: 16 36 56;
+  --c-rule: 38 64 92;
 }
 
-/* INVESTIGASI, slate blue + graph-paper grid (case file) */
+/* INVESTIGASI, graph-paper grid (case file) */
 .theme-investigasi {
-  --c-ink: 51 84 122;
-  --c-ink-deep: 30 54 82;
-  --c-ink-wash: 232 238 245;
-  --c-rule: 160 180 205;
+  --c-ink: 14 58 92;
+  --c-ink-deep: 8 38 62;
+  --c-ink-wash: 232 240 247;
+  --c-rule: 167 191 210;
   background-image:
     linear-gradient(rgb(var(--c-ink) / 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgb(var(--c-ink) / 0.05) 1px, transparent 1px);
   background-size: 26px 26px;
 }
 .dark .theme-investigasi {
-  --c-ink: 140 176 216;
-  --c-ink-deep: 190 210 234;
-  --c-ink-wash: 22 30 42;
-  --c-rule: 62 80 106;
+  --c-ink: 124 176 220;
+  --c-ink-deep: 176 208 236;
+  --c-ink-wash: 16 36 56;
+  --c-rule: 38 64 92;
 }
 
-/* CATATAN LAPANGAN, olive/khaki + notebook dot-grid (field notes) */
+/* CATATAN LAPANGAN, notebook dot-grid (field notes) */
 .theme-catatan {
   position: relative;
-  --c-ink: 107 115 56;
-  --c-ink-deep: 74 82 38;
-  --c-ink-wash: 238 240 226;
-  --c-rule: 184 190 150;
+  --c-ink: 14 58 92;
+  --c-ink-deep: 8 38 62;
+  --c-ink-wash: 232 240 247;
+  --c-rule: 167 191 210;
   background-image: radial-gradient(rgb(var(--c-ink) / 0.07) 1px, transparent 1px);
   background-size: 16px 16px;
 }
 .dark .theme-catatan {
-  --c-ink: 180 192 122;
-  --c-ink-deep: 204 214 154;
-  --c-ink-wash: 28 32 18;
-  --c-rule: 72 80 46;
+  --c-ink: 124 176 220;
+  --c-ink-deep: 176 208 236;
+  --c-ink-wash: 16 36 56;
+  --c-rule: 38 64 92;
 }
 
-/* ── Per-page nav themes (structural pages, same mechanism as pillars) ──────
-   Each top-nav destination gets its own accent + fitting faint texture so the
-   nav feels varied (Nous-style), while Beranda/Artikel keep the default teal
-   as the neutral "all" anchor. Body/gray text stays constant for contrast. */
+/* ── Per-page nav themes: same navy ink, distinct texture per destination. ── */
 
-/* JURNAL, indigo/violet + vertical catalog rules (publication catalog) */
+/* JURNAL, vertical catalog rules (publication catalog) */
 .theme-jurnal {
   position: relative;
-  --c-ink: 92 64 168;
-  --c-ink-deep: 60 42 122;
-  --c-ink-wash: 234 230 247;
-  --c-rule: 178 166 216;
+  --c-ink: 14 58 92;
+  --c-ink-deep: 8 38 62;
+  --c-ink-wash: 232 240 247;
+  --c-rule: 167 191 210;
   background-image: repeating-linear-gradient(
     90deg,
     rgb(var(--c-ink) / 0.05) 0 1px,
@@ -311,57 +327,57 @@
   );
 }
 .dark .theme-jurnal {
-  --c-ink: 170 150 240;
-  --c-ink-deep: 202 188 248;
-  --c-ink-wash: 26 22 46;
-  --c-rule: 66 58 108;
+  --c-ink: 124 176 220;
+  --c-ink-deep: 176 208 236;
+  --c-ink-wash: 16 36 56;
+  --c-rule: 38 64 92;
 }
 
-/* SERI, wine/plum + horizontal manuscript lines (editorial series) */
+/* SERI, horizontal manuscript lines (editorial series) */
 .theme-seri {
   position: relative;
-  --c-ink: 158 44 96;
-  --c-ink-deep: 116 28 66;
-  --c-ink-wash: 247 230 240;
-  --c-rule: 212 168 192;
+  --c-ink: 14 58 92;
+  --c-ink-deep: 8 38 62;
+  --c-ink-wash: 232 240 247;
+  --c-rule: 167 191 210;
   background-image: repeating-linear-gradient(
     rgb(var(--c-ink) / 0.045) 0 1px,
     transparent 1px 34px
   );
 }
 .dark .theme-seri {
-  --c-ink: 230 144 184;
-  --c-ink-deep: 242 188 214;
-  --c-ink-wash: 40 20 32;
-  --c-rule: 96 58 80;
+  --c-ink: 124 176 220;
+  --c-ink-deep: 176 208 236;
+  --c-ink-wash: 16 36 56;
+  --c-rule: 38 64 92;
 }
 
-/* ARSIP SUMBER, steel slate + ledger grid (factual archive) */
+/* ARSIP SUMBER, ledger grid (factual archive) */
 .theme-arsip {
   position: relative;
-  --c-ink: 66 92 116;
-  --c-ink-deep: 42 62 84;
-  --c-ink-wash: 233 238 242;
-  --c-rule: 176 192 206;
+  --c-ink: 14 58 92;
+  --c-ink-deep: 8 38 62;
+  --c-ink-wash: 232 240 247;
+  --c-rule: 167 191 210;
   background-image:
     linear-gradient(rgb(var(--c-ink) / 0.045) 1px, transparent 1px),
     linear-gradient(90deg, rgb(var(--c-ink) / 0.045) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 .dark .theme-arsip {
-  --c-ink: 156 180 202;
-  --c-ink-deep: 196 212 228;
-  --c-ink-wash: 22 28 34;
-  --c-rule: 60 72 84;
+  --c-ink: 124 176 220;
+  --c-ink-deep: 176 208 236;
+  --c-ink-wash: 16 36 56;
+  --c-rule: 38 64 92;
 }
 
-/* METODOLOGI, graphite charcoal + blueprint hatch (rigor/method) */
+/* METODOLOGI, blueprint hatch (rigor/method) */
 .theme-metodologi {
   position: relative;
-  --c-ink: 58 64 76;
-  --c-ink-deep: 38 44 54;
-  --c-ink-wash: 235 237 240;
-  --c-rule: 184 190 198;
+  --c-ink: 14 58 92;
+  --c-ink-deep: 8 38 62;
+  --c-ink-wash: 232 240 247;
+  --c-rule: 167 191 210;
   background-image: repeating-linear-gradient(
     45deg,
     rgb(var(--c-ink) / 0.045) 0 1px,
@@ -369,36 +385,36 @@
   );
 }
 .dark .theme-metodologi {
-  --c-ink: 172 180 194;
-  --c-ink-deep: 204 210 220;
-  --c-ink-wash: 24 26 30;
-  --c-rule: 64 68 76;
+  --c-ink: 124 176 220;
+  --c-ink-deep: 176 208 236;
+  --c-ink-wash: 16 36 56;
+  --c-rule: 38 64 92;
 }
 
-/* TENTANG, clay/terracotta + soft stipple (human/personal) */
+/* TENTANG, soft stipple (human/personal) */
 .theme-tentang {
   position: relative;
-  --c-ink: 166 78 50;
-  --c-ink-deep: 120 52 30;
-  --c-ink-wash: 247 234 226;
-  --c-rule: 218 184 166;
+  --c-ink: 14 58 92;
+  --c-ink-deep: 8 38 62;
+  --c-ink-wash: 232 240 247;
+  --c-rule: 167 191 210;
   background-image: radial-gradient(rgb(var(--c-ink) / 0.05) 1.1px, transparent 1.1px);
   background-size: 22px 22px;
 }
 .dark .theme-tentang {
-  --c-ink: 230 158 118;
-  --c-ink-deep: 244 196 168;
-  --c-ink-wash: 40 26 18;
-  --c-rule: 94 64 44;
+  --c-ink: 124 176 220;
+  --c-ink-deep: 176 208 236;
+  --c-ink-wash: 16 36 56;
+  --c-rule: 38 64 92;
 }
 
-/* KONTAK, royal blue + sparse diagonal (signal/contact) */
+/* KONTAK, sparse diagonal (signal/contact) */
 .theme-kontak {
   position: relative;
-  --c-ink: 42 80 152;
-  --c-ink-deep: 26 54 110;
-  --c-ink-wash: 231 237 248;
-  --c-rule: 168 186 220;
+  --c-ink: 14 58 92;
+  --c-ink-deep: 8 38 62;
+  --c-ink-wash: 232 240 247;
+  --c-rule: 167 191 210;
   background-image: repeating-linear-gradient(
     -45deg,
     rgb(var(--c-ink) / 0.04) 0 1px,
@@ -406,27 +422,27 @@
   );
 }
 .dark .theme-kontak {
-  --c-ink: 138 174 240;
-  --c-ink-deep: 184 204 248;
-  --c-ink-wash: 18 26 46;
-  --c-rule: 54 70 110;
+  --c-ink: 124 176 220;
+  --c-ink-deep: 176 208 236;
+  --c-ink-wash: 16 36 56;
+  --c-rule: 38 64 92;
 }
 
-/* ARTIKEL, magenta/orchid + dot-grid (the all-articles index) */
+/* ARTIKEL, dot-grid (the all-articles index) */
 .theme-artikel {
   position: relative;
-  --c-ink: 166 50 126;
-  --c-ink-deep: 124 30 92;
-  --c-ink-wash: 247 230 242;
-  --c-rule: 214 168 200;
+  --c-ink: 14 58 92;
+  --c-ink-deep: 8 38 62;
+  --c-ink-wash: 232 240 247;
+  --c-rule: 167 191 210;
   background-image: radial-gradient(rgb(var(--c-ink) / 0.05) 1px, transparent 1px);
   background-size: 18px 18px;
 }
 .dark .theme-artikel {
-  --c-ink: 232 140 200;
-  --c-ink-deep: 244 186 222;
-  --c-ink-wash: 40 20 34;
-  --c-rule: 96 56 82;
+  --c-ink: 124 176 220;
+  --c-ink-deep: 176 208 236;
+  --c-ink-wash: 16 36 56;
+  --c-rule: 38 64 92;
 }
 
 /* ── characterful motion devices (Hermes-Agent inspired; reduced-motion-safe via the guard above) ── */

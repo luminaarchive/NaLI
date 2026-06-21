@@ -8,7 +8,7 @@ const ROOT = process.cwd();
 const OUT_IMG = path.join(ROOT, "public", "images", "jurnal-covers");
 const MANIFEST = path.join(ROOT, "content", "jurnal", "pub-covers.json");
 const CHECKED = "2026-06-13";
-const UA = "NaLI-by-NatIve-research/0.1 (open editorial journal; contact halo@nali.native.id)";
+const UA = "NaLI-research/0.1 (open editorial journal; contact halo@nali.native.id)";
 
 // Load OpenAlex results for licenses
 const OA_RESULTS = JSON.parse(

@@ -7,10 +7,10 @@ import { Rss } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Kontak",
-  description: "Hubungi NaLI by NatIve, kabar, koreksi, atau usulan topik.",
+  description: "Hubungi NaLI, kabar, koreksi, atau usulan topik.",
   openGraph: {
-    title: "Kontak | NaLI by NatIve",
-    description: "Hubungi NaLI by NatIve, kabar, koreksi, atau usulan topik.",
+    title: "Kontak | NaLI",
+    description: "Hubungi NaLI, kabar, koreksi, atau usulan topik.",
     type: "website",
   },
 };

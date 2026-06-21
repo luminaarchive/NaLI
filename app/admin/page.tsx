@@ -63,7 +63,7 @@ export default async function AdminDashboard() {
           <div>
             <h1 className="font-display text-3xl font-black uppercase text-ink">Dashboard</h1>
             <p className="mt-2 font-mono text-[0.8rem] text-gray">
-              Ringkasan tulisan dan kunjungan situs NaLI by NatIve.
+              Ringkasan tulisan dan kunjungan situs NaLI.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">

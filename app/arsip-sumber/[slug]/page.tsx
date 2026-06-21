@@ -29,7 +29,7 @@ export function generateMetadata({ params }: { params: Params }): Metadata {
     description,
     alternates: { canonical: `/arsip-sumber/${source.slug}` },
     openGraph: {
-      title: `${source.title} | Arsip Sumber, NaLI by NatIve`,
+      title: `${source.title} | Arsip Sumber, NaLI`,
       description,
       type: "article",
     },
@@ -179,7 +179,7 @@ export default function SourceDetailPage({ params }: { params: Params }) {
         )}
 
         <p className="mt-10 border-t border-dashed border-ink/40 pt-6 font-mono text-[0.72rem] leading-relaxed text-gray">
-          Entri ini bagian dari arsip sumber terbuka NaLI by NatIve. Setiap klaim
+          Entri ini bagian dari arsip sumber terbuka NaLI. Setiap klaim
           dalam artikel kami dapat ditelusuri kembali ke rujukannya.
         </p>
       </div>

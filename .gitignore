@@ -41,3 +41,8 @@ yarn-error.log*
 # generated social distribution drafts (working files)
 /content/_social
 
+
+# local agent/tool dirs (untracked; .agents/ is intentionally tracked for impeccable)
+.claude/
+.codex/
+.playwright-mcp/

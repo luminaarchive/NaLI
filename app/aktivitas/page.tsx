@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Apa yang bergerak di basis bukti NaLI tiap hari: jurnal dan arsip yang diverifikasi, tulisan yang diperbarui. Diambil dari data nyata, bukan klaim.",
   alternates: { canonical: "/aktivitas" },
   openGraph: {
-    title: "Aktivitas | NaLI by NatIve",
+    title: "Aktivitas | NaLI",
     description: "Feed aktivitas basis bukti NaLI, dari data nyata.",
     type: "website",
   },

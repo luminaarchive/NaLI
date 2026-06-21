@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Standar kualitas sumber NaLI: sumber primer, sekunder, dataset, arsip historis, foto berlisensi, dan label keandalan.",
   alternates: { canonical: "/pedoman-sumber" },
   openGraph: {
-    title: "Pedoman Sumber | NaLI by NatIve",
+    title: "Pedoman Sumber | NaLI",
     description: "Standar kualitas sumber dan cara label keandalan bekerja.",
     type: "article",
   },

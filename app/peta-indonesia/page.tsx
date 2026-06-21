@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     "Peta skematis lokasi liputan NaLI di Indonesia, diplot dari koordinat nyata tempat yang dikenal. Tanpa pelacak, tanpa pustaka peta berat.",
   alternates: { canonical: "/peta-indonesia" },
   openGraph: {
-    title: "Peta Indonesia | NaLI by NatIve",
+    title: "Peta Indonesia | NaLI",
     description: "Peta skematis lokasi liputan NaLI, privacy-first dan ringan.",
     type: "website",
   },

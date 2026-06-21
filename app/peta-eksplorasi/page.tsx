@@ -12,11 +12,11 @@ import { CATEGORY_LABEL, type Category } from "@/lib/types";
 export const metadata: Metadata = {
   title: "Peta Eksplorasi",
   description:
-    "Daftar lokasi dan topik yang sudah dan sedang ditelusuri NaLI by NatIve di seluruh Indonesia.",
+    "Daftar lokasi dan topik yang sudah dan sedang ditelusuri NaLI di seluruh Indonesia.",
   openGraph: {
-    title: "Peta Eksplorasi | NaLI by NatIve",
+    title: "Peta Eksplorasi | NaLI",
     description:
-      "Daftar lokasi dan topik yang sudah dan sedang ditelusuri NaLI by NatIve.",
+      "Daftar lokasi dan topik yang sudah dan sedang ditelusuri NaLI.",
     type: "website",
   },
 };

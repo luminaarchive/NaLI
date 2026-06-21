@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     "Cara mengirim koreksi ke NaLI, kapan artikel diperbarui, hak jawab untuk artikel investigasi, dan riwayat koreksi.",
   alternates: { canonical: "/koreksi" },
   openGraph: {
-    title: "Koreksi | NaLI by NatIve",
+    title: "Koreksi | NaLI",
     description:
       "Akuntabilitas NaLI: kirim koreksi, hak jawab, dan riwayat perbaikan.",
     type: "article",

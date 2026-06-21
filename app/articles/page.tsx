@@ -8,11 +8,11 @@ import { getAllArticles, getAllTags } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Artikel",
   description:
-    "Semua tulisan NaLI by NatIve, alam, sejarah, dan investigasi Indonesia. Saring berdasarkan kategori dan tag.",
+    "Semua tulisan NaLI, alam, sejarah, dan investigasi Indonesia. Saring berdasarkan kategori dan tag.",
   openGraph: {
-    title: "Artikel | NaLI by NatIve",
+    title: "Artikel | NaLI",
     description:
-      "Semua tulisan NaLI by NatIve, alam, sejarah, dan investigasi Indonesia.",
+      "Semua tulisan NaLI, alam, sejarah, dan investigasi Indonesia.",
     type: "website",
   },
 };
@@ -26,7 +26,7 @@ export default async function ArticlesPage() {
   return (
     <div className="theme-artikel relative">
       <PageBackdrop light="opacity-[0.42]" dark="dark:opacity-[0.8]">
-        <NeuralNoise color={[0.85, 0.28, 0.66]} />
+        <NeuralNoise color={[0.18, 0.44, 0.64]} />
       </PageBackdrop>
       <PageHeader
         eyebrow="Arsip lengkap"

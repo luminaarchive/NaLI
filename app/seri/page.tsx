@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     "Seri editorial NaLI, mengelompokkan tulisan menjadi alur yang punya janji dan arah, bukan posting blog yang berserakan.",
   alternates: { canonical: "/seri" },
   openGraph: {
-    title: "Seri | NaLI by NatIve",
+    title: "Seri | NaLI",
     description: "Seri editorial NaLI, alur tulisan dengan janji dan arah.",
     type: "website",
   },

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Lisensi gambar yang NaLI terima, format atribusi, apa yang tidak kami pakai, dan prosedur takedown.",
   alternates: { canonical: "/lisensi-foto" },
   openGraph: {
-    title: "Lisensi Foto | NaLI by NatIve",
+    title: "Lisensi Foto | NaLI",
     description: "Aturan lisensi dan atribusi gambar di NaLI.",
     type: "article",
   },

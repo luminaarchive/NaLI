@@ -24,7 +24,7 @@ function buildText(slug: string): string | null {
   if (!pub) return null;
 
   const lines = [
-    `NaLI by NatIve, Jurnal: Katalog Jurnal dan Publikasi Ilmiah Terbuka`,
+    `NaLI, Jurnal: Katalog Jurnal dan Publikasi Ilmiah Terbuka`,
     `${SITE.url}/jurnal/${pub.slug}`,
     `Berkas metadata yang disusun NaLI. Ini bukan naskah asli publikasi.`,
     ``,

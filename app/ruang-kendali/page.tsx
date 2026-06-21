@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     "Ruang kendali NaLI, snapshot langsung dari basis bukti: jurnal, arsip sumber, investigasi, dan bukti yang masih kami cari. Angka dihitung dari data nyata.",
   alternates: { canonical: "/ruang-kendali" },
   openGraph: {
-    title: "Ruang Kendali | NaLI by NatIve",
+    title: "Ruang Kendali | NaLI",
     description:
       "Snapshot langsung dari basis bukti NaLI: jurnal, arsip sumber, investigasi, dan bukti yang masih dicari.",
     type: "website",

@@ -82,7 +82,7 @@ export function NewsletterSignup({
           className={`h-12 shrink-0 px-7 font-mono text-[0.8rem] font-semibold uppercase tracking-wider transition-transform hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-70 ${
             light
               ? "bg-ink text-white hover:bg-ink-deep"
-              : "bg-teal text-ink-black hover:bg-teal-dark hover:text-white"
+              : "bg-teal text-white hover:bg-teal-dark hover:text-white"
           }`}
         >
           {status === "loading" ? "Mengirim…" : done ? "Terdaftar ✓" : "Langganan"}

@@ -4,11 +4,11 @@ import { PageHeader } from "@/components/PageHeader";
 export const metadata: Metadata = {
   title: "Manifesto",
   description:
-    "Prinsip editorial NaLI by NatIve: tahu yang ia tahu, jujur soal yang belum, dan selalu menyertakan sumber.",
+    "Prinsip editorial NaLI: tahu yang ia tahu, jujur soal yang belum, dan selalu menyertakan sumber.",
   openGraph: {
-    title: "Manifesto | NaLI by NatIve",
+    title: "Manifesto | NaLI",
     description:
-      "Prinsip editorial NaLI by NatIve: jujur soal keyakinan, selalu menyertakan sumber.",
+      "Prinsip editorial NaLI: jujur soal keyakinan, selalu menyertakan sumber.",
     type: "article",
   },
 };
@@ -57,21 +57,21 @@ export default function ManifestoPage() {
       <PageHeader
         eyebrow="Editorial"
         title="Manifesto"
-        description="Kenapa NaLI by NatIve ada, dan aturan main yang kami pegang."
+        description="Kenapa NaLI ada, dan aturan main yang kami pegang."
       />
 
       <div className="container-read py-12 sm:py-16">
         <div className="prose-nali">
           <p>
             Indonesia menyimpan terlalu banyak cerita yang belum ditelusuri, ekologi yang luput dicatat, sejarah yang nyaris terlupa, dan fenomena
-            yang berdesas-desus tanpa pernah diperiksa. NaLI by NatIve hadir untuk
+            yang berdesas-desus tanpa pernah diperiksa. NaLI hadir untuk
             menelusuri hal-hal itu secara serius, dengan bantuan AI, lalu
             menceritakannya dengan jujur.
           </p>
           <p>
-            <strong>NaLI</strong>, Nature, Archive, Lore, Investigation.{" "}
-            <strong>by NatIve</strong>, local intelligence dan riset berbasis
-            sumber terbuka dari sudut pandang Indonesia sendiri.
+            <strong>NaLI</strong>, Nature Life Intelligence. Riset berbasis
+            sumber terbuka tentang alam dan kehidupan, dibaca dari sudut pandang
+            Indonesia sendiri.
           </p>
         </div>
 

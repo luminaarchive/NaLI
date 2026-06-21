@@ -1,7 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { ReactNode } from "react";
 import { Glyph, type GlyphName } from "@/components/Glyph";
+import { NaliMark } from "@/components/brand/NaliMark";
 import { LogoutButton } from "./LogoutButton";
 
 type AdminActive = "dashboard" | "analytics";
@@ -54,7 +54,7 @@ export function AdminShell({
             href="/admin"
             className="flex h-16 items-center gap-2 border-b border-dashed border-ink/30 px-4"
           >
-            <Image src="/logo.png" alt="" width={24} height={24} className="h-6 w-6 shrink-0 object-contain" />
+            <NaliMark className="h-7 w-auto shrink-0 text-ink" />
             <span className="hidden font-display text-base font-bold uppercase tracking-tight text-ink lg:inline">
               NaLI · Admin
             </span>

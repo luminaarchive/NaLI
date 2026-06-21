@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     title,
     description,
     alternates: { canonical: `/topik/${data.tag}` },
-    openGraph: { title: `${title} | NaLI by NatIve`, description, type: "website" },
+    openGraph: { title: `${title} | NaLI`, description, type: "website" },
   };
 }
 

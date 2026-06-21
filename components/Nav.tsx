@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { NaliMark } from "@/components/brand/NaliMark";
 import { NAV_LINKS } from "@/lib/site";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { GlobalSearch, SearchTrigger } from "@/components/search/GlobalSearch";
@@ -32,10 +32,13 @@ export function Nav() {
     <header className="sticky top-0 z-50 bg-paper">
       <nav className="relative mx-auto flex h-16 max-w-[1240px] items-center justify-between px-5 lg:justify-center">
         {/* mobile brand */}
-        <Link href="/" className="flex items-center gap-2 lg:hidden" aria-label="NaLI by NatIve, beranda">
-          <Image src="/logo.png" alt="" width={24} height={24} className="h-6 w-6 object-contain" priority />
-          <span className="font-display text-lg font-semibold tracking-tight text-ink-black">
-            NaLI <span className="text-ink">by NatIve</span>
+        <Link href="/" className="flex items-center gap-2 text-ink lg:hidden" aria-label="NaLI, Nature Life Intelligence, beranda">
+          <NaliMark className="h-7 w-auto" />
+          <span className="flex flex-col leading-none">
+            <span className="font-display text-lg font-semibold tracking-tight text-ink-black">NaLI</span>
+            <span className="mt-0.5 font-mono text-[0.5rem] uppercase tracking-[0.16em] text-ink/70">
+              Nature Life Intelligence
+            </span>
           </span>
         </Link>
 

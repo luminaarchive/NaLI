@@ -21,7 +21,7 @@ export interface Citable {
   authors?: string[];
 }
 
-const AUTHOR = "NaLI by NatIve";
+const AUTHOR = "NaLI";
 
 function accessedID(): string {
   return new Date().toLocaleDateString("id-ID", {

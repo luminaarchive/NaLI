@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     "Ruang kerja terbuka: sandingkan dua sumber berdampingan dan baca sendiri. NaLI hanya menyejajarkan bukti, tidak menyimpulkan untukmu.",
   alternates: { canonical: "/banding" },
   openGraph: {
-    title: "Banding Sumber | NaLI by NatIve",
+    title: "Banding Sumber | NaLI",
     description: "Sandingkan dua sumber otentik berdampingan, analisis ada di tanganmu.",
     type: "website",
   },

@@ -44,8 +44,11 @@ export function SiteChrome({
 }) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
+  // The neo-museum landing ships its own full-bleed header + dark footer, so it
+  // opts out of the shared chrome (same as /admin).
+  const isLanding = pathname === "/";
 
-  if (isAdmin) {
+  if (isAdmin || isLanding) {
     return <main className="flex-1">{children}</main>;
   }
 

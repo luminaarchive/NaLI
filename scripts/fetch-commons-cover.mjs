@@ -12,7 +12,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const API = "https://commons.wikimedia.org/w/api.php";
-const UA = "NaLI-by-NatIve-research/0.1 (open editorial journal; contact halo@nali.native.id)";
+const UA = "NaLI-research/0.1 (open editorial journal; contact halo@nali.native.id)";
 
 const ACCEPT = [
   /^cc0/i,
