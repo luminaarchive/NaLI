@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" font-family="Georgia, 'Times New Roman', serif">
+  <rect width="800" height="520" fill="#0d1117"/>
+  <text x="400" y="34" fill="#e6edf3" font-size="19" text-anchor="middle" font-weight="bold">Lautan sehat vs Lautan Canfield (euksinik)</text>
+  <text x="400" y="54" fill="#9fb0bd" font-size="12" text-anchor="middle">Diagram penjelas skematis. Disusun dari sumber yang dicantumkan.</text>
+
+  <!-- left: healthy oxic ocean -->
+  <rect x="40" y="80" width="350" height="70" fill="#1f6feb" opacity="0.25"/>
+  <rect x="40" y="150" width="350" height="320" fill="#0c2d6b"/>
+  <text x="215" y="115" fill="#e6edf3" font-size="16" text-anchor="middle" font-weight="bold">Lautan sehat (oksik)</text>
+  <text x="215" y="138" fill="#9fb0bd" font-size="12" text-anchor="middle">Arus aktif, oksigen turun ke dasar</text>
+  <path d="M 215 175 Q 250 220 215 270 Q 180 320 215 370" fill="none" stroke="#58a6ff" stroke-width="3" stroke-dasharray="5 5"/>
+  <text x="232" y="230" fill="#58a6ff" font-size="12">Sirkulasi vertikal</text>
+
+  <!-- right: euxinic ocean -->
+  <rect x="410" y="80" width="350" height="70" fill="#2ea043" opacity="0.12"/>
+  <rect x="410" y="150" width="350" height="95" fill="#a371f7" opacity="0.40"/>
+  <rect x="410" y="245" width="350" height="225" fill="#3b1d6b"/>
+  <text x="585" y="115" fill="#ff7b72" font-size="16" text-anchor="middle" font-weight="bold">Lautan Canfield (euksinik)</text>
+  <text x="585" y="138" fill="#9fb0bd" font-size="12" text-anchor="middle">Stagnan, anoksik, kaya hidrogen sulfida</text>
+  <text x="585" y="200" fill="#d2a8ff" font-size="14" text-anchor="middle" font-weight="bold">Euksinia zona cahaya</text>
+  <text x="585" y="220" fill="#cbb6f5" font-size="11" text-anchor="middle">Bakteri belerang meledak (biomarker isorenieratene)</text>
+
+  <!-- H2S emission arrows -->
+  <path d="M 500 150 Q 482 105 500 70" fill="none" stroke="#ff7b72" stroke-width="3" stroke-dasharray="4 4"/>
+  <path d="M 670 150 Q 688 105 670 70" fill="none" stroke="#ff7b72" stroke-width="3" stroke-dasharray="4 4"/>
+  <text x="585" y="64" fill="#ff7b72" font-size="13" text-anchor="middle" font-weight="bold">Emisi gas H2S ke atmosfer</text>
+
+  <!-- chemocline -->
+  <line x1="410" y1="245" x2="760" y2="245" stroke="#ff7b72" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="585" y="262" fill="#ff7b72" font-size="11" text-anchor="middle">Chemocline (batas oksik dan beracun)</text>
+
+  <line x1="400" y1="80" x2="400" y2="470" stroke="#30363d" stroke-width="3"/>
+  <text x="400" y="500" fill="#9fb0bd" font-size="12" text-anchor="middle">Akhir Perm (sekitar 252 juta tahun lalu): kanan menggantikan kiri di banyak lautan dunia</text>
+</svg>

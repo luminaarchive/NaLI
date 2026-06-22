@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" font-family="Georgia, 'Times New Roman', serif">
+  <rect width="800" height="600" fill="#0d1117"/>
+  <text x="400" y="38" fill="#e6edf3" font-size="20" text-anchor="middle" font-weight="bold">LLSVP: dua gumpalan raksasa di dasar mantel</text>
+  <text x="400" y="60" fill="#9fb0bd" font-size="13" text-anchor="middle">Penampang skematis Bumi, bukan gambar berskala. Disusun dari sumber yang dicantumkan.</text>
+
+  <!-- mantle -->
+  <circle cx="400" cy="330" r="240" fill="#161b22" stroke="#30363d" stroke-width="2"/>
+  <!-- outer core -->
+  <circle cx="400" cy="330" r="125" fill="#ff7b72" opacity="0.85"/>
+  <!-- inner core -->
+  <circle cx="400" cy="330" r="55" fill="#d2a8ff"/>
+  <text x="400" y="335" fill="#0d1117" font-size="13" text-anchor="middle" font-weight="bold">INTI BUMI</text>
+
+  <!-- LLSVP African (left, at base of mantle) -->
+  <path d="M 250 235 Q 300 215 345 245 Q 360 275 330 300 Q 290 320 255 300 Q 235 270 250 235 Z" fill="#ff4400" opacity="0.65"/>
+  <!-- LLSVP Pacific (right) -->
+  <path d="M 455 245 Q 500 215 550 235 Q 565 270 545 300 Q 510 320 470 300 Q 440 275 455 245 Z" fill="#ff4400" opacity="0.65"/>
+
+  <!-- plumes rising to surface -->
+  <path d="M 300 230 Q 280 140 295 95" fill="none" stroke="#ff7b72" stroke-width="3" stroke-dasharray="6 5"/>
+  <path d="M 505 230 Q 525 140 510 95" fill="none" stroke="#ff7b72" stroke-width="3" stroke-dasharray="6 5"/>
+
+  <!-- labels -->
+  <text x="120" y="470" fill="#ff7b72" font-size="15" font-weight="bold">LLSVP Afrika</text>
+  <text x="120" y="490" fill="#9fb0bd" font-size="12">Lebih besar dari benua, tinggi sekitar 1.000 km</text>
+  <text x="540" y="470" fill="#ff7b72" font-size="15" font-weight="bold">LLSVP Pasifik</text>
+  <text x="540" y="490" fill="#9fb0bd" font-size="12">Gelombang gempa shear melambat di sini</text>
+
+  <!-- legend -->
+  <rect x="60" y="535" width="15" height="15" fill="#ff4400" opacity="0.65"/>
+  <text x="84" y="548" fill="#c9d1d9" font-size="13">Area LLSVP (asal diperdebatkan: sisa mantel Theia atau tumpukan subduksi purba)</text>
+  <line x1="62" y1="572" x2="78" y2="572" stroke="#ff7b72" stroke-width="3" stroke-dasharray="6 5"/>
+  <text x="84" y="577" fill="#c9d1d9" font-size="13">Mantle plume (terkait hotspot besar seperti Hawaii dan Samoa)</text>
+</svg>
