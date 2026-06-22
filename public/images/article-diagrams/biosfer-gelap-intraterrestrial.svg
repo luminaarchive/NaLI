@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" font-family="Georgia, 'Times New Roman', serif">
+  <rect width="800" height="520" fill="#0d1117"/>
+
+  <!-- surface band: sunlit biosphere -->
+  <rect width="800" height="96" fill="#1f6feb" opacity="0.18"/>
+  <line x1="0" y1="96" x2="800" y2="96" stroke="#58a6ff" stroke-width="2"/>
+  <text x="32" y="40" fill="#e6edf3" font-size="18" font-weight="bold">Biosfer permukaan</text>
+  <text x="32" y="64" fill="#9fb0bd" font-size="13">Tenaga dari Matahari (fotosintesis), oksigen, siklus hidup jam sampai tahun</text>
+  <text x="32" y="84" fill="#9fb0bd" font-size="13">Yang biasa kita anggap "seluruh kehidupan Bumi"</text>
+
+  <!-- deep zone -->
+  <rect width="800" height="424" y="96" fill="#11161d"/>
+  <text x="32" y="132" fill="#ff7b72" font-size="20" font-weight="bold">Biosfer gelap (intraterrestrial)</text>
+  <text x="32" y="156" fill="#9fb0bd" font-size="13">Volume sekitar 2 sampai 2,3 miliar km kubik, hampir dua kali seluruh lautan dunia</text>
+  <text x="32" y="176" fill="#9fb0bd" font-size="13">Biomassa karbon 15 sampai 23 miliar ton, ratusan kali massa seluruh manusia</text>
+  <text x="32" y="196" fill="#9fb0bd" font-size="13">Tenaga dari batuan: kemolitotrof dan radiolisis, tanpa cahaya matahari</text>
+
+  <!-- depth ticks -->
+  <line x1="0" y1="250" x2="800" y2="250" stroke="#30363d" stroke-width="1" stroke-dasharray="5 5"/>
+  <line x1="0" y1="350" x2="800" y2="350" stroke="#30363d" stroke-width="1" stroke-dasharray="5 5"/>
+  <line x1="0" y1="450" x2="800" y2="450" stroke="#30363d" stroke-width="1" stroke-dasharray="5 5"/>
+
+  <!-- site 1 -->
+  <circle cx="120" cy="285" r="6" fill="#d2a8ff"/>
+  <text x="138" y="282" fill="#e6edf3" font-size="14" font-weight="bold">Tambang Mponeng, Afrika Selatan (sekitar 2,8 km)</text>
+  <text x="138" y="302" fill="#9fb0bd" font-size="12">Desulforudis audaxviator hidup dari radiolisis air oleh peluruhan uranium</text>
+
+  <!-- site 2 -->
+  <circle cx="120" cy="385" r="6" fill="#79c0ff"/>
+  <text x="138" y="382" fill="#e6edf3" font-size="14" font-weight="bold">Lepas Shimokita, Jepang (sekitar 2,5 km di bawah dasar laut)</text>
+  <text x="138" y="402" fill="#9fb0bd" font-size="12">Mikroba aktif di lapisan batubara, terbukti dari inti bor IODP Ekspedisi 337</text>
+
+  <!-- metabolism note -->
+  <circle cx="120" cy="485" r="6" fill="#f0883e"/>
+  <text x="138" y="482" fill="#e6edf3" font-size="14" font-weight="bold">Metabolisme sangat lambat (mikroba "zombi")</text>
+  <text x="138" y="502" fill="#9fb0bd" font-size="12">Pergantian biomassa berskala abad sampai milenium; sebagian bertahan tanpa membelah</text>
+</svg>
