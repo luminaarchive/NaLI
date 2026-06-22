@@ -5,14 +5,20 @@
       "at": "2026-06-15T13:16:14.665Z",
       "addedJurnal": 306,
       "addedSources": 306
+    },
+    {
+      "batch": 3,
+      "at": "2026-06-22T02:39:38.252Z",
+      "addedJurnal": 220,
+      "addedSources": 220
     }
   ],
-  "lastRun": "2026-06-15T13:16:14.665Z",
-  "lastBatch": 2,
+  "lastRun": "2026-06-22T02:39:38.252Z",
+  "lastBatch": 3,
   "totals": {
-    "articles": 35,
-    "jurnal": 330,
-    "arsipSumber": 465,
+    "articles": 43,
+    "jurnal": 550,
+    "arsipSumber": 716,
     "target": 300
   }
 }

@@ -1,6 +1,7 @@
 import type { RawPublication } from "@/lib/types";
 import { publicationsBatch1 } from "./publications/batch-1";
 import { publicationsBatch2 } from "./publications/batch-2";
+import { publicationsBatch3 } from "./publications/batch-3";
 
 /**
  * Master list of Jurnal publication records (real external journals, reports,
@@ -10,4 +11,5 @@ import { publicationsBatch2 } from "./publications/batch-2";
 export const publications: RawPublication[] = [
   ...publicationsBatch1,
   ...publicationsBatch2,
+  ...publicationsBatch3,
 ];
