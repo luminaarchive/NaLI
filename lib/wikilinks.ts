@@ -1,4 +1,5 @@
 import type { ArticleMeta } from "./types";
+import { slugifyTag } from "./topics";
 
 /**
  * Wikipedia-style auto-linking. We build an index of known entities (article
@@ -113,13 +114,8 @@ export function buildEntityIndex(articles: ArticleMeta[]): Entity[] {
       if (tag.length < 5) continue;
       if (GENERIC_TOPICS.has(tag.toLowerCase())) continue;
     }
-    const slug = tag
-      .toLowerCase()
-      .normalize("NFKD")
-      .replace(/[^\w\s-]/g, "")
-      .trim()
-      .replace(/\s+/g, "-");
-    add(tag, `/topik/${slug}`);
+    // use the same slugify as the /topik route so the link never 404s
+    add(tag, `/topik/${slugifyTag(tag)}`);
   }
 
   // longest phrases first so "Anak Krakatau" beats "Krakatau" at match time
@@ -133,6 +129,35 @@ type MdastNode = {
   data?: { hProperties?: Record<string, unknown> };
   children?: MdastNode[];
 };
+
+/**
+ * Remark plugin: lift images out of the paragraph markdown wraps them in. The MDX
+ * `img` component renders a block <figure>, and a <figure> inside a <p> is invalid
+ * HTML, which the browser reparents, causing a hydration mismatch. Unwrapping the
+ * image to a top-level node fixes it.
+ */
+export function remarkUnwrapImages() {
+  const unwrap = (node: MdastNode) => {
+    if (!node.children) return;
+    const out: MdastNode[] = [];
+    for (const child of node.children) {
+      if (child.type === "paragraph" && child.children) {
+        const images = child.children.filter((c) => c.type === "image");
+        const onlyImagesAndSpace = child.children.every(
+          (c) => c.type === "image" || (c.type === "text" && (c.value ?? "").trim() === ""),
+        );
+        if (images.length > 0 && onlyImagesAndSpace) {
+          out.push(...images);
+          continue;
+        }
+      }
+      unwrap(child);
+      out.push(child);
+    }
+    node.children = out;
+  };
+  return (tree: MdastNode) => unwrap(tree);
+}
 
 const SKIP = new Set([
   "link",

@@ -4,7 +4,7 @@ import Image from "next/image";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
 import type { ArticleImage, ArticleDiagram } from "@/lib/types";
-import { remarkAutolink, type Entity } from "@/lib/wikilinks";
+import { remarkAutolink, remarkUnwrapImages, type Entity } from "@/lib/wikilinks";
 
 interface MdxBodyProps {
   source: string;
@@ -158,8 +158,8 @@ export function MdxBody({ source, images = [], diagrams = [], entities, selfHref
             format: "md",
             remarkPlugins:
               entities && entities.length > 0
-                ? [remarkGfm, [remarkAutolink, { entities, selfHref }]]
-                : [remarkGfm],
+                ? [remarkGfm, remarkUnwrapImages, [remarkAutolink, { entities, selfHref }]]
+                : [remarkGfm, remarkUnwrapImages],
             rehypePlugins: [rehypeSlug],
           },
         }}
