@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { LivingDashboard } from "@/components/dashboard/LivingDashboard";
 import { DiscoveryScore } from "@/components/DiscoveryScore";
+import { AlertsPanel } from "@/components/watch-alerts/AlertsPanel";
 import { getLivingStats } from "@/lib/living-engine";
 import { PILLARS } from "@/lib/site";
 
@@ -53,6 +54,10 @@ export default async function RuangKendaliPage() {
             totalArsip={stats.totalArsip}
             topics={PILLARS.map((p) => ({ slug: p.key, label: p.title }))}
           />
+        </div>
+
+        <div className="mt-10">
+          <AlertsPanel />
         </div>
 
         <h2 className="mt-12 font-display text-2xl text-ink-black">Modul NaLI V2</h2>
