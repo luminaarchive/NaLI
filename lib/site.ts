@@ -20,6 +20,7 @@ export const SITE = {
 export const NAV_LINKS: { href: string; label: string }[] = [
   { href: "/articles", label: "Artikel" },
   { href: "/jurnal", label: "Jurnal" },
+  { href: "/pustaka", label: "Pustaka" },
   { href: "/arsip-sumber", label: "Arsip Sumber" },
   { href: "/seri", label: "Seri" },
   { href: "/ruang-kendali", label: "Ruang Kendali" },

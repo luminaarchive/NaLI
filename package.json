@@ -16,6 +16,7 @@
     "check:covers": "node scripts/check-cover-integrity.mjs",
     "check:a11y": "node scripts/check-accessibility.mjs",
     "check:links": "node scripts/check-links.mjs",
+    "harvest:pustaka": "node scripts/mine/harvest-oa-to-supabase.mjs",
     "social": "node scripts/social/kit.mjs"
   },
   "dependencies": {
