@@ -23,7 +23,9 @@ CREATE TABLE IF NOT EXISTS sources (
   accessed_at TIMESTAMPTZ NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   -- HARD CONSTRAINT: only open-access sources enter this table.
-  CONSTRAINT sources_must_be_open_access CHECK (is_oa = true)
+  CONSTRAINT sources_must_be_open_access CHECK (is_oa = true),
+  -- Unique URL so the MDX -> DB sync can upsert sources idempotently.
+  CONSTRAINT sources_url_key UNIQUE (url)
 );
 
 -- Articles table.
@@ -36,7 +38,7 @@ CREATE TABLE IF NOT EXISTS articles (
   last_checked_at TIMESTAMPTZ NOT NULL,
   author TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','review','published')),
-  confidence_overall TEXT CHECK (confidence_overall IN ('terverifikasi-kuat','didukung-sumber','diperdebatkan','belum-cukup-bukti')),
+  confidence_overall TEXT CHECK (confidence_overall IN ('terverifikasi-kuat','didukung-sumber','terbatas','diperdebatkan','belum-cukup-bukti')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -45,7 +47,7 @@ CREATE TABLE IF NOT EXISTS claims (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   article_id UUID NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
   statement TEXT NOT NULL,
-  confidence TEXT NOT NULL CHECK (confidence IN ('terverifikasi-kuat','didukung-sumber','diperdebatkan','belum-cukup-bukti')),
+  confidence TEXT NOT NULL CHECK (confidence IN ('terverifikasi-kuat','didukung-sumber','terbatas','diperdebatkan','belum-cukup-bukti')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

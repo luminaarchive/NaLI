@@ -3,9 +3,9 @@
  *
  * Note on vocabulary: this relational layer uses the doctrine's kebab-case
  * confidence strings ("terverifikasi-kuat" ...), which is the contract enforced
- * by the DB CHECK constraints. The MDX/file layer uses space strings
- * ("terverifikasi kuat" ...) plus an extra "terbatas" level. A future sync job
- * maps between them; see CONFIDENCE_DB_FROM_LEDGER below.
+ * by the DB CHECK constraints. The MDX/file layer uses the same five levels as
+ * space strings ("terverifikasi kuat" ...). The sync job maps between them;
+ * see CONFIDENCE_DB_FROM_LEDGER below.
  */
 
 export type DbVertical = "alam" | "sejarah" | "investigasi";
@@ -15,6 +15,7 @@ export type DbArticleStatus = "draft" | "review" | "published";
 export type DbConfidence =
   | "terverifikasi-kuat"
   | "didukung-sumber"
+  | "terbatas"
   | "diperdebatkan"
   | "belum-cukup-bukti";
 
@@ -64,13 +65,13 @@ export interface DbClaimSource {
 }
 
 /**
- * Maps the file/MDX claim-ledger status (space strings, 5 levels) onto the DB
- * confidence enum (kebab, 4 levels). "terbatas" folds into "belum-cukup-bukti".
+ * Maps the file/MDX claim-ledger status (space strings) onto the DB confidence
+ * enum (kebab). Both layers carry the same five levels.
  */
 export const CONFIDENCE_DB_FROM_LEDGER: Record<string, DbConfidence> = {
   "terverifikasi kuat": "terverifikasi-kuat",
   "didukung sumber": "didukung-sumber",
+  terbatas: "terbatas",
   diperdebatkan: "diperdebatkan",
-  terbatas: "belum-cukup-bukti",
   "belum cukup bukti": "belum-cukup-bukti",
 };
