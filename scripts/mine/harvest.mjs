@@ -132,10 +132,46 @@ const CURATED = [
   "Leuser ecosystem deforestation",
   "Raja Ampat reef fish",
 ];
+// real, well-documented research areas that also read as genuine mysteries: the
+// kind that pull human curiosity (lost species, deep time, vanished peoples,
+// unexplained sites). Every one of these has a real scholarly literature.
+const MYSTERY = [
+  "Homo floresiensis Liang Bua",
+  "Homo floresiensis hobbit Flores",
+  "Liang Bua stone tools stratigraphy",
+  "Stegodon dwarf Flores island",
+  "Sulawesi cave art oldest figurative painting",
+  "Maros Pangkep rock art Pleistocene",
+  "Lubang Jeriji Saleh Borneo rock art",
+  "Gunung Padang megalithic Cianjur",
+  "Sundaland submerged continental shelf sea level",
+  "Denisovan ancient DNA Island Southeast Asia",
+  "Homo erectus Sangiran Java",
+  "Ngandong Homo erectus Solo terrace",
+  "Java Man Trinil Pithecanthropus",
+  "Toba supereruption human population bottleneck",
+  "Wallace line faunal boundary biogeography",
+  "Latimeria coelacanth Indonesia",
+  "deep sea new species Indonesia expedition",
+  "Niah Cave Borneo deep skull",
+  "Lapita Austronesian expansion migration",
+  "megalithic statue Nias Sumba",
+  "Muarajambi Buddhist temple complex",
+  "Padang Lawas temple Sumatra",
+  "Trowulan Majapahit urban archaeology",
+  "Javan tiger Panthera extinction genetics",
+  "Sumatran rhinoceros decline genetics",
+  "cryptic species DNA barcoding Indonesia",
+  "Flores pygmy elephant extinction",
+  "ancient human migration Wallacea seafaring",
+  "Punung fauna Pleistocene Java",
+  "karst cave fossil Sulawesi paleontology",
+];
 
 function buildKeywords() {
   const set = new Set();
   for (const c of CURATED) set.add(c);
+  for (const m of MYSTERY) set.add(m);
   for (const t of TOPICS) for (const r of REGIONS) set.add(`${t} ${r}`);
   return [...set];
 }

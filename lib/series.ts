@@ -12,6 +12,13 @@ export interface Series {
 
 export const SERIES: Series[] = [
   {
+    slug: "misteri-nusantara",
+    title: "Misteri Nusantara",
+    promise:
+      "Manusia kerdil di Flores, lukisan gua tertua di dunia, situs megalit yang diperdebatkan, dan daratan yang hilang di bawah laut. Teka-teki Indonesia yang paling menggugah rasa ingin tahu, dibaca dari bukti nyata, dengan garis tegas antara yang sudah terbukti dan yang masih gelap.",
+    status: "active",
+  },
+  {
     slug: "spesies-hilang-bertahan",
     title: "Spesies yang Hilang dan Bertahan",
     promise:
