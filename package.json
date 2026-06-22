@@ -16,6 +16,9 @@
     "check:covers": "node scripts/check-cover-integrity.mjs",
     "check:a11y": "node scripts/check-accessibility.mjs",
     "check:links": "node scripts/check-links.mjs",
+    "check:schema": "node scripts/check-schema.mjs",
+    "check:legal": "node scripts/check-legal.mjs",
+    "check:all": "npm run check:schema && npm run check:editorial && npm run check:legal && npm run check:a11y",
     "harvest:pustaka": "node scripts/mine/harvest-oa-to-supabase.mjs",
     "social": "node scripts/social/kit.mjs"
   },
