@@ -227,6 +227,8 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
               path={`/articles/${article.slug}`}
               title={article.title}
               description={article.summary || article.subtitle}
+              category={article.category}
+              image={metadataImage}
             />
           </div>
         </div>

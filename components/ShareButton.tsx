@@ -5,8 +5,8 @@ import { useState, useCallback } from "react";
 /* -------------------------------------------------------------------------- */
 /*  ShareButton - native share sheet + fallback social buttons.               */
 /*                                                                            */
-/*  Primary: navigator.share() (mobile native sheet covers IG, TikTok, WA).   */
-/*  Fallback: X intent, WhatsApp, Instagram, TikTok, clipboard copy.          */
+/*  Primary: navigator.share() (mobile native sheet).                         */
+/*  Fallback: X, WhatsApp, Instagram/TikTok Previews, clipboard copy.         */
 /* -------------------------------------------------------------------------- */
 
 interface ShareButtonProps {
@@ -16,12 +16,41 @@ interface ShareButtonProps {
   title: string;
   /** Short description for share text */
   description?: string;
+  /** Content category */
+  category?: string;
+  /** Cover image URL */
+  image?: string;
 }
 
-export function ShareButton({ path, title, description }: ShareButtonProps) {
+const CATEGORY_COLOR: Record<string, string> = {
+  alam: "#2f9e6e",
+  sejarah: "#3b6fb0",
+  investigasi: "#c9772f",
+  sumber: "#8a8f98",
+  seri: "#7a5bb0",
+  topik: "#b08a3b",
+};
+
+const CATEGORY_LABEL: Record<string, string> = {
+  alam: "Alam",
+  sejarah: "Sejarah",
+  investigasi: "Investigasi",
+  sumber: "Arsip Sumber",
+  seri: "Seri",
+  topik: "Topik",
+};
+
+export function ShareButton({
+  path,
+  title,
+  description,
+  category = "artikel",
+  image,
+}: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
-  const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [activeModal, setActiveModal] = useState<"instagram" | "tiktok" | null>(null);
+  const [modalCopied, setModalCopied] = useState(false);
 
   const getFullUrl = useCallback(() => {
     if (typeof window === "undefined") return "";
@@ -68,28 +97,19 @@ export function ShareButton({ path, title, description }: ShareButtonProps) {
     );
   };
 
-  const shareToInstagram = async () => {
+  const copyForModalShare = async (targetUrl: string) => {
     const url = getFullUrl();
+    const shareText = `${title}\n\n${description ?? ""}\n\nBaca riset lengkapnya di NaLI:\n${url}`;
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(shareText);
+      setModalCopied(true);
+      setTimeout(() => setModalCopied(false), 2000);
     } catch {
       // Fallback
     }
-    setInfoMessage("Tautan disalin! Buka Instagram.");
-    setTimeout(() => setInfoMessage(null), 2500);
-    window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
-  };
-
-  const shareToTikTok = async () => {
-    const url = getFullUrl();
-    try {
-      await navigator.clipboard.writeText(url);
-    } catch {
-      // Fallback
-    }
-    setInfoMessage("Tautan disalin! Buka TikTok.");
-    setTimeout(() => setInfoMessage(null), 2500);
-    window.open("https://www.tiktok.com/", "_blank", "noopener,noreferrer");
+    setTimeout(() => {
+      window.open(targetUrl, "_blank", "noopener,noreferrer");
+    }, 500);
   };
 
   const copyLink = async () => {
@@ -104,20 +124,16 @@ export function ShareButton({ path, title, description }: ShareButtonProps) {
     }
   };
 
+  const accentColor = CATEGORY_COLOR[category] ?? "#8a8f98";
+  const categoryLabel = CATEGORY_LABEL[category] ?? category.toUpperCase();
+
   return (
     <div className="relative inline-flex items-center gap-1">
-      {/* Dynamic tooltip message */}
-      {infoMessage && (
-        <div className="absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap border border-dashed border-ink/60 bg-paper px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-wider text-ink shadow-sm animate-in fade-in slide-in-from-bottom-1 duration-150">
-          {infoMessage}
-        </div>
-      )}
-
       {/* Main share trigger */}
       <button
         type="button"
         onClick={handleShare}
-        className="inline-flex items-center gap-1.5 border border-dashed border-ink/50 px-3 py-1.5 font-mono text-[0.7rem] uppercase tracking-[0.1em] text-ink transition-colors hover:bg-ink-wash"
+        className="inline-flex items-center gap-1.5 border border-dashed border-ink/50 bg-paper px-3 py-1.5 font-mono text-[0.7rem] uppercase tracking-[0.1em] text-ink transition-colors hover:bg-ink-wash"
         aria-label="Bagikan"
       >
         <svg
@@ -144,7 +160,7 @@ export function ShareButton({ path, title, description }: ShareButtonProps) {
           <button
             type="button"
             onClick={shareToX}
-            className="inline-flex h-8 w-8 items-center justify-center border border-dashed border-ink/40 text-gray transition-colors hover:border-ink hover:bg-ink-wash hover:text-ink"
+            className="inline-flex h-8 w-8 items-center justify-center border border-dashed border-ink/40 bg-paper text-gray transition-colors hover:border-ink hover:bg-ink-wash hover:text-ink"
             aria-label="Bagikan ke X"
             title="Bagikan ke X"
           >
@@ -157,7 +173,7 @@ export function ShareButton({ path, title, description }: ShareButtonProps) {
           <button
             type="button"
             onClick={shareToWhatsApp}
-            className="inline-flex h-8 w-8 items-center justify-center border border-dashed border-ink/40 text-gray transition-colors hover:border-ink hover:bg-ink-wash hover:text-ink"
+            className="inline-flex h-8 w-8 items-center justify-center border border-dashed border-ink/40 bg-paper text-gray transition-colors hover:border-ink hover:bg-ink-wash hover:text-ink"
             aria-label="Bagikan ke WhatsApp"
             title="Bagikan ke WhatsApp"
           >
@@ -169,8 +185,11 @@ export function ShareButton({ path, title, description }: ShareButtonProps) {
           {/* Instagram */}
           <button
             type="button"
-            onClick={shareToInstagram}
-            className="inline-flex h-8 w-8 items-center justify-center border border-dashed border-ink/40 text-gray transition-colors hover:border-ink hover:bg-ink-wash hover:text-ink"
+            onClick={() => {
+              setActiveModal("instagram");
+              setModalCopied(false);
+            }}
+            className="inline-flex h-8 w-8 items-center justify-center border border-dashed border-ink/40 bg-paper text-gray transition-colors hover:border-ink hover:bg-ink-wash hover:text-ink"
             aria-label="Bagikan ke Instagram"
             title="Bagikan ke Instagram"
           >
@@ -193,8 +212,11 @@ export function ShareButton({ path, title, description }: ShareButtonProps) {
           {/* TikTok */}
           <button
             type="button"
-            onClick={shareToTikTok}
-            className="inline-flex h-8 w-8 items-center justify-center border border-dashed border-ink/40 text-gray transition-colors hover:border-ink hover:bg-ink-wash hover:text-ink"
+            onClick={() => {
+              setActiveModal("tiktok");
+              setModalCopied(false);
+            }}
+            className="inline-flex h-8 w-8 items-center justify-center border border-dashed border-ink/40 bg-paper text-gray transition-colors hover:border-ink hover:bg-ink-wash hover:text-ink"
             aria-label="Bagikan ke TikTok"
             title="Bagikan ke TikTok"
           >
@@ -212,7 +234,7 @@ export function ShareButton({ path, title, description }: ShareButtonProps) {
           <button
             type="button"
             onClick={copyLink}
-            className="inline-flex h-8 w-8 items-center justify-center border border-dashed border-ink/40 text-gray transition-colors hover:border-ink hover:bg-ink-wash hover:text-ink"
+            className="inline-flex h-8 w-8 items-center justify-center border border-dashed border-ink/40 bg-paper text-gray transition-colors hover:border-ink hover:bg-ink-wash hover:text-ink"
             aria-label={copied ? "Tersalin" : "Salin tautan"}
             title={copied ? "Tersalin!" : "Salin tautan"}
           >
@@ -236,6 +258,110 @@ export function ShareButton({ path, title, description }: ShareButtonProps) {
               )}
             </svg>
           </button>
+        </div>
+      )}
+
+      {/* Modal Dialog */}
+      {activeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md border border-dashed border-ink bg-paper p-6 shadow-xl animate-in zoom-in-95 duration-200 flex flex-col">
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setActiveModal(null)}
+              className="absolute top-4 right-4 font-mono text-xs uppercase tracking-wider text-gray hover:text-ink cursor-pointer border border-dashed border-ink/30 px-1.5 py-0.5"
+            >
+              Tutup
+            </button>
+
+            {/* Modal Title */}
+            <h3 className="font-display text-base font-bold uppercase tracking-wider text-ink mb-4 pr-16">
+              Bagikan ke {activeModal === "instagram" ? "Instagram" : "TikTok"}
+            </h3>
+
+            {/* Simulated Story Card */}
+            <div
+              className="border border-dashed border-white/20 p-4 mb-4 text-[#F5F0EB] flex flex-col relative overflow-hidden"
+              style={{ backgroundColor: "#0E3A5C", minHeight: "240px" }}
+            >
+              {/* Top Accent bar */}
+              <div
+                className="absolute top-0 left-0 right-0 h-1"
+                style={{ backgroundColor: accentColor }}
+              />
+
+              {/* Category + source info */}
+              <div className="flex items-center justify-between">
+                <span
+                  className="font-mono text-[0.62rem] uppercase tracking-[0.12em] border border-dashed px-2 py-0.5"
+                  style={{ color: accentColor, borderColor: accentColor }}
+                >
+                  {categoryLabel}
+                </span>
+                <span className="font-mono text-[0.62rem] text-[#8a9fad]">
+                  NaLI - Jurnal Riset
+                </span>
+              </div>
+
+              {/* Main Info */}
+              <div className="mt-4 flex gap-4 items-start">
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-display text-sm font-bold leading-snug line-clamp-3">
+                    {title}
+                  </h4>
+                  {description && (
+                    <p className="mt-2 font-mono text-[0.68rem] leading-relaxed text-[#8a9fad] line-clamp-4">
+                      {description}
+                    </p>
+                  )}
+                </div>
+                {image && (
+                  <div className="w-16 h-16 border border-dashed border-white/30 overflow-hidden flex-shrink-0">
+                    <img src={image} alt={title} className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+
+              {/* Bottom branding and link */}
+              <div className="mt-auto border-t border-dashed border-white/20 pt-2 flex items-center justify-between font-mono text-[0.62rem] text-[#5a7a8d]">
+                <span>nalijournal.vercel.app</span>
+                <span className="underline truncate max-w-[150px]" title={getFullUrl()}>
+                  {path}
+                </span>
+              </div>
+            </div>
+
+            {/* Hint Box */}
+            <div className="bg-ink-wash/40 border border-dashed border-ink/20 p-3 mb-4">
+              <p className="font-mono text-[0.66rem] leading-relaxed text-ink-charcoal">
+                <span className="font-bold text-ink-deep">Informasi:</span> Judul, sinopsis, dan link artikel disalin otomatis. Anda dapat menempelkannya langsung ke Stories/Feeds Anda.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  copyForModalShare(
+                    activeModal === "instagram"
+                      ? "https://www.instagram.com/"
+                      : "https://www.tiktok.com/"
+                  )
+                }
+                className="flex-1 bg-ink text-paper border border-ink py-2 font-mono text-[0.72rem] uppercase tracking-[0.1em] hover:bg-ink-deep transition-colors text-center"
+              >
+                {modalCopied ? "Tersalin!" : `Salin & Buka ${activeModal === "instagram" ? "Instagram" : "TikTok"}`}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveModal(null)}
+                className="border border-dashed border-ink/50 px-4 py-2 font-mono text-[0.72rem] uppercase tracking-[0.1em] text-ink hover:bg-ink-wash transition-colors"
+              >
+                Batal
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
