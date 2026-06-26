@@ -319,6 +319,29 @@ export const graphData: GraphData = {
       synopsis: "Laguna estuari mangrove luas di Jawa Selatan yang terancam pendangkalan laju sedimentasi sungai."
     },
 
+    // NEW ALAM NODES FROM BATCH 1
+    {
+      id: "jamur-pembunuh-amfibi",
+      label: "Jamur Pembunuh Amfibi (Chytrid)",
+      group: "alam",
+      val: 15,
+      synopsis: "Patogen mematikan penyulut krisis keanekaragaman amfibi global di ekosistem tropis."
+    },
+    {
+      id: "bottleneck-genetik-toba",
+      label: "Penyusutan Populasi Genetik Toba (Bottleneck)",
+      group: "alam",
+      val: 22,
+      synopsis: "Penyusutan populasi manusia purba global pasca letusan supervolcano Toba."
+    },
+    {
+      id: "megathrust-jawa-selatan",
+      label: "Zona Megathrust Jawa Selatan",
+      group: "alam",
+      val: 23,
+      synopsis: "Potensi gempa kolosal subduksi lempeng aktif di sepanjang pesisir selatan Jawa."
+    },
+
     // SEJARAH (Category/Group: 'sejarah')
     {
       id: "selat-yang-hilang-laut-demak",
@@ -377,6 +400,29 @@ export const graphData: GraphData = {
       synopsis: "Sisa benteng kota kolonial Batavia dengan kanal air pengalir limbah wabah malaria."
     },
 
+    // NEW SEJARAH NODES FROM BATCH 1
+    {
+      id: "tahun-tanpa-musim-panas",
+      label: "Tahun Tanpa Musim Panas (1816)",
+      group: "sejarah",
+      val: 18,
+      synopsis: "Anomali iklim ekstrem global dan kegagalan panen masif akibat abu letusan Tambora 1815."
+    },
+    {
+      id: "palembang-sriwijaya-pantai",
+      label: "Palembang & Garis Pantai Sriwijaya Purba",
+      group: "sejarah",
+      val: 19,
+      synopsis: "Transformasi geomorfologi pesisir Sumatra Selatan yang mendangkalkan ibu kota maritim Sriwijaya."
+    },
+    {
+      id: "genetika-wallacea-cengkeh",
+      label: "Jejak Genetika Cengkeh & Rempah Wallacea",
+      group: "sejarah",
+      val: 16,
+      synopsis: "Analisis penyebaran genetik tanaman cengkeh asli Maluku melewati batas Kepulauan Wallacea."
+    },
+
     // INVESTIGASI (Category/Group: 'investigasi')
     {
       id: "ekspor-pasir-laut",
@@ -419,6 +465,36 @@ export const graphData: GraphData = {
       group: "investigasi",
       val: 21,
       synopsis: "Investigasi buangan limbah kimia beracun industri tekstil di sepanjang aliran sungai vital Jawa."
+    },
+
+    // NEW INVESTIGASI NODES FROM BATCH 1
+    {
+      id: "intrusi-pantura",
+      label: "Intrusi Air Laut Pesisir Pantura",
+      group: "investigasi",
+      val: 19,
+      synopsis: "Rembebasan air asin laut dalam yang mencemari akuifer air bersih di sepanjang pesisir utara Jawa."
+    },
+    {
+      id: "tambang-pasir-silika",
+      label: "Penambangan Pasir Silika Pesisir",
+      group: "investigasi",
+      val: 17,
+      synopsis: "Pengerukan pasir kuarsa pesisir untuk industri kaca yang memicu abrasi dan hilangnya pelindung alami."
+    },
+    {
+      id: "kabut-asap-lintas-batas",
+      label: "Kabut Asap Lintas Batas (Transboundary Haze)",
+      group: "investigasi",
+      val: 20,
+      synopsis: "Dampak kesehatan regional pelepasan emisi karbon akibat pembakaran lahan gambut Sumatra & Kalimantan."
+    },
+    {
+      id: "tambang-timah-belitung",
+      label: "Penambangan Timah Laut Belitung",
+      group: "investigasi",
+      val: 18,
+      synopsis: "Sedimentasi berat lumpur limbah hisap tambang timah lepas pantai yang merusak terumbu karang."
     }
   ],
   links: [
@@ -472,6 +548,48 @@ export const graphData: GraphData = {
     { source: "prasasti-yupa", target: "peta-lama-nusantara", type: "sejarah-aksara", label: "Jalur peradaban tertua Kutai" },
     { source: "borobudur", target: "samalas-1257", type: "endapan-abu", label: "Abu vulkanik penimbun candi" },
     { source: "borobudur", target: "prasasti-yupa", type: "kronologi-batu", label: "Seni pahatan relief batu Nusantara" },
-    { source: "homo-floresiensis", target: "komodo", type: "megafauna-flores", label: "Koeksistensi penyintas Liang Bua" }
+    { source: "homo-floresiensis", target: "komodo", type: "megafauna-flores", label: "Koeksistensi penyintas Liang Bua" },
+
+    // 8. KONEKSI 10 JEMBATAN BARU (BATCH 1)
+    // Node: tahun-tanpa-musim-panas
+    { source: "tahun-tanpa-musim-panas", target: "tambora-1815", type: "dampak-iklim", label: "Pemicu musim dingin vulkanik" },
+    { source: "tahun-tanpa-musim-panas", target: "samalas-1257", type: "anomali-global", label: "Perbandingan dampak pendinginan" },
+
+    // Node: intrusi-pantura
+    { source: "intrusi-pantura", target: "jakarta-tenggelam", type: "krisis-ekologi", label: "Penurunan tanah memicu intrusi" },
+    { source: "intrusi-pantura", target: "citarum", type: "sumber-air", label: "Krisis air bersih permukaan" },
+    { source: "intrusi-pantura", target: "ekspor-pasir-laut", type: "abrasi-pesisir", label: "Pencegahan penetrasi air asin" },
+
+    // Node: jamur-pembunuh-amfibi
+    { source: "jamur-pembunuh-amfibi", target: "lazarus-taxon", type: "ancaman-kepunahan", label: "Penyebab kepunahan amfibi" },
+    { source: "jamur-pembunuh-amfibi", target: "spesies-hilang-nusantara", type: "pencarian-spesies", label: "Evaluasi populasi terancam" },
+
+    // Node: tambang-pasir-silika
+    { source: "tambang-pasir-silika", target: "ekspor-pasir-laut", type: "ekstraksi-pesisir", label: "Penambangan pasir kuarsa" },
+    { source: "tambang-pasir-silika", target: "mangrove-indonesia", type: "kerusakan-habitat", label: "Destruksi sabuk hijau pesisir" },
+
+    // Node: palembang-sriwijaya-pantai
+    { source: "palembang-sriwijaya-pantai", target: "selat-yang-hilang-laut-demak", type: "sedimentasi-sejarah", label: "Perubahan garis pantai kerajaan" },
+    { source: "palembang-sriwijaya-pantai", target: "peta-lama-nusantara", type: "kartografi-kuno", label: "Rujukan pelabuhan pedalaman" },
+
+    // Node: kabut-asap-lintas-batas
+    { source: "kabut-asap-lintas-batas", target: "gambut-indonesia", type: "kebakaran-lahan", label: "Pelepasan emisi karbon" },
+    { source: "kabut-asap-lintas-batas", target: "deforestasi-kalimantan", type: "kerusakan-udara", label: "Pembukaan lahan sawit" },
+
+    // Node: genetika-wallacea-cengkeh
+    { source: "genetika-wallacea-cengkeh", target: "banda-neira", type: "sejarah-rempah", label: "Peta biogeografi rempah" },
+    { source: "genetika-wallacea-cengkeh", target: "lebah-raksasa-wallace", type: "biogeografi-wallace", label: "Ekologi serangga penyerbuk" },
+
+    // Node: tambang-timah-belitung
+    { source: "tambang-timah-belitung", target: "terumbu-karang", type: "polusi-sedimentasi", label: "Kerusakan terumbu akibat lumpur" },
+    { source: "tambang-timah-belitung", target: "sampah-plastik-laut", type: "degradasi-laut", label: "Akumulasi limbah pertambangan" },
+
+    // Node: bottleneck-genetik-toba
+    { source: "bottleneck-genetik-toba", target: "toba", type: "penyusutan-populasi", label: "Dampak letusan supervolcano Toba" },
+    { source: "bottleneck-genetik-toba", target: "homo-floresiensis", type: "evolusi-hominid", label: "Efek letusan pada manusia purba" },
+
+    // Node: megathrust-jawa-selatan
+    { source: "megathrust-jawa-selatan", target: "krakatau-1883", type: "pemicu-tsunami", label: "Siklus kegempaan Selat Sunda" },
+    { source: "megathrust-jawa-selatan", target: "anak-krakatau-2018", type: "seismik-pesisir", label: "Aktivitas subduksi lempeng" }
   ]
 };
