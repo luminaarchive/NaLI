@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { MdxBody } from "@/components/MdxBody";
 import { getSourceBySlug, getSourceSlugs } from "@/lib/content";
 import { RELIABILITY_LABEL, SOURCE_TYPE_LABEL } from "@/lib/types";
+import { ShareButton } from "@/components/ShareButton";
 
 const LANGUAGE_LABEL: Record<string, string> = {
   id: "Indonesia",
@@ -167,16 +168,24 @@ export default function SourceDetailPage({ params }: { params: Params }) {
           {source.checkedAt && <Field label="Tanggal dicek" value={source.checkedAt} />}
         </dl>
 
-        {source.url && (
-          <a
-            href={source.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-6 inline-flex items-center gap-2 border border-ink bg-ink px-5 py-3 font-mono text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-ink-deep"
-          >
-            Buka sumber asli <span aria-hidden>↗</span>
-          </a>
-        )}
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          {source.url && (
+            <a
+              href={source.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-ink bg-ink px-5 py-3 font-mono text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-paper transition-colors hover:bg-ink-deep"
+            >
+              Buka sumber asli <span aria-hidden>↗</span>
+            </a>
+          )}
+          <ShareButton
+            path={`/arsip-sumber/${source.slug}`}
+            title={source.title}
+            description={source.content ? source.content.slice(0, 180) + "..." : undefined}
+            category="sumber"
+          />
+        </div>
 
         <p className="mt-10 border-t border-dashed border-ink/40 pt-6 font-mono text-[0.72rem] leading-relaxed text-gray">
           Entri ini bagian dari arsip sumber terbuka NaLI. Setiap klaim

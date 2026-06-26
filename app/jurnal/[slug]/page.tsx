@@ -9,6 +9,7 @@ import { SITE } from "@/lib/site";
 import { safeJsonLd } from "@/lib/http";
 import { renderItalicTitle, stripHtmlTags, formatLicense } from "@/lib/jurnal-format";
 import { CitationModal } from "@/components/CitationModal";
+import { ShareButton } from "@/components/ShareButton";
 
 type Params = { slug: string };
 
@@ -202,6 +203,13 @@ export default function PublicationDetailPage({ params }: { params: Params }) {
               kind: "jurnal",
               authors: pub.authors,
             }}
+          />
+          <ShareButton
+            path={`/jurnal/${pub.slug}`}
+            title={stripHtmlTags(pub.title)}
+            description={pub.synopsis}
+            category="sumber"
+            image={coverImage ?? undefined}
           />
         </div>
 

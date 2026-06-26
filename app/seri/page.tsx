@@ -6,6 +6,7 @@ import { getAllArticles } from "@/lib/content";
 import { SERIES } from "@/lib/series";
 import { PageBackdrop } from "@/components/PageBackdrop";
 import { SeriWarpBackground } from "@/components/ui/background-shaders";
+import { ShareButton } from "@/components/ShareButton";
 
 export const metadata: Metadata = {
   title: "Seri",
@@ -58,6 +59,12 @@ export default async function SeriPage() {
                   <span className="font-mono text-[0.7rem] uppercase tracking-wider text-ink/60">
                     {inSeries.length} tulisan
                   </span>
+                  <ShareButton
+                    path={`/seri#${s.slug}`}
+                    title={s.title}
+                    description={s.promise}
+                    category="seri"
+                  />
                 </div>
 
                 <h2 className="mt-4 font-display text-2xl font-bold uppercase leading-tight text-ink sm:text-3xl">

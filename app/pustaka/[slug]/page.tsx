@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublicationBySlug } from "@/lib/publications-db";
+import { ShareButton } from "@/components/ShareButton";
 
 export const dynamic = "force-dynamic";
 
@@ -91,18 +92,26 @@ export default async function PublicationDetail({
         )}
 
         <section className="mt-10 border-t border-ink/15 pt-8">
-          {fullText ? (
-            <a
-              href={fullText}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="inline-block border border-ink bg-ink px-6 py-3 font-mono text-[0.72rem] uppercase tracking-widest text-paper transition hover:bg-ink-deep"
-            >
-              Baca teks lengkap (sumber resmi) &rarr;
-            </a>
-          ) : (
-            <p className="font-mono text-[0.78rem] text-gray">Tautan teks lengkap belum tersedia.</p>
-          )}
+          <div className="flex flex-wrap items-center gap-3">
+            {fullText ? (
+              <a
+                href={fullText}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="inline-block border border-ink bg-ink px-6 py-3 font-mono text-[0.72rem] uppercase tracking-widest text-paper transition hover:bg-ink-deep"
+              >
+                Baca teks lengkap (sumber resmi) &rarr;
+              </a>
+            ) : (
+              <p className="font-mono text-[0.78rem] text-gray">Tautan teks lengkap belum tersedia.</p>
+            )}
+            <ShareButton
+              path={`/pustaka/${pub.slug}`}
+              title={pub.title}
+              description={pub.abstract ?? undefined}
+              category="sumber"
+            />
+          </div>
           {pub.doi && (
             <p className="mt-4 font-mono text-[0.72rem] text-gray">
               DOI:{" "}
