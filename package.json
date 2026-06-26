@@ -23,13 +23,18 @@
     "sync:articles:dry": "node scripts/sync-articles.mjs --dry-run",
     "graph:generate": "node scripts/generate-graph.mjs",
     "harvest:pustaka": "node scripts/mine/harvest-oa-to-supabase.mjs",
-    "social": "node scripts/social/kit.mjs"
+    "social": "node scripts/social/kit.mjs",
+    "ingest": "node --env-file=.env.local scripts/ingest-embeddings.mjs"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.0",
+    "@google/generative-ai": "^0.24.1",
     "@paper-design/shaders-react": "^0.0.76",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.1",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/og": "^0.11.1",
+    "ai": "^7.0.2",
     "clsx": "^2.1.1",
     "framer-motion": "^11.18.2",
     "fuse.js": "^7.4.2",

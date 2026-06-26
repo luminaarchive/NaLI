@@ -49,3 +49,7 @@ yarn-error.log*
 
 # original brand artwork (large; processed into public/brand)
 brand-source/
+
+# build logs
+build.log
+

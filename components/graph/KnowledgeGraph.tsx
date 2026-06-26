@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { GraphNode, GraphNodeType, KnowledgeGraph } from "@/lib/graph";
+import { AIChatPanel } from "./AIChatPanel";
 
 const TYPE_COLOR: Record<GraphNodeType, string> = {
   artikel: "#2f9e6e", // overridden per-category below
@@ -46,6 +47,7 @@ export function KnowledgeGraph({ graph }: { graph: KnowledgeGraph }) {
   const [filterCat, setFilterCat] = useState<string>("semua");
   const [filterType, setFilterType] = useState<GraphNodeType | "semua">("semua");
   const [filterTag, setFilterTag] = useState<string>("semua");
+  const [panelTab, setPanelTab] = useState<"info" | "ai">("info");
 
   // filtered subgraph
   const sub = useMemo(() => {
@@ -327,30 +329,68 @@ export function KnowledgeGraph({ graph }: { graph: KnowledgeGraph }) {
         </div>
 
         {/* side panel */}
-        <aside className="border border-dashed border-ink/50 bg-paper p-4">
+        <aside className="flex flex-col border border-dashed border-ink/50 bg-paper p-4" style={{ minHeight: "480px" }}>
           {selected ? (
-            <div>
-              <p className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-ink-deep">
-                {TYPE_LABEL[selected.type]}
-                {selected.category ? ` · ${selected.category}` : ""}
-              </p>
-              <h3 className="mt-2 font-display text-lg font-bold uppercase leading-snug text-ink">
-                {selected.label}
-              </h3>
-              {selected.excerpt && (
-                <p className="mt-2 font-mono text-[0.74rem] leading-relaxed text-gray">
-                  {selected.excerpt}
-                </p>
-              )}
-              {selected.href && (
-                <Link
-                  href={selected.href}
-                  className="mt-4 inline-block border border-ink bg-ink px-4 py-2 font-mono text-[0.72rem] uppercase tracking-[0.1em] text-paper transition-colors hover:bg-ink-deep"
+            <>
+              {/* Tab bar */}
+              <div className="mb-3 flex gap-0 border-b border-dashed border-ink/40">
+                <button
+                  type="button"
+                  onClick={() => setPanelTab("info")}
+                  className={`px-3 py-1.5 font-mono text-[0.64rem] uppercase tracking-[0.12em] transition-colors ${
+                    panelTab === "info"
+                      ? "border-b-2 border-ink text-ink"
+                      : "text-gray hover:text-ink-charcoal"
+                  }`}
                 >
-                  Buka halaman →
-                </Link>
+                  Info
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPanelTab("ai")}
+                  className={`px-3 py-1.5 font-mono text-[0.64rem] uppercase tracking-[0.12em] transition-colors ${
+                    panelTab === "ai"
+                      ? "border-b-2 border-ink text-ink"
+                      : "text-gray hover:text-ink-charcoal"
+                  }`}
+                >
+                  Tanya AI
+                </button>
+              </div>
+
+              {panelTab === "info" ? (
+                <div>
+                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-ink-deep">
+                    {TYPE_LABEL[selected.type]}
+                    {selected.category ? ` · ${selected.category}` : ""}
+                  </p>
+                  <h3 className="mt-2 font-display text-lg font-bold uppercase leading-snug text-ink">
+                    {selected.label}
+                  </h3>
+                  {selected.excerpt && (
+                    <p className="mt-2 font-mono text-[0.74rem] leading-relaxed text-gray">
+                      {selected.excerpt}
+                    </p>
+                  )}
+                  {selected.href && (
+                    <Link
+                      href={selected.href}
+                      className="mt-4 inline-block border border-ink bg-ink px-4 py-2 font-mono text-[0.72rem] uppercase tracking-[0.1em] text-paper transition-colors hover:bg-ink-deep"
+                    >
+                      Buka halaman →
+                    </Link>
+                  )}
+                </div>
+              ) : (
+                <div className="flex-1">
+                  <AIChatPanel
+                    nodeSlug={selected.id.replace(/^[a-z]+:/, "")}
+                    nodeType={selected.type}
+                    nodeLabel={selected.label}
+                  />
+                </div>
               )}
-            </div>
+            </>
           ) : (
             <p className="font-mono text-[0.74rem] leading-relaxed text-gray">
               Klik sebuah simpul untuk melihat ringkasan dan tautannya. Seret untuk menata,

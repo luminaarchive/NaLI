@@ -25,6 +25,7 @@ import { BookmarkButton } from "@/components/article/BookmarkButton";
 import { RabbitHole } from "@/components/article/RabbitHole";
 import { QuickRead } from "@/components/article/QuickRead";
 import { ReadingProgress } from "@/components/article/ReadingProgress";
+import { ShareButton } from "@/components/ShareButton";
 import { buildEntityIndex } from "@/lib/wikilinks";
 import { CATEGORY_LABEL, CLAIM_STATUS_LABEL, type ClaimStatus } from "@/lib/types";
 
@@ -47,10 +48,18 @@ export async function generateMetadata({
   const article = await getArticleBySlug(params.slug);
   if (!article) return { title: "Artikel tidak ditemukan" };
   const description = article.summary || article.subtitle;
-  const metadataImage =
+  // Prefer a real content image; fall back to the dynamic OG route
+  const contentImage =
     article.images?.find((image) => image.src)?.src ??
     article.diagrams?.find((diagram) => diagram.src)?.src ??
     article.coverImage;
+  const ogImageUrl =
+    contentImage ??
+    `/api/og?${new URLSearchParams({
+      title: article.title,
+      category: article.category,
+      date: article.date,
+    }).toString()}`;
   return {
     title: article.title,
     description,
@@ -63,13 +72,13 @@ export async function generateMetadata({
       modifiedTime: article.updated ?? article.date,
       authors: ["NaLI"],
       tags: article.tags,
-      images: metadataImage ? [metadataImage] : undefined,
+      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: article.title }],
     },
     twitter: {
-      card: metadataImage ? "summary_large_image" : "summary",
+      card: "summary_large_image",
       title: article.title,
       description,
-      images: metadataImage ? [metadataImage] : undefined,
+      images: [ogImageUrl],
     },
   };
 }
@@ -214,6 +223,11 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
               item={{ title: article.title, slug: article.slug, date: article.date, kind: "articles" }}
             />
             <BookmarkButton slug={article.slug} />
+            <ShareButton
+              path={`/articles/${article.slug}`}
+              title={article.title}
+              description={article.summary || article.subtitle}
+            />
           </div>
         </div>
       </header>
