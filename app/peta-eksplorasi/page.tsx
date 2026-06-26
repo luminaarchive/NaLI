@@ -1,13 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import nextDynamic from "next/dynamic";
 import { PageHeader } from "@/components/PageHeader";
 import {
   getAllArticles,
   getAllFieldNotes,
 } from "@/lib/content";
-import { buildKnowledgeGraph } from "@/lib/graph";
-import { ObservatoryWrapper } from "@/components/observatory/ObservatoryWrapper";
 import { CATEGORY_LABEL, type Category } from "@/lib/types";
+
+const ShadowGraph = nextDynamic(() => import("@/components/observatory/ShadowGraph"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[650px] bg-[#0a1411] flex flex-col items-center justify-center text-[#46cfa8] font-mono border border-[#9ecdbf]/30">
+      <div className="animate-pulse">MEMUAT PETA SHADOW GRAPH...</div>
+      <div className="text-[10px] text-[#9ecdbf]/50 mt-2">INITIALIZING WEBGL CANVAS & FORCE FORCES</div>
+    </div>
+  ),
+});
 
 export const metadata: Metadata = {
   title: "Peta Eksplorasi",
@@ -29,7 +38,6 @@ export default async function PetaEksplorasiPage() {
   const articles = await getAllArticles();
   const notes = getAllFieldNotes();
   const locations = [...new Set(notes.map((n) => n.location_label))];
-  const graph = await buildKnowledgeGraph();
 
   return (
     <>
@@ -48,7 +56,7 @@ export default async function PetaEksplorasiPage() {
             Klik untuk membuka, seret untuk menata, saring lewat filter.
           </p>
           <div className="mt-5">
-            <ObservatoryWrapper graph={graph} />
+            <ShadowGraph />
           </div>
           <p className="mt-3 font-mono text-[0.7rem] text-gray-light md:hidden">
             Graf interaktif tampil di layar lebar. Di perangkat kecil, gunakan indeks di bawah.
