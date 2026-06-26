@@ -19,7 +19,12 @@ const nextConfig = {
   // ensure MDX content ships with the (now dynamic) serverless functions
   experimental: {
     outputFileTracingIncludes: {
-      "/**": ["./content/**/*"],
+      "/**": [
+        "./content/articles/**/*",
+        "./content/sources/**/*",
+        "./content/field-notes/**/*",
+        "./content/jurnal/**/*",
+      ],
     },
   },
   async headers() {
