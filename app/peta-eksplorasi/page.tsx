@@ -6,7 +6,7 @@ import {
   getAllFieldNotes,
 } from "@/lib/content";
 import { buildKnowledgeGraph } from "@/lib/graph";
-import { KnowledgeGraph } from "@/components/graph/KnowledgeGraph";
+import { ObservatoryWrapper } from "@/components/observatory/ObservatoryWrapper";
 import { CATEGORY_LABEL, type Category } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -48,7 +48,7 @@ export default async function PetaEksplorasiPage() {
             Klik untuk membuka, seret untuk menata, saring lewat filter.
           </p>
           <div className="mt-5">
-            <KnowledgeGraph graph={graph} />
+            <ObservatoryWrapper graph={graph} />
           </div>
           <p className="mt-3 font-mono text-[0.7rem] text-gray-light md:hidden">
             Graf interaktif tampil di layar lebar. Di perangkat kecil, gunakan indeks di bawah.

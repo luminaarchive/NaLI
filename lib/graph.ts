@@ -21,6 +21,8 @@ export interface GraphNode {
   excerpt?: string;
   /** Degree, computed; used to size the node. */
   degree?: number;
+  /** Geographic location label metadata */
+  locationLabels?: string[];
 }
 
 export interface GraphEdge {
@@ -70,6 +72,7 @@ export async function buildKnowledgeGraph(): Promise<KnowledgeGraph> {
       tags: a.tags,
       series: a.series,
       excerpt: a.summary || a.subtitle,
+      locationLabels: a.locationLabels,
     });
 
     // article -> series
