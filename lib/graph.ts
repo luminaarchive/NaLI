@@ -23,6 +23,10 @@ export interface GraphNode {
   degree?: number;
   /** Geographic location label metadata */
   locationLabels?: string[];
+  /** Epistemic verification confidence level */
+  confidence?: string;
+  /** Primary source citation count */
+  sourcesCount?: number;
 }
 
 export interface GraphEdge {
@@ -73,6 +77,8 @@ export async function buildKnowledgeGraph(): Promise<KnowledgeGraph> {
       series: a.series,
       excerpt: a.summary || a.subtitle,
       locationLabels: a.locationLabels,
+      confidence: a.confidence,
+      sourcesCount: a.sourceIds?.length || 0,
     });
 
     // article -> series

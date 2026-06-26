@@ -1,12 +1,16 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { useGraphStore } from "./useGraphStore";
 import { computeAuditorTrace } from "./computeAuditorTrace";
 import type { GraphNode, GraphEdge } from "@/lib/graph";
 import gsap from "gsap";
+import Portal from "./Portal";
+import EpistemicHoverCard from "./EpistemicHoverCard";
+import useTooltipProjection from "./useTooltipProjection";
+import useHoverDebounce from "./useHoverDebounce";
 
 interface SimNode extends GraphNode {
   x: number;
@@ -75,7 +79,7 @@ const glowFragmentShader = `
       vec3 red = vec3(0.8, 0.15, 0.15);
       glowColor = vec4(red, intensity * pulse * 0.65);
     } else {
-      // Default / Conflict: glitching oscillating warning yellow-red
+      // Default / Conflict: glitching warning yellow-red
       float glitch = step(0.9, sin(u_time * 12.0 + cos(u_time * 30.0)));
       vec3 warnRed = vec3(0.85, 0.1, 0.1);
       vec3 warnYellow = vec3(0.85, 0.75, 0.15);
@@ -85,6 +89,39 @@ const glowFragmentShader = `
     gl_FragColor = glowColor;
   }
 `;
+
+// Helper function to recursively dispose resources and prevent memory leaks in strict mode
+function disposeWebGLContext(
+  scene: THREE.Scene,
+  renderer: THREE.WebGLRenderer,
+  controls: OrbitControls | null
+) {
+  if (controls) {
+    controls.dispose();
+  }
+
+  scene.traverse((object: any) => {
+    if (!object) return;
+
+    if (object.geometry) {
+      if (object.geometry.boundsTree) {
+        object.geometry.boundsTree = null;
+      }
+      object.geometry.dispose();
+    }
+
+    if (object.material) {
+      if (Array.isArray(object.material)) {
+        object.material.forEach((mat: THREE.Material) => mat.dispose());
+      } else {
+        object.material.dispose();
+      }
+    }
+  });
+
+  renderer.dispose();
+  renderer.forceContextLoss();
+}
 
 export function GraphCanvas() {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -98,13 +135,13 @@ export function GraphCanvas() {
     setViewMode,
   } = useGraphStore();
 
-  const [tooltip, setTooltip] = useState<{
-    label: string;
-    x: number;
-    y: number;
-    visible: boolean;
-    excerpt?: string;
-  }>({ label: "", x: 0, y: 0, visible: false });
+  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+
+  // Debounced hover state hook
+  const { activeNode: activeHoveredNodeId, onMouseEnter, onMouseLeave } = useHoverDebounce(150);
+
+  // Tooltip coordinate projection hook
+  const { position2D, isVisible, projectNode, setIsVisible } = useTooltipProjection();
 
   // Refs for animation loop cleanups
   const requestRef = useRef<number>(0);
@@ -112,6 +149,16 @@ export function GraphCanvas() {
   const meshMapRef = useRef<Map<string, THREE.Mesh>>(new Map());
   const glowMapRef = useRef<Map<string, THREE.Mesh>>(new Map());
   const isDraggingRef = useRef<boolean>(false);
+
+  // Track viewport dimensions on client-side
+  useEffect(() => {
+    const updateSize = () => {
+      setViewportSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
 
   useEffect(() => {
     const currentMount = mountRef.current;
@@ -122,7 +169,6 @@ export function GraphCanvas() {
 
     // 1. Scene & Setup
     const scene = new THREE.Scene();
-    // Dark forest paper background
     scene.background = new THREE.Color("#0a1411");
 
     // 2. Camera
@@ -133,7 +179,7 @@ export function GraphCanvas() {
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    mountRef.current.appendChild(renderer.domElement);
+    currentMount.appendChild(renderer.domElement);
 
     // 4. Orbit Controls
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -157,14 +203,11 @@ export function GraphCanvas() {
     const cylinderGeo = new THREE.CylinderGeometry(4, 4, 10, 8);
     const glowGeo = new THREE.SphereGeometry(8.5, 16, 16);
 
-    // Dynamic glow material uniforms
     const uTime = { value: 0 };
 
-    // Group for nodes and lines
     const graphGroup = new THREE.Group();
     scene.add(graphGroup);
 
-    // Initialize node representation meshes
     const meshMap = new Map<string, THREE.Mesh>();
     const glowMap = new Map<string, THREE.Mesh>();
 
@@ -173,9 +216,16 @@ export function GraphCanvas() {
     const simNodes: SimNode[] = filteredNodes.map((n) => {
       const existing = prevSimNodes.find((prev) => prev.id === n.id);
       if (existing) {
-        return { ...n, x: existing.x, y: existing.y, z: existing.z, vx: existing.vx, vy: existing.vy, vz: existing.vz };
+        return {
+          ...n,
+          x: existing.x,
+          y: existing.y,
+          z: existing.z,
+          vx: existing.vx,
+          vy: existing.vy,
+          vz: existing.vz,
+        };
       }
-      // Sphere placement coordinates
       const angle = Math.random() * Math.PI * 2;
       const radius = 120 + Math.random() * 80;
       return {
@@ -190,11 +240,9 @@ export function GraphCanvas() {
     });
     simNodesRef.current = simNodes;
 
-    // Map ID to node references
     const nodeById = new Map<string, SimNode>();
     simNodes.forEach((n) => nodeById.set(n.id, n));
 
-    // Populate materials and meshes
     simNodes.forEach((node) => {
       const colorVal = getColorOf(node);
       const mat = new THREE.MeshStandardMaterial({
@@ -218,13 +266,13 @@ export function GraphCanvas() {
       graphGroup.add(mesh);
       meshMap.set(node.id, mesh);
 
-      // Create glow halo for nodes
+      // Create glow material shader uniforms
       const glowMat = new THREE.ShaderMaterial({
         vertexShader: glowVertexShader,
         fragmentShader: glowFragmentShader,
         uniforms: {
           u_time: uTime,
-          u_confidence_type: { value: node.id.includes("a:") ? 0 : 2 }, // Articles get gold pulses, others warning glows
+          u_confidence_type: { value: node.confidence === "high" ? 0 : node.confidence === "needs-verification" ? 1 : 2 },
           u_base_color: { value: new THREE.Color(colorVal) },
         },
         transparent: true,
@@ -233,7 +281,7 @@ export function GraphCanvas() {
       });
 
       const glowMesh = new THREE.Mesh(glowGeo, glowMat);
-      glowMesh.visible = false; // Hover/selection toggles visibility
+      glowMesh.visible = false;
       graphGroup.add(glowMesh);
       glowMap.set(node.id, glowMesh);
     });
@@ -241,7 +289,7 @@ export function GraphCanvas() {
     meshMapRef.current = meshMap;
     glowMapRef.current = glowMap;
 
-    // Line segments geometry for connections
+    // Single Draw-call batching of lines
     const lineMaterial = new THREE.LineBasicMaterial({
       color: 0x9ecdbf,
       transparent: true,
@@ -253,9 +301,8 @@ export function GraphCanvas() {
     const lineSegments = new THREE.LineSegments(lineGeometry, lineMaterial);
     graphGroup.add(lineSegments);
 
-    // 8. 3D D3-like physics simulation tick
+    // 8. 3D physics simulation tick
     const tickPhysics = () => {
-      // 8.1 Repulsion forces
       for (let i = 0; i < simNodes.length; i++) {
         for (let j = i + 1; j < simNodes.length; j++) {
           const a = simNodes[i];
@@ -265,7 +312,7 @@ export function GraphCanvas() {
           let dz = a.z - b.z;
           let d2 = dx * dx + dy * dy + dz * dz || 0.1;
           const d = Math.sqrt(d2);
-          if (d > 350) continue; // Out of range
+          if (d > 350) continue;
 
           const f = 1200 / d2;
           dx /= d;
@@ -281,7 +328,6 @@ export function GraphCanvas() {
         }
       }
 
-      // 8.2 Link Spring pulls
       filteredEdges.forEach((edge) => {
         const sId = typeof edge.source === "string" ? edge.source : (edge.source as any).id;
         const tId = typeof edge.target === "string" ? edge.target : (edge.target as any).id;
@@ -295,7 +341,6 @@ export function GraphCanvas() {
           let dz = tNode.z - sNode.z;
           const d = Math.sqrt(dx * dx + dy * dy + dz * dz) || 0.1;
 
-          // Target distance based on relation type
           const targetDist = edge.relasi.includes("seri") ? 60 : edge.relasi.includes("sumber") ? 90 : 75;
           const f = (d - targetDist) * 0.025;
 
@@ -312,10 +357,8 @@ export function GraphCanvas() {
         }
       });
 
-      // 8.3 Gravity and Damping update
       const gravity = 0.0025;
       simNodes.forEach((node) => {
-        // Soft pull to coordinate origin
         node.vx += (0 - node.x) * gravity;
         node.vy += (0 - node.y) * gravity;
         node.vz += (0 - node.z) * gravity;
@@ -330,14 +373,14 @@ export function GraphCanvas() {
       });
     };
 
-    // 9. Raycasting for hovers / clicks
+    // 9. Raycasting for hovers/clicks
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    const getIntersectedNode = (event: MouseEvent) => {
+    const getIntersectedNode = (clientX: number, clientY: number) => {
       const rect = renderer.domElement.getBoundingClientRect();
-      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
       raycaster.setFromCamera(mouse, camera);
       const meshes = Array.from(meshMap.values());
@@ -355,9 +398,11 @@ export function GraphCanvas() {
 
       tickPhysics();
 
-      // Render nodes and update active glows
-      const trace = hoveredNode ? computeAuditorTrace(filteredNodes, filteredEdges, hoveredNode) : null;
+      // Determine active trace
+      const activeHoverId = activeHoveredNodeId || hoveredNode;
+      const trace = activeHoverId ? computeAuditorTrace(filteredNodes, filteredEdges, activeHoverId) : null;
 
+      // Update positions of meshes directly on Three.js objects (no React setState)
       simNodes.forEach((node) => {
         const mesh = meshMap.get(node.id);
         const glow = glowMap.get(node.id);
@@ -365,10 +410,9 @@ export function GraphCanvas() {
         if (mesh) {
           mesh.position.set(node.x, node.y, node.z);
 
-          // Auditor trace opacity highlight logic
           if (trace) {
             const hasConnect = trace.highlightNodes.has(node.id);
-            if (node.id === hoveredNode) {
+            if (node.id === activeHoverId) {
               mesh.scale.set(1.2, 1.2, 1.2);
               (mesh.material as THREE.MeshStandardMaterial).opacity = 1.0;
             } else if (hasConnect) {
@@ -382,7 +426,6 @@ export function GraphCanvas() {
             }
             (mesh.material as THREE.MeshStandardMaterial).transparent = true;
           } else if (selectedNode) {
-            // Selected node has focus
             const isSel = node.id === selectedNode;
             mesh.scale.set(isSel ? 1.3 : 0.8, isSel ? 1.3 : 0.8, isSel ? 1.3 : 0.8);
             (mesh.material as THREE.MeshStandardMaterial).opacity = isSel ? 1.0 : 0.45;
@@ -396,21 +439,20 @@ export function GraphCanvas() {
 
         if (glow) {
           glow.position.set(node.x, node.y, node.z);
-          // Show glow only for selected/hovered nodes or strong articles
           const isGlowActive =
-            node.id === hoveredNode ||
+            node.id === activeHoverId ||
             node.id === selectedNode ||
-            (node.type === "artikel" && !hoveredNode && !selectedNode);
+            (node.type === "artikel" && !activeHoverId && !selectedNode);
 
           glow.visible = isGlowActive;
           if (isGlowActive) {
-            const sizeMultiplier = node.id === hoveredNode ? 1.4 : 1.2;
+            const sizeMultiplier = node.id === activeHoverId ? 1.4 : 1.2;
             glow.scale.set(sizeMultiplier, sizeMultiplier, sizeMultiplier);
           }
         }
       });
 
-      // Update lines buffer geometry
+      // Update batched lines coordinates
       const points: number[] = [];
       const lineColors: number[] = [];
 
@@ -425,7 +467,6 @@ export function GraphCanvas() {
           points.push(sNode.x, sNode.y, sNode.z);
           points.push(tNode.x, tNode.y, tNode.z);
 
-          // Link opacity highlights based on trace
           let alpha = 0.18;
           if (trace) {
             const linkKey = `${sId}-${tId}`;
@@ -433,15 +474,14 @@ export function GraphCanvas() {
             if (trace.highlightLinks.has(linkKey) || trace.highlightLinks.has(linkKeyRev)) {
               alpha = 0.85;
             } else {
-              alpha = 0.02; // Fade out completely
+              alpha = 0.02;
             }
           } else if (selectedNode) {
             const connectsToSel = sId === selectedNode || tId === selectedNode;
             alpha = connectsToSel ? 0.65 : 0.04;
           }
 
-          // Dark teal rule lines matching NaLI
-          lineColors.push(0.62, 0.8, 0.75, alpha); // #9ecdbf / rgb(158, 205, 191)
+          lineColors.push(0.62, 0.8, 0.75, alpha);
           lineColors.push(0.62, 0.8, 0.75, alpha);
         }
       });
@@ -451,9 +491,18 @@ export function GraphCanvas() {
       lineGeometry.attributes.position.needsUpdate = true;
       lineGeometry.attributes.color.needsUpdate = true;
 
-      // Enable colored vertex line segment overrides
       lineMaterial.vertexColors = true;
       lineMaterial.needsUpdate = true;
+
+      // Project hovered coordinates to 2D for the React Portal Tooltip
+      if (activeHoverId) {
+        const hoveredMesh = meshMap.get(activeHoverId);
+        if (hoveredMesh) {
+          projectNode(hoveredMesh.position, activeHoverId, camera, renderer, scene);
+        }
+      } else {
+        setIsVisible(false);
+      }
 
       controls.update();
       renderer.render(scene, camera);
@@ -464,34 +513,16 @@ export function GraphCanvas() {
     // Kickoff
     requestRef.current = requestAnimationFrame(animate);
 
-    // Event handlers
+    // Event handlers using Debounced state triggers
     const handlePointerMove = (e: MouseEvent) => {
       if (isDraggingRef.current) return;
-      const hoveredId = getIntersectedNode(e);
-      if (hoveredId !== hoveredNode) {
+      const hoveredId = getIntersectedNode(e.clientX, e.clientY);
+      if (hoveredId) {
+        onMouseEnter(hoveredId);
         setHoveredNode(hoveredId);
-
-        if (hoveredId) {
-          const node = nodeById.get(hoveredId);
-          if (node) {
-            setTooltip({
-              label: node.label,
-              x: e.clientX,
-              y: e.clientY - 40,
-              visible: true,
-              excerpt: node.excerpt,
-            });
-          }
-        } else {
-          setTooltip((prev) => ({ ...prev, visible: false }));
-        }
-      } else if (hoveredId && tooltip.visible) {
-        // Move tooltip with cursor
-        setTooltip((prev) => ({
-          ...prev,
-          x: e.clientX,
-          y: e.clientY - 40,
-        }));
+      } else {
+        onMouseLeave();
+        setHoveredNode(null);
       }
     };
 
@@ -504,15 +535,14 @@ export function GraphCanvas() {
     };
 
     const handlePointerUp = (e: MouseEvent) => {
-      if (isDraggingRef.current) return; // Ignore drag finishes
-      const clickedId = getIntersectedNode(e);
+      if (isDraggingRef.current) return;
+      const clickedId = getIntersectedNode(e.clientX, e.clientY);
       setSelectedNode(clickedId);
 
       if (clickedId) {
         setViewMode("local");
         const node = nodeById.get(clickedId);
         if (node) {
-          // Camera slerp camera animation
           gsap.to(camera.position, {
             x: node.x,
             y: node.y,
@@ -529,9 +559,53 @@ export function GraphCanvas() {
       }
     };
 
+    // Mobile touch events: single tap selects node and shows tooltip, tap outside dismisses
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 0) return;
+      isDraggingRef.current = false;
+    };
+
+    const handleTouchMove = () => {
+      isDraggingRef.current = true;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (isDraggingRef.current) return;
+      if (e.changedTouches.length === 0) return;
+      const touch = e.changedTouches[0];
+      const clickedId = getIntersectedNode(touch.clientX, touch.clientY);
+      
+      setSelectedNode(clickedId);
+      if (clickedId) {
+        setViewMode("local");
+        setHoveredNode(clickedId);
+        onMouseEnter(clickedId);
+        const node = nodeById.get(clickedId);
+        if (node) {
+          gsap.to(camera.position, {
+            x: node.x,
+            y: node.y,
+            z: node.z + 180,
+            duration: 1.2,
+            ease: "power2.inOut",
+            onUpdate: () => {
+              controls.target.set(node.x, node.y, node.z);
+            },
+          });
+        }
+      } else {
+        setViewMode("global");
+        setHoveredNode(null);
+        onMouseLeave();
+      }
+    };
+
     renderer.domElement.addEventListener("mousemove", handleMouseMove);
     renderer.domElement.addEventListener("mousedown", handlePointerDown);
     renderer.domElement.addEventListener("mouseup", handlePointerUp);
+    renderer.domElement.addEventListener("touchstart", handleTouchStart, { passive: true });
+    renderer.domElement.addEventListener("touchmove", handleTouchMove, { passive: true });
+    renderer.domElement.addEventListener("touchend", handleTouchEnd);
     window.addEventListener("mousemove", handlePointerMove);
 
     const handleResize = () => {
@@ -544,6 +618,7 @@ export function GraphCanvas() {
 
     window.addEventListener("resize", handleResize);
 
+    // Strict Mode Perfect Cleanup using disposeWebGLContext
     return () => {
       cancelAnimationFrame(requestRef.current);
       window.removeEventListener("resize", handleResize);
@@ -552,8 +627,11 @@ export function GraphCanvas() {
         renderer.domElement.removeEventListener("mousemove", handleMouseMove);
         renderer.domElement.removeEventListener("mousedown", handlePointerDown);
         renderer.domElement.removeEventListener("mouseup", handlePointerUp);
+        renderer.domElement.removeEventListener("touchstart", handleTouchStart);
+        renderer.domElement.removeEventListener("touchmove", handleTouchMove);
+        renderer.domElement.removeEventListener("touchend", handleTouchEnd);
       }
-      renderer.dispose();
+      disposeWebGLContext(scene, renderer, controls);
       currentMount.removeChild(renderer.domElement);
     };
   }, [
@@ -561,13 +639,16 @@ export function GraphCanvas() {
     filteredEdges,
     selectedNode,
     hoveredNode,
+    activeHoveredNodeId,
     setHoveredNode,
     setSelectedNode,
     setViewMode,
-    tooltip.visible,
+    onMouseEnter,
+    onMouseLeave,
+    projectNode,
+    setIsVisible,
   ]);
 
-  // Navigate to slug on double click
   const handleDoubleClick = (e: React.MouseEvent) => {
     if (selectedNode) {
       const node = filteredNodes.find((n) => n.id === selectedNode);
@@ -577,6 +658,10 @@ export function GraphCanvas() {
     }
   };
 
+  const activeHoveredNode = filteredNodes.find(
+    (n) => n.id === (activeHoveredNodeId || hoveredNode)
+  );
+
   return (
     <div
       className="relative w-full h-[620px] border border-[#9ecdbf] bg-[#0a1411] cursor-grab active:cursor-grabbing select-none"
@@ -584,22 +669,22 @@ export function GraphCanvas() {
     >
       <div ref={mountRef} className="w-full h-full" />
 
-      {/* Epistemic Tooltip Overlay */}
-      {tooltip.visible && (
-        <div
-          style={{ left: tooltip.x + 12, top: tooltip.y + 12 }}
-          className="pointer-events-none fixed z-50 bg-[#0a1411]/95 border border-[#9ecdbf] p-3 text-xs font-mono text-[#cfe8df] shadow-2xl max-w-xs transition-opacity duration-150"
-        >
-          <div className="font-bold text-[#46cfa8] border-b border-[#9ecdbf]/30 pb-1 mb-1.5 flex justify-between gap-4">
-            <span>{tooltip.label}</span>
-            {selectedNode && (
-              <span className="text-[10px] text-gray-light leading-none">[Double Click to Open]</span>
-            )}
-          </div>
-          {tooltip.excerpt && (
-            <p className="text-[10px] text-[#9ecdbf] leading-relaxed italic">{tooltip.excerpt}</p>
-          )}
-        </div>
+      {/* Epistemic Hover Card portal overlay */}
+      {isVisible && position2D && activeHoveredNode && (
+        <Portal>
+          <EpistemicHoverCard
+            title={activeHoveredNode.label}
+            confidence={activeHoveredNode.confidence || "high"}
+            excerpt={activeHoveredNode.excerpt || ""}
+            year={activeHoveredNode.year}
+            province={activeHoveredNode.locationLabels?.[0]}
+            sourcesCount={activeHoveredNode.sourcesCount || 0}
+            x={position2D.x}
+            y={position2D.y}
+            viewportWidth={viewportSize.width}
+            viewportHeight={viewportSize.height}
+          />
+        </Portal>
       )}
 
       {/* Floating Control Tips */}
@@ -613,3 +698,4 @@ export function GraphCanvas() {
     </div>
   );
 }
+export default GraphCanvas;

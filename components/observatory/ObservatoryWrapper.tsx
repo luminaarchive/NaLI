@@ -1,10 +1,19 @@
 "use client";
 
 import React, { useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useGraphStore } from "./useGraphStore";
-import { GraphCanvas } from "./GraphCanvas";
 import { FilterSidebar } from "./FilterSidebar";
 import { TimeSlider } from "./TimeSlider";
+
+const GraphCanvas = dynamic(() => import("./GraphCanvas"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[620px] bg-[#0a1411] flex items-center justify-center text-[#46cfa8] font-mono border border-[#9ecdbf]/30">
+      MEMUAT OBSERVATORIUM...
+    </div>
+  ),
+});
 import type { KnowledgeGraph } from "@/lib/graph";
 
 export function ObservatoryWrapper({ graph }: { graph: KnowledgeGraph }) {
