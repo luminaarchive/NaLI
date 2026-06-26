@@ -63,7 +63,7 @@ export const EpistemicHoverCard: React.FC<HoverCardProps> = ({
         top: y,
         transform: anchor.transform,
       }}
-      className={`fixed z-[9999] w-80 bg-[#0a1411] border border-[#9ecdbf] p-4 text-[#cfe8df] font-mono shadow-[0px_8px_32px_rgba(0,0,0,0.85)] backdrop-blur-md transition-all duration-75 ease-out select-none ${anchor.className}`}
+      className={`fixed z-[9999] w-[calc(100vw-32px)] sm:w-80 bg-[#0a1411] border border-[#9ecdbf] p-4 text-[#cfe8df] font-mono shadow-[0px_8px_32px_rgba(0,0,0,0.85)] backdrop-blur-md transition-all duration-75 ease-out select-none ${anchor.className}`}
     >
       {/* Header section */}
       <div className="border-b border-[#9ecdbf]/35 pb-2 mb-3">

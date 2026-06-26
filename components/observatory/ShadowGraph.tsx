@@ -104,10 +104,20 @@ export function ShadowGraph() {
     setMousePos({ x: e.clientX, y: e.clientY });
   }, []);
 
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    if (e.touches && e.touches.length > 0) {
+      setMousePos({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+    }
+  }, []);
+
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [handleMouseMove]);
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("touchstart", handleTouchStart);
+    };
+  }, [handleMouseMove, handleTouchStart]);
 
   // Handle click & double-click interactions
   const handleNodeClick = useCallback(
@@ -214,6 +224,10 @@ export function ShadowGraph() {
         linkDirectionalParticleColor={() => "#1e3a32"}
         onNodeHover={(node: any) => setHoverNode(node ? (node as GraphNode) : null)}
         onNodeClick={handleNodeClick}
+        onBackgroundClick={() => {
+          setSelectedNode(null);
+          setHoverNode(null);
+        }}
         cooldownTicks={120}
         enableNodeDrag={true}
         enablePanInteraction={true}
@@ -238,7 +252,9 @@ export function ShadowGraph() {
               top: mousePos.y,
               transform: anchor.transform,
             }}
-            className={`fixed z-[9999] w-80 bg-[#0a1411] border border-[#9ecdbf] p-4 text-[#cfe8df] font-mono shadow-[0px_8px_32px_rgba(0,0,0,0.85)] backdrop-blur-md select-none pointer-events-none ${anchor.className}`}
+            className={`fixed z-[9999] w-[calc(100vw-32px)] sm:w-80 bg-[#0a1411] border border-[#9ecdbf] p-4 text-[#cfe8df] font-mono shadow-[0px_8px_32px_rgba(0,0,0,0.85)] backdrop-blur-md select-none ${
+              selectedNode === hoverNode.id ? "pointer-events-auto" : "pointer-events-none"
+            } ${anchor.className}`}
           >
             <div className="border-b border-[#9ecdbf]/35 pb-2 mb-2.5">
               <h3 className="text-xs font-bold text-white leading-snug tracking-tight">
@@ -266,6 +282,21 @@ export function ShadowGraph() {
               <span>PILAR: {hoverNode.group}</span>
               <span>BOBOT: {hoverNode.val}</span>
             </div>
+
+            {selectedNode === hoverNode.id && (
+              <div className="mt-3 pt-2 border-t border-[#9ecdbf]/35 flex justify-end">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const slug = NODE_SLUG_MAP[hoverNode.id] || hoverNode.id;
+                    router.push(`/articles/${slug}`);
+                  }}
+                  className="pointer-events-auto px-3 py-1.5 bg-[#46cfa8] text-[#0a1411] hover:bg-[#cfe8df] transition-colors font-bold text-[9px] uppercase tracking-wider"
+                >
+                  Buka Artikel ↗
+                </button>
+              </div>
+            )}
           </div>
         </Portal>
       )}
