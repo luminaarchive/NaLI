@@ -52,6 +52,8 @@ interface KnowledgeGenomeProps {
   hasLimitationsAnchor: boolean;
   /** Last substantive update (ISO date), soft start for the Phase-2 seam. */
   updated?: string;
+  /** Confirmed cross-article contradictions touching this article (Step 2.1). */
+  contradictionCount?: number;
 }
 
 export function KnowledgeGenome({
@@ -65,6 +67,7 @@ export function KnowledgeGenome({
   hasClaimLedgerAnchor,
   hasLimitationsAnchor,
   updated,
+  contradictionCount = 0,
 }: KnowledgeGenomeProps) {
   const depth = articleDepth(readingMinutes);
 
@@ -206,6 +209,14 @@ export function KnowledgeGenome({
         <p className="mt-1 font-mono text-[0.7rem] text-gray">
           {updated ? `Diperbarui ${formatDate(updated)}` : "Belum ada pembaruan tercatat"}
         </p>
+        {contradictionCount > 0 && (
+          <a
+            href="#kontradiksi"
+            className="mt-1.5 inline-block font-mono text-[0.7rem] font-semibold text-[#9c3c08] hover:underline dark:text-[#f0a36e]"
+          >
+            {contradictionCount} klaim diperdebatkan lintas tulisan →
+          </a>
+        )}
       </div>
     </aside>
   );

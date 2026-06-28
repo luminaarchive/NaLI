@@ -24,7 +24,8 @@
     "graph:generate": "node scripts/generate-graph.mjs",
     "harvest:pustaka": "node scripts/mine/harvest-oa-to-supabase.mjs",
     "social": "node scripts/social/kit.mjs",
-    "ingest": "node --env-file=.env.local scripts/ingest-embeddings.mjs"
+    "ingest": "node --env-file=.env.local scripts/ingest-embeddings.mjs",
+    "detect:contradictions": "node --env-file=.env.local scripts/detect-contradictions.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.0",

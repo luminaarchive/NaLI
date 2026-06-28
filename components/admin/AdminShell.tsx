@@ -4,7 +4,7 @@ import { Glyph, type GlyphName } from "@/components/Glyph";
 import { NaliMark } from "@/components/brand/NaliMark";
 import { LogoutButton } from "./LogoutButton";
 
-type AdminActive = "dashboard" | "analytics";
+type AdminActive = "dashboard" | "analytics" | "contradictions";
 
 function NavRow({
   href,
@@ -63,6 +63,7 @@ export function AdminShell({
             <NavRow href="/admin" glyph="dashboard" label="Dashboard" active={active === "dashboard"} />
             <NavRow href="/admin/posts/new" glyph="plus" label="Tulisan baru" />
             <NavRow href="/admin/analytics" glyph="stats" label="Statistik" active={active === "analytics"} />
+            <NavRow href="/admin/contradictions" glyph="contradiction" label="Kontradiksi" active={active === "contradictions"} />
           </nav>
         </div>
         <div className="flex flex-col gap-1.5 border-t border-dashed border-ink/30 p-2">

@@ -29,6 +29,7 @@ import { QuickRead } from "@/components/article/QuickRead";
 import { ReadingProgress } from "@/components/article/ReadingProgress";
 import { ShareButton } from "@/components/ShareButton";
 import { buildEntityIndex } from "@/lib/wikilinks";
+import { getConfirmedContradictionsForArticle } from "@/lib/contradictions";
 import { CATEGORY_LABEL, CLAIM_STATUS_LABEL, type ClaimStatus } from "@/lib/types";
 
 /** Stable per-slug index so the "Coba sudut lain" pick is consistent per article. */
@@ -129,6 +130,24 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
   // Wikipedia-style inline links across the body
   const entities = buildEntityIndex(allArticles);
   const selfHref = `/articles/${article.slug}`;
+
+  // Confirmed cross-article contradictions touching this article (Step 2.1).
+  const contradictions = await getConfirmedContradictionsForArticle(article.slug);
+  const titleBySlug = new Map(allArticles.map((a) => [a.slug, a.title]));
+  // Normalize each contradiction to "this article's claim" vs "the other side".
+  const contradictionViews = contradictions.map((c) => {
+    const selfIsA = c.claimAArticleSlug === article.slug;
+    return {
+      id: c.id,
+      thisClaim: selfIsA ? c.claimAText : c.claimBText,
+      otherClaim: selfIsA ? c.claimBText : c.claimAText,
+      otherSlug: selfIsA ? c.claimBArticleSlug : c.claimAArticleSlug,
+      otherTitle:
+        titleBySlug.get(selfIsA ? c.claimBArticleSlug : c.claimAArticleSlug) ??
+        (selfIsA ? c.claimBArticleSlug : c.claimAArticleSlug),
+      rationale: c.llmRationale,
+    };
+  });
   // resolve cited source IDs to archive entries for clickable Claim Ledger links
   const allSources = getAllSources();
   const citedSources = (article.sourceIds ?? [])
@@ -250,6 +269,7 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
           hasClaimLedgerAnchor={Boolean(article.claimLedger && article.claimLedger.length > 0)}
           hasLimitationsAnchor={Boolean(article.limitations && article.limitations.length > 0)}
           updated={article.updated}
+          contradictionCount={contradictionViews.length}
         />
       </div>
 
@@ -376,6 +396,52 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
               {article.limitations.map((l) => (
                 <li key={l} className="font-mono text-[0.82rem] leading-relaxed text-gray">
                   {l}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Confirmed cross-article contradictions (Step 2.1). Only human-confirmed
+            pairs reach here; empty = nothing rendered. */}
+        {contradictionViews.length > 0 && (
+          <section
+            id="kontradiksi"
+            className="mt-12 scroll-mt-24 border border-dashed border-[#d96a23]/60 bg-[#d96a23]/[0.05] p-5"
+            aria-labelledby="kontradiksi-judul"
+          >
+            <h2
+              id="kontradiksi-judul"
+              className="font-display text-lg font-bold uppercase text-[#9c3c08] dark:text-[#f0a36e]"
+            >
+              Klaim yang diperdebatkan lintas tulisan
+            </h2>
+            <p className="mt-2 font-mono text-[0.76rem] leading-relaxed text-gray">
+              Klaim di tulisan ini tampak bertentangan dengan klaim di tulisan NaLI lain.
+              NaLI menampilkannya terbuka, bukan menyembunyikannya, dan menyerahkan penilaian
+              kepada pembaca atas dasar sumber masing-masing.
+            </p>
+            <ul className="mt-5 space-y-5">
+              {contradictionViews.map((c) => (
+                <li key={c.id} className="border-l-2 border-dashed border-[#d96a23]/60 pl-4">
+                  <p className="font-mono text-[0.78rem] leading-relaxed text-ink-charcoal">
+                    <span className="font-semibold text-ink-deep">Di tulisan ini:</span>{" "}
+                    {c.thisClaim}
+                  </p>
+                  <p className="mt-2 font-mono text-[0.78rem] leading-relaxed text-ink-charcoal">
+                    <span className="font-semibold text-[#9c3c08] dark:text-[#f0a36e]">
+                      Berbeda dengan
+                    </span>{" "}
+                    <Link href={`/articles/${c.otherSlug}`} className="link-teal">
+                      {c.otherTitle} ↗
+                    </Link>
+                    : {c.otherClaim}
+                  </p>
+                  {c.rationale && (
+                    <p className="mt-2 font-mono text-[0.72rem] italic leading-relaxed text-gray">
+                      {c.rationale}
+                    </p>
+                  )}
                 </li>
               ))}
             </ul>
@@ -565,7 +631,11 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
       <RabbitHole surprise={surprise} />
 
       {/* Tanya NaLI: per-article RAG assistant (Bucket A, Step 1.1) */}
-      <ArticleTutor slug={article.slug} title={article.title} />
+      <ArticleTutor
+        slug={article.slug}
+        title={article.title}
+        contradictionCount={contradictionViews.length}
+      />
     </article>
   );
 }

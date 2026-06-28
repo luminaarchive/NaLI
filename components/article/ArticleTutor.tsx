@@ -16,6 +16,8 @@ import { useNaliChat } from "@/lib/hooks/useNaliChat";
 interface ArticleTutorProps {
   slug: string;
   title: string;
+  /** Confirmed cross-article contradictions touching this article (Step 2.1). */
+  contradictionCount?: number;
 }
 
 /** Article-aware starter prompts that map to the page's own sections. */
@@ -25,7 +27,7 @@ const STARTERS = [
   "Sumber apa saja yang mendukung tulisan ini?",
 ];
 
-export function ArticleTutor({ slug, title }: ArticleTutorProps) {
+export function ArticleTutor({ slug, title, contradictionCount = 0 }: ArticleTutorProps) {
   const [open, setOpen] = useState(false);
   const { messages, input, setInput, handleSubmit, send, isLoading, error } =
     useNaliChat({ nodeSlug: slug, nodeType: "artikel", nodeLabel: title });
@@ -226,8 +228,15 @@ export function ArticleTutor({ slug, title }: ArticleTutorProps) {
             Jawaban dirangkai dari arsip NaLI dan bisa keliru, selalu cek sumber
             aslinya.
           </p>
-          {/* PHASE-2 SEAM: contradiction detector will inject a
-              "Lihat klaim yang diperdebatkan di tulisan ini" link here. */}
+          {contradictionCount > 0 && (
+            <a
+              href="#kontradiksi"
+              onClick={() => setOpen(false)}
+              className="mt-2 inline-block font-mono text-[0.7rem] font-semibold text-[#9c3c08] hover:underline dark:text-[#f0a36e]"
+            >
+              Lihat {contradictionCount} klaim yang diperdebatkan →
+            </a>
+          )}
         </div>
       </div>
     </>

@@ -17,6 +17,7 @@ export type GlyphName =
   | "stats"
   | "plus"
   | "external"
+  | "contradiction"
   | "logout";
 
 const PATHS: Record<GlyphName, React.ReactNode> = {
@@ -81,6 +82,12 @@ const PATHS: Record<GlyphName, React.ReactNode> = {
     </>
   ),
   plus: <path d="M12 5v14M5 12h14" />,
+  contradiction: (
+    <>
+      <path d="M4 8h12l-3-3M4 8l3 3" />
+      <path d="M20 16H8l3 3M20 16l-3-3" />
+    </>
+  ),
   external: (
     <>
       <path d="M14 4h6v6M20 4l-9 9M18 13v6H5V6h6" />
