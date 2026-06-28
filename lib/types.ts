@@ -2,6 +2,9 @@ export type Category = "alam" | "sejarah" | "investigasi" | "catatan-lapangan";
 
 export type Confidence = "high" | "medium" | "low" | "needs-verification";
 
+/** Author-declared editorial currency of an article (Living Articles, Step 2.2). */
+export type ArticleCurrency = "terkini" | "perlu-tinjauan" | "digantikan";
+
 export type Status = "published" | "draft";
 
 export type SourceType =
@@ -178,6 +181,13 @@ export interface Article {
   firstPartyFieldwork?: boolean;
   /** Last substantive update (ISO date). */
   updated?: string;
+  /** Author-declared editorial currency (Living Articles, Step 2.2). Optional;
+   *  when unset, no currency claim is shown (only the dates). */
+  articleStatus?: ArticleCurrency;
+  /** ISO date the author last re-checked this article against its sources. */
+  lastVerified?: string;
+  /** Slug of the article that supersedes this one (when articleStatus = digantikan). */
+  supersededBy?: string;
   /** Place names referenced (display only). */
   locationLabels?: string[];
   /** Explicit uncertainty / limitation notes. */
@@ -406,6 +416,12 @@ export const CONFIDENCE_LABEL: Record<Confidence, string> = {
   medium: "Didukung sumber",
   low: "Terbatas",
   "needs-verification": "Belum cukup bukti",
+};
+
+export const ARTICLE_CURRENCY_LABEL: Record<ArticleCurrency, string> = {
+  terkini: "Terkini",
+  "perlu-tinjauan": "Perlu tinjauan",
+  digantikan: "Digantikan",
 };
 
 export const SOURCE_TYPE_LABEL: Record<SourceType, string> = {

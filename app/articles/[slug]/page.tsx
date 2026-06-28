@@ -30,6 +30,7 @@ import { ReadingProgress } from "@/components/article/ReadingProgress";
 import { ShareButton } from "@/components/ShareButton";
 import { buildEntityIndex } from "@/lib/wikilinks";
 import { getConfirmedContradictionsForArticle } from "@/lib/contradictions";
+import { getAllCorrections } from "@/lib/corrections";
 import { CATEGORY_LABEL, CLAIM_STATUS_LABEL, type ClaimStatus } from "@/lib/types";
 
 /** Stable per-slug index so the "Coba sudut lain" pick is consistent per article. */
@@ -148,6 +149,30 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
       rationale: c.llmRationale,
     };
   });
+
+  // Living Articles (Step 2.2): unified evolution timeline = changelog + corrections.
+  const corrections = getAllCorrections().filter((c) => c.artikelSlug === article.slug);
+  const revisionCount = (article.changelog?.length ?? 0) + corrections.length;
+  const supersededByTitle = article.supersededBy
+    ? titleBySlug.get(article.supersededBy)
+    : undefined;
+  // Merge into one date-sorted list (newest first).
+  const timeline = [
+    ...(article.changelog ?? []).map((c) => ({
+      kind: "changelog" as const,
+      date: c.tanggal,
+      tipe: c.tipe,
+      deskripsi: c.deskripsi,
+    })),
+    ...corrections.map((c) => ({
+      kind: "koreksi" as const,
+      date: c.tanggalDiperbaiki,
+      klaimLama: c.klaimLama,
+      klaimBaru: c.klaimBaru,
+      alasan: c.alasan,
+      sumber: c.sumberKoreksi,
+    })),
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   // resolve cited source IDs to archive entries for clickable Claim Ledger links
   const allSources = getAllSources();
   const citedSources = (article.sourceIds ?? [])
@@ -270,6 +295,11 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
           hasLimitationsAnchor={Boolean(article.limitations && article.limitations.length > 0)}
           updated={article.updated}
           contradictionCount={contradictionViews.length}
+          articleStatus={article.articleStatus}
+          lastVerified={article.lastVerified}
+          supersededBySlug={article.supersededBy}
+          supersededByTitle={supersededByTitle}
+          revisionCount={revisionCount}
         />
       </div>
 
@@ -548,29 +578,52 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
           </div>
         )}
 
-        {/* changelog (F6.3) */}
-        {article.changelog && article.changelog.length > 0 && (
-          <details className="group mt-12 border-t border-dashed border-ink/40 pt-6">
+        {/* Riwayat & koreksi (Living Articles, Step 2.2): unified evolution
+            timeline = changelog entries + this article's corrections. */}
+        {timeline.length > 0 && (
+          <details
+            id="riwayat"
+            open
+            className="group mt-12 scroll-mt-24 border-t border-dashed border-ink/40 pt-6"
+          >
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-              <h2 className="label text-ink/70">Riwayat perubahan artikel ini</h2>
+              <h2 className="label text-ink/70">Riwayat &amp; koreksi artikel ini</h2>
               <span className="font-mono text-[0.7rem] text-gray transition-transform group-open:rotate-180" aria-hidden>
                 ▾
               </span>
             </summary>
-            <ol className="mt-4 space-y-3">
-              {article.changelog
-                .slice()
-                .sort((a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime())
-                .map((c, i) => (
-                  <li key={i} className="border-l-2 border-dashed border-ink/40 pl-4">
-                    <p className="font-mono text-[0.7rem] uppercase tracking-[0.1em] text-ink-deep">
-                      {formatDate(c.tanggal)} · {CHANGE_TYPE_LABEL[c.tipe]}
-                    </p>
+            <ol className="mt-4 space-y-4">
+              {timeline.map((t, i) => (
+                <li key={i} className="border-l-2 border-dashed border-ink/40 pl-4">
+                  <p className="font-mono text-[0.7rem] uppercase tracking-[0.1em] text-ink-deep">
+                    {formatDate(t.date)} ·{" "}
+                    {t.kind === "changelog" ? CHANGE_TYPE_LABEL[t.tipe] : "Koreksi"}
+                  </p>
+                  {t.kind === "changelog" ? (
                     <p className="mt-1 font-mono text-[0.8rem] leading-relaxed text-gray">
-                      {c.deskripsi}
+                      {t.deskripsi}
                     </p>
-                  </li>
-                ))}
+                  ) : (
+                    <div className="mt-1.5 space-y-1.5">
+                      <p className="font-mono text-[0.78rem] leading-relaxed text-gray">
+                        <span className="text-[#9c3c08] line-through dark:text-[#f0a36e]">
+                          {t.klaimLama}
+                        </span>{" "}
+                        → <span className="text-ink-charcoal">{t.klaimBaru}</span>
+                      </p>
+                      <p className="font-mono text-[0.74rem] leading-relaxed text-gray">
+                        {t.alasan}
+                        {t.sumber && (
+                          <>
+                            {" "}
+                            <span className="text-ink/60">({t.sumber})</span>
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </li>
+              ))}
             </ol>
           </details>
         )}

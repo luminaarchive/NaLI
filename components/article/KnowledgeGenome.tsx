@@ -1,6 +1,12 @@
 import Link from "next/link";
-import type { ClaimLedgerItem, ClaimStatus, Confidence, EvidenceBasis } from "@/lib/types";
-import { CLAIM_STATUS_LABEL } from "@/lib/types";
+import type {
+  ArticleCurrency,
+  ClaimLedgerItem,
+  ClaimStatus,
+  Confidence,
+  EvidenceBasis,
+} from "@/lib/types";
+import { ARTICLE_CURRENCY_LABEL, CLAIM_STATUS_LABEL } from "@/lib/types";
 import { ConfidenceBadge } from "@/components/ConfidenceBadge";
 import { articleDepth, DEPTH_LABEL, formatDate } from "@/lib/format";
 
@@ -39,6 +45,13 @@ const EVIDENCE_BASIS_TEXT: Record<EvidenceBasis, string> = {
   campuran: "Campuran sumber",
 };
 
+/** Currency badge accent (terkini = positive teal, the others warn). */
+const CURRENCY_CLASS: Record<ArticleCurrency, string> = {
+  terkini: "border-ink/50 text-ink-deep",
+  "perlu-tinjauan": "border-[#c98f1f]/60 text-[#8a5a08] dark:text-[#e8c277]",
+  digantikan: "border-[#d96a23]/60 text-[#9c3c08] dark:text-[#f0a36e]",
+};
+
 interface KnowledgeGenomeProps {
   confidence: Confidence;
   claimLedger?: ClaimLedgerItem[];
@@ -54,6 +67,13 @@ interface KnowledgeGenomeProps {
   updated?: string;
   /** Confirmed cross-article contradictions touching this article (Step 2.1). */
   contradictionCount?: number;
+  /* ---- Living Articles (Step 2.2), all optional / author-declared ---- */
+  articleStatus?: ArticleCurrency;
+  lastVerified?: string;
+  supersededBySlug?: string;
+  supersededByTitle?: string;
+  /** Combined changelog + corrections count; links to the #riwayat section. */
+  revisionCount?: number;
 }
 
 export function KnowledgeGenome({
@@ -68,6 +88,11 @@ export function KnowledgeGenome({
   hasLimitationsAnchor,
   updated,
   contradictionCount = 0,
+  articleStatus,
+  lastVerified,
+  supersededBySlug,
+  supersededByTitle,
+  revisionCount = 0,
 }: KnowledgeGenomeProps) {
   const depth = articleDepth(readingMinutes);
 
@@ -198,17 +223,41 @@ export function KnowledgeGenome({
         </div>
       </dl>
 
-      {/* PHASE-2 SEAM (Bucket B, Living Articles): this row is reserved for
-          article Status (terkini / diperbarui / digantikan), a "Terakhir
-          diperiksa" date, and a link to the full revision history. For now it
-          renders only the existing `updated` date as a soft start. */}
+      {/* STATUS & VERIFIKASI (Living Articles, Step 2.2). Currency is
+          author-declared: when articleStatus is unset, only the dates show. */}
       <div className="mt-4 border-t border-dashed border-ink/30 pt-3">
-        <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink/45">
-          Status &amp; verifikasi
-        </p>
-        <p className="mt-1 font-mono text-[0.7rem] text-gray">
+        <div className="flex items-center justify-between gap-2">
+          <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink/45">
+            Status &amp; verifikasi
+          </p>
+          {articleStatus && (
+            <span
+              className={`border border-dashed px-1.5 py-0.5 font-mono text-[0.58rem] uppercase tracking-label ${CURRENCY_CLASS[articleStatus]}`}
+            >
+              {ARTICLE_CURRENCY_LABEL[articleStatus]}
+            </span>
+          )}
+        </div>
+        <p className="mt-1.5 font-mono text-[0.7rem] text-gray">
           {updated ? `Diperbarui ${formatDate(updated)}` : "Belum ada pembaruan tercatat"}
+          {lastVerified && ` · diperiksa ${formatDate(lastVerified)}`}
         </p>
+        {articleStatus === "digantikan" && supersededBySlug && (
+          <a
+            href={`/articles/${supersededBySlug}`}
+            className="mt-1.5 inline-block font-mono text-[0.7rem] font-semibold text-[#9c3c08] hover:underline dark:text-[#f0a36e]"
+          >
+            Digantikan oleh {supersededByTitle ?? supersededBySlug} →
+          </a>
+        )}
+        {revisionCount > 0 && (
+          <a
+            href="#riwayat"
+            className="mt-1.5 block font-mono text-[0.7rem] text-ink-deep hover:underline"
+          >
+            {revisionCount} catatan riwayat &amp; koreksi →
+          </a>
+        )}
         {contradictionCount > 0 && (
           <a
             href="#kontradiksi"
