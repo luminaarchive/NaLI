@@ -28,7 +28,9 @@ import { createClient } from "@supabase/supabase-js";
 /* ------------------------------- config ---------------------------------- */
 
 const ARTICLES_DIR = path.join(process.cwd(), "content", "articles");
-const EMBEDDING_MODEL = "text-embedding-004";
+// Keep in step with lib/embeddings.ts (single embedding model across the repo).
+const EMBEDDING_MODEL = "gemini-embedding-001";
+const EMBEDDING_DIMS = 768;
 const GEN_MODEL = "gemini-2.0-flash";
 const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
@@ -89,6 +91,7 @@ async function embed(text) {
     body: JSON.stringify({
       model: `models/${EMBEDDING_MODEL}`,
       content: { parts: [{ text }] },
+      outputDimensionality: EMBEDDING_DIMS,
     }),
   });
   if (!res.ok) throw new Error(`Embedding API ${res.status}: ${await res.text()}`);
