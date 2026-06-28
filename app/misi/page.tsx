@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { getMissions } from "@/lib/missions";
+import { ReportForm } from "@/components/ReportForm";
 
 export const metadata: Metadata = {
   title: "Misi Riset",
@@ -101,6 +102,26 @@ export default function MisiPage() {
             })}
           </ul>
         )}
+
+        {/* Lapor temuan: public field-report intake (Step 2.3) */}
+        <section
+          id="lapor"
+          className="mt-16 scroll-mt-24 border-t border-dashed border-ink/40 pt-10"
+        >
+          <h2 className="font-display text-2xl text-ink-black">Lapor temuan lapangan</h2>
+          <p className="mt-2 max-w-2xl font-mono text-[0.82rem] leading-relaxed text-gray">
+            Melihat sesuatu yang relevan, satwa langka, perubahan sungai, situs yang
+            terancam? Kirim catatanmu. Ini jadi bahan mentah riset, bukan klaim: setiap
+            laporan ditinjau manual sebelum dipakai.
+          </p>
+          <div className="mt-6 max-w-2xl">
+            <ReportForm
+              missions={missions
+                .filter((m) => m.status === "aktif")
+                .map((m) => ({ id: m.id, judul: m.judul }))}
+            />
+          </div>
+        </section>
       </div>
     </div>
   );
