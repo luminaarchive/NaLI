@@ -31,10 +31,14 @@ if (!SUPABASE_URL || !SUPABASE_KEY || !GEMINI_KEY) {
   process.exit(1);
 }
 
+// NOTE: content_embeddings has RLS that only allows anon SELECT, so writes need
+// a privileged key. Set NEXT_PUBLIC_SUPABASE_ANON_KEY to a service-role key for
+// this ingest run (it is server-side only and never shipped to the browser).
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 const CONTENT_DIR = path.join(process.cwd(), "content");
-const EMBEDDING_MODEL = "text-embedding-004";
+const EMBEDDING_MODEL = "gemini-embedding-001";
 const EMBEDDING_API = "https://generativelanguage.googleapis.com/v1beta/models";
+const EMBEDDING_DIMS = 768; // must match content_embeddings.embedding vector(768)
 
 /* ------------------------------- Helpers ---------------------------------- */
 
@@ -100,6 +104,8 @@ async function embed(text) {
       body: JSON.stringify({
         model: `models/${EMBEDDING_MODEL}`,
         content: { parts: [{ text }] },
+        taskType: "RETRIEVAL_DOCUMENT",
+        outputDimensionality: EMBEDDING_DIMS,
       }),
     },
   );

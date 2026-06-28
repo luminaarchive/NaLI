@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 /* -------------------------------------------------------------------------- */
 /*  Server-side embedding generation + vector retrieval for RAG               */
 /*                                                                            */
-/*  Uses Google's text-embedding-004 (768-dim, free tier: 1 500 RPM) and      */
+/*  Uses Google's gemini-embedding-001 (asks for 768-dim to match the DB) and */
 /*  Supabase pgvector for cosine-similarity search.                           */
 /* -------------------------------------------------------------------------- */
 
@@ -17,8 +17,9 @@ function getSupabase() {
 
 /* ----------------------------- Embedding ---------------------------------- */
 
-const EMBEDDING_MODEL = "text-embedding-004";
+const EMBEDDING_MODEL = "gemini-embedding-001";
 const EMBEDDING_API = "https://generativelanguage.googleapis.com/v1beta/models";
+const EMBEDDING_DIMS = 768; // must match content_embeddings.embedding vector(768)
 
 /**
  * Generate a 768-dim embedding vector via the Gemini REST API.
@@ -36,6 +37,9 @@ export async function generateEmbedding(text: string): Promise<number[]> {
       body: JSON.stringify({
         model: `models/${EMBEDDING_MODEL}`,
         content: { parts: [{ text }] },
+        // Query-side task type; documents are embedded with RETRIEVAL_DOCUMENT.
+        taskType: "RETRIEVAL_QUERY",
+        outputDimensionality: EMBEDDING_DIMS,
       }),
     },
   );
