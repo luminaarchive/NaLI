@@ -17,6 +17,21 @@ interface ChatRequestMessage {
  * Returns: streaming text response from Gemini with RAG context.
  */
 export async function POST(req: Request) {
+  // Fail loudly (not as a silent 200 with an empty body) when the model
+  // provider key is missing. The AI SDK reads GOOGLE_GENERATIVE_AI_API_KEY
+  // lazily, so without this guard streamText sends a 200 then errors mid-stream,
+  // leaving callers with an empty response and no signal to surface.
+  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    console.error("/api/chat: GOOGLE_GENERATIVE_AI_API_KEY is not set");
+    return Response.json(
+      {
+        error:
+          "Asisten NaLI belum dikonfigurasi (kunci model AI tidak tersedia).",
+      },
+      { status: 503 },
+    );
+  }
+
   const body = await req.json();
   const { messages, nodeSlug, nodeType, nodeLabel } = body as {
     messages: ChatRequestMessage[];
@@ -93,6 +108,11 @@ ${contextStr}
     model: google("gemini-2.0-flash"),
     system: systemPrompt,
     messages: modelMessages,
+    // Surface provider/stream failures in the logs instead of silently ending
+    // the stream (which the client renders as a graceful fallback bubble).
+    onError: ({ error }) => {
+      console.error("/api/chat streamText error:", error);
+    },
   });
 
   return result.toTextStreamResponse();

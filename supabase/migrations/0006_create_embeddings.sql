@@ -1,6 +1,9 @@
 -- Enable the pgvector extension (available on Supabase free tier)
 create extension if not exists vector with schema extensions;
 
+-- Enable trigram support for the hybrid full-text index below
+create extension if not exists pg_trgm with schema extensions;
+
 -- Table to store content embeddings for RAG retrieval
 create table public.content_embeddings (
   id bigint generated always as identity primary key,
@@ -24,7 +27,7 @@ create index on public.content_embeddings
 -- Full-text search index on content for hybrid retrieval
 create index content_embeddings_content_trgm
   on public.content_embeddings
-  using gin (content gin_trgm_ops);
+  using gin (content extensions.gin_trgm_ops);
 
 -- RLS: read-only for anon role
 alter table public.content_embeddings enable row level security;
