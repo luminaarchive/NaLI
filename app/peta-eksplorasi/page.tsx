@@ -6,6 +6,8 @@ import {
   getAllArticles,
   getAllFieldNotes,
 } from "@/lib/content";
+import { buildReadingPaths } from "@/lib/reading-paths";
+import { ReadingPaths } from "@/components/ReadingPaths";
 import { CATEGORY_LABEL, type Category } from "@/lib/types";
 
 const ShadowGraph = nextDynamic(() => import("@/components/observatory/ShadowGraph"), {
@@ -38,6 +40,7 @@ export default async function PetaEksplorasiPage() {
   const articles = await getAllArticles();
   const notes = getAllFieldNotes();
   const locations = [...new Set(notes.map((n) => n.location_label))];
+  const readingPaths = buildReadingPaths(articles);
 
   return (
     <>
@@ -48,6 +51,14 @@ export default async function PetaEksplorasiPage() {
       />
 
       <div className="container-editorial py-12">
+        {/* suggested reading paths: curated journeys, leads on mobile where the
+            WebGL graph is hidden (Step 1.3) */}
+        {readingPaths.length > 0 && (
+          <div className="mb-14">
+            <ReadingPaths paths={readingPaths} />
+          </div>
+        )}
+
         {/* interactive knowledge graph (desktop) */}
         <section className="mb-14">
           <h2 className="font-display text-2xl text-ink-black">Graf pengetahuan</h2>

@@ -23,6 +23,8 @@ import { ArticleCard } from "@/components/ArticleCard";
 import { ReadingTracker } from "@/components/article/ReadingTracker";
 import { BookmarkButton } from "@/components/article/BookmarkButton";
 import { RabbitHole } from "@/components/article/RabbitHole";
+import { ArticleTutor } from "@/components/article/ArticleTutor";
+import { KnowledgeGenome } from "@/components/article/KnowledgeGenome";
 import { QuickRead } from "@/components/article/QuickRead";
 import { ReadingProgress } from "@/components/article/ReadingProgress";
 import { ShareButton } from "@/components/ShareButton";
@@ -234,6 +236,23 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
         </div>
       </header>
 
+      {/* Knowledge Genome: epistemic "nutrition label" at the top (Step 1.2).
+          Subsumes the former "Basis tulisan" banner. */}
+      <div className="container-read pt-8">
+        <KnowledgeGenome
+          confidence={article.confidence}
+          claimLedger={article.claimLedger}
+          evidenceBasis={article.evidenceBasis}
+          firstPartyFieldwork={article.firstPartyFieldwork}
+          sourcesCount={article.sources?.length ?? 0}
+          limitationsCount={article.limitations?.length ?? 0}
+          readingMinutes={article.readingMinutes}
+          hasClaimLedgerAnchor={Boolean(article.claimLedger && article.claimLedger.length > 0)}
+          hasLimitationsAnchor={Boolean(article.limitations && article.limitations.length > 0)}
+          updated={article.updated}
+        />
+      </div>
+
       {/* quick read: 30-second entry into a long piece */}
       <div className="container-read pt-8">
         <QuickRead
@@ -249,21 +268,6 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
           <SeriesNavigation nav={seriesNav} />
         </div>
       )}
-
-      {/* evidence-basis banner: honesty about how the piece is sourced */}
-      <div className="container-read pt-8">
-        <div className="border border-dashed border-ink/60 bg-ink-wash/40 p-5">
-          <p className="font-mono text-[0.78rem] leading-relaxed text-ink-charcoal">
-            <span className="font-semibold text-ink-deep">Basis tulisan:</span>{" "}
-            {article.evidenceBasis
-              ? `${article.evidenceBasis}, arsip, dan observasi pihak ketiga. `
-              : "sumber terbuka, arsip, dan observasi pihak ketiga. "}
-            {article.firstPartyFieldwork
-              ? "Artikel ini memuat bukti lapangan pertama yang ditampilkan di bawah."
-              : "NaLI tidak mengklaim observasi lapangan pribadi untuk artikel ini."}
-          </p>
-        </div>
-      </div>
 
       {/* cover image fallback for DB-backed posts without structured image records */}
       {displayedImages.length === 0 && displayedDiagrams.length === 0 && article.coverImage && (
@@ -559,6 +563,9 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
 
       {/* rabbit-hole: never let the reader hit a dead end */}
       <RabbitHole surprise={surprise} />
+
+      {/* Tanya NaLI: per-article RAG assistant (Bucket A, Step 1.1) */}
+      <ArticleTutor slug={article.slug} title={article.title} />
     </article>
   );
 }
