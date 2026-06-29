@@ -2,7 +2,66 @@
 
 Jurnal riset terbuka tentang **alam, sejarah, dan investigasi Indonesia**. NaLI menyusun artikel dari jurnal, arsip, laporan lembaga, dataset, dokumentasi pihak ketiga, dan visual berlisensi.
 
-Built static-first dengan Next.js 14 (App Router) + TypeScript + Tailwind CSS. Konten ditulis sebagai file MDX, **tanpa database, tanpa CMS**.
+Built dengan Next.js 14 (App Router) + TypeScript + Tailwind CSS. Konten inti ditulis sebagai file MDX; fitur platform (newsletter, admin, misi, laporan warga, Intelligence Lab) didukung Supabase. Live di **https://nalibynative.com**.
+
+Sejak v1.0, NaLI bukan lagi sekadar kumpulan artikel statis, melainkan sebuah **Intelligence Platform**: jurnal yang hidup dengan tutor per-artikel, kartu transparansi epistemik, jalur baca, misi sains warga, dan sebuah lab riset internal yang hanya boleh melahirkan pertanyaan, bukan klaim.
+
+---
+
+## NaLI Intelligence Platform (v1.0)
+
+Platform ini dibangun dalam tiga lapisan (bucket), semuanya menjaga satu prinsip: **klaim selalu membawa sumber, dan spekulasi tidak pernah menyamar jadi fakta.**
+
+**Untuk pembaca (yang terlihat di situs publik):**
+
+- **Knowledge Genome**, kartu "label gizi epistemik" di atas tiap artikel (label keyakinan, komposisi claim ledger, basis bukti, jumlah sumber). Lihat `components/article/KnowledgeGenome.tsx`.
+- **Tanya NaLI**, tutor RAG per-artikel yang menjawab hanya dari arsip NaLI dan berkata jujur saat sesuatu belum terindeks. Lihat `components/article/ArticleTutor.tsx` + `app/api/chat`.
+- **Jalur Baca**, rangkaian terkurasi dari seri aktif di `/peta-eksplorasi` (`lib/reading-paths.ts`).
+- **Misi Sains Warga**, pembaca mengirim laporan di `/misi`; laporan **privat sampai ditinjau editor** (`app/api/report`, `/admin/reports`).
+- **Contradiction Engine** + **Living Articles**, klaim antar artikel yang berbenturan ditandai untuk ditinjau manusia, dan tiap artikel punya status kekinian yang dinyatakan penulis.
+
+**Untuk pengelola (internal, di balik autentikasi):**
+
+- **Intelligence Lab** (`/lab`, `/lab/signals`), memanen data terbuka (GBIF, iNaturalist, IUCN, Xeno-canto, YouTube), memberi **Skor Lazarus** dan skor sinyal yang transparan (heuristik prioritas, **bukan** probabilitas), lalu menampilkannya di dasbor privat.
+
+### Model isolasi: Lab → Gerbang Manusia → Misi Publik
+
+Inti etis platform adalah kontrak satu arah. Apa pun yang lahir di Lab tidak pernah langsung publik; ia harus lewat seorang editor, dan satu-satunya artefak yang menyeberang ke situs publik adalah sebuah **misi berupa pertanyaan**.
+
+```
+            RUANG INTERNAL (privat, belum terverifikasi)
+  ┌───────────────────────────────────────────────────────────┐
+  │  1. PANEN DATA        2. SKOR               3. DASBOR PRIVAT │
+  │  GBIF · iNaturalist   Skor Lazarus          /lab             │
+  │  IUCN · Xeno-canto ─▶ (heuristik, bukan ─▶  /lab/signals     │
+  │  YouTube              probabilitas)         (admin, noindex) │
+  └───────────────────────────────────────────────┬─────────────┘
+                                                   │
+                                   4. GERBANG MANUSIA (editor menilai)
+                                      promosi 1-klik, keputusan manusia
+                                                   │
+                                            (satu arah)
+                                                   ▼
+            SITUS PUBLIK
+  ┌───────────────────────────────────────────────────────────┐
+  │  5. MISI = sebuah PERTANYAAN  ("adakah bukti terkini?")     │
+  │     bukan klaim, bukan kesimpulan                            │
+  │            │                                                 │
+  │            ▼                                                 │
+  │  6. /misi ─▶ laporan warga (privat sampai ditinjau)          │
+  │            │                                                 │
+  │            ▼                                                 │
+  │  7. Bukti cukup ─▶ baru menjadi artikel bersumber            │
+  └───────────────────────────────────────────────────────────┘
+```
+
+Tiga lapis penjaga menegakkan kontrak ini:
+
+1. **RLS khusus admin** pada tabel Lab (`lab_leads`, `ghost_signals`); anon tidak punya policy baca.
+2. **`npm run check:lab-isolation`**, build gagal bila kode publik (`lib`/`components`/`app` non-lab) mengimpor modul `@/(lib|components|app)/lab`.
+3. **Kontrak promosi satu arah** di `app/api/lab/promote`, satu-satunya jalur Lab → publik, dan ia hanya menghasilkan pertanyaan.
+
+Semua kunci data langsung (service-role, IUCN, Xeno-canto, YouTube, Gemini) bersifat **opsional**: tiap sumber punya fallback snapshot/kurasi yang ditandai jelas sebagai contoh, sehingga platform tetap berjalan dan bisa diverifikasi tanpa kredensial. Detail di `docs/lab-architecture.md`.
 
 ---
 
