@@ -47,8 +47,10 @@ export function SiteChrome({
   // The neo-museum landing ships its own full-bleed header + dark footer, so it
   // opts out of the shared chrome (same as /admin).
   const isLanding = pathname === "/";
+  // /lab (Internal Intelligence Lab) is private and renders its own shell.
+  const isLab = pathname?.startsWith("/lab");
 
-  if (isAdmin || isLanding) {
+  if (isAdmin || isLanding || isLab) {
     return <main className="flex-1">{children}</main>;
   }
 

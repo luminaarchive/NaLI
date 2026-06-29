@@ -29,8 +29,10 @@ export async function middleware(req: NextRequest) {
 
   const { pathname } = req.nextUrl;
   const isLogin = pathname === "/admin/login";
+  // /lab (Internal Intelligence Lab) is gated by the same admin session as /admin.
+  const isProtected = pathname.startsWith("/admin") || pathname.startsWith("/lab");
 
-  if (!user && pathname.startsWith("/admin") && !isLogin) {
+  if (!user && isProtected && !isLogin) {
     const url = req.nextUrl.clone();
     url.pathname = "/admin/login";
     return NextResponse.redirect(url);
@@ -45,5 +47,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/lab/:path*"],
 };
