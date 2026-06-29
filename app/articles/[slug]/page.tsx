@@ -52,11 +52,13 @@ export async function generateMetadata({
   const article = await getArticleBySlug(params.slug);
   if (!article) return { title: "Artikel tidak ditemukan" };
   const description = article.summary || article.subtitle;
-  // Prefer a real content image; fall back to the dynamic OG route
+  // Prefer a real RASTER content image; never use an SVG as the social preview
+  // (Facebook, X, WhatsApp, LinkedIn cannot render SVG og:image). Diagram-only
+  // articles therefore fall through to the dynamic /api/og raster route.
+  const isRaster = (src?: string) => Boolean(src) && !/\.svg(\?|#|$)/i.test(src as string);
   const contentImage =
-    article.images?.find((image) => image.src)?.src ??
-    article.diagrams?.find((diagram) => diagram.src)?.src ??
-    article.coverImage;
+    article.images?.find((image) => isRaster(image.src))?.src ??
+    (isRaster(article.coverImage) ? article.coverImage : undefined);
   const ogImageUrl =
     contentImage ??
     `/api/og?${new URLSearchParams({
