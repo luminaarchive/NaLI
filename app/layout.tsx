@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, IBM_Plex_Mono, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { Footer } from "@/components/Footer";
 import { SiteChrome } from "@/components/SiteChrome";
@@ -148,6 +149,7 @@ export default function RootLayout({
         <SiteChrome footer={<Footer />}>{children}</SiteChrome>
         <PageViewTracker />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
