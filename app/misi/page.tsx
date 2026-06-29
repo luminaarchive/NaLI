@@ -20,8 +20,8 @@ export const dynamic = "force-dynamic";
 
 const NF = new Intl.NumberFormat("id-ID");
 
-export default function MisiPage() {
-  const missions = getMissions();
+export default async function MisiPage() {
+  const missions = await getMissions();
 
   return (
     <div className="theme-investigasi relative">
@@ -53,11 +53,23 @@ export default function MisiPage() {
               const totalKontributor =
                 m.kontributor.peneliti + m.kontributor.pembaca + m.kontributor.penerjemah;
               return (
-                <li key={m.id} className="border border-dashed border-ink/40 p-5 sm:p-6">
+                <li
+                  key={m.id}
+                  id={`misi-${m.id}`}
+                  className="scroll-mt-24 border border-dashed border-ink/40 p-5 sm:p-6"
+                >
                   <div className="flex flex-wrap items-center gap-3">
                     <span className="label text-ink/60">
                       {m.status === "aktif" ? "Aktif" : "Selesai"}
                     </span>
+                    {m.source === "lab" && (
+                      <span
+                        className="border border-dashed border-ink/40 px-1.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-wider text-ink/55"
+                        title="Misi ini lahir dari analisis data terbuka di lab internal NaLI, sebagai pertanyaan untuk diselidiki bersama."
+                      >
+                        Berasal dari investigasi Lab
+                      </span>
+                    )}
                     <span className="font-mono text-[0.72rem] text-gray">
                       {NF.format(totalKontributor)} kontributor
                     </span>

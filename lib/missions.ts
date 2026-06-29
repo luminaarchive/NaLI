@@ -2,26 +2,76 @@ import "server-only";
 import fs from "node:fs";
 import path from "node:path";
 import type { ResearchMission } from "@/types/missions";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const MISSIONS_DIR = path.join(process.cwd(), "content", "missions");
+// Dev-only sink for missions promoted from the Lab while testing without a real
+// admin session / DB write (see app/api/lab/promote). Gitignored, non-prod only.
+const LAB_DEV_DIR = path.join(MISSIONS_DIR, "_lab-dev");
 
-/**
- * Modul 5: read research missions from local JSON. Editorial content authored by
- * NaLI describing real research gaps; contributor counts stay at their true
- * value (zero until someone contributes). Returns active missions first.
- */
-export function getMissions(): ResearchMission[] {
-  if (!fs.existsSync(MISSIONS_DIR)) return [];
-  const missions: ResearchMission[] = [];
-  for (const file of fs.readdirSync(MISSIONS_DIR)) {
+/** Read + parse every *.json mission in a directory (non-recursive). */
+function readJsonMissions(dir: string): ResearchMission[] {
+  if (!fs.existsSync(dir)) return [];
+  const out: ResearchMission[] = [];
+  for (const file of fs.readdirSync(dir)) {
     if (!file.endsWith(".json")) continue;
     try {
-      missions.push(JSON.parse(fs.readFileSync(path.join(MISSIONS_DIR, file), "utf8")));
+      const m = JSON.parse(fs.readFileSync(path.join(dir, file), "utf8")) as ResearchMission;
+      out.push({ source: "editorial", ...m });
     } catch {
       /* skip malformed */
     }
   }
-  return missions.sort((a, b) => {
+  return out;
+}
+
+/** Map a DB row (English status, snake_case) to the public ResearchMission. */
+function mapDbRow(row: Record<string, unknown>): ResearchMission {
+  return {
+    id: row.id as string,
+    judul: row.title as string,
+    deskripsi: row.description as string,
+    status: row.status === "closed" ? "selesai" : "aktif",
+    progressPercentage: (row.progress as number) ?? 0,
+    kebutuhanBukti: Array.isArray(row.evidence_needed) ? (row.evidence_needed as string[]) : [],
+    // DB missions do not track contributors yet; report the honest zero state.
+    kontributor: { peneliti: 0, pembaca: 0, penerjemah: 0 },
+    logSubmission: [],
+    source: (row.source as "editorial" | "lab") ?? "editorial",
+    leadId: (row.lead_id as number | null) ?? null,
+  };
+}
+
+/** Missions from the DB (public read). [] if the table is empty/unreachable. */
+async function getDbMissions(): Promise<ResearchMission[]> {
+  try {
+    const sb = createSupabaseServerClient();
+    const { data, error } = await sb.from("missions").select("*");
+    if (error || !Array.isArray(data)) return [];
+    return data.map(mapDbRow);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Modul 5 + Step 3.4: research missions, DB-backed with a static-JSON fallback.
+ *
+ * Source order (deduped by id, first wins): DB rows -> editorial JSON seeds ->
+ * (non-production only) locally promoted Lab missions. The JSON seeds guarantee
+ * /misi never renders empty even if the table is unreachable. Active first.
+ */
+export async function getMissions(): Promise<ResearchMission[]> {
+  const byId = new Map<string, ResearchMission>();
+  const add = (list: ResearchMission[]) => {
+    for (const m of list) if (m.id && !byId.has(m.id)) byId.set(m.id, m);
+  };
+
+  add(await getDbMissions());
+  add(readJsonMissions(MISSIONS_DIR));
+  if (process.env.NODE_ENV !== "production") add(readJsonMissions(LAB_DEV_DIR));
+
+  return [...byId.values()].sort((a, b) => {
     if (a.status !== b.status) return a.status === "aktif" ? -1 : 1;
     return a.judul.localeCompare(b.judul);
   });

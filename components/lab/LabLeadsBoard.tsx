@@ -43,6 +43,32 @@ export function LabLeadsBoard({
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<LabLeadStatus | "all">("all");
   const [openId, setOpenId] = useState<number | null>(null);
+  // Promotion state per lead id: busy | error message | success {href}.
+  const [promoting, setPromoting] = useState<number | null>(null);
+  const [promoted, setPromoted] = useState<Record<number, { href: string }>>({});
+  const [promoteError, setPromoteError] = useState<Record<number, string>>({});
+
+  async function promote(id: number) {
+    setPromoting(id);
+    setPromoteError((m) => ({ ...m, [id]: "" }));
+    try {
+      const res = await fetch("/api/lab/promote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leadId: id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        setPromoteError((m) => ({ ...m, [id]: data.error || `Gagal (HTTP ${res.status})` }));
+      } else {
+        setPromoted((m) => ({ ...m, [id]: { href: data.href } }));
+      }
+    } catch (e) {
+      setPromoteError((m) => ({ ...m, [id]: (e as Error).message }));
+    } finally {
+      setPromoting(null);
+    }
+  }
 
   const view = useMemo(() => {
     let rows = leads.slice();
@@ -231,19 +257,42 @@ export function LabLeadsBoard({
                     </div>
                   )}
 
-                  {/* Phase-3 promotion seam (wired in Step 3.4) */}
+                  {/* Phase-3 promotion: lead -> public "Misi Verifikasi Lapangan" */}
                   <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-dashed border-ink/20 pt-3">
-                    <button
-                      type="button"
-                      disabled
-                      title="Tersedia di Langkah 3.4 (promosi lead menjadi Misi Verifikasi Lapangan)"
-                      className="cursor-not-allowed border border-dashed border-ink/40 bg-ink/5 px-3 py-1.5 font-mono text-[0.68rem] uppercase tracking-wider text-ink/40"
-                    >
-                      Promosikan ke Misi
-                    </button>
-                    <span className="font-mono text-[0.62rem] text-ink/40">
-                      Loop umpan-balik Fase 3, aktif di Langkah 3.4.
-                    </span>
+                    {promoted[l.id] ? (
+                      <>
+                        <span className="font-mono text-[0.68rem] uppercase tracking-wider text-ink-deep">
+                          ✓ Misi dibuat
+                        </span>
+                        <a
+                          href={promoted[l.id].href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono text-[0.68rem] uppercase tracking-wider text-ink-deep underline decoration-dotted underline-offset-2 hover:text-ink"
+                        >
+                          Lihat misi publik ↗
+                        </a>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => promote(l.id)}
+                          disabled={promoting === l.id}
+                          className="border border-ink bg-ink px-3 py-1.5 font-mono text-[0.68rem] uppercase tracking-wider text-paper transition-colors hover:bg-ink-deep disabled:opacity-50"
+                        >
+                          {promoting === l.id ? "Mempromosikan…" : "Promosikan ke Misi"}
+                        </button>
+                        <span className="font-mono text-[0.62rem] text-ink/45">
+                          Membuat <strong>pertanyaan</strong> riset publik, bukan klaim.
+                        </span>
+                      </>
+                    )}
+                    {promoteError[l.id] && (
+                      <span className="w-full font-mono text-[0.64rem] text-[#b3320a] dark:text-[#f0a36e]">
+                        {promoteError[l.id]}
+                      </span>
+                    )}
                   </div>
                 </div>
               )}

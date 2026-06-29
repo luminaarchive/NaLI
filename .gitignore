@@ -56,3 +56,6 @@ brand-source/
 # build logs
 build.log
 
+
+# Lab (Bucket C) dev-promoted missions (local simulation only, non-prod)
+/content/missions/_lab-dev

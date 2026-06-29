@@ -22,4 +22,12 @@ export interface ResearchMission {
     penerjemah: number;
   };
   logSubmission: MissionSubmission[];
+  /**
+   * Provenance. "editorial" = authored by NaLI (static JSON). "lab" = promoted
+   * from an Internal Lab lead (Step 3.4); these render a "from Lab investigation"
+   * badge and are framed as open questions, never claims.
+   */
+  source?: "editorial" | "lab";
+  /** Originating lab_leads id when source === "lab" (traceability only). */
+  leadId?: number | null;
 }
