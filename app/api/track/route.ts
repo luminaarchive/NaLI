@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
 import { isSameOrigin } from "@/lib/http";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   if (!isSameOrigin(req)) return NextResponse.json({ ok: false }, { status: 403 });
+  // Lenient per-IP cap so a single client cannot flood page_views.
+  if (!rateLimit(`track:${clientIp(req)}`, 120, 60_000).ok) {
+    return NextResponse.json({ ok: false }, { status: 429 });
+  }
   if (!supabase) return NextResponse.json({ ok: false });
   let path = "";
   let referrer: string | null = null;

@@ -1,6 +1,8 @@
 import { google } from "@ai-sdk/google";
 import { streamText } from "ai";
 import { retrieveContext, type RetrievedChunk } from "@/lib/embeddings";
+import { isSameOrigin } from "@/lib/http";
+import { clientIp, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 export const maxDuration = 30;
 
@@ -17,6 +19,16 @@ interface ChatRequestMessage {
  * Returns: streaming text response from Gemini with RAG context.
  */
 export async function POST(req: Request) {
+  // Reject cross-site browser POSTs; this is a same-origin app endpoint.
+  if (!isSameOrigin(req)) {
+    return Response.json({ error: "Asal permintaan tidak sah" }, { status: 403 });
+  }
+
+  // Rate limit: this endpoint calls a paid AI model, so cap it tightly per IP
+  // (15 requests / minute) to stop runaway cost and abuse.
+  const rl = rateLimit(`chat:${clientIp(req)}`, 15, 60_000);
+  if (!rl.ok) return tooManyRequests(rl.retryAfter);
+
   // Fail loudly (not as a silent 200 with an empty body) when the model
   // provider key is missing. The AI SDK reads GOOGLE_GENERATIVE_AI_API_KEY
   // lazily, so without this guard streamText sends a 200 then errors mid-stream,

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { isSameOrigin } from "@/lib/http";
+import { clientIp, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -29,6 +30,10 @@ export async function POST(request: Request) {
   if (!isSameOrigin(request)) {
     return NextResponse.json({ error: "Asal permintaan tidak sah" }, { status: 403 });
   }
+
+  // Rate limit citizen submissions per IP (6 / minute) to curb spam floods.
+  const rl = rateLimit(`report:${clientIp(request)}`, 6, 60_000);
+  if (!rl.ok) return tooManyRequests(rl.retryAfter);
 
   let form: FormData;
   try {
