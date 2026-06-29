@@ -5,6 +5,7 @@ import ForceGraph2D from "react-force-graph-2d";
 import Portal from "./Portal";
 import { graphData, type GraphNode, type GraphLink } from "./graph-data";
 import { computeSmartAnchor } from "./computeSmartAnchor";
+import { NODE_SLUG_MAP } from "./node-slug-map";
 import { useRouter } from "next/navigation";
 
 const GROUP_COLOR = {
@@ -17,55 +18,6 @@ const GROUP_LABEL = {
   alam: "Alam & Lanskap",
   sejarah: "Sejarah Nusantara",
   investigasi: "Liputan Investigasi",
-};
-
-const NODE_SLUG_MAP: Record<string, string> = {
-  "benua-kehilangan-llsvp": "llsvp-theia-mantle",
-  "lautan-canfield": "lautan-ungu-canfield",
-  "black-browed-babbler": "black-browed-babbler-burung-hilang-172-tahun",
-  "echidna-attenborough": "echidna-attenborough-papua-ditemukan-kembali",
-  "lazarus-taxon": "lazarus-taxon-bagaimana-kepunahan-dinyatakan",
-  "lebah-raksasa-wallace": "lebah-raksasa-wallace-megachile-pluto",
-  "nepenthes-pitopangii": "nepenthes-pitopangii-kantong-semar-paling-langka-sulawesi",
-  "seriwang-sangihe": "seriwang-sangihe-burung-biru-yang-nyaris-punah",
-  "spesies-hilang-nusantara": "spesies-indonesia-yang-masih-hilang",
-  "pesut-mahakam": "pesut-mahakam-populasi-terakhir",
-  "anak-krakatau-2018": "anak-krakatau-2018-runtuhan-tsunami",
-  "anoa": "anoa-sulawesi-fragmentasi-hutan",
-  "babirusa": "babirusa-evolusi-aneh-wallacea",
-  "cenderawasih": "cenderawasih-papua-perdagangan-habitat",
-  "coelacanth-sulawesi": "coelacanth-sulawesi-fosil-hidup-laut-dalam",
-  "dieng": "dieng-kawah-gas-bahaya-senyap",
-  "harimau-bali": "harimau-bali-kepunahan-arsip",
-  "harimau-jawa": "harimau-jawa-lazarus-species",
-  "kelud": "kelud-danau-kawah-rekayasa-bahaya",
-  "komodo": "komodo-predator-pulau-tekanan-konservasi",
-  "krakatau-1883": "krakatau-1883-tsunami-arsip-global",
-  "mangrove-indonesia": "mangrove-indonesia-karbon-biru",
-  "merapi": "merapi-awan-panas-pemantauan",
-  "orangutan-tapanuli": "orangutan-tapanuli-spesies-baru-habitat-terbatas",
-  "tarsius": "tarsius-primata-malam-sulawesi",
-  "terumbu-karang": "terumbu-karang-indonesia-iklim",
-  "toba": "toba-supervolcano-perdebatan-dampak",
-  "badak-jawa": "badak-jawa-benteng-terakhir",
-  "tambora-1815": "tambora-1815-iklim-dunia",
-  "api-biru-kawah-ijen": "api-biru-kawah-ijen",
-  "maleo": "burung-maleo-sulawesi",
-  "segara-anakan": "mangrove-segara-anakan",
-  "selat-yang-hilang-laut-demak": "selat-muria-demak-bledug-kuwu",
-  "homo-floresiensis": "homo-floresiensis-manusia-kerdil-flores",
-  "prasasti-yupa": "prasasti-yupa-kutai-dokumen-tertua",
-  "banda-neira": "banda-neira-pala-kekerasan-kolonial-arsip",
-  "borobudur": "borobudur-arsip-restorasi-batu-air-pelestarian",
-  "peta-lama-nusantara": "peta-lama-nusantara-kolonial-membaca-pulau-kuasa",
-  "samalas-1257": "samalas-1257-babad-geologi",
-  "kota-tua-jakarta": "batavia-kota-tua-jakarta",
-  "ekspor-pasir-laut": "ekspor-pasir-laut-pp-26-2023",
-  "deforestasi-kalimantan": "deforestasi-kalimantan-data-terbuka",
-  "gambut-indonesia": "gambut-indonesia-karbon-api-kabut",
-  "sampah-plastik-laut": "sampah-plastik-laut-indonesia-data-kebijakan",
-  "jakarta-tenggelam": "jakarta-tenggelam-penurunan-tanah",
-  "citarum": "citarum-sungai-tercemar",
 };
 
 export function ShadowGraph() {

@@ -10,12 +10,12 @@ import { buildReadingPaths } from "@/lib/reading-paths";
 import { ReadingPaths } from "@/components/ReadingPaths";
 import { CATEGORY_LABEL, type Category } from "@/lib/types";
 
-const ShadowGraph = nextDynamic(() => import("@/components/observatory/ShadowGraph"), {
+const GalaxyGraph = nextDynamic(() => import("@/components/observatory/GalaxyGraph"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-[650px] bg-[#0a1411] flex flex-col items-center justify-center text-[#46cfa8] font-mono border border-[#9ecdbf]/30">
-      <div className="animate-pulse">MEMUAT PETA SHADOW GRAPH...</div>
-      <div className="text-[10px] text-[#9ecdbf]/50 mt-2">INITIALIZING WEBGL CANVAS & FORCE FORCES</div>
+      <div className="animate-pulse">MEMBANGUN GALAKSI PENGETAHUAN...</div>
+      <div className="text-[10px] text-[#9ecdbf]/50 mt-2">MENYALAKAN INTI NEURAL & ORBIT SIMPUL</div>
     </div>
   ),
 });
@@ -61,13 +61,14 @@ export default async function PetaEksplorasiPage() {
 
         {/* interactive knowledge graph (desktop) */}
         <section className="mb-14">
-          <h2 className="font-display text-2xl text-ink-black">Graf pengetahuan</h2>
+          <h2 className="font-display text-2xl text-ink-black">Galaksi pengetahuan</h2>
           <p className="mt-2 max-w-2xl font-mono text-[0.82rem] leading-relaxed text-gray">
-            Tiap simpul adalah artikel, sumber, seri, atau topik. Garis menandai relasi.
-            Klik untuk membuka, seret untuk menata, saring lewat filter.
+            Bola dunia riset NaLI: tiap bintang adalah satu liputan yang mengorbit inti
+            neural di pusatnya. Putar untuk menjelajah, klik untuk memilih, klik dua kali
+            untuk membuka artikelnya. Galaksi ini terus hidup dan bertumbuh tiap kami terbit.
           </p>
           <div className="mt-5">
-            <ShadowGraph />
+            <GalaxyGraph />
           </div>
           <p className="mt-3 font-mono text-[0.7rem] text-gray-light md:hidden">
             Graf interaktif tampil di layar lebar. Di perangkat kecil, gunakan indeks di bawah.
