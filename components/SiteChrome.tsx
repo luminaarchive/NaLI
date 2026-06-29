@@ -44,13 +44,13 @@ export function SiteChrome({
 }) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
-  // The neo-museum landing ships its own full-bleed header + dark footer, so it
-  // opts out of the shared chrome (same as /admin).
-  const isLanding = pathname === "/";
   // /lab (Internal Intelligence Lab) is private and renders its own shell.
   const isLab = pathname?.startsWith("/lab");
 
-  if (isAdmin || isLanding || isLab) {
+  // The homepage now uses the shared Nav + Footer (the old neo-museum landing
+  // shipped its own chrome and hid the site navigation, which confused new
+  // visitors). Only /admin and /lab keep their own shells.
+  if (isAdmin || isLab) {
     return <main className="flex-1">{children}</main>;
   }
 

@@ -305,6 +305,30 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
         />
       </div>
 
+      {/* Feature discovery: surface the per-article tutor + connected reading,
+          so readers learn these tools exist instead of missing them. */}
+      <div className="container-read pt-4">
+        <div className="border border-dashed border-ink/40 bg-ink-wash/40 px-4 py-3">
+          <p className="font-mono text-[0.76rem] leading-relaxed text-ink-charcoal">
+            <span aria-hidden>💡 </span>
+            <strong>Tahukah Anda?</strong> Artikel ini punya AI Tutor, klik tombol{" "}
+            <strong>Tanya NaLI</strong> di kanan bawah untuk bertanya, dan jawabannya
+            ditarik dari arsip kami.
+            {article.related && article.related.length > 0 && (
+              <>
+                {" "}
+                Artikel ini juga terhubung dengan {article.related.length} tulisan lain;
+                telusuri lewat{" "}
+                <Link href="/peta-eksplorasi" className="text-ink-deep underline underline-offset-2">
+                  Jalur Baca
+                </Link>
+                .
+              </>
+            )}
+          </p>
+        </div>
+      </div>
+
       {/* quick read: 30-second entry into a long piece */}
       <div className="container-read pt-8">
         <QuickRead
