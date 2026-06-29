@@ -1,8 +1,9 @@
 export const SITE = {
   name: "NaLI",
   shortName: "NaLI",
-  // Production domain on Vercel. Swap for a custom domain when one is bought.
-  url: "https://nalijournal.vercel.app",
+  // Primary custom domain (Hostinger registrar, DNS at Hostinger, served by
+  // Vercel). All other domains (www + the *.vercel.app aliases) 308-redirect here.
+  url: "https://nalibynative.com",
   tagline:
     "Jurnal riset terbuka tentang alam, sejarah, dan investigasi Indonesia, disusun dari jurnal, arsip, laporan lembaga, dataset, dan dokumentasi pihak ketiga.",
   description:
