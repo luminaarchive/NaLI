@@ -70,6 +70,56 @@ export const metadata: Metadata = {
     description: SITE.description,
     images: ["/brand/og-default.png"],
   },
+  // Let search engines index everything (except /admin + /api, handled in robots.ts)
+  // and allow large image previews + full text snippets for richer listings.
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  // Ownership verification. Set the tokens in Vercel env to verify the property
+  // in Google Search Console / Bing Webmaster Tools (founder step, needs the
+  // respective account). Until set, these render nothing.
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    other: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
+      ? { "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION }
+      : {},
+  },
+};
+
+/** Site-wide structured data: Organization + WebSite (with a sitelinks search box). */
+const ORGANIZATION_LD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: SITE.name,
+  alternateName: "Nature Life Intelligence",
+  url: SITE.url,
+  logo: `${SITE.url}/brand/nali-emblem-navy.png`,
+  description: SITE.description,
+};
+
+const WEBSITE_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE.name,
+  url: SITE.url,
+  inLanguage: "id-ID",
+  description: SITE.description,
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: `${SITE.url}/cari?q={search_term_string}`,
+    },
+    "query-input": "required name=search_term_string",
+  },
 };
 
 export default function RootLayout({
@@ -86,6 +136,14 @@ export default function RootLayout({
             __html:
               '(function(){try{var t=localStorage.getItem("nali-theme");if(!t){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}if(t==="dark"){document.documentElement.classList.add("dark")}}catch(e){}})();',
           }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_LD) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_LD) }}
         />
         <SiteChrome footer={<Footer />}>{children}</SiteChrome>
         <PageViewTracker />
