@@ -4,6 +4,7 @@ import path from "node:path";
 import { isSameOrigin } from "@/lib/http";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getScoredLeads, type ScoredLead } from "@/lib/lab/leads";
+import { getGhostSignalById, type GhostSignal } from "@/lib/lab/ghost";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -56,6 +57,38 @@ function buildMission(lead: ScoredLead) {
       `Publikasi ilmiah atau laporan lembaga setelah ${last}`,
       "Catatan lapangan atau keterangan warga yang dapat ditelusuri sumbernya",
     ],
+    slug: `lab-${slugify(lead.taxonName)}`,
+  };
+}
+
+const SOURCE_LABEL: Record<GhostSignal["source"], string> = {
+  inaturalist: "iNaturalist",
+  "xeno-canto": "Xeno-canto",
+  youtube: "YouTube",
+};
+
+/**
+ * Build a FIELD-VERIFICATION mission from a ghost signal. A ghost signal is the
+ * softest lead of all (an unverified external anomaly), so the question is even
+ * more guarded: it asks whether the anomaly is real, never asserting it is.
+ */
+function buildSignalMission(sig: GhostSignal) {
+  const where = sig.locationLabel ? ` (${sig.locationLabel})` : "";
+  const hint = sig.taxonHint ? ` Dugaan sementara: ${sig.taxonHint}, ini belum dipastikan.` : "";
+  return {
+    title: `Verifikasi lapangan: ${sig.title}`.slice(0, 140),
+    description:
+      `Lab internal NaLI menandai sebuah anomali dari ${SOURCE_LABEL[sig.source]}${where}: ` +
+      `"${sig.title}". Sinyal ini belum terverifikasi dan bukan klaim apa pun.${hint} ` +
+      `Pertanyaannya terbuka: benarkah ini sesuatu yang penting, dan bisakah kita kumpulkan ` +
+      `bukti yang dapat diperiksa? Sumber sinyal: ${sig.url}`,
+    evidence: [
+      "Konfirmasi independen identitas (pakar atau observasi terverifikasi lain)",
+      "Foto, audio, atau video berlisensi jelas dengan tanggal dan lokasi",
+      "Catatan lapangan atau keterangan warga yang dapat ditelusuri sumbernya",
+      "Publikasi atau basis data yang mendukung atau membantah anomali ini",
+    ],
+    slug: `lab-sinyal-${sig.source}-${sig.externalId}`.toLowerCase().replace(/[^a-z0-9-]+/g, "-").slice(0, 60),
   };
 }
 
@@ -79,23 +112,39 @@ export async function POST(request: Request) {
     }
   }
 
-  let body: { leadId?: number };
+  let body: { leadId?: number; signalId?: number };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Permintaan tidak valid" }, { status: 400 });
   }
-  const leadId = Number(body.leadId);
-  if (!Number.isFinite(leadId)) {
-    return NextResponse.json({ error: "leadId tidak valid" }, { status: 400 });
+
+  // Resolve the originating artifact (a Lazarus lead OR a ghost signal) into a
+  // single mission shape + which table to flip to 'promoted'.
+  let mission: { title: string; description: string; evidence: string[]; slug: string };
+  let leadId: number | null = null;
+  let originTable: "lab_leads" | "ghost_signals" | null = null;
+  let originId: number | null = null;
+
+  if (Number.isFinite(Number(body.leadId))) {
+    const { leads } = await getScoredLeads();
+    const lead = leads.find((l) => l.id === Number(body.leadId));
+    if (!lead) return NextResponse.json({ error: "Lead tidak ditemukan" }, { status: 404 });
+    mission = buildMission(lead);
+    leadId = lead.id;
+    originTable = "lab_leads";
+    originId = lead.id;
+  } else if (Number.isFinite(Number(body.signalId))) {
+    const sig = await getGhostSignalById(Number(body.signalId));
+    if (!sig) return NextResponse.json({ error: "Sinyal tidak ditemukan" }, { status: 404 });
+    mission = buildSignalMission(sig);
+    originTable = "ghost_signals";
+    originId = sig.id;
+  } else {
+    return NextResponse.json({ error: "leadId atau signalId wajib" }, { status: 400 });
   }
 
-  const { leads } = await getScoredLeads();
-  const lead = leads.find((l) => l.id === leadId);
-  if (!lead) return NextResponse.json({ error: "Lead tidak ditemukan" }, { status: 404 });
-
-  const slug = `lab-${slugify(lead.taxonName)}`;
-  const { title, description, evidence } = buildMission(lead);
+  const { title, description, evidence, slug } = mission;
   const href = `/misi#misi-${slug}`;
 
   // Dev bypass: write a gitignored JSON mission so /misi shows it locally.
@@ -115,7 +164,7 @@ export async function POST(request: Request) {
             kontributor: { peneliti: 0, pembaca: 0, penerjemah: 0 },
             logSubmission: [],
             source: "lab",
-            leadId: lead.id,
+            leadId,
           },
           null,
           2,
@@ -130,8 +179,8 @@ export async function POST(request: Request) {
     }
   }
 
-  // Production / real admin: upsert into the missions table (idempotent by id),
-  // then best-effort flip the lead to 'promoted'.
+  // Production / real admin: upsert into missions (idempotent by id), then
+  // best-effort flip the originating lead/signal to 'promoted'.
   const { error: upsertErr } = await sb.from("missions").upsert(
     {
       id: slug,
@@ -139,7 +188,7 @@ export async function POST(request: Request) {
       description,
       status: "active",
       source: "lab",
-      lead_id: lead.id,
+      lead_id: leadId,
       evidence_needed: evidence,
       progress: 0,
       updated_at: new Date().toISOString(),
@@ -149,7 +198,9 @@ export async function POST(request: Request) {
   if (upsertErr) {
     return NextResponse.json({ error: upsertErr.message }, { status: 500 });
   }
-  await sb.from("lab_leads").update({ status: "promoted" }).eq("id", lead.id);
+  if (originTable && originId != null) {
+    await sb.from(originTable).update({ status: "promoted" }).eq("id", originId);
+  }
 
   return NextResponse.json({ ok: true, id: slug, href, mode: "db" });
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireAdmin } from "@/lib/lab/auth";
 import { getScoredLeads } from "@/lib/lab/leads";
 import { LabLeadsBoard } from "@/components/lab/LabLeadsBoard";
@@ -49,15 +50,23 @@ export default async function LabHome() {
           </p>
         </div>
 
-        <header className="mt-8 border-b border-dashed border-ink/40 pb-5">
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-ink-deep">
-            NaLI Intelligence Lab
-          </p>
-          <h1 className="mt-1 font-display text-3xl font-black text-ink">Investigasi Lead</h1>
-          <p className="mt-2 max-w-2xl font-mono text-[0.78rem] leading-relaxed text-gray">
-            Kandidat &ldquo;spesies hantu&rdquo; yang layak diselidiki, diperingkat dari data
-            terbuka (GBIF, iNaturalist, IUCN) memakai Skor Lazarus yang transparan.
-          </p>
+        <header className="mt-8 flex flex-wrap items-end justify-between gap-3 border-b border-dashed border-ink/40 pb-5">
+          <div>
+            <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-ink-deep">
+              NaLI Intelligence Lab
+            </p>
+            <h1 className="mt-1 font-display text-3xl font-black text-ink">Investigasi Lead</h1>
+            <p className="mt-2 max-w-2xl font-mono text-[0.78rem] leading-relaxed text-gray">
+              Kandidat &ldquo;spesies hantu&rdquo; yang layak diselidiki, diperingkat dari data
+              terbuka (GBIF, iNaturalist, IUCN) memakai Skor Lazarus yang transparan.
+            </p>
+          </div>
+          <Link
+            href="/lab/signals"
+            className="font-mono text-[0.7rem] uppercase tracking-wider text-ink-deep underline decoration-dotted underline-offset-2 hover:text-ink"
+          >
+            Ghost Signals →
+          </Link>
         </header>
 
         {note && (
