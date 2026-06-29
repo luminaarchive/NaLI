@@ -26,7 +26,11 @@
     "harvest:pustaka": "node scripts/mine/harvest-oa-to-supabase.mjs",
     "social": "node scripts/social/kit.mjs",
     "ingest": "node --env-file=.env.local scripts/ingest-embeddings.mjs",
-    "detect:contradictions": "node --env-file=.env.local scripts/detect-contradictions.mjs"
+    "detect:contradictions": "node --env-file=.env.local scripts/detect-contradictions.mjs",
+    "lab:harvest:gbif": "node scripts/lab/harvest-gbif.mjs",
+    "lab:harvest:inat": "node scripts/lab/harvest-inat.mjs",
+    "lab:harvest:iucn": "node --env-file=.env.local scripts/lab/harvest-iucn.mjs",
+    "lab:build-leads": "node --env-file=.env.local scripts/lab/build-leads.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.0",

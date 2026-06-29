@@ -38,6 +38,9 @@ yarn-error.log*
 /content/raw
 /content/cache
 
+# Lab (Bucket C) harvester dumps: bulky third-party occurrence metadata, regenerable
+/content/lab-raw
+
 # generated social distribution drafts (working files)
 /content/_social
 
