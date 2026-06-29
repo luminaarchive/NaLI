@@ -12,6 +12,12 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /** Throws notFound() unless the caller is a signed-in admin. */
 export async function requireAdmin(): Promise<void> {
+  // Local-only preview escape hatch (see middleware.ts). Production-impossible:
+  // NODE_ENV is "production" on Vercel, and the flag only lives in .env.local.
+  if (process.env.NODE_ENV !== "production" && process.env.LAB_DEV_BYPASS === "1") {
+    return;
+  }
+
   const sb = createSupabaseServerClient();
   const {
     data: { user },

@@ -114,12 +114,20 @@ Lab lead / Ghost Signal
 
 ## Build order (modules, one per session)
 
-- 3.1 Authentication & Schema Setup: middleware gate for `/lab/:path*`, the `lab`
-  schema migration (admin-only RLS), `lib/lab/` + `app/lab/` boilerplate, CI
-  import guard.
-- 3.2 GBIF + iNaturalist + IUCN harvesters (Node, manual run, raw -> /content/lab-raw).
-- 3.3 Lazarus Score computation + `/lab` leads dashboard (transparent breakdown).
-- 3.4 Missions -> DB + one-click lead -> "Misi Verifikasi Lapangan" promotion.
+- 3.1 (DONE, `708a199`) Authentication & Schema Setup: middleware gate for
+  `/lab/:path*`, `public.lab_leads` migration (admin-only RLS), `lib/lab/` +
+  `app/lab/` boilerplate, CI import guard.
+- 3.2 (DONE, `8dc01f5`) GBIF + iNaturalist + IUCN harvesters (Node, manual run,
+  raw -> /content/lab-raw). Read-only; only build-leads writes the DB.
+- 3.3 (DONE) Lazarus Score + `/lab` leads dashboard (transparent breakdown).
+  `lib/lab/scoring.ts` (deterministic weighted heuristic, breakdown[]), curated
+  IUCN fallback (`scripts/lab/seed-iucn.mjs`, provenance tagged), committed
+  real-data snapshot `lib/lab/sample-leads.ts` (DB -> sample fallback, labeled
+  CONTOH), client board `components/lab/LabLeadsBoard.tsx` (sort/filter/expand +
+  disabled "Promosikan ke Misi" Phase-3 seam). Local-only dev bypass
+  (`LAB_DEV_BYPASS`, production-impossible) for browser verification.
+- 3.4 Missions -> DB + one-click lead -> "Misi Verifikasi Lapangan" promotion
+  (wires the disabled promote button + the /admin/reports Phase-3 seam).
 - 3.5 (v1.1) Ghost Signals: YouTube / Xeno-canto / iNat "needs-ID".
 
 ## Dependencies / notes

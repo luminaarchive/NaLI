@@ -15,11 +15,36 @@
  * Usage: node --env-file=.env.local scripts/lab/harvest-iucn.mjs [--max N]
  */
 import { SEED_TAXA } from "./seed-taxa.mjs";
+import { CURATED_IUCN } from "./seed-iucn.mjs";
 import { fetchJson, writeDump, sleep, arg, rel } from "./_shared.mjs";
 
 const MAX = Number(arg("--max", "9999"));
 const IUCN = "https://api.iucnredlist.org/api/v4";
 const TOKEN = process.env.IUCN_API_TOKEN || "";
+
+/**
+ * Without a token, fall back to the curated table of REAL public IUCN categories
+ * (provenance tagged "curated", never "api"). This keeps the scoring engine fed
+ * during local work without fabricating anything. The live API overrides it the
+ * moment IUCN_API_TOKEN is set.
+ */
+function curatedDump() {
+  const taxa = SEED_TAXA.slice(0, MAX);
+  return taxa.map((seed) => {
+    const c = CURATED_IUCN[seed.sci] || { category: null, note: "Tidak ada entri kurasi." };
+    return {
+      seedSci: seed.sci,
+      iucnCategory: c.category ?? null,
+      assessmentYear: null,
+      sisId: null,
+      provenance: "curated",
+      sourceUrl: `https://www.iucnredlist.org/search?query=${encodeURIComponent(seed.sci)}`,
+      note: c.note,
+      error: null,
+      retrievedAt: new Date().toISOString().slice(0, 10),
+    };
+  });
+}
 
 /** Pick the most recent / latest assessment from a v4 taxa response. */
 function latestAssessment(j) {
@@ -60,12 +85,16 @@ async function lookup(seed) {
 async function main() {
   if (!TOKEN) {
     console.log(
-      "IUCN harvest SKIPPED: IUCN_API_TOKEN not set (founder infra).\n" +
-        "  GBIF + iNaturalist carry the harvest; iucn_status stays null.\n" +
-        "  Request a token at https://api.iucnredlist.org , add it to .env.local,\n" +
-        "  then re-run: node --env-file=.env.local scripts/lab/harvest-iucn.mjs",
+      "IUCN_API_TOKEN not set (founder infra) -> using CURATED public categories\n" +
+        "  (provenance: curated, not API). Set the token at https://api.iucnredlist.org\n" +
+        "  for live v4 data. Writing curated dump...",
     );
-    writeDump("iucn", []);
+    const dump = curatedDump();
+    const file = writeDump("iucn", dump);
+    for (const r of dump) {
+      console.log(`  ${r.seedSci.padEnd(30)} ${r.iucnCategory ?? "-"} (curated)`);
+    }
+    console.log(`\nWrote ${rel(file)} (${dump.length} taxa, curated)`);
     return;
   }
 
@@ -82,7 +111,9 @@ async function main() {
       iucnCategory: r.category ?? null,
       assessmentYear: r.assessmentYear ?? null,
       sisId: r.sisId ?? null,
+      provenance: "api",
       sourceUrl: r.sourceUrl ?? null,
+      note: null,
       error: r.error ?? null,
       retrievedAt: new Date().toISOString().slice(0, 10),
     });

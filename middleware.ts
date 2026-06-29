@@ -32,6 +32,17 @@ export async function middleware(req: NextRequest) {
   // /lab (Internal Intelligence Lab) is gated by the same admin session as /admin.
   const isProtected = pathname.startsWith("/admin") || pathname.startsWith("/lab");
 
+  // Local-only Lab preview. Lets the engineer view /lab in dev without a real
+  // admin session, to verify the dashboard UI. PRODUCTION-IMPOSSIBLE: requires
+  // NODE_ENV !== "production" (Vercel sets it to "production") AND an explicit
+  // env flag that only ever lives in the gitignored .env.local. Never weakens
+  // /admin and never activates in a deployed build.
+  const labDevBypass =
+    process.env.NODE_ENV !== "production" &&
+    process.env.LAB_DEV_BYPASS === "1" &&
+    pathname.startsWith("/lab");
+  if (labDevBypass) return res;
+
   if (!user && isProtected && !isLogin) {
     const url = req.nextUrl.clone();
     url.pathname = "/admin/login";
