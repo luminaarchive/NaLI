@@ -61,12 +61,20 @@ export default async function LabHome() {
               terbuka (GBIF, iNaturalist, IUCN) memakai Skor Lazarus yang transparan.
             </p>
           </div>
-          <Link
-            href="/lab/signals"
-            className="font-mono text-[0.7rem] uppercase tracking-wider text-ink-deep underline decoration-dotted underline-offset-2 hover:text-ink"
-          >
-            Ghost Signals →
-          </Link>
+          <div className="flex flex-col items-end gap-1.5">
+            <Link
+              href="/lab/harvest-log"
+              className="font-mono text-[0.7rem] uppercase tracking-wider text-ink-deep underline decoration-dotted underline-offset-2 hover:text-ink"
+            >
+              Harvest Log →
+            </Link>
+            <Link
+              href="/lab/signals"
+              className="font-mono text-[0.7rem] uppercase tracking-wider text-ink-deep underline decoration-dotted underline-offset-2 hover:text-ink"
+            >
+              Ghost Signals →
+            </Link>
+          </div>
         </header>
 
         {note && (

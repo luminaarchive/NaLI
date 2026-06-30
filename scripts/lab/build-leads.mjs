@@ -28,6 +28,7 @@ import { readDump, getServiceClient, arg, ROOT, rel } from "./_shared.mjs";
 
 const DRY = process.argv.includes("--dry-run");
 const EMIT_SAMPLE = process.argv.includes("--emit-sample");
+const TRIGGER = arg("--trigger", "manual"); // manual | cron | dev | backfill
 const SAMPLE_FILE = path.join(ROOT, "lib", "lab", "sample-leads.ts");
 const NOW = new Date().getFullYear();
 const clamp = (v) => Math.max(0, Math.min(1, v));
@@ -212,9 +213,57 @@ async function main() {
     .upsert(rows, { onConflict: "taxon_name", ignoreDuplicates: false });
   if (error) {
     console.error("\nUpsert failed:", error.message);
+    await logRun(sb, rows, gbif, inat, iucn, "failed");
     process.exit(1);
   }
   console.log(`\nUpserted ${rows.length} leads into lab_leads (status/notes preserved).`);
+
+  // Audit trail: log this run so /lab/harvest-log can prove the machine ran.
+  await logRun(sb, rows, gbif, inat, iucn, "success");
+}
+
+/** Append one verifiable row to lab_harvest_runs. Never fails the harvest. */
+async function logRun(sb, rows, gbif, inat, iucn, status) {
+  try {
+    const providers = [
+      { source: "gbif", records: gbif.length, ok: gbif.length > 0 },
+      { source: "inat", records: inat.length, ok: inat.length > 0 },
+      {
+        source: "iucn",
+        records: iucn.length,
+        ok: iucn.length > 0,
+        ...(iucn[0]?.provenance ? { provenance: iucn[0].provenance } : {}),
+      },
+    ];
+    // Top silences this run: no-record taxa first, then longest gap.
+    const highlights = rows
+      .map((r) => ({
+        taxon: r.taxon_name,
+        gap_years: r.last_record_year != null ? NOW - r.last_record_year : null,
+        note: r.last_record_year != null ? `terakhir ${r.last_record_year}` : "tanpa rekaman",
+      }))
+      .sort((a, b) => {
+        if (a.gap_years == null && b.gap_years == null) return 0;
+        if (a.gap_years == null) return -1;
+        if (b.gap_years == null) return 1;
+        return b.gap_years - a.gap_years;
+      })
+      .slice(0, 5);
+
+    const { error } = await sb.from("lab_harvest_runs").insert({
+      trigger: ["manual", "cron", "dev", "backfill"].includes(TRIGGER) ? TRIGGER : "manual",
+      status,
+      taxa_count: rows.length,
+      leads_upserted: status === "success" ? rows.length : 0,
+      providers,
+      highlights,
+      notes: `build-leads ${status} , GBIF ${gbif.length}, iNat ${inat.length}, IUCN ${iucn.length}.`,
+    });
+    if (error) console.error("  (harvest-log insert failed:", error.message + ")");
+    else console.log("Logged run to lab_harvest_runs.");
+  } catch (e) {
+    console.error("  (harvest-log insert threw:", e.message + ")");
+  }
 }
 
 main().catch((e) => {

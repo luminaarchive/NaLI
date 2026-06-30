@@ -1,0 +1,79 @@
+# Weekly Lab harvest (Bucket C, Step 3.2 automation).
+#
+# Runs the read-only harvesters against GBIF + iNaturalist (and IUCN if a token
+# is set), then build-leads upserts public.lab_leads and logs one row to
+# public.lab_harvest_runs. The verifiable audit trail is that table (surfaced at
+# /lab/harvest-log) PLUS this workflow's run history , NOT committed dumps
+# (content/lab-raw is gitignored third-party data, regenerable by design).
+#
+# ACTIVATION (one founder step): add repo secret SUPABASE_SERVICE_ROLE_KEY
+# (Settings -> Secrets and variables -> Actions). NEXT_PUBLIC_SUPABASE_URL has a
+# default below but can be overridden by a repo secret of the same name.
+# Optional: IUCN_API_TOKEN for live IUCN status instead of curated categories.
+# Until the service-role secret exists, build-leads fails closed (writes nothing)
+# and the scheduled run simply no-ops , safe.
+
+name: Weekly Lab Harvest
+
+on:
+  schedule:
+    # 02:00 UTC every Monday = 09:00 WIB.
+    - cron: "0 2 * * 1"
+  workflow_dispatch: {} # manual trigger from the Actions tab
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lab-harvest
+  cancel-in-progress: false
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://xxwzufdezpyabqkwrcbz.supabase.co' }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      IUCN_API_TOKEN: ${{ secrets.IUCN_API_TOKEN }}
+    steps:
+      - name: Guard , require service-role secret
+        run: |
+          if [ -z "${SUPABASE_SERVICE_ROLE_KEY}" ]; then
+            echo "SUPABASE_SERVICE_ROLE_KEY is not set , nothing to write. Skipping."
+            echo "Add it under Settings -> Secrets and variables -> Actions to activate."
+            exit 0
+          fi
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+        id: guard
+
+      - name: Checkout
+        if: steps.guard.outputs.ok == 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        if: steps.guard.outputs.ok == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps
+        if: steps.guard.outputs.ok == 'true'
+        run: npm ci
+
+      - name: Harvest GBIF (read-only, no auth)
+        if: steps.guard.outputs.ok == 'true'
+        run: node scripts/lab/harvest-gbif.mjs
+
+      - name: Harvest iNaturalist (read-only, no auth)
+        if: steps.guard.outputs.ok == 'true'
+        run: node scripts/lab/harvest-inat.mjs
+
+      - name: Harvest IUCN (curated fallback if no token)
+        if: steps.guard.outputs.ok == 'true'
+        run: node scripts/lab/harvest-iucn.mjs
+
+      - name: Build + upsert leads, log run
+        if: steps.guard.outputs.ok == 'true'
+        run: node scripts/lab/build-leads.mjs --trigger cron

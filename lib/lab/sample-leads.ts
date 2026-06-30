@@ -55,8 +55,8 @@ export const SAMPLE_LEAD_ROWS: LabLeadRow[] = [
     ],
     "status": "lead",
     "notes": null,
-    "created_at": "2026-06-29T02:00:47.987Z",
-    "updated_at": "2026-06-29T02:00:47.987Z"
+    "created_at": "2026-06-30T04:13:51.529Z",
+    "updated_at": "2026-06-30T04:13:51.529Z"
   },
   {
     "taxon_name": "Malacocincla perspicillata",
@@ -107,8 +107,8 @@ export const SAMPLE_LEAD_ROWS: LabLeadRow[] = [
     ],
     "status": "lead",
     "notes": null,
-    "created_at": "2026-06-29T02:00:47.987Z",
-    "updated_at": "2026-06-29T02:00:47.987Z"
+    "created_at": "2026-06-30T04:13:51.529Z",
+    "updated_at": "2026-06-30T04:13:51.529Z"
   },
   {
     "taxon_name": "Eutrichomyias rowleyi",
@@ -159,8 +159,8 @@ export const SAMPLE_LEAD_ROWS: LabLeadRow[] = [
     ],
     "status": "lead",
     "notes": null,
-    "created_at": "2026-06-29T02:00:47.987Z",
-    "updated_at": "2026-06-29T02:00:47.987Z"
+    "created_at": "2026-06-30T04:13:51.529Z",
+    "updated_at": "2026-06-30T04:13:51.529Z"
   },
   {
     "taxon_name": "Megachile pluto",
@@ -211,8 +211,8 @@ export const SAMPLE_LEAD_ROWS: LabLeadRow[] = [
     ],
     "status": "lead",
     "notes": null,
-    "created_at": "2026-06-29T02:00:47.987Z",
-    "updated_at": "2026-06-29T02:00:47.987Z"
+    "created_at": "2026-06-30T04:13:51.529Z",
+    "updated_at": "2026-06-30T04:13:51.529Z"
   },
   {
     "taxon_name": "Latimeria menadoensis",
@@ -263,8 +263,8 @@ export const SAMPLE_LEAD_ROWS: LabLeadRow[] = [
     ],
     "status": "lead",
     "notes": null,
-    "created_at": "2026-06-29T02:00:47.987Z",
-    "updated_at": "2026-06-29T02:00:47.987Z"
+    "created_at": "2026-06-30T04:13:51.529Z",
+    "updated_at": "2026-06-30T04:13:51.529Z"
   },
   {
     "taxon_name": "Nepenthes pitopangii",
@@ -315,8 +315,8 @@ export const SAMPLE_LEAD_ROWS: LabLeadRow[] = [
     ],
     "status": "lead",
     "notes": null,
-    "created_at": "2026-06-29T02:00:47.987Z",
-    "updated_at": "2026-06-29T02:00:47.987Z"
+    "created_at": "2026-06-30T04:13:51.529Z",
+    "updated_at": "2026-06-30T04:13:51.529Z"
   },
   {
     "taxon_name": "Rhinoceros sondaicus",
@@ -367,8 +367,8 @@ export const SAMPLE_LEAD_ROWS: LabLeadRow[] = [
     ],
     "status": "lead",
     "notes": null,
-    "created_at": "2026-06-29T02:00:47.987Z",
-    "updated_at": "2026-06-29T02:00:47.987Z"
+    "created_at": "2026-06-30T04:13:51.529Z",
+    "updated_at": "2026-06-30T04:13:51.529Z"
   },
   {
     "taxon_name": "Orcaella brevirostris",
@@ -419,8 +419,8 @@ export const SAMPLE_LEAD_ROWS: LabLeadRow[] = [
     ],
     "status": "lead",
     "notes": null,
-    "created_at": "2026-06-29T02:00:47.987Z",
-    "updated_at": "2026-06-29T02:00:47.987Z"
+    "created_at": "2026-06-30T04:13:51.529Z",
+    "updated_at": "2026-06-30T04:13:51.529Z"
   },
   {
     "taxon_name": "Zaglossus attenboroughi",
@@ -471,8 +471,8 @@ export const SAMPLE_LEAD_ROWS: LabLeadRow[] = [
     ],
     "status": "lead",
     "notes": null,
-    "created_at": "2026-06-29T02:00:47.987Z",
-    "updated_at": "2026-06-29T02:00:47.987Z"
+    "created_at": "2026-06-30T04:13:51.529Z",
+    "updated_at": "2026-06-30T04:13:51.529Z"
   },
   {
     "taxon_name": "Cyornis ruckii",
@@ -523,8 +523,8 @@ export const SAMPLE_LEAD_ROWS: LabLeadRow[] = [
     ],
     "status": "lead",
     "notes": null,
-    "created_at": "2026-06-29T02:00:47.987Z",
-    "updated_at": "2026-06-29T02:00:47.987Z"
+    "created_at": "2026-06-30T04:13:51.529Z",
+    "updated_at": "2026-06-30T04:13:51.529Z"
   },
   {
     "taxon_name": "Varanus zugorum",
@@ -575,8 +575,8 @@ export const SAMPLE_LEAD_ROWS: LabLeadRow[] = [
     ],
     "status": "lead",
     "notes": null,
-    "created_at": "2026-06-29T02:00:47.987Z",
-    "updated_at": "2026-06-29T02:00:47.987Z"
+    "created_at": "2026-06-30T04:13:51.529Z",
+    "updated_at": "2026-06-30T04:13:51.529Z"
   },
   {
     "taxon_name": "Gallirallus sharpei",
@@ -621,7 +621,7 @@ export const SAMPLE_LEAD_ROWS: LabLeadRow[] = [
     ],
     "status": "lead",
     "notes": null,
-    "created_at": "2026-06-29T02:00:47.987Z",
-    "updated_at": "2026-06-29T02:00:47.987Z"
+    "created_at": "2026-06-30T04:13:51.529Z",
+    "updated_at": "2026-06-30T04:13:51.529Z"
   }
 ];
