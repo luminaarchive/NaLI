@@ -55,13 +55,38 @@ function makeGlowTexture(): THREE.Texture {
   return tex;
 }
 
+/** Procedural brain: a wrinkled cortical ellipsoid with a central fissure, wireframe. */
+function makeBrainMesh(): THREE.Mesh {
+  const geo = new THREE.IcosahedronGeometry(11, 4);
+  const p = geo.attributes.position as THREE.BufferAttribute;
+  const v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i).normalize();
+    // gyri: layered sines give a folded cortical surface
+    const folds =
+      Math.sin(v.x * 9) * Math.sin(v.y * 9) * Math.sin(v.z * 9) * 0.13 +
+      Math.sin(v.y * 17 + 1.7) * 0.05 +
+      Math.sin(v.z * 15 + 0.6) * 0.04;
+    // central longitudinal fissure dividing the two hemispheres
+    const fissure = Math.abs(v.x) < 0.13 ? -0.17 : 0;
+    const r = 11 * (1 + folds + fissure);
+    v.set(v.x * r * 1.3, v.y * r * 0.9, v.z * r);
+    p.setXYZ(i, v.x, v.y, v.z);
+  }
+  geo.computeVertexNormals();
+  return new THREE.Mesh(
+    geo,
+    new THREE.MeshBasicMaterial({ color: CORE_COLOR, wireframe: true, transparent: true, opacity: 0.85 }),
+  );
+}
+
 /** Armillary cage: latitude rings (bold equator) + longitude great circles through the poles. */
 function buildCage(R: number): THREE.Group {
   const cage = new THREE.Group();
   const mat = (opacity: number) =>
     new THREE.LineBasicMaterial({ color: CAGE_COLOR, transparent: true, opacity });
 
-  const LAT = 12;
+  const LAT = 15;
   for (let i = 1; i < LAT; i++) {
     const phi = (i / LAT) * Math.PI;
     const r = R * Math.sin(phi);
@@ -72,10 +97,10 @@ function buildCage(R: number): THREE.Group {
       pts.push(new THREE.Vector3(r * Math.cos(t), y, r * Math.sin(t)));
     }
     const isEquator = Math.abs(phi - Math.PI / 2) < 1e-3;
-    cage.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), mat(isEquator ? 0.5 : 0.14)));
+    cage.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), mat(isEquator ? 0.42 : 0.1)));
   }
 
-  const MER = 18;
+  const MER = 24;
   for (let i = 0; i < MER; i++) {
     const lon = (i / MER) * Math.PI * 2;
     const pts: THREE.Vector3[] = [];
@@ -85,7 +110,7 @@ function buildCage(R: number): THREE.Group {
         new THREE.Vector3(R * Math.sin(t) * Math.cos(lon), R * Math.cos(t), R * Math.sin(t) * Math.sin(lon)),
       );
     }
-    cage.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), mat(0.1)));
+    cage.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), mat(0.08)));
   }
   return cage;
 }
@@ -187,10 +212,7 @@ export function GalaxyGraph() {
 
     // 3. Pink core flare at the centre.
     const group = new THREE.Group();
-    const ico = new THREE.Mesh(
-      new THREE.IcosahedronGeometry(11, 1),
-      new THREE.MeshBasicMaterial({ color: CORE_COLOR, wireframe: true, transparent: true, opacity: 0.9 }),
-    );
+    const ico = makeBrainMesh();
     const inner = new THREE.Mesh(
       new THREE.IcosahedronGeometry(5.5, 0),
       new THREE.MeshBasicMaterial({ color: 0xffe3ef, wireframe: true, transparent: true, opacity: 0.7 }),
@@ -307,7 +329,7 @@ export function GalaxyGraph() {
           if (typeof document !== "undefined" && document.hidden) return;
           const fgi = fgRef.current;
           if (!fgi) return;
-          const burst = 1 + Math.floor(Math.random() * 2);
+          const burst = 2 + Math.floor(Math.random() * 3);
           for (let i = 0; i < burst; i++) {
             try {
               fgi.emitParticle(links[Math.floor(Math.random() * links.length)]);
@@ -315,7 +337,7 @@ export function GalaxyGraph() {
               /* link not yet resolved; skip this tick */
             }
           }
-        }, 950);
+        }, 520);
       }
     }
 
@@ -392,9 +414,9 @@ export function GalaxyGraph() {
           linkWidth={0.5}
           linkOpacity={0.32}
           linkDirectionalParticles={0}
-          linkDirectionalParticleWidth={2.4}
-          linkDirectionalParticleSpeed={0.012}
-          linkDirectionalParticleColor={linkColor}
+          linkDirectionalParticleWidth={3.2}
+          linkDirectionalParticleSpeed={0.015}
+          linkDirectionalParticleColor={() => "#eafff8"}
           warmupTicks={80}
           cooldownTicks={220}
           enableNodeDrag={false}
