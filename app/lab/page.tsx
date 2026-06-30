@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/lab/auth";
 import { getScoredLeads } from "@/lib/lab/leads";
 import { LabLeadsBoard } from "@/components/lab/LabLeadsBoard";
+import { LabCharacter } from "@/components/lab/LabCharacter";
 
 /* -------------------------------------------------------------------------- */
 /*  /lab : Internal Intelligence Lab, leads dashboard (Bucket C, Step 3.3)     */
@@ -48,6 +49,11 @@ export default async function LabHome() {
             diselidiki</strong>, bukan klaim, dan tidak pernah tampil di situs publik. Skor
             Lazarus adalah heuristik prioritas, bukan probabilitas keberadaan spesies.
           </p>
+        </div>
+
+        {/* live operator: mirrors the harvest machine's real state */}
+        <div className="mt-6">
+          <LabCharacter />
         </div>
 
         <header className="mt-8 flex flex-wrap items-end justify-between gap-3 border-b border-dashed border-ink/40 pb-5">
