@@ -61,7 +61,7 @@ function buildCage(R: number): THREE.Group {
   const mat = (opacity: number) =>
     new THREE.LineBasicMaterial({ color: CAGE_COLOR, transparent: true, opacity });
 
-  const LAT = 9;
+  const LAT = 12;
   for (let i = 1; i < LAT; i++) {
     const phi = (i / LAT) * Math.PI;
     const r = R * Math.sin(phi);
@@ -75,7 +75,7 @@ function buildCage(R: number): THREE.Group {
     cage.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), mat(isEquator ? 0.5 : 0.14)));
   }
 
-  const MER = 12;
+  const MER = 18;
   for (let i = 0; i < MER; i++) {
     const lon = (i / MER) * Math.PI * 2;
     const pts: THREE.Vector3[] = [];
@@ -104,7 +104,14 @@ export function GalaxyGraph() {
   const lastClickRef = useRef<{ nodeId: string; time: number } | null>(null);
   const configuredRef = useRef(false);
   const rafRef = useRef<number>(0);
-  const coreRef = useRef<{ group: THREE.Group; ico: THREE.Mesh; inner: THREE.Mesh; flare: THREE.Sprite | null } | null>(null);
+  const fireRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const coreRef = useRef<{
+    group: THREE.Group;
+    ico: THREE.Mesh;
+    inner: THREE.Mesh;
+    shell: THREE.Mesh | null;
+    flare: THREE.Sprite | null;
+  } | null>(null);
   const cageRef = useRef<THREE.Group | null>(null);
   const dustRef = useRef<THREE.Points | null>(null);
   const bloomRef = useRef<UnrealBloomPass | null>(null);
@@ -188,7 +195,12 @@ export function GalaxyGraph() {
       new THREE.IcosahedronGeometry(5.5, 0),
       new THREE.MeshBasicMaterial({ color: 0xffe3ef, wireframe: true, transparent: true, opacity: 0.7 }),
     );
-    group.add(ico, inner);
+    // outer neural shell, counter-rotates for a denser "living brain" lattice
+    const shell = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(19, 1),
+      new THREE.MeshBasicMaterial({ color: 0xff8fc4, wireframe: true, transparent: true, opacity: 0.22 }),
+    );
+    group.add(ico, inner, shell);
     let flare: THREE.Sprite | null = null;
     if (glowTexture) {
       flare = new THREE.Sprite(
@@ -215,13 +227,13 @@ export function GalaxyGraph() {
       group.add(hot);
     }
     scene.add(group);
-    coreRef.current = { group, ico, inner, flare };
+    coreRef.current = { group, ico, inner, shell, flare };
 
     // 4. Dense ambient micro-stars dusted across the shell + a far starfield, for depth.
-    const N = 900;
+    const N = 1900;
     const pos = new Float32Array(N * 3);
     for (let i = 0; i < N; i++) {
-      const onShell = i < N * 0.62;
+      const onShell = i < N * 0.68;
       const r = onShell ? SPHERE_R * (0.97 + Math.random() * 0.06) : 520 + Math.random() * 1000;
       const th = Math.random() * Math.PI * 2;
       const ph = Math.acos(2 * Math.random() - 1);
@@ -259,29 +271,57 @@ export function GalaxyGraph() {
     }
     fg.cameraPosition({ x: 0, y: 70, z: 580 }, { x: 0, y: 0, z: 0 }, 0);
 
-    // 7. Breathing loop: pulse the core + bloom + a faint starfield twinkle.
+    // 7. Breathing loop: the brain pulses, the shells spin, the field twinkles.
     if (!reduce) {
       const animate = () => {
         const t = performance.now() / 1000;
         const c = coreRef.current;
         if (c) {
-          c.group.scale.setScalar(1 + Math.sin(t * 1.5) * 0.1);
-          c.ico.rotation.y += 0.004;
-          c.ico.rotation.x += 0.0015;
-          c.inner.rotation.y -= 0.007;
-          if (c.flare) (c.flare.material as THREE.SpriteMaterial).opacity = 0.85 + Math.sin(t * 1.5) * 0.12;
+          // two overlaid sines = an organic, never-quite-repeating "breath"
+          const breath = Math.sin(t * 1.5) * 0.12 + Math.sin(t * 0.6) * 0.05;
+          c.group.scale.setScalar(1 + breath);
+          c.group.rotation.y += 0.0012;
+          c.ico.rotation.y += 0.005;
+          c.ico.rotation.x += 0.002;
+          c.inner.rotation.y -= 0.009;
+          if (c.shell) {
+            c.shell.rotation.y -= 0.004;
+            c.shell.rotation.x += 0.0025;
+          }
+          if (c.flare) (c.flare.material as THREE.SpriteMaterial).opacity = 0.8 + breath;
         }
         if (cageRef.current) cageRef.current.rotation.y += 0.0004;
         if (dustRef.current)
-          (dustRef.current.material as THREE.PointsMaterial).opacity = 0.45 + Math.sin(t * 0.9) * 0.12;
-        if (bloomRef.current) bloomRef.current.strength = 0.5 + Math.sin(t * 1.1) * 0.12;
+          (dustRef.current.material as THREE.PointsMaterial).opacity = 0.45 + Math.sin(t * 0.9) * 0.14;
+        if (bloomRef.current) bloomRef.current.strength = 0.52 + Math.sin(t * 1.1) * 0.16;
         rafRef.current = requestAnimationFrame(animate);
       };
       rafRef.current = requestAnimationFrame(animate);
+
+      // Synapses firing: send a pulse along a random constellation every ~1s, so
+      // the brain reads as alive and "thinking". Each new article adds a link, so
+      // it fires across fresh content automatically on every publish.
+      const links = graphData.links;
+      if (links.length > 0) {
+        fireRef.current = setInterval(() => {
+          if (typeof document !== "undefined" && document.hidden) return;
+          const fgi = fgRef.current;
+          if (!fgi) return;
+          const burst = 1 + Math.floor(Math.random() * 2);
+          for (let i = 0; i < burst; i++) {
+            try {
+              fgi.emitParticle(links[Math.floor(Math.random() * links.length)]);
+            } catch {
+              /* link not yet resolved; skip this tick */
+            }
+          }
+        }, 950);
+      }
     }
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (fireRef.current) clearInterval(fireRef.current);
     };
   }, [dims.width, dims.height, reduce, glowTexture]);
 
@@ -334,7 +374,7 @@ export function GalaxyGraph() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[650px] border border-[#9ecdbf] bg-[#070f0d] overflow-hidden select-none"
+      className="relative w-full h-[650px] border border-[#1d2b27] bg-black overflow-hidden select-none"
     >
       {dims.width > 0 && (
         <ForceGraph3D
@@ -342,7 +382,7 @@ export function GalaxyGraph() {
           width={dims.width}
           height={dims.height}
           graphData={graphData}
-          backgroundColor="#070f0d"
+          backgroundColor="#000000"
           showNavInfo={false}
           controlType="orbit"
           nodeThreeObject={nodeThreeObject}
@@ -350,8 +390,11 @@ export function GalaxyGraph() {
           nodeVal={(n: GraphNode) => n.val}
           linkColor={linkColor}
           linkWidth={0.5}
-          linkOpacity={0.3}
+          linkOpacity={0.32}
           linkDirectionalParticles={0}
+          linkDirectionalParticleWidth={2.4}
+          linkDirectionalParticleSpeed={0.012}
+          linkDirectionalParticleColor={linkColor}
           warmupTicks={80}
           cooldownTicks={220}
           enableNodeDrag={false}
@@ -370,7 +413,7 @@ export function GalaxyGraph() {
       </div>
 
       {/* Floating controls legend */}
-      <div className="absolute bottom-4 left-4 pointer-events-none bg-[#070f0d]/85 border border-[#9ecdbf]/30 p-3 font-mono text-[9px] text-[#9ecdbf] leading-relaxed uppercase">
+      <div className="absolute bottom-4 left-4 pointer-events-none bg-black/80 border border-[#9ecdbf]/25 p-3 font-mono text-[9px] text-[#9ecdbf] leading-relaxed uppercase">
         <div className="text-[#46cfa8] font-bold border-b border-[#9ecdbf]/20 pb-1 mb-1">GALAKSI PENGETAHUAN</div>
         <div>[Klik Simpul]: Pilih / Kunci</div>
         <div>[Double Klik]: Buka Artikel</div>
@@ -383,7 +426,7 @@ export function GalaxyGraph() {
         <Portal>
           <div
             style={{ left: mousePos.x, top: mousePos.y, transform: anchor.transform }}
-            className={`fixed z-[9999] w-[calc(100vw-32px)] sm:w-80 bg-[#070f0d] border border-[#9ecdbf] p-4 text-[#cfe8df] font-mono shadow-[0px_8px_32px_rgba(0,0,0,0.85)] backdrop-blur-md select-none ${
+            className={`fixed z-[9999] w-[calc(100vw-32px)] sm:w-80 bg-black border border-[#9ecdbf] p-4 text-[#cfe8df] font-mono shadow-[0px_8px_32px_rgba(0,0,0,0.9)] backdrop-blur-md select-none ${
               selectedNode === hoverNode.id ? "pointer-events-auto" : "pointer-events-none"
             } ${anchor.className}`}
           >
