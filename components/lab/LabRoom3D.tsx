@@ -199,7 +199,7 @@ export function LabRoom3D({ state, hour }: Props) {
 
     /* ---- renderer / scene / camera ---------------------------------------- */
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(window.devicePixelRatio);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.25;
@@ -369,9 +369,42 @@ export function LabRoom3D({ state, hour }: Props) {
     const pot = box(0.36, 0.4, 0.36, 0x8a4a3a);
     pot.position.set(3.7, 0.4, -2.8);
     room.add(pot);
+    const foliageGroup = new THREE.Group();
+    foliageGroup.position.set(3.7, 0.55, -2.8);
+    room.add(foliageGroup);
     const foliage = box(0.7, 0.8, 0.7, 0x2f7d4f, { rough: 1 });
-    foliage.position.set(3.7, 0.95, -2.8);
-    room.add(foliage);
+    foliage.position.set(0, 0.4, 0);
+    foliageGroup.add(foliage);
+
+    /* ---- ceiling fan ------------------------------------------------------ */
+    const fanGroup = new THREE.Group();
+    fanGroup.position.set(0, 5.5, 0);
+    room.add(fanGroup);
+    const fanPole = box(0.08, 0.4, 0.08, 0x222222);
+    fanPole.position.set(0, -0.2, 0);
+    fanGroup.add(fanPole);
+    const fanMotor = box(0.3, 0.15, 0.3, 0x333333);
+    fanMotor.position.set(0, -0.45, 0);
+    fanGroup.add(fanMotor);
+    const blades = new THREE.Group();
+    blades.position.set(0, -0.5, 0);
+    fanGroup.add(blades);
+    for (let i = 0; i < 4; i++) {
+      const b = box(1.4, 0.02, 0.15, 0x111111);
+      b.position.set(0.8, 0, 0);
+      const pivot = new THREE.Group();
+      pivot.rotation.y = (Math.PI / 2) * i;
+      pivot.add(b);
+      blades.add(pivot);
+    }
+
+    /* ---- robot vacuum ----------------------------------------------------- */
+    const roomba = box(0.35, 0.08, 0.35, 0x111111);
+    roomba.position.set(0.5, 0.04, 1.0);
+    const roombaLed = box(0.04, 0.04, 0.04, 0x46cfa8, { emissive: 0x46cfa8 });
+    roombaLed.position.set(0, 0.04, 0.12);
+    roomba.add(roombaLed);
+    room.add(roomba);
 
     /* ---- volumetric sun shafts (additive) + dust motes -------------------- */
     const shaftMat = track(
@@ -483,6 +516,11 @@ export function LabRoom3D({ state, hour }: Props) {
     lampHead.position.set(0.05, 1.66, 0.95);
     lampHead.rotation.z = 0.5;
     deskGroup.add(lampHead);
+    
+    // moth around desk lamp
+    const mothMat = track(new THREE.MeshBasicMaterial({ color: 0xc9d1b0 }));
+    const moth = new THREE.Mesh(track(new THREE.BoxGeometry(0.02, 0.02, 0.02)), mothMat);
+    deskGroup.add(moth);
     // tower with LED
     const tower = box(0.42, 0.9, 0.7, 0x171f25);
     tower.position.set(0.1, 0.55, -1.05);
@@ -719,8 +757,18 @@ export function LabRoom3D({ state, hour }: Props) {
       return a + d * t;
     }
 
+    function setOrDampRot(obj: THREE.Object3D, tx: number, ty: number, tz: number, dt: number, lambda = 12) {
+      if (dt <= 0.0001) {
+        obj.rotation.set(tx, ty, tz);
+      } else {
+        obj.rotation.x = THREE.MathUtils.damp(obj.rotation.x, tx, lambda, dt);
+        obj.rotation.y = THREE.MathUtils.damp(obj.rotation.y, ty, lambda, dt);
+        obj.rotation.z = THREE.MathUtils.damp(obj.rotation.z, tz, lambda, dt);
+      }
+    }
+
     const BED_Y = 1.06;
-    function applyPose(walkCycle: number, walking: boolean, actT: number, st: StationKey) {
+    function applyPose(walkCycle: number, walking: boolean, actT: number, st: StationKey | "rising", dt: number) {
       const seated = pose.seated;
       const lying = pose.lying;
 
@@ -731,64 +779,69 @@ export function LabRoom3D({ state, hour }: Props) {
       body.position.y = pose.rootY * (1 - lying) + BED_Y * lying;
       body.position.z = -1.05 * lying;
 
-      // eyes close (scale flat) while sleeping
-      const eyeOpen = 1 - lying;
+      // eyes close (scale flat) while sleeping, and blink when awake
+      const blinkT = performance.now() / 1000 % 4;
+      const isBlink = (blinkT > 3.8 && blinkT < 3.85) || (blinkT > 3.1 && blinkT < 3.13 && Math.random() > 0.5);
+      const blinkFactor = isBlink ? 0.1 : 1.0;
+      const eyeOpen = (1 - lying) * blinkFactor;
       eyeL.scale.y = Math.max(0.12, eyeOpen);
       eyeR.scale.y = Math.max(0.12, eyeOpen);
 
-      // legs
-      const thighSeat = -1.5 * seated;
-      const shinSeat = 1.5 * seated;
-      legL.hip.rotation.x = thighSeat;
-      legR.hip.rotation.x = thighSeat;
-      legL.knee.rotation.x = shinSeat;
-      legR.knee.rotation.x = shinSeat;
-      legL.hip.rotation.z = 0;
-      legR.hip.rotation.z = 0;
+      let lHipX = -1.5 * seated, rHipX = -1.5 * seated;
+      let lKneeX = 1.5 * seated, rKneeX = 1.5 * seated;
+      let lShoulderX = 0.05, lShoulderZ = 0.12;
+      let rShoulderX = 0.05, rShoulderZ = -0.12;
+      let lElbowX = 0.12, rElbowX = 0.12;
+      let headX = 0;
 
       if (walking) {
         const sw = Math.sin(walkCycle) * 0.6;
-        legL.hip.rotation.x = sw;
-        legR.hip.rotation.x = -sw;
-        legL.knee.rotation.x = Math.max(0, -Math.sin(walkCycle)) * 0.8;
-        legR.knee.rotation.x = Math.max(0, Math.sin(walkCycle)) * 0.8;
-        armL.shoulder.rotation.set(-sw * 0.7, 0, 0.05);
-        armR.shoulder.rotation.set(sw * 0.7, 0, -0.05);
-        armL.elbow.rotation.set(0.3, 0, 0);
-        armR.elbow.rotation.set(0.3, 0, 0);
+        lHipX = sw;
+        rHipX = -sw;
+        lKneeX = Math.max(0, -Math.sin(walkCycle)) * 0.8;
+        rKneeX = Math.max(0, Math.sin(walkCycle)) * 0.8;
+        lShoulderX = -sw * 0.7; lShoulderZ = 0.05;
+        rShoulderX = sw * 0.7; rShoulderZ = -0.05;
+        lElbowX = 0.3;
+        rElbowX = 0.3;
       } else if (st === "working") {
-        // reach forward to the keyboard (forward = -z in body space), type + click
         const type = Math.sin(actT * 11);
         const type2 = Math.sin(actT * 11 + 1.7);
-        armL.shoulder.rotation.set(-1.1, 0, 0.18);
-        armR.shoulder.rotation.set(-1.0, 0, -0.28); // right arm angled to the mouse
-        armL.elbow.rotation.set(0.95 + type * 0.16, 0, 0);
-        armR.elbow.rotation.set(0.85 + type2 * 0.05, 0, 0);
-        // mouse click: brief dip on the right hand every ~2.5s
+        lShoulderX = -1.1; lShoulderZ = 0.18;
+        rShoulderX = -1.0; rShoulderZ = -0.28;
+        lElbowX = 0.95 + type * 0.16;
+        rElbowX = 0.85 + type2 * 0.05;
         const click = Math.max(0, Math.sin(actT * 2.5)) > 0.97 ? 0.18 : 0;
-        armR.elbow.rotation.x += click;
-        // tiny head nod toward the screen
-        head.rotation.x = 0.12 + Math.sin(actT * 2) * 0.02;
+        rElbowX += click;
+        headX = 0.12 + Math.sin(actT * 2) * 0.02;
       } else if (st === "idle") {
         const sip = (Math.sin(actT * 0.8) + 1) / 2;
         const raise = sip > 0.72 ? (sip - 0.72) / 0.28 : 0;
-        armR.shoulder.rotation.set(-0.5 - raise * 0.8, 0, -0.12);
-        armR.elbow.rotation.set(0.6 + raise * 1.5, 0, 0);
-        armL.shoulder.rotation.set(-0.6, 0, 0.22);
-        armL.elbow.rotation.set(1.2, 0, 0);
-        head.rotation.x = -raise * 0.2;
-      } else {
-        // sleeping: arms rest at the sides
-        armL.shoulder.rotation.set(0.05, 0, 0.12);
-        armR.shoulder.rotation.set(0.05, 0, -0.12);
-        armL.elbow.rotation.set(0.12, 0, 0);
-        armR.elbow.rotation.set(0.12, 0, 0);
-        head.rotation.x = 0;
+        rShoulderX = -0.5 - raise * 0.8; rShoulderZ = -0.12;
+        rElbowX = 0.6 + raise * 1.5;
+        lShoulderX = -0.6; lShoulderZ = 0.22;
+        lElbowX = 1.2;
+        headX = -raise * 0.2;
       }
-      if (st !== "working") head.rotation.x = st === "idle" ? head.rotation.x : 0;
+
+      setOrDampRot(legL.hip, lHipX, 0, 0, dt);
+      setOrDampRot(legR.hip, rHipX, 0, 0, dt);
+      setOrDampRot(legL.knee, lKneeX, 0, 0, dt);
+      setOrDampRot(legR.knee, rKneeX, 0, 0, dt);
+
+      setOrDampRot(armL.shoulder, lShoulderX, 0, lShoulderZ, dt);
+      setOrDampRot(armR.shoulder, rShoulderX, 0, rShoulderZ, dt);
+      setOrDampRot(armL.elbow, lElbowX, 0, 0, dt);
+      setOrDampRot(armR.elbow, rElbowX, 0, 0, dt);
+
+      if (dt <= 0.0001) head.rotation.x = headX;
+      else head.rotation.x = THREE.MathUtils.damp(head.rotation.x, headX, 12, dt);
     }
 
-    /* ---- per-state extras (screen, smoke, Z, props) ----------------------- */
+    const emberWorld = new THREE.Vector3();
+    const mugWorld = new THREE.Vector3();
+    const headWorld = new THREE.Vector3();
+
     function updateActivity(st: StationKey, t: number, animate: boolean) {
       const working = st === "working";
       const idle = st === "idle";
@@ -802,17 +855,47 @@ export function LabRoom3D({ state, hour }: Props) {
         const h = working ? 0.25 + 0.7 * Math.abs(Math.sin(t * 6 + i * 0.9)) : 0.3;
         b.scale.y = (animate ? h : 0.5) / 0.42;
       });
-      screenMat.emissiveIntensity = working ? 1.4 : 0.7;
-      monitorLight.intensity = working ? 1.4 + (animate ? Math.sin(t * 6) * 0.25 : 0) : 0.5;
+      // screen flicker to simulate life
+      const flicker = animate ? Math.random() * 0.15 : 0;
+      screenMat.emissiveIntensity = working ? 1.4 + flicker : 0.7;
+      monitorLight.intensity = working ? 1.4 + (animate ? Math.sin(t * 6) * 0.25 + flicker : 0) : 0.5;
+      
+      if (animate) {
+        // ceiling fan spinning
+        blades.rotation.y -= 0.06;
+        // potted plant swaying gently in the breeze
+        foliageGroup.rotation.z = Math.sin(t * 1.2) * 0.02;
+        foliageGroup.rotation.x = Math.cos(t * 0.8) * 0.02;
+        // moth flying erratically around the desk lamp
+        const mothT = t * 2.5;
+        moth.position.set(
+          -0.05 + Math.sin(mothT * 1.3) * 0.2,
+          1.66 + Math.sin(mothT * 2.1) * 0.15,
+          0.95 + Math.cos(mothT * 1.7) * 0.2
+        );
+        // only visible at night or dusk/dawn
+        moth.visible = hourRef.current < 7 || hourRef.current > 17;
+        
+        // robot vacuum patrolling in a circle
+        const rt = t * 0.2;
+        roomba.position.x = 0.5 + Math.sin(rt) * 1.2;
+        roomba.position.z = 1.0 + Math.cos(rt) * 1.0;
+        roomba.rotation.y = rt;
+        
+        // organic dust motes drift
+        motes.forEach(m => {
+          m.s.position.x = m.bx + Math.sin(t * 0.5 + m.ph) * 0.2;
+          m.s.position.y = m.by + Math.cos(t * 0.3 + m.ph) * 0.15;
+          m.s.position.z = m.bz + Math.sin(t * 0.4 + m.ph) * 0.2;
+        });
+      }
 
       // idle props
       mug.visible = idle;
       cig.visible = idle;
       ember.visible = idle;
 
-      const emberWorld = new THREE.Vector3();
       ember.getWorldPosition(emberWorld);
-      const mugWorld = new THREE.Vector3();
       mug.getWorldPosition(mugWorld);
       puffs.forEach((p, i) => {
         if (!idle) {
@@ -838,7 +921,6 @@ export function LabRoom3D({ state, hour }: Props) {
       blanketGroup.visible = pose.lying > 0.25;
 
       // Z sprites
-      const headWorld = new THREE.Vector3();
       head.getWorldPosition(headWorld);
       zs.forEach((z, i) => {
         if (!sleeping) {
@@ -950,7 +1032,7 @@ export function LabRoom3D({ state, hour }: Props) {
             pose.z += (dz / dist) * step;
             pose.face = lerpAngle(pose.face, Math.atan2(dx, dz), Math.min(1, dt * 7));
             walkCycle += dt * 10;
-            applyPose(walkCycle, true, 0, target);
+            applyPose(walkCycle, true, 0, target, dt);
           } else {
             pose.x = dest.x;
             pose.z = dest.z;
@@ -960,7 +1042,7 @@ export function LabRoom3D({ state, hour }: Props) {
           }
         } else {
           // still rising in place
-          applyPose(0, false, 0, activeStation);
+          applyPose(0, false, 0, "rising", dt);
         }
       } else {
         pose.seated += (dest.seated - pose.seated) * Math.min(1, dt * 6);
@@ -968,7 +1050,7 @@ export function LabRoom3D({ state, hour }: Props) {
         pose.rootY += (dest.rootY - pose.rootY) * Math.min(1, dt * 6);
         pose.face = lerpAngle(pose.face, dest.face, Math.min(1, dt * 6));
         actT += dt;
-        applyPose(0, false, actT, activeStation);
+        applyPose(0, false, actT, activeStation, dt);
       }
 
       updateActivity(activeStation, now, true);
@@ -994,7 +1076,7 @@ export function LabRoom3D({ state, hour }: Props) {
       pose.lying = d.lying;
       pose.rootY = d.rootY;
       activeStation = targetRef.current;
-      applyPose(0, false, 0.2, activeStation);
+      applyPose(0, false, 0.2, activeStation, 0);
       updateActivity(activeStation, 0, false);
       updateLighting();
       camera.lookAt(lookAt);
