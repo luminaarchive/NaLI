@@ -1,24 +1,21 @@
-# Weekly Lab harvest (Bucket C, Step 3.2 automation).
+# Lab harvest, MANUAL-DISPATCH FALLBACK (Bucket C, Step 3.2 automation).
+#
+# The PRIMARY weekly scheduler is Supabase pg_cron -> the `lab-harvest` Edge
+# Function (see supabase/migrations/0014), which needs NO secret because Supabase
+# injects the service-role key into the function runtime. This workflow is just
+# an optional way to trigger a harvest by hand from the Actions tab.
 #
 # Runs the read-only harvesters against GBIF + iNaturalist (and IUCN if a token
 # is set), then build-leads upserts public.lab_leads and logs one row to
-# public.lab_harvest_runs. The verifiable audit trail is that table (surfaced at
-# /lab/harvest-log) PLUS this workflow's run history , NOT committed dumps
-# (content/lab-raw is gitignored third-party data, regenerable by design).
+# public.lab_harvest_runs (surfaced at /lab/harvest-log).
 #
-# ACTIVATION (one founder step): add repo secret SUPABASE_SERVICE_ROLE_KEY
-# (Settings -> Secrets and variables -> Actions). NEXT_PUBLIC_SUPABASE_URL has a
-# default below but can be overridden by a repo secret of the same name.
-# Optional: IUCN_API_TOKEN for live IUCN status instead of curated categories.
-# Until the service-role secret exists, build-leads fails closed (writes nothing)
-# and the scheduled run simply no-ops , safe.
+# To use this manual path, add repo secret SUPABASE_SERVICE_ROLE_KEY (Settings
+# -> Secrets and variables -> Actions). NOT required for the weekly Supabase
+# cron, which already runs on its own. Without the secret the guard step no-ops.
 
-name: Weekly Lab Harvest
+name: Lab Harvest (manual fallback)
 
 on:
-  schedule:
-    # 02:00 UTC every Monday = 09:00 WIB.
-    - cron: "0 2 * * 1"
   workflow_dispatch: {} # manual trigger from the Actions tab
 
 permissions:

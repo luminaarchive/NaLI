@@ -33,7 +33,8 @@ export default async function HarvestLogPage() {
           <p className="mt-1.5 font-mono text-[0.76rem] leading-relaxed text-ink-charcoal">
             Catatan setiap kali mesin Lab benar-benar berjalan: kapan, dipicu oleh apa, berapa
             rekaman per sumber, dan kesunyian terpanjang yang terdeteksi. Bukti, bukan klaim.
-            Bisa disilangkan dengan riwayat GitHub Actions dan log commit.
+            Panen berjalan otomatis tiap Senin (09:00 WIB) lewat penjadwal Supabase, dan tiap
+            baris di bawah punya stempel waktu yang bisa diperiksa.
           </p>
         </div>
 
